@@ -1,0 +1,121 @@
+chunk_index,chunk_id,question_index,question,answer
+0,0,0,Quels sont les noms mentionnés dans le texte ?,"Alain Di Meglio, Lochi, Mondu, AlBIAnA UN IVERSITÀ DI CORSICA"
+0,0,1,Quel est le lieu mentionné dans le texte ?,La Corse
+1,1,0,Quel est le nom de l'événement organisé par la Collectivité de Corse ?,B3C - Boosr Cultural Comperencc in Corsica
+1,1,1,Qui est l'organisateur de l'événement Lochimondu ?,La Collectivité de Corse
+2,2,0,Quel est le titre de l'ouvrage d'Alain Di Meglio ?,"En chaque lieu, la Corse"
+2,2,1,Quel est le nom de l'éditeur de l'ouvrage ?,Albiana
+3,3,0,Quel est le titre du texte situé à la page 22 ?,Acqua Nera in Prunete - 0 lu trenu di a Corsica
+3,3,1,Quel est le titre du texte situé à la page 13 ?,Araguina -A tinta decana di a Corsica
+4,4,0,Quel est le titre en français de l'œuvre située à la page 38 ?,Moulins dans le vent de l'histoire
+4,4,1,Quel est le titre en français de l'œuvre située à la page 35 ?,Aullène protestataire puis protestant
+5,5,0,Quel est le titre de l'ouvrage qui commence par 'U cunventu d'Alisgiani' ?,"Il était une fois la révolution, un roi et une reine"
+5,5,1,Quel est le titre de l'ouvrage qui commence par 'A lingua di i Bunifazinchi' ?,La langue des Bonifaciens
+6,6,0,Quel est le titre de l'article situé à la page 59 ?,Une certaine idée de la langue corse
+6,6,1,Quel est le titre de l'article situé à la page 65 ?,Une minorité historique en Corse
+7,7,0,Quelle est la page associée à l'article sur les ingrédients de la colère ?,71
+7,7,1,Quel est le titre de l'article en page 76 ?,U vechju liceu di Bastia -I gesuiti in Corsica
+8,8,0,Quel est le titre de l'article situé à la page 86 ?,Joyaux del' art roman
+8,8,1,Quel est le titre de l'article situé à la page 91 ?,Furiani -Bastia Nizza: avissimu puri persu
+9,9,0,Quelle est la page où se trouve l'information sur la naissance de la langue corse ?,98
+9,9,1,Quel est le titre de la section qui commence à la page 101 ?,Corscia - Una storia strangulata
+10,10,0,Quel est le titre en français de l'article situé à la page 125 ?,Une conscience du trésor linguistique
+10,10,1,Quel est le titre en français de l'article situé à la page 114 ?,Un point de vue sur Bastia
+11,11,0,Quel est le numéro de page associé à l'entrée 'Une rivière pour du courant' ?,131
+11,11,1,Quelle est la dernière entrée mentionnée dans le texte ?,Sources bibliographiques
+12,12,0,Quel est le texte fourni ?,LocHr MoNnu
+12,12,1,Y a-t-il des informations supplémentaires dans le texte ?,Non
+13,13,0,En quelle année les chroniques ont-elles été publiées pour la première fois ?,2011
+13,13,1,Quel prix a été remporté par les chroniques en 2012 ?,le prix Don Joseph Morellini
+14,14,0,Quelle est la structure des écrits mentionnés dans le texte ?,La structure est en langue de petits écrits.
+14,14,1,Qui a proposé le terme de 'Prose elzevire' ?,Ghjacumu Fusina.
+15,15,0,Qui a dirigé les stations de Frequence Mora ?,Roben Kudelka
+15,15,1,Qui a dirigé les programmes ?,Isabelle Beziers
+16,16,0,Qui est remercié par l'auteur dans le texte?,Ghjuvan Petru Brunini
+16,16,1,Quel terme a été inventé par Ceccè Lanfranchi dans sa poésie?,lochi mondu
+17,17,0,Qui a écrit la poésie éponyme mentionnée dans le texte ?,Ceccè Lanfranchi
+17,17,1,Quelle radio locale a initié les textes en corse et en français en 2008 ?,RCFM
+18,18,0,Quel format de littérature est décrit dans le texte ?,Une littérature qui prend la forme d'une oralité écrite.
+18,18,1,Quel auteur a déjà présenté ce format de littérature ?,Jacques Fusina.
+19,19,0,Qui a dirigé la station Frequenza Mora à l'époque mentionnée dans le texte ?,Robert Kudelka
+19,19,1,Quel format a stabilisé l'auteur au fil des chroniques ?,Un billet qui met le lieu dans sa perspective historique
+20,20,0,Quelle est la perspective adoptée par le texte pour aborder le présent corse ?,historique
+20,20,1,Comment le texte aborde-t-il la subjectivité de son contenu ?,Le texte assume cette part de subjectivité qui lie l'auteur à la Corse et aux Corses.
+21,21,0,Quelle est la signification de l'expression « locu mondu » dans le texte ?,"L'expression « locu mondu » est utilisée pour exprimer l'esprit de textes qui oscillent entre le regard, la fascination et la pensée."
+21,21,1,Qui a permis à l'auteur d'utiliser la notion de « locu mondu » ?,Ceccè Lanfranchi.
+22,22,0,Quelle est l'âge estimé du squelette découvert en 1972 à Bonifaziu ?,6 570 ans
+22,22,1,Quelle est la période à laquelle le squelette découvert à Bonifaziu est daté ?,Le pré-néolithique
+23,23,0,Quels sont les deux archéologues qui ont avancé l'hypothèse d'un groupe humain venant de Sardaigne ?,François De Lanfranchi et Michel-Claude Weiss.
+23,23,1,Depuis quand les deux savants mentionnés ont-ils introduit de nouvelles méthodes d'investigations et de fouilles en Corse ?,Depuis 1962.
+24,24,0,Quels sont les exemples de nœuds de communication interne mentionnés dans le texte ?,Livia en Alta Rocca et Bustanicu en u Boziu.
+24,24,1,Quelle information a été obtenue grâce aux progrès de la recherche ?,Les progrès de la recherche ont fourni une réponse sur les organisations sociales du groupe.
+25,25,0,Qui a été enterrée avec un rituel particulier dans la grotte de l'Araguina ?,La « tinta donna di l'Araguina »
+25,25,1,Qui a proposé l'hypothèse que des Corses se seraient tenus à l'extérieur de la ville de Bonifazio par le biais des statuts de Bonifazio ?,François Canonici
+26,26,0,Où a été découverte la Dame de Bonifacio?,À l'Araguina
+26,26,1,Quel est l'âge du squelette de la Dame de Bonifacio?,6 570 ans
+27,27,0,Quel est le siège du laboratoire de recherche en sciences humaines à Corte?,le hall du bâtiment Simeoni
+27,27,1,Quel type de roche a contribué à la conservation de l'Homo sapiens à Bonifacio?,la roche calcaire
+28,28,0,Qui sont les deux inventeurs de l'abri-sous-roche de l'Araguina ?,Michel-Claude Weiss et François de Lanfranchi
+28,28,1,Quelle est la preuve des échanges entre la Corse et la Sardaigne ?,La présence de l'obsidienne
+29,29,0,Quelle teinte apparaît sur la sépulture de la Dame de l'Araguina ?,Une teinte ocre jaune
+29,29,1,Quelle est la spéculation de François Canonici concernant les statuts de Bonifacio au XIIIe siècle ?,Les statuts de la ville au XIIIe siècle n'autorisaient l'accès qu'aux seuls Génois
+30,30,0,Quel est le nom du lieu mentionné qui permet de voir « i dui mari » ?,Tighjime
+30,30,1,Quel est le nom de l'auteur mentionné qui a pris le nom de son pays ?,Sebastianu Dalzetu
+31,31,0,Quel écrivain est mentionné dans le texte ?,Sebastianu Dalzetu
+31,31,1,Quels animaux sont mentionnés pour transporter la glace ?,"Mules, ânes, chariots"
+32,32,0,Quels étaient les objectifs des goumiers marocains lors de la bataille mentionnée dans le texte ?,Les goumiers marocains avaient pour objectif de libérer la Corse.
+32,32,1,Quel est le lieu de partage mentionné dans le texte ?,Le lieu de partage mentionné est Teghime.
+33,33,0,Quelle mer est divisée en deux par Teghime selon le texte ?,La Méditerranée
+33,33,1,Quels sont les trois territoires mentionnés qui se trouvent de part et d'autre du col ?,"Les Bastiacci, les Villesi et les Cardinchi"
+34,34,0,Quels étaient les « nivere » ?,Les « nivere » étaient des lieux de stockage de la neige.
+34,34,1,Pour qui la neige transformée en glace était-elle ramenée à la ville ?,La neige transformée en glace était ramenée à la ville pour rafraîchir les familles les plus aisées.
+35,35,0,Quels étaient les soldats italiens bloqués à Teghime en 1943 ?,Les soldats italiens bloqués à Teghime en 1943 étaient des soldats errants pris dans l'étau d'une guerre finissante et d'une paix non encore aboutie.
+35,35,1,Quelle était la situation des soldats italiens bloqués à Teghime en 1943 ?,"Les soldats italiens bloqués à Teghime en 1943 étaient traqués d'un côté par les Allemands, sans être de l'autre dans le camp des Alliés."
+36,36,0,Quels étaient les rôles des djellabas des goumiers marocains lors de la bataille de Teghime ?,"Les djellabas de grosse laine brune servaient de couverture, de tenue de camouflage et éventuellement de linceul."
+36,36,1,Quand la Corse a-t-elle été libérée à Bastia ?,La Corse a été libérée à Bastia le 4 octobre 1943.
+37,37,0,Quel est le nom du lieu préhistorique situé près d'Ania di Fiurn'Orbu ?,u Castellu
+37,37,1,Quel est le nom du prêtre patriote guagnesi mentionné dans le texte ?,Circinellu
+38,38,0,Quelle chanson est mentionnée dans le texte et qui l'a chantée ?,La chanson mentionnée est « ceppu in manu è croce in pettu » et elle a été chantée par Antone Ciosi.
+38,38,1,Quel était le surnom de Dumenicu Leca ?,Le surnom de Dumenicu Leca était Circinellu.
+39,39,0,Quel est le nom de la rivière mentionnée dans le texte ?,Fium'Orbu
+39,39,1,À qui les habitants de Fium'Orbu ont-ils montré leur fidélité en 1770 ?,Pasquale Paoli
+40,40,0,Qui a traduit l'œuvre de Giuseppe Octaviano Nobili-Savelli en 2008 ?,Francescu Micheli Durazzo
+40,40,1,Où se trouve l'emplacement préhistorique appelé u Castellu ?,"Juste au-dessus d'Ania, sur la commune de Serra di Fium'Orbu"
+41,41,0,Quelle vue offre l'endroit mentionné dans le texte ?,une magnifique vue périphérique et lointaine sur une bonne partie de la plaine
+41,41,1,Qui a écrit la chanson mentionnée dans le texte ?,Francis Pinelli
+42,42,0,Qui a découvert le célèbre curé de Guagno mort dans la grotte?,Deux bergers du Fium'Orbu.
+42,42,1,Quel rôle joue Fernand Ettori dans le texte?,Fernand Ettori explique pourquoi Circinellu revêt une telle importance dans la mémoire des Corses.
+43,43,0,Qui a traduit le Vir nemoris en 2008 ?,François Michel Durazzo
+43,43,1,Quel était le rôle de Giuseppe Octaviano Nobili-Savelli dans la création du Vir nemoris ?,Il l'a rédigé en latin.
+44,44,0,Quel est le titre de la chanson mentionnée dans le texte ?,Le titre de la chanson est « U trenu di Bastia ».
+44,44,1,Qui a composé la chanson « U trenu di Bastia » ?,La chanson « U trenu di Bastia » a été composée par Maria Felice Marchetti.
+45,45,0,Qui est le père du célèbre compositeur et chef d'orchestre Henri Tomasi ?,Xavier Tomasi
+45,45,1,Quel était le projet de Tintin Pasqualini en 1960 ?,Tintin Pasqualini a fait en sorte que le statut et les élus locaux se laissent perdre la voie ferrée qui était arrivée jusqu'à Porto-Vecchio avant la guerre de 1939 et prévue pour aller jusqu'à Bonifaziu.
+46,46,0,Quelle était l'espérance en 1848 concernant le développement entre Bastia et Bonifaziu ?,L'espérance était un certain développement avec les révolutions industrielles.
+46,46,1,Quel était le surnom donné à l'osteria de l'Acqua Nera dans le texte ?,Le surnom donné à l'osteria de l'Acqua Nera est « Serpent de fer ».
+47,47,0,Quel est le titre du chant traditionnel mentionné dans le texte ?,U trenu di Bastia
+47,47,1,Qui a composé le chant traditionnel U trenu di Bastia ?,Maria Felice Marchetti
+48,48,0,Qui a découvert le chant de Maria Felice dans l'auberge?,Xavier Tomasi
+48,48,1,Quelle était la destination prévue de la voie ferrée en plaine orientale?,Bonifacio
+49,49,0,Quel est le nom de l'auberge qui a retrouvé une clientèle grâce au tourisme dans les années 1970 ?,L'auberge de l'Acqua Nera
+49,49,1,Quel est le nom de l'axe routier mentionné comme étant le plus accidentogène et meurtrier ?,L'axe routier Bastia-Solenzara
+50,50,0,Quels sont les deux personnages mis en scène dans les vers cités ?,Un lion et un homme.
+50,50,1,Quels sont les deux lieux mentionnés dans le texte ?,Roccapina et Cagna.
+51,51,0,Quelle est la période de formation de l'Omu di Cagna et de son lion ?,L'Omu di Cagna et son lion sont nés environ 350 millions d'années.
+51,51,1,Quelle est la région la plus jeune de la Corse mentionnée dans le texte ?,"Le nord et les plages orientales de la Corse sont les régions les plus jeunes, avec environ 100 millions d'années."
+52,52,0,"Combien de temps les lochs ont-ils été frustals, scavatls et carabunatls par l'élément ?",300 millioni d' anni
+52,52,1,Quels événements tectoniques ont conduit à la séparation de la Corse du continent ?,La puntata pireneana et plus tard quidda alpina
+53,53,0,Quel est le nom de la formation rocheuse qui domine le Valinco et l'extrême sud-ouest jusqu'aux bouches de Bonifacio et la Gallura ?,L'Omu di Cagna
+53,53,1,Quel est l'âge de l'Omu di Cagna ?,350 millioni d'anni
+54,54,0,Quel est le nom de l'entité mentionnée dans le texte qui a été créée avec un lion?,Omu di Cagna
+54,54,1,Il y a combien de millions d'années l'Omu di Cagna est né avec son lion?,350 millions d'années
+55,55,0,Quelle est la période géologique des schistes du nord et de la plaine orientale de la Corse ?,Le crétacé
+55,55,1,Quelle est la période géologique des plateaux calcaires de Bonifacio et de Saine-Florent ?,Le miocène
+56,56,0,Combien de temps durera la dérive de la Sardaigne vers l'Italie ?,Huit à dix millions d'années.
+56,56,1,Quelle est la différence d'âge entre la Dame de Bonifacio et l'Omu di Cagna ?,341 millions d'années.
+57,57,0,Quel est le nom de la réserve naturelle située dans le Golfo di Portu?,Scandula
+57,57,1,Quel est le symbole de la réussite de la gestion du Parc régional de Corse?,L'acula marina
+58,58,0,Qui était Dragut et quel était son rôle dans l'histoire de la Méditerranée ?,Dragut était un corsaire turc célèbre et cruel qui a commencé à saccager la Corse à partir des années 1520.
+58,58,1,Quels étaient les alliés de François 1er dans le contexte géostratégique du XVIe siècle ?,François 1er s'était allié aux Turches de Suleiman le Magnifique.
+59,59,0,Qui a anticipé l'escalade obligatoire de Dragut et a fait échouer son plan ?,Zanettinu Doria
+59,59,1,Quel événement a permis de considérer Girolata comme une victoire majeure des alliés de Carulu ?,La capture de Dragut

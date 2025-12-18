@@ -1,0 +1,115 @@
+chunk_index,chunk_id,question_index,question,answer
+0,0,0,Quel est le nom de l'université mentionnée dans le texte ?,AlBIAnA UN IVERSITÀ DI CORSICA
+0,0,1,Quel est le lieu où l'université est située ?,La Corse
+1,1,0,Quel est l'organisme principal qui finance le projet Lochimondu ?,La Collectivité de Corse
+1,1,1,Quel est le nom complet de l'organisation qui finance le projet Lochimondu ?,Collectivité de Corse
+2,2,0,Quel est le nom de l'auteur du texte ?,Alain Di Meglio
+2,2,1,Quel est le titre du texte ?,Lochimondu
+3,3,0,Quel est le titre du chapitre qui parle de la doyenne corse?,La doyenne corse
+3,3,1,Quel est le titre du chapitre qui parle de la grotte de Circinellu?,La grotte de Circinellu
+4,4,0,"Quel est le titre du texte suivant : 'L'Homme et le Lion, ou la dérive des îles' ?","L'Homme et le Lion, ou la dérive des îles"
+4,4,1,Quel est le titre du texte suivant : 'A la recherche du chant perdu' ?,A la recherche du chant perdu
+5,5,0,Quel est le titre du texte qui commence par 'Moulins dans le vent de l'histoire' ?,Moulins dans le vent de l'histoire
+5,5,1,Quel est le titre du texte qui commence par 'U cunventu d'Alisgiani -' ?,U cunventu d'Alisgiani -
+6,6,0,Quel est le titre du texte en français ?,Maîtres de la Corse
+6,6,1,Quel est le sujet principal du texte ?,Les îles jumelles et légendes sœurs
+7,7,0,Quel est le sujet principal du texte concernant Capraia et Maddalena ?,Ces îles qui nous manquent
+7,7,1,Quel est le thème abordé dans la section sur Bustanicu ?,Les ingrédients de la colère
+8,8,0,Quel est le titre du premier texte mentionné dans le texte ?,Galeria
+8,8,1,Quel est le titre du texte situé à la page 85 ?,San Michele di Muratu
+9,9,0,Quel est le nom de la langue corse et où est-elle née selon le texte ?,La langue corse est née sur une frontière.
+9,9,1,Quel est le titre du texte qui parle de la mémoire garrottée de Corsica ?,Corscia - Una storia strangulata
+10,10,0,Quel est le titre du texte qui commence par 'U Comptoir-L'ultimalenzasacra' ?,U Comptoir-L'ultimalenzasacra
+10,10,1,Quel est le titre du texte qui parle de 'Santa Lucia' ?,A croce di Santa Lucia
+11,11,0,Quel est le titre du texte qui suit le titre 'Calvi - U Cristu negru' ?,Le texte suivant 'Calvi - U Cristu negru' est intitulé 'Semper fidelis'.
+11,11,1,Quel est le titre du texte qui précède 'Ortiporiu - Falcina bianca' ?,Le texte qui précède 'Ortiporiu - Falcina bianca' est intitulé 'La neige en deuil'.
+12,12,0,Quel est le texte complet que nous avons reçu ?,Le texte complet est 'LocHr MoNnu'.
+12,12,1,Quel est le sens de la séquence 'LocHr MoNnu' ?,"La séquence 'LocHr MoNnu' semble être une abréviation ou une combinaison de mots, mais sans contexte supplémentaire, il est difficile de déterminer son sens exact."
+15,15,0,Qui sont les directeurs de la station Frequenza Mora et des programmes?,Les directeurs de la station Frequenza Mora sont Roben Kudelka et Isabelle Beziers.
+15,15,1,Pourquoi sont-ils remerciés?,Ils sont remerciés pour leur compétence et leur travail.
+16,16,0,Quel est l'objet principal de la lettre de Lochimondo ?,La lettre de Lochimondo est une lettre de remerciement à son ami Ghjuvan Petru Brunini.
+16,16,1,Quel est le thème principal du texte ?,Le thème principal du texte est l'expression de gratitude et la description d'une expérience personnelle.
+17,17,0,Quel est le nom du lieu de Corse mentionné dans le texte ?,Le texte ne mentionne pas un nom spécifique pour le lieu de Corse.
+17,17,1,Quel est le prix reçu par les textes en 2012 ?,Le prix Don Joseph Morellini du conseil général de Haute-Corse.
+18,18,0,Quel format ont pris les textes diffusés en radio selon le texte ?,Les textes ont pris la forme d'une oralité écrite.
+18,18,1,Pourquoi la littérature d'expression corse est-elle friande de ce format ?,"La littérature d'expression corse est friande de ce format parce qu'elle est concise et permet de dire beaucoup avec peu, comme le stalvatoghju ou le racontu."
+19,19,0,Quel est l'objectif principal de l'auteur dans ce texte ?,L'objectif principal de l'auteur est de trouver le plaisir de l'élévation appliqué à raconter la Corse par l'histoire ou la sociologie de lieux choisis.
+19,19,1,Qui a été mentionné comme un directeur important dans le texte ?,"Robert Kudelka, directeur à l'époque de la station Frequenza Mora."
+20,20,0,Quel est le ton du texte selon l'auteur ?,Le texte est écrit avec un ton humoristique et léger.
+20,20,1,Pourquoi l'auteur ne se prend-il pas trop au sérieux dans son texte ?,L'auteur ne se prend pas trop au sérieux car il cherche à donner du sens à un présent corse souvent problématique sans se prendre au sérieux.
+21,21,0,Quel est le terme utilisé pour décrire l'esprit des textes mentionnés dans le texte ?,Le terme utilisé est 'locu mondu'.
+21,21,1,Quel est le rôle de l'histoire et du récit dans la compréhension des sites mentionnés ?,L'histoire et le récit sont utilisés pour élever la mémoire des sites.
+22,22,0,Quel est l'âge estimé du squelette trouvé à la pointe de la Suttana en Corsica ?,"Le squelette a été daté à 6 570 ans après Jésus-Christ, ce qui correspond à une période pré-neolithique."
+22,22,1,Quel type de recherche a été utilisée pour déterminer l'âge du squelette ?,Les scientifiques ont utilisé la datation au carbone 14 pour déterminer l'âge du squelette.
+23,23,0,Quel est le nom de l'archipel mentionné dans le texte ?,L' arcipelagu di i Lavezzi
+23,23,1,Qui sont les deux archeologues qui ont avancé l'hypothèse de la présence d'un groupe humain à Sardegna ?,François De Lanfranchi et Michel-Claude Weiss
+24,24,0,Quel est l'objet principal de la recherche mentionnée dans le texte ?,L'objet principal de la recherche est l'importance de la littératie et des communications internes dans les organisations de Livia en Alta Rocca ou Bustanicu.
+24,24,1,Quel est l'impact de la recherche sur les organisations suisses ?,"La recherche a conduit à une rançade d'infuriations, ce qui suggère un impact négatif sur les organisations suisses."
+25,25,0,Quel est le nom de la communauté mentionnée dans le texte ?,L'Araguina
+25,25,1,Pourquoi l'archeologue François Canonici a-t-il proposé que la grotte de l'Araguina ait été utilisée pour des raisons liées aux statuts de Bonifaziu ?,"Pour éviter que les Corsi ne soient considérés comme des hérétiques, car Bonifaziu avait interdit aux Corsi de s'installer dans la ville."
+26,26,0,Où a été découverte la Dame de Bonifacio?,À la seconde station-service à Bonifacio.
+26,26,1,Quel est l'âge daté du squelette de la Dame de Bonifacio?,6 570 ans après Jésus-Christ.
+27,27,0,Quel est le siège du laboratoire de recherche en sciences humaines à Corte?,Le hall du bâtiment Simeoni
+27,27,1,Quel facteur géologique pourrait avoir contribué à la conservation du plus ancien Homo sapiens de la Corse?,Le caractère conservateur de la roche calcaire de Bonifacio
+29,29,0,Quel est le signe d'un rite mortuaire bien précis mentionné dans le texte concernant la Dame de l'Araguina?,La sépulture laisse apparaître une teinte ocre jaune.
+29,29,1,Quel est l'un des faits notoires concernant la grotte de l'Araguina?,Les strates d'occupation de la grotte remontent jusqu'au Moyen Âge.
+30,30,0,Quel est le nom de la ville mentionnée dans le texte ?,Bastia
+30,30,1,Quel est le rôle des pastori dans la région mentionnée ?,Les pastori sont des habitants de la région qui pratiquent l'élevage et qui sont connus pour leur connaissance du terrain.
+31,31,0,Quel est le nom du lieu mentionné dans le texte ?,Fûidatu è Fûirnonda
+31,31,1,Quel type de problème est abordé dans le texte par rapport à l'énergie éolienne ?,Les questions de l'opportunité ou de l'opportunisme de l'énergie éolienne
+32,32,0,Quel est le nom du personnage principal du texte ?,Tighjime
+32,32,1,Quel événement est mentionné comme ayant eu lieu en 1943 ?,La bataille de la Corsica
+33,33,0,Quel est le nom de la limite haute mentionnée dans le texte ?,Teghime
+33,33,1,Quels sont les produits vendus par les bergers de Teghime ?,"Les produits vendus par les bergers de Teghime sont ceux de la plaine, de la ville et de la montagne."
+34,34,0,Quel est le pseudonyme de la personne mentionnée dans le texte ?,Teghime
+34,34,1,Quels sont les matériaux utilisés pour l'aménagement des glacières ?,pierres et ardoises
+35,35,0,Quel est le lieu symbolique de bien des débats sur l'écologie et les déchets selon le texte ?,La décharge publique de Bastia
+35,35,1,Quel événement majeur a eu lieu à Teghime en octobre 1943 ?,Les goumiers marocains franchirent
+36,36,0,Quand les goumiers marocains ont franchi Teghime ?,Les goumiers marocains ont franchi Teghime en octobre 1943.
+36,36,1,Quel est le rôle des djellabas des goumiers marocains à Teghime ?,"Les djellabas des goumiers marocains servaient de couverture, de tenue de camouflage et éventuellement de linceul."
+37,37,0,Quel est le nom de la localité préhistorique mentionnée dans le texte ?,Castellu
+37,37,1,Quel est le nom du célèbre patriote guagnésien dont le dernier suspir est mentionné dans le texte ?,Circinellu
+38,38,0,Quel est le nom de l'auteur de la chanson mentionnée dans le texte ?,Frand Pinelli
+38,38,1,Quel personnage est mentionné comme ayant été une figure majeure de la résistance contre les Français ?,Domenico Leca
+39,39,0,Quel est le nom de la ville mentionnée dans le texte?,Fium'Orbu
+39,39,1,Quel événement historique est mentionné dans le texte concernant Fium'Orbu?,La fermeture du monde fidèle à Pasquale Paoli en 1770
+40,40,0,Qui a écrit l'œuvre 'Nemoris'?,Giuseppe Octaviano Nobili-Savelli
+40,40,1,Quel est l'emplacement de la grotte de Circinellu par rapport à Ania?,Juste au-dessus d'Ania
+41,41,0,Quel est le nom de la grotte mentionnée dans le texte ?,Grotte des Sarrasins ou grotte de Circinellu
+41,41,1,Qui a été retrouvé mort dans la grotte et comment était-il décrit ?,"Le curé patriote de Guagnu, Dominique Leca, dit Circinellu, était retrouvé mort avec une arme à la main et un crucifix sur la poitrine"
+42,42,0,Pourquoi la figure de Circinellu est-elle plus importante dans la mémoire des Corses que celle de d'autres résistants comme Pace Maria Falconetti ou Zampaglino?,"La tradition orale, l'histoire politique et les conditions spectaculaires de la loyauté de Dumenicu Leca font de Circinellu une figure plus importante dans la mémoire des Corses."
+42,42,1,Quel est le rôle de Giuseppe Octaviano Nobili-Savelli dans le texte?,Le texte mentionne que Giuseppe Octaviano Nobili-Savelli a rédigé une magnifique époque intitulée 'Vir nemoris'.
+43,43,0,Quel est le titre de l'œuvre mentionnée dans le texte ?,Le Vir nemoris
+43,43,1,Quel est le nom du traducteur critique qui a rendu la grotte d'Ania encore plus éclairante en 2008 ?,François Michel Durazzo
+44,44,0,Quel est le nom de la rivière mentionnée dans le texte?,Acqua Nera
+44,44,1,Quel est le nom de l'auteur du poème cité dans le texte?,Maria Felice Marchetti
+45,45,0,Qui est Anton Dumenicu Monti et à quoi fait-il référence dans le texte ?,"Anton Dumenicu Monti est mentionné comme un personnage important dans le texte, mais il n'est pas décrit en détail."
+45,45,1,Quel est le rôle de Xavier Tomasi dans le texte ?,"Xavier Tomasi est mentionné comme le père de Henri Tomasi, un célèbre compositeur et chef d'orchestre."
+46,46,0,Quel événement économique a eu lieu en 1960 qui a eu un impact significatif sur la Corsica?,L'effets d'une Corsica duvintata un disertu economicu.
+46,46,1,Quel est le lieu mentionné dans le texte qui est à deux pas de Prunete?,Acqua Nera
+47,47,0,Quel est le lieu mentionné dans le texte qui est à deux pas de Prunete et à sept kilomètres de Cervioni ?,Acqua Nera
+47,47,1,Quel est le titre du célèbre chant traditionnel composé par Maria Felice Marchetti en 1888 ?,0 lu trenu di Bastia
+48,48,0,Quel était le nom de l'auberge où le chant de Maria Felice fut découvert par Xavier Tomasi ?,Auberge de Maria Felice
+48,48,1,"Quel était le nom du père de Henri Tomasi, le célèbre compositeur et chef d'orchestre ?",Xavier Tomasi
+49,49,0,Quel est le thème principal du texte ?,"Le texte traite de la situation de la Corse des années 1960, de son développement économique et social, et de la persistance de problèmes actuels."
+49,49,1,Quel est le rôle du lamentu dans le texte ?,Le lamentu est utilisé pour exprimer les lamentations et les désillusions des habitants de Bastia.
+50,50,0,Quel est le nom de l'animal dont parle le texte et où se trouve-t-il ?,"Le lion de Roccapina se trouve dans la région de Bonifaziu, les Bucchi et la Gallura."
+50,50,1,Quel est le rôle de l'humain dans le texte ?,L'humain est décrit comme un altru qui a donné un nom à plusieurs lieux.
+51,51,0,Quel est le nom de la première personne à avoir donné un nom à la location?,L'umanu qul.
+51,51,1,Combien de millions d'années se sont écoulées depuis la première émission de la série?,350 millions d'anni
+52,52,0,Quel élément a été utilisé pour créer les lochs?,L'élément utilisé pour créer les lochs est l'eau.
+52,52,1,Quel est l'âge approximatif de l'Omu di Cagna?,L'Omu di Cagna a environ 350 millions d'années.
+53,53,0,Quel est le nom de la merveille minérale mentionnée dans le texte ?,L'Omu di Cagna
+53,53,1,Combien d'années est l'Omu di Cagna selon le texte ?,350 millions d'années
+54,54,0,Quel est le nom de la créature mentionnée dans le texte?,L' Omu di Cagna
+54,54,1,Combien de millions d'années ago l'Omu di Cagna est né?,350 millions d'années
+55,55,0,Quel est le nom de la partie granitique de l'hercynien qui est la plus ancienne de Corse ?,RO CCAP INA È CAGNA
+55,55,1,Combien de millions d'années ago les dépôts ultérieurs du nord schisteux et de la plaine orientale de Corse ont été formés ?,d'une centaine de millions d'années
+56,56,0,Combien de millions d'années dure la dérive du granite vers l'Italie?,8 à 10 millions d'années
+56,56,1,Quel est l'âge de la Dame de Bonifacio par rapport à l'Omu di Cagna?,9 000 ans
+57,57,0,Quel est le nom de la personne qui a pris possession de Dragut ?,Ghjirulatu
+57,57,1,Quel est le rôle de l'acula marina dans la gestion du parc naturel de la Corsica ?,Simbolu di a riescita di a gestioni di u Parcu righjunali di a Corsica
+58,58,0,Quel événement historique est mentionné dans le texte concernant la Méditerranée ?,"L'arrestation de Dragut, le corsaire turc, en 1540."
+58,58,1,Quel roi français est mentionné comme ayant été allié avec l'Italie à la fin du XVIe siècle ?,Carulu.
+59,59,0,Quel est le rôle de Zanettinu Doria dans la capture de Dragut ?,Zanettinu Doria a anticipé la capture de Dragut et a aidé à l'intramper.
+59,59,1,Quel est le site naturel où se trouve Girolata ?,Girolata est situé sur la commune d'Osani.

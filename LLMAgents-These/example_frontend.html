@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot RAG v3 - Interface de test</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+<div class="main_container">
+
+    <div class="container">
+        <div class="header">
+            <h1>🗣️ Chatbot RAG v0.1</h1>
+            <p>Obtenez des réponses à partir de documents de la M3C</p>
+        </div>
+
+        <div class="settings">
+            <label>
+                <input type="checkbox" id="useRAG" checked>
+                RAG
+            </label>
+            <label>
+                <input type="checkbox" id="useReranking" checked>
+                Reranking
+            </label>
+            <label>
+                <input type="checkbox" id="useOntology" checked>
+                Ontologie
+            </label>
+
+            <label>
+                (RAG) Nb sources:
+                <input type="number" id="numSources" value="3" min="1" max="10">
+            </label>
+
+            <label for="model-select" >Modèle de langage</label>
+            <select id="model-select" name="models" multiple>
+            <optgroup label="Mistral">
+                <option value="ministral-3b-2410">ministral-3b-2410</option>
+                <option value="ministral-8b-2410">ministral-8b-2410</option>
+                <option value="open-mistral-7b">open-mistral-7b</option>
+                <option value="open-mistral-nemo">open-mistral-nemo</option>
+                <option value="mistral-tiny">mistral-tiny</option>
+                <option value="mistral-small">mistral-small</option>
+                <option value="mistral-medium">mistral-medium</option>
+                <option value="mistral-large-2411">mistral-large-2411</option>
+            </optgroup>
+            <optgroup label="Gemini">
+                <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+            </optgroup>
+            <optgroup label="Gemma">
+                <option value="gemma-3-1b-it">gemma-3-1b-it</option>
+                <option value="gemma-3-4b-it">gemma-3-4b-it</option>
+                <option value="gemma-3-12b-it">gemma-3-12b-it</option>
+                <option value="gemma-3-27b-it">gemma-3-27b-it</option>
+            </optgroup>
+            </select>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot">
+                <div class="message-content">
+                    👋 Bonjour ! Je suis votre assistant M3C. Veuillez écrire votre requête<br><br>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Recherche en cours...</p>
+        </div>
+
+        <div class="input-container">
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Posez votre question ici..."
+                onkeypress="if(event.key==='Enter') sendQuestion()"
+            >
+            <button id="sendButton" onclick="sendQuestion()">Envoyer</button>
+        </div>
+    </div>
+
+    <div class="pdf-display" id="pdf-display">
+        <iframe>
+
+        </iframe>
+    </div>
+    </div>
+    <script>
+        const API_URL_RAG = 'http://localhost:8000/api/query/rag';
+        const API_URL_SIMPLE = 'http://localhost:8000/api/query/simple';
+        const API_URL_COMPARE = 'http://localhost:8000/api/query/compare';
+        const chatContainer = document.getElementById('chatContainer');
+        const questionInput = document.getElementById('questionInput');
+        const sendButton = document.getElementById('sendButton');
+        const loading = document.getElementById('loading');
+
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+
+            if (!question) {
+                alert('Veuillez entrer une question');
+                return;
+            }
+
+            // Ajouter le message de l'utilisateur
+            addMessage(question, 'user');
+            questionInput.value = '';
+
+            // Désactiver le bouton et afficher le loading
+            sendButton.disabled = true;
+            loading.classList.add('active');
+
+            // Récupérer les paramètres
+            const params = {
+                question: question,
+                models: Array.from(document.getElementById('model-select').selectedOptions).map(option => option.value),
+                k: parseInt(document.getElementById('numSources').value),
+                use_rag: document.getElementById("useRAG").checked,
+                use_reranking: document.getElementById('useReranking').checked,
+                use_ontology_enrichment: document.getElementById('useOntology').checked
+            };
+
+
+            if (params.models.length > 1) {
+                await compareQuery(params);
+            } else {
+                await simpleQuery(params);
+            }
+            sendButton.disabled = false;
+            loading.classList.remove('active');
+        }
+
+        async function simpleQuery(params){
+            try {
+                let route_to_fetch = params.use_rag ? API_URL_RAG : API_URL_SIMPLE;
+                const response = await fetch(route_to_fetch, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params)
+            });
+
+            // Traiter la réponse
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            addBotResponse(data);
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur lors de la communication avec le serveur. Vérifiez que l\'API est démarrée.');
+            }
+        }
+
+        async function compareQuery(params){
+            try {
+                console.log(params.models);
+
+                const response = await fetch(API_URL_COMPARE, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(params)
+                    });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                /*
+                class QueryCompareResponse(BaseModel):
+                responses: List[str, QueryResponse]
+                total_time: float = Field(..., description="Temps total de la génération")
+                metadata: Dict = Field(..., description="Métadonnées de la requête")
+                timestamp: str = Field(..., description="Horodatage de la réponse")
+                */
+                console.log(data);
+                createLLMResponsesTabs(data.responses, chatContainer);
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur lors de la communication avec le serveur. Vérifiez que l\'API est démarrée.');
+            }
+        }
+        function addMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addBotResponse(data) {
+            console.log(data);
+
+            // Créer le conteneur principal du message
+            const messageDiv = createMessageContainer('bot');
+            const contentDiv = createContentDiv();
+
+            // Créer le conteneur de réponse avec l'en-tête
+            const container = document.createElement("div");
+            container.className = "bot-response-container";
+
+            // Créer et ajouter l'en-tête de la réponse
+            const header = createResponseHeader(data);
+            container.appendChild(header);
+
+            // Ajouter le conteneur au contenu du message
+            contentDiv.appendChild(container);
+
+            // Créer et ajouter le contenu principal de la réponse (avec Markdown)
+            const content = createResponseContent(data);
+            contentDiv.appendChild(content);
+
+            // Ajouter les sources si présentes
+            if (data.sources && data.sources.length > 0) {
+                const sourcesDiv = createSourcesSection(data);
+                contentDiv.appendChild(sourcesDiv);
+            }
+
+            // Ajouter le contenu au message
+            messageDiv.appendChild(contentDiv);
+
+            // Ajouter le message au chat
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        /**
+         * Crée une zone avec les onglets, détaillant les réponses des modèles et l'ajoute directement dans
+         * le DOM.
+         * @param {Array} responses - Tableau des réponses des modèles LLM
+         * @param {HTMLElement} chatContainer - Conteneur du chat où ajouter le message
+         */
+        function createLLMResponsesTabs(responses, chatContainer) {
+            const combinedMessageDiv = createMessageContainer('bot');
+            const contentDiv = createContentDiv();
+
+            const tabContainer = createTabContainer(responses);
+            contentDiv.appendChild(tabContainer);
+
+            combinedMessageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(combinedMessageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Activer le premier onglet par défaut
+            activateFirstTab(tabContainer);
+        }
+
+        /**
+         * Crée le conteneur principal d'un message
+         * @param {string} type - Type de message ('user' ou 'bot')
+         * @returns {HTMLElement}
+         */
+        function createMessageContainer(type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            return messageDiv;
+        }
+
+        /**
+         * Crée une div pour le contenu du message
+         * @returns {HTMLElement}
+         */
+        function createContentDiv() {
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            return contentDiv;
+        }
+
+        /**
+         * Crée un conteneur d'onglets avec les réponses des modèles
+         * @param {Array} responses - Tableau des réponses des modèles
+         * @returns {HTMLElement}
+         */
+        function createTabContainer(responses) {
+            const tabContainer = document.createElement('div');
+            tabContainer.className = 'tab-container';
+
+            const tabHeader = createTabHeader(responses);
+            const tabContents = createTabContents(responses);
+
+            tabContainer.appendChild(tabHeader);
+            tabContainer.appendChild(tabContents);
+
+            return tabContainer;
+        }
+
+        /**
+         * Crée l'en-tête des onglets avec les boutons de navigation
+         * @param {Array} responses - Tableau des réponses des modèles
+         * @returns {HTMLElement}
+         */
+        function createTabHeader(responses) {
+            const tabHeader = document.createElement('div');
+            tabHeader.className = 'tab-header';
+
+            responses.forEach((response, index) => {
+                const tabButton = createTabButton(response.metadata.model, index);
+                tabHeader.appendChild(tabButton);
+            });
+
+            return tabHeader;
+        }
+
+        /**
+         * Crée un bouton d'onglet pour un modèle spécifique
+         * @param {string} modelName - Nom du modèle
+         * @param {number} index - Index de l'onglet
+         * @returns {HTMLElement}
+         */
+        function createTabButton(modelName, index) {
+            const tabButton = document.createElement('button');
+            tabButton.className = 'tab-button';
+            tabButton.textContent = modelName;
+            tabButton.dataset.tabIndex = index;
+            return tabButton;
+        }
+
+        /**
+         * Crée les contenus des onglets pour chaque modèle
+         * @param {Array} responses - Tableau des réponses des modèles
+         * @returns {HTMLElement}
+         */
+        function createTabContents(responses) {
+            const tabContents = document.createElement('div');
+
+            responses.forEach((response, index) => {
+                const tabContent = createTabContent(response);
+                tabContents.appendChild(tabContent);
+            });
+
+            return tabContents;
+        }
+
+        /**
+         * Crée le contenu d'un onglet pour une réponse spécifique
+         * @param {Object} response - Réponse d'un modèle LLM
+         * @returns {HTMLElement}
+         */
+        function createTabContent(response) {
+            const tabContent = document.createElement('div');
+            tabContent.className = 'tab-content';
+
+            const header = createResponseHeader(response);
+            const content = createResponseContent(response);
+
+            tabContent.appendChild(header);
+            tabContent.appendChild(content);
+
+            return tabContent;
+        }
+
+        /**
+         * Crée l'en-tête d'une réponse LLM
+         * @param {Object} response - Réponse d'un modèle LLM
+         * @returns {HTMLElement}
+         */
+        function createResponseHeader(response) {
+            const header = document.createElement('div');
+            header.className = 'bot-response-header';
+
+            const model = response.metadata.model;
+            const totalTime = response.total_time;
+            const inputTokens = response.metadata.token_usage.input_tokens;
+            const outputTokens = response.metadata.token_usage.output_tokens;
+
+            header.innerHTML = `
+                <strong>Modèle :</strong> ${model} |
+                <strong>Temps :</strong> ${totalTime.toFixed(2)} sec |
+                <strong>Tokens :</strong> ${inputTokens} (in) / ${outputTokens} (out)
+            `;
+
+            return header;
+        }
+
+        /**
+         * Crée le contenu principal d'une réponse LLM avec support Markdown
+         * @param {Object} response - Réponse d'un modèle LLM
+         * @returns {HTMLElement}
+         */
+        function createResponseContent(response) {
+            console.log("Création de la zone de contenu pour le modèle", response.metadata.model);
+            const content = document.createElement('div');
+            content.className = 'bot-response-content';
+
+            // Conversion du Markdown en HTML
+            const markdownContent = response.answer;
+            const htmlContent = marked.parse(markdownContent);
+            content.innerHTML = htmlContent;
+
+
+            // Ajout des sources si présentes
+            if (response.sources && response.sources.length > 0) {
+                const sourcesDiv = createSourcesSection(response);
+                content.appendChild(sourcesDiv);
+            }
+
+            return content;
+        }
+
+        /**
+         * Crée une section pour afficher les sources d'une réponse
+         * @param {Object} response - Réponse d'un modèle LLM
+         * @returns {HTMLElement}
+         */
+        function createSourcesSection(response) {
+            const sourcesDiv = document.createElement('div');
+            sourcesDiv.className = 'sources';
+            sourcesDiv.innerHTML = '<strong>📚 Sources (' + response.sources.length + ') :</strong>';
+
+            response.sources.forEach((source, index) => {
+                const sourceItem = createSourceItem(source, index);
+                sourcesDiv.appendChild(sourceItem);
+            });
+
+            return sourcesDiv;
+        }
+
+        /**
+         * Crée un élément pour une source spécifique
+         * @param {Object} source - Source individuelle
+         * @param {number} index - Index de la source
+         * @returns {HTMLElement}
+         */
+        function createSourceItem(source, index) {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'source-item';
+
+            const sourceHeader = createSourceHeader(source, index);
+            const sourceContent = createSourceContent(source);
+            const showPdfButton = createShowPdfButton(source);
+
+            sourceItem.appendChild(sourceHeader);
+            sourceItem.appendChild(sourceContent);
+            sourceItem.appendChild(showPdfButton);
+
+            return sourceItem;
+        }
+
+        /**
+         * Crée l'en-tête d'une source
+         * @param {Object} source - Source individuelle
+         * @param {number} index - Index de la source
+         * @returns {HTMLElement}
+         */
+        function createSourceHeader(source, index) {
+            const sourceHeader = document.createElement('div');
+            sourceHeader.className = 'source-header';
+
+            const docName = source.metadata.nom || source.metadata.source || 'N/A';
+            const pageNumber = source.metadata.num_page || '?';
+
+            sourceHeader.textContent = `${index + 1}. ${docName} (page ${pageNumber}) (score: ${source.score.toFixed(3)})`;
+
+            return sourceHeader;
+        }
+
+        /**
+         * Crée le contenu d'une source (extrait)
+         * @param {Object} source - Source individuelle
+         * @returns {HTMLElement}
+         */
+        function createSourceContent(source) {
+            const sourceContent = document.createElement('div');
+            sourceContent.className = 'source-content';
+
+            const preview = source.content.substring(0, 150) + '...';
+            sourceContent.textContent = preview;
+
+            return sourceContent;
+        }
+
+        /**
+         * Crée un bouton pour afficher le PDF d'une source
+         * @param {Object} source - Source individuelle
+         * @returns {HTMLElement}
+         */
+        function createShowPdfButton(source) {
+            const showPdfButton = document.createElement('button');
+            showPdfButton.className = 'show-pdf-button';
+            showPdfButton.textContent = 'Afficher le PDF';
+
+            showPdfButton.onclick = () => {
+                const fileName = source.metadata.source || source.metadata.nom;
+                if (fileName) {
+                    // Logique pour afficher le PDF (comme dans ton code original)
+                    const divIframe = document.getElementById("pdf-display");
+                    let pdfIframe = divIframe.querySelector('iframe');
+
+                    if (!pdfIframe) {
+                        pdfIframe = document.createElement('iframe');
+                        divIframe.appendChild(pdfIframe);
+                    }
+
+                    const numPage = source.metadata.num_page;
+                    const serverUrl = "http://localhost:8000";
+                    let pdfUrl = `${serverUrl}/get_pdf?source_file=${encodeURIComponent(fileName)}`;
+
+                    if (numPage !== undefined && numPage !== null) {
+                        pdfUrl += `#page=${numPage}`;
+                    }
+
+                    pdfIframe.src = pdfUrl;
+                    pdfIframe.width = '100%';
+                    pdfIframe.height = '100%';
+                    pdfIframe.style.border = 'none';
+                    divIframe.style.display = "flex";
+                } else {
+                    alert("Le nom du fichier source n'est pas disponible.");
+                }
+            };
+
+            return showPdfButton;
+        }
+
+        /**
+         * Active le premier onglet d'un conteneur d'onglets et configure les événements
+         * @param {HTMLElement} tabContainer - Conteneur d'onglets
+         */
+        function activateFirstTab(tabContainer) {
+            const tabHeader = tabContainer.querySelector('.tab-header');
+            const tabContents = tabContainer.querySelectorAll('.tab-content');
+            const tabButtons = tabHeader.querySelectorAll('.tab-button');
+
+            // Activer le premier onglet par défaut
+            tabButtons[0].classList.add('active');
+            tabContents[0].classList.add('active');
+
+            // Configurer les événements de clic pour les onglets
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Désactiver tous les onglets
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Activer l'onglet cliqué
+                    button.classList.add('active');
+                    const tabIndex = button.dataset.tabIndex;
+                    tabContents[tabIndex].classList.add('active');
+                });
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = '❌ ' + message;
+
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, chatContainer);
+
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        // Auto-focus sur l'input au chargement
+        questionInput.focus();
+    </script>
+</body>
+</html>
