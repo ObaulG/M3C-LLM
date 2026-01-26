@@ -18,7 +18,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from api_check import check_api_key_usage
 
 FAISS_DB_PATH = "faiss_index.bin"
-FAISS_DOCSTORE_PATH = "index_to_docstore_id.pkl"
+FAISS_DOCSTORE_PATH = "old/index_to_docstore_id.pkl"
 OUTPUT_CSV: str = "questions_qa"
 # voir https://admin.mistral.ai/plateforme/limits
 DEFAULT_MODEL = "mistral-small-2501"
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     index = faiss.read_index("faiss_index.bin")
 
     # Load the index_to_docstore_id mapping
-    with open("index_to_docstore_id.pkl", "rb") as f:
+    with open("old/index_to_docstore_id.pkl", "rb") as f:
         index_to_docstore_id = pickle.load(f)
 
     embedder = MistralAIEmbeddings(model="mistral-embed")

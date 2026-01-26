@@ -15,7 +15,7 @@ DB_CONFIG = {
 
 # Chemin vers les fichiers
 FAISS_INDEX_PATH = "faiss_index.bin"
-INDEX_MAPPING_PATH = "index_to_docstore_id.pkl"
+INDEX_MAPPING_PATH = "old/index_to_docstore_id.pkl"
 JSON_CHUNKS_DIR = "documents/json_chunks"
 
 # Connexion à la base de données

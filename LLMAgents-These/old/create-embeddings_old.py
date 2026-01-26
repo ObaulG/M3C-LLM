@@ -32,9 +32,9 @@ from langchain_community.vectorstores import FAISS
 
 CHUNK_SIZE_BASE = 800
 
-DOCUMENTS_PATH = "documents"
+DOCUMENTS_PATH = "../documents"
 rag_locations = ["documents/test-m3c"]
-embeddings_database_path = "embeddings"
+embeddings_database_path = "../embeddings"
 
 llm = ChatMistralAI(
     model="mistral-medium-latest",

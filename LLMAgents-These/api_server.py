@@ -15,6 +15,10 @@ import uvicorn
 from dotenv import load_dotenv
 
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
+from question_session import SessionManager, SessionResponse
+
+from agents.qa_agent import get_qa_agent
+from agents.answer_evaluator_agent import get_evaluator_agent
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -69,6 +73,9 @@ class HealthResponse(BaseModel):
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
+qa_agent = get_qa_agent()
+evaluation_agent = get_evaluator_agent()
+session_manager = SessionManager()
 
 # === GESTION DU CYCLE DE VIE ===
 
@@ -330,6 +337,132 @@ async def query_compare(request: QueryRequest):
         timestamp=str(datetime.now().isoformat()),
         total_time=time.time() - time_start,
         metadata={}
+    )
+
+@app.post("/api/sessions/init/{document_id}")
+async def init_session(document_id: str):
+    """
+    Initialise une nouvelle session pour un document donné.
+    Retourne l'ID de la session et les questions générées.
+    """
+    # Générer les questions/réponses pour le document
+    response = qa_agent.run({"message": "Génère 3 questions.", "document": document_id})
+
+    # Créer une nouvelle session
+    session_id = str(uuid.uuid4())
+    session_manager.create_session(session_id, document_id)
+    session_manager.add_questions(session_id, response.questions_answers)
+
+    return {
+        "session_id": session_id,
+        "document_id": document_id,
+        "questions": response.questions_answers,
+    }
+
+@app.post("/api/sessions/{session_id}/answer")
+async def submit_answer(
+    session_id: str,
+    question_index: int,
+    user_answer: str,
+):
+    """
+    Soumet une réponse utilisateur pour une question donnée.
+    Retourne l'évaluation de la réponse.
+    """
+    # Récupérer la session
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+
+    # Récupérer la question correspondante
+    if question_index >= len(session["questions"]):
+        raise HTTPException(status_code=400, detail="Index de question invalide")
+
+    question = session["questions"][question_index]
+    expected_answer = question.answer_text
+
+    # Évaluer la réponse
+    evaluation_input = EvaluateRequest(
+        question=question.question_text,
+        expected_answer=expected_answer,
+        user_answer=user_answer,
+    )
+    evaluation = evaluation_agent.run(evaluation_input)
+
+    # Calculer la similarité cosinus
+    cosine_sim = calculate_cosine_similarity(question.question_text, user_answer)
+
+    # Stocker la réponse
+    user_response = UserResponse(
+        question=question.question_text,
+        expected_answer=expected_answer,
+        user_answer=user_answer,
+        score=evaluation.score,
+        feedback=evaluation.feedback,
+        cosine_similarity=cosine_sim,
+        timestamp=datetime.now().isoformat(),
+    )
+    session_manager.add_response(session_id, user_response)
+
+    return {
+        "score": evaluation.score,
+        "feedback": evaluation.feedback,
+        "cosine_similarity": cosine_sim,
+    }
+
+@app.get("/api/sessions/{session_id}")
+async def get_session(session_id: str):
+    """
+    Récupère l'état actuel d'une session.
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+
+    return SessionResponse(
+        session_id=session_id,
+        document_id=session["document_id"],
+        responses=session["responses"],
+        completed=session["completed"],
+    )
+
+@app.get("/api/sessions/{session_id}/export")
+async def export_session(session_id: str):
+    """
+    Exporte les réponses d'une session au format CSV.
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+
+    # Générer le nom du fichier CSV
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"session_{session_id}_{timestamp}.csv"
+    filepath = os.path.join("exports", filename)
+
+    # Créer le dossier "exports" s'il n'existe pas
+    os.makedirs("exports", exist_ok=True)
+
+    # Écrire le CSV
+    with open(filepath, mode="w", newline="", encoding="utf-8") as csvfile:
+        fieldnames = [
+            "timestamp",
+            "question",
+            "expected_answer",
+            "user_answer",
+            "score",
+            "feedback",
+            "cosine_similarity",
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for response in session["responses"]:
+            writer.writerow(response.dict())
+
+    return JSONResponse(
+        content={"message": "Export réussi", "filename": filename},
+        headers={"Location": f"/static/exports/{filename}"},
     )
 
 @app.get("/get_pdf")

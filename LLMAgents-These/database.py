@@ -1,3 +1,5 @@
+from typing import Optional, List, Dict
+
 import psycopg
 from psycopg import Connection, AsyncConnection
 
@@ -194,18 +196,18 @@ async def save_question_to_db(
     answer: str,
     chunk_id: str,
     conn,
-    difficulty_level: int = 3,
-    theme: str = "inconnu"
+    difficulty_level: int = 3
 ) -> None:
     """Enregistre une question, sa réponse et son lien au chunk dans la base de données."""
     async with conn.cursor() as cur:
         # 1. Insérer la question
         await cur.execute("""
-            INSERT INTO questions (content, status, difficulty_level, theme, created_by, validated_by)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO questions (content, status, difficulty_level, created_by, validated_by)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING question_id
-        """, (question, "generated", difficulty_level, theme, None, None))
-        question_id = await cur.fetchone()[0]
+        """, (question, "generated", difficulty_level, None, None))
+        result = await cur.fetchone()
+        question_id = result[0]
 
         # 2. Lier la question au chunk
         await cur.execute("""
@@ -219,7 +221,180 @@ async def save_question_to_db(
             VALUES (%s, %s, %s, %s)
         """, (question_id, answer, True, None))
 
-        conn.commit()
+        await conn.commit()
+
+async def get_questions_by_document_id(
+    document_id: str,
+    conn,
+    include_answers: bool = True,
+    status_filter: Optional[str] = None,
+    difficulty_filter: Optional[int] = None,
+    theme_filter: Optional[str] = None,
+    nb_limit: Optional[int] = 0,
+) -> List[Dict]:
+    """
+    Récupère les questions associées à un document (via ses chunks).
+
+    Args:
+        document_id (str): L'identifiant du document.
+        conn (asyncpg.Connection): Connexion à la base de données.
+        include_answers (bool): Si True, inclut les réponses associées aux questions.
+        status_filter (Optional[str]): Filtre les questions par statut (ex: "generated", "validated").
+        difficulty_filter (Optional[int]): Filtre les questions par niveau de difficulté.
+        theme_filter (Optional[str]): Filtre les questions par thème.
+        nb_limit(Optional[int]): limite du nombre de questions retournées
+
+    Returns:
+        List[Dict]: Liste de dictionnaires représentant les questions et leurs réponses.
+    """
+    questions = []
+
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT chunk_id
+            FROM chunks
+            WHERE document_id = %s
+        """, (document_id,))
+        chunk_rows = await cur.fetchall()
+
+        if not chunk_rows:
+            return questions
+
+        chunk_ids = [row[0] for row in chunk_rows]
+
+        query = """
+            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by, qc.chunk_id
+            FROM question_chunks qc
+            JOIN questions q ON qc.question_id = q.question_id
+            WHERE qc.chunk_id = ANY(%s)
+        """
+        params = [chunk_ids]
+
+        if status_filter:
+            query += " AND q.status = %s"
+            params.append(status_filter)
+
+        if difficulty_filter:
+            query += " AND q.difficulty_level = %s"
+            params.append(difficulty_filter)
+
+        if theme_filter:
+            query += " AND q.theme = %s"
+            params.append(theme_filter)
+
+        if nb_limit:
+            query += " LIMIT %s"
+            params.append(nb_limit)
+
+        await cur.execute(query, params)
+        question_rows = await cur.fetchall()
+
+        # 3. Pour chaque question, récupérer les réponses si nécessaire
+        for row in question_rows:
+            question_id, content, status, difficulty_level, created_by, validated_by, chunk_id = row
+            question = {
+                "question_id": question_id,
+                "content": content,
+                "status": status,
+                "difficulty_level": difficulty_level,
+                "created_by": created_by,
+                "validated_by": validated_by,
+                "chunk_id": chunk_id,
+                "answers": []
+            }
+
+            if include_answers:
+                # Récupérer les réponses associées
+                await cur.execute("""
+                    SELECT content, is_correct, created_by
+                    FROM question_answers
+                    WHERE question_id = %s
+                """, (question_id,))
+                answer_rows = await cur.fetchall()
+
+                for answer_row in answer_rows:
+                    answer_content, is_correct, answer_created_by = answer_row
+                    question["answers"].append({
+                        "content": answer_content,
+                        "is_correct": is_correct,
+                        "created_by": answer_created_by
+                    })
+
+            questions.append(question)
+
+    return questions
+
+async def get_questions_by_chunk_id(
+    chunk_id: str,
+    conn,
+    include_answers: bool = True,
+    status_filter: Optional[str] = None
+) -> List[Dict]:
+    """
+    Récupère les questions associées à un chunk de document.
+
+    Args:
+        chunk_id (str): L'identifiant du chunk pour lequel récupérer les questions.
+        conn (asyncpg.Connection): Connexion à la base de données.
+        include_answers (bool): Si True, inclut les réponses associées aux questions.
+        status_filter (Optional[str]): Filtre les questions par statut (ex: "generated", "validated").
+
+    Returns:
+        List[Dict]: Liste de dictionnaires représentant les questions et leurs réponses.
+    """
+    questions = []
+
+    async with conn.cursor() as cur:
+        # 1. Récupérer les IDs des questions liées au chunk
+        query = """
+            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.theme, q.created_by, q.validated_by
+            FROM question_chunks qc
+            JOIN questions q ON qc.question_id = q.question_id
+            WHERE qc.chunk_id = %s
+        """
+        params = [chunk_id]
+
+        if status_filter:
+            query += " AND q.status = %s"
+            params.append(status_filter)
+
+        await cur.execute(query, params)
+        question_rows = await cur.fetchall()
+
+        # 2. Pour chaque question, récupérer les réponses si nécessaire
+        for row in question_rows:
+            question_id, content, status, difficulty_level, theme, created_by, validated_by = row
+            question = {
+                "question_id": question_id,
+                "content": content,
+                "status": status,
+                "difficulty_level": difficulty_level,
+                "theme": theme,
+                "created_by": created_by,
+                "validated_by": validated_by,
+                "answers": []
+            }
+
+            if include_answers:
+                # Récupérer les réponses associées
+                await cur.execute("""
+                    SELECT content, is_correct, created_by
+                    FROM question_answers
+                    WHERE question_id = %s
+                """, (question_id,))
+                answer_rows = await cur.fetchall()
+
+                for answer_row in answer_rows:
+                    answer_content, is_correct, answer_created_by = answer_row
+                    question["answers"].append({
+                        "content": answer_content,
+                        "is_correct": is_correct,
+                        "created_by": answer_created_by
+                    })
+
+            questions.append(question)
+
+    return questions
 # Fonction pour extraire le document_id depuis un chunk_id
 def extract_document_id(chunk_id):
     return chunk_id.split("-")[0]
