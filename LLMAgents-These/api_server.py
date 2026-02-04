@@ -1,7 +1,9 @@
 import asyncio
 import copy
+import csv
 import os
 import time
+import uuid
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -13,10 +15,11 @@ from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, Field, ConfigDict
 import uvicorn
 from dotenv import load_dotenv
+from starlette.responses import JSONResponse
 
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
-from question_session import SessionManager, SessionResponse
-
+from question_session import SessionManager, SessionResponse, EvaluateRequest, UserResponse
+from helper import calculate_cosine_similarity
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent
 
@@ -556,6 +559,8 @@ if __name__ == "__main__":
     print(f"Reload: {reload}")
     print(f"Documentation: http://localhost:{port}/docs")
     print("=" * 60 + "\n")
+
+    # https://console.groq.com/docs/rate-limits#rate-limits
 
     # Démarrer le serveur
     uvicorn.run(

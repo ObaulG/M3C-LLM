@@ -301,14 +301,8 @@ evaluation_system_prompt_generator = SystemPromptGenerator(
 )
 
 # Initialisation de l'agent d'évaluation
-evaluation_agent = AtomicAgent[EvaluateRequestInput, EvaluationResult](
-    config=AgentConfig(
-        client=client,
-        model="mistral-large-2411",
-        history=ChatHistory(),  # Historique vide pour cet agent
-        system_prompt_generator=evaluation_system_prompt_generator,
-    )
-)
+
+
 
 # Session de "médiation"
 run_interactive_session(response, evaluation_agent)

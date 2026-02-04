@@ -12,8 +12,16 @@ from agents.qa_agent import get_qa_agent, QuestionRequestInput, QuestionAnswerLi
 from database import get_db_connection, save_question_to_db, get_questions_by_document_id, get_chunks_for_document
 
 # Constantes
-DOCUMENT_ID = "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d.pdf"
+DOCUMENT_ID = "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56.pdf"
 DIFFICULTY_LEVEL = 3  # Niveau de difficulté par défaut
+
+models_evaluator = ["ministral-3b-latest",
+                    "ministral-8b-latest",
+                    "mistral-small-latest",
+                    "mistral-medium-latest",
+                    "mistral-large-2411",
+                    "mistral-large-latest"
+                    ]
 
 async def generate_and_save_questions(
     document_content: str,
@@ -65,6 +73,64 @@ async def generate_and_save_questions(
 
     return saved_questions
 
+
+async def generate_and_save_questions_multiple_models(
+        document_content: str,
+        chunk_id: str,
+        num_questions: int = 3,
+) -> List[Dict]:
+    """
+    Génère des questions/réponses à partir d'un document et les sauvegarde en base de données.
+
+    Args:
+        document_content (str): Contenu du document.
+        num_questions (int): Nombre de questions à générer.
+
+    Returns:
+        List[Dict]: Liste des questions/réponses sauvegardées.
+    """
+    # 1. Initialiser l'agent de génération de questions
+    qa_agents = [get_qa_agent(model=model) for model in models_evaluator]
+
+    # 2. Générer les questions/réponses
+    input_schema = QuestionRequestInput(
+        message=f"Génère {num_questions} questions diversifiées sur le document.",
+        document=document_content
+    )
+    print("schema")
+    tasks = [asyncio.to_thread(agent.run,input_schema) for agent in qa_agents]
+    print("tasks")
+    responses = await asyncio.gather(*tasks, return_exceptions=True)
+    print("responses")
+    # 3. Sauvegarder les questions/réponses en base de données
+    saved_questions = []
+    for i, response in enumerate(responses):
+        if not isinstance(response, QuestionAnswerList):
+            continue
+
+        for qa in response.questions_answers:
+            try:
+                await save_question_to_db(
+                    question=qa.question_text,
+                    answer=qa.answer_text,
+                    chunk_id=chunk_id,
+                    conn=await get_db_connection(),
+                    difficulty_level=DIFFICULTY_LEVEL,
+                    model=models_evaluator[i],
+                )
+                saved_questions.append({
+                    "question": qa.question_text,
+                    "answer": qa.answer_text,
+                    "status": "generated",
+                    "difficulty_level": DIFFICULTY_LEVEL,
+                    "model": models_evaluator[i],
+                })
+                logger.info(f"Question sauvegardée: [{models_evaluator[i]}] {qa.question_text}")
+            except Exception as e:
+                logger.error(f"Erreur lors de la sauvegarde de la question: {e}")
+
+    return saved_questions
+
 async def fetch_questions_from_document(
     document_id: str,
     conn,
@@ -104,7 +170,7 @@ async def main():
         logger.info(f"{len(chunks)}Chunks reçus")
         logger.info("Génération des questions/réponses...")
         for chunk in chunks:
-            saved_questions = await generate_and_save_questions(
+            saved_questions = await generate_and_save_questions_multiple_models(
                 document_content=chunk[1],
                 chunk_id=chunk[0],
                 num_questions=3)

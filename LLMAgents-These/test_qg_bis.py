@@ -2,7 +2,7 @@ import json
 import os
 import re
 import psycopg2
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_mistralai import ChatMistralAI

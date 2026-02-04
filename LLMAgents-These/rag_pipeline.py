@@ -1,15 +1,12 @@
 import os
 import time
-from typing import Union, Dict, Optional, List, Tuple, Any, Literal
+from typing import Dict, Optional, List, Literal
 
-import psycopg
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
-from langchain_google_genai import GoogleGenerativeAI, \
-    ChatGoogleGenerativeAI  # Exemple pour Gemini (à installer si nécessaire)
+from langchain_google_genai import ChatGoogleGenerativeAI  # Exemple pour Gemini (à installer si nécessaire)
 from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
 from pydantic import BaseModel, Field
-from langchain_core.prompts import ChatPromptTemplate
 import rank_bm25
 import database
 

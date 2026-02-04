@@ -37,7 +37,7 @@ CREATE TABLE question_chunks (
     PRIMARY KEY (question_id, chunk_id)
 );
 
-
+--Réponses de référence pour les questions
 CREATE TABLE question_answers (
     answer_id SERIAL PRIMARY KEY,
     question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
@@ -46,6 +46,7 @@ CREATE TABLE question_answers (
     created_by INT REFERENCES users(user_id),  -- Qui a fourni la réponse
     created_at TIMESTAMP DEFAULT NOW()
 );
+
 
 
 CREATE INDEX idx_questions_status ON questions(status);

@@ -1,4 +1,6 @@
 # agents/qa_agent.py
+from typing import Optional
+
 import instructor
 import mistralai
 from atomic_agents import AtomicAgent, AgentConfig, BaseIOSchema

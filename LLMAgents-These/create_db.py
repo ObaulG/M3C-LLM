@@ -1,5 +1,3 @@
-from sqlite3 import OperationalError
-import traceback
 import psycopg
 
 # Configuration de la connexion

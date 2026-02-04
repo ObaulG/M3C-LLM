@@ -3,7 +3,6 @@ import logging
 from typing import List, Dict, Optional
 
 # Import des fonctions existantes (à adapter selon ton projet)
-from agents.qa_agent import get_qa_agent, QuestionRequestInput, QuestionAnswerList
 from database import get_db_connection, save_question_to_db, get_questions_by_document_id, get_chunks_for_document
 
 # Configuration du logging

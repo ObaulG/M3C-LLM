@@ -137,6 +137,24 @@ async def insert_embedding_model(conn, model_name, description, dimension):
             print(f"Erreur lors de l'insertion du modèle {model_name}: {e}")
             return False
 
+async def get_question_by_id(question_id, conn):
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
+            FROM questions q
+            WHERE q.question_id = %s
+        """, (question_id,))
+        result = await cur.fetchone()
+        if result is not None:
+            return {
+                "question_id": result[0],
+                "content": result[1],
+                "status": result[2],
+                "difficulty_level": result[3],
+                "created_by": result[4],
+                "validated_by": result[5],
+            }
+        return None
 async def get_chunks_for_document(document_id: str, conn):
     """Récupère tous les chunks d'un document depuis la base de données."""
     async with conn.cursor() as cur:
@@ -146,6 +164,22 @@ async def get_chunks_for_document(document_id: str, conn):
             WHERE document_id = %s
         """, (document_id,))
         return await cur.fetchall()
+
+async def get_chunks_by_question_id(question_id: int, conn):
+    """
+    Récupère les chunks associés à une question via la table question_chunks.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT c.chunk_id, c.content, c.num_page, c.position_in_page
+            FROM chunks c
+            JOIN question_chunks qc ON c.chunk_id = qc.chunk_id
+            WHERE qc.question_id = %s""", (question_id,))
+        rows = await cur.fetchall()
+        return [{"chunk_id": row[0],
+                 "content": row[1],
+                 "num_page": row[2],
+                 "position_in_page": row[3]} for row in rows]  # Convertit chaque ligne en dictionnaire
 
 async def get_top_k_similar_chunks(conn, embedding: list[float], model_name: str, k=3):
     """
@@ -196,7 +230,8 @@ async def save_question_to_db(
     answer: str,
     chunk_id: str,
     conn,
-    difficulty_level: int = 3
+    difficulty_level: int = 3,
+    model: str = '',
 ) -> None:
     """Enregistre une question, sa réponse et son lien au chunk dans la base de données."""
     async with conn.cursor() as cur:
@@ -347,7 +382,7 @@ async def get_questions_by_chunk_id(
     async with conn.cursor() as cur:
         # 1. Récupérer les IDs des questions liées au chunk
         query = """
-            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.theme, q.created_by, q.validated_by
+            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
             FROM question_chunks qc
             JOIN questions q ON qc.question_id = q.question_id
             WHERE qc.chunk_id = %s
@@ -363,13 +398,12 @@ async def get_questions_by_chunk_id(
 
         # 2. Pour chaque question, récupérer les réponses si nécessaire
         for row in question_rows:
-            question_id, content, status, difficulty_level, theme, created_by, validated_by = row
+            question_id, content, status, difficulty_level, created_by, validated_by = row
             question = {
                 "question_id": question_id,
                 "content": content,
                 "status": status,
                 "difficulty_level": difficulty_level,
-                "theme": theme,
                 "created_by": created_by,
                 "validated_by": validated_by,
                 "answers": []
@@ -395,6 +429,70 @@ async def get_questions_by_chunk_id(
             questions.append(question)
 
     return questions
+
+async def delete_questions_for_pages_1_to_12(
+    conn,
+    document_id: Optional[str] = None,
+    dry_run: bool = False
+) -> List[int]:
+    """
+    Supprime les questions associées aux pages 1 à 12 (sommaire) d'un document.
+    Si `document_id` est fourni, ne supprime que pour ce document.
+    Si `dry_run` est True, retourne uniquement les IDs des questions à supprimer sans les supprimer.
+
+    Args:
+        conn (asyncpg.Connection): Connexion à la base de données.
+        document_id (Optional[str]): ID du document (optionnel, pour filtrer par document).
+        dry_run (bool): Si True, ne supprime pas, retourne juste les IDs des questions concernées.
+
+    Returns:
+        List[int]: Liste des IDs des questions supprimées (ou à supprimer en mode dry_run).
+    """
+    deleted_question_ids = []
+
+    async with conn.cursor() as cur:
+        # 1. Récupérer les chunk_id des pages 1 à 12
+        query = """
+            SELECT chunk_id
+            FROM chunks
+            WHERE num_page BETWEEN 1 AND 12
+        """
+        params = []
+        if document_id:
+            query += " AND document_id = %s"
+            params.append(document_id)
+
+        await cur.execute(query, params)
+        chunk_rows = await cur.fetchall()
+
+        if not chunk_rows:
+            return deleted_question_ids
+
+        chunk_ids = [row[0] for row in chunk_rows]
+
+        # 2. Récupérer les question_id associées à ces chunk_ids
+        await cur.execute("""
+            SELECT DISTINCT q.question_id
+            FROM question_chunks qc
+            JOIN questions q ON qc.question_id = q.question_id
+            WHERE qc.chunk_id = ANY(%s)
+        """, (chunk_ids,))
+
+        question_rows = await cur.fetchall()
+        question_ids_to_delete = [row[0] for row in question_rows]
+        print(question_ids_to_delete)
+        if dry_run:
+            return question_ids_to_delete
+
+        # 3. Supprimer les questions
+        for question_id in question_ids_to_delete:
+            await cur.execute("""
+                DELETE FROM questions
+                WHERE question_id = %s
+            """, (question_id,))
+            deleted_question_ids.append(question_id)
+            print(f"question {question_id} was deleted")
+    return deleted_question_ids
 # Fonction pour extraire le document_id depuis un chunk_id
 def extract_document_id(chunk_id):
     return chunk_id.split("-")[0]

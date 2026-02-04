@@ -5,12 +5,12 @@ from typing import List, Optional
 
 from .qa_agent import get_qa_agent
 
-from mistral_client import get_mistral_client
+from .mistral_client import get_mistral_client
 
 from pydantic import BaseModel
 from typing import List, Optional
 
-from ..database import get_questions_by_document_id
+from database.database import get_questions_by_document_id
 
 class QuestionSelectionInput(BaseModel):
     """
