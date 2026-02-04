@@ -291,6 +291,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             list: Liste des k chunks les plus pertinents (avec leurs scores et métadonnées).
         """
         print("rag_preprocess")
+
         try:
             # 1. Transforme le prompt en embeddings
             prompt_embeddings = self._get_prompt_embeddings(prompt)

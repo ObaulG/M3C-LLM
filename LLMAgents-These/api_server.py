@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from langchain_core.messages import BaseMessage
 
 from pydantic import BaseModel, Field, ConfigDict
-import uvicorn
+
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
@@ -22,6 +22,13 @@ from question_session import SessionManager, SessionResponse, EvaluateRequest, U
 from helper import calculate_cosine_similarity
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent
+
+import asyncio
+if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+import uvicorn
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -94,9 +101,8 @@ async def lifespan(app: FastAPI):
 
 # === APPLICATION FASTAPI ===
 
-# Psycopg cannot use the 'ProactorEventLoop' to run in async mode. Please use a compatible event loop,
-# for instance by running 'asyncio.run(..., loop_factory=asyncio.SelectorEventLoop(selectors.SelectSelector()))'
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 app = FastAPI(
     title="API Chatbot RAG M3C v0.1",
     description="API REST pour interroger le système RAG sur un corpus de documents extraits de la M3C",
@@ -303,7 +309,8 @@ async def query_compare(request: QueryRequest):
     Note: can be done with or without RAG
     """
     time_start = time.time()
-
+    print("Event loop policy:", asyncio.get_event_loop_policy())
+    print("Event loop type:", type(asyncio.get_event_loop()))
     final_prompt, best_documents, scores = request.question, None, None
     if request.use_rag:
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(request.question,
@@ -312,7 +319,7 @@ async def query_compare(request: QueryRequest):
     # we keep the query_simple function to get the answer
     tasks = [
         rag_pipeline.query_simple(
-            question=final_prompt,
+            prompt=final_prompt,
             model=model,
             k=request.k,
         ) for model in request.models
@@ -478,6 +485,9 @@ async def get_pdf(source_file: str):
 
 
 async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
+    print("_rag_preprocess")
+    print("Event loop policy:", asyncio.get_event_loop_policy())
+    print("Event loop type:", type(asyncio.get_event_loop()))
     final_prompt, best_documents = request.question, None, None
     if request.use_rag:
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(request.question,
@@ -549,7 +559,7 @@ if __name__ == "__main__":
     # Configuration du serveur
     host = os.getenv("API_HOST", "0.0.0.0")  # 0.0.0.0 pour accepter les connexions externes
     port = int(os.getenv("API_PORT", "8000"))
-    reload = os.getenv("API_RELOAD", "false").lower() == "true"
+    reload = True
 
     print("\n" + "=" * 60)
     print("DÉMARRAGE DU SERVEUR API")
@@ -559,14 +569,17 @@ if __name__ == "__main__":
     print(f"Reload: {reload}")
     print(f"Documentation: http://localhost:{port}/docs")
     print("=" * 60 + "\n")
+    print("Setting the asyncio event_loop_policy to asyncio.WindowsSelectorEventLoopPolicy")
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    print("Event loop policy:", asyncio.get_event_loop_policy())
+    print("Event loop type:", type(asyncio.get_event_loop()))
+    print("=" * 60 + "\n")
 
-    # https://console.groq.com/docs/rate-limits#rate-limits
-
-    # Démarrer le serveur
     uvicorn.run(
         "api_server:app",
         host=host,
         port=port,
         reload=reload,
-        log_level="info"
+        log_level="info",
+        loop="asyncio"
     )
