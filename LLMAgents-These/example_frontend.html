@@ -463,8 +463,14 @@
 
             const docName = source.metadata.nom || source.metadata.source || 'N/A';
             const pageNumber = source.metadata.num_page || '?';
+            
+            // Extract document title from document_data if available
+            let documentTitle = 'N/A';
+            if (source.metadata.document_data && source.metadata.document_data.file_name) {
+                documentTitle = source.metadata.document_data.file_name;
+            }
 
-            sourceHeader.textContent = `${index + 1}. ${docName} (page ${pageNumber}) (score: ${source.score.toFixed(3)})`;
+            sourceHeader.textContent = `${index + 1}. ${documentTitle} (page ${pageNumber}) (score: ${source.score.toFixed(3)})`;
 
             return sourceHeader;
         }
@@ -495,7 +501,9 @@
             showPdfButton.textContent = 'Afficher le PDF';
 
             showPdfButton.onclick = () => {
-                const fileName = source.metadata.source || source.metadata.nom;
+                // Try to get file name from document_data first, then fallback to existing metadata
+                const fileName = source.metadata.document_data?.file_name || 
+                                source.metadata.source || source.metadata.nom;
                 if (fileName) {
                     // Logique pour afficher le PDF (comme dans ton code original)
                     const divIframe = document.getElementById("pdf-display");

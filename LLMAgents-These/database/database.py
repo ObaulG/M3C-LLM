@@ -430,6 +430,42 @@ async def get_questions_by_chunk_id(
 
     return questions
 
+async def get_document_data_from_chunk_id(chunk_id: str, conn) -> Optional[Dict]:
+    """
+    Récupère les données d'un document à partir d'un chunk_id.
+
+    Args:
+        chunk_id (str): L'identifiant du chunk.
+        conn: Connexion à la base de données.
+
+    Returns:
+        Optional[Dict]: Dictionnaire contenant les données du document, ou None si non trouvé.
+    """
+    async with conn.cursor() as cur:
+        # Extraire le document_id du chunk_id
+        document_id = extract_document_id(chunk_id)
+        
+        # Récupérer les données du document
+        await cur.execute("""
+            SELECT document_id, file_name, file_path, file_size, created_at, updated_at
+            FROM documents
+            WHERE document_id = %s
+        """, (document_id,))
+        
+        result = await cur.fetchone()
+        
+        if result:
+            return {
+                "document_id": result[0],
+                "file_name": result[1],
+                "file_path": result[2],
+                "file_size": result[3],
+                "created_at": result[4],
+                "updated_at": result[5]
+            }
+        
+        return None
+
 async def delete_questions_for_pages_1_to_12(
     conn,
     document_id: Optional[str] = None,

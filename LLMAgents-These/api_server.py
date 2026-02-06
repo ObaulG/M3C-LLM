@@ -309,13 +309,11 @@ async def query_compare(request: QueryRequest):
     Note: can be done with or without RAG
     """
     time_start = time.time()
-    print("Event loop policy:", asyncio.get_event_loop_policy())
-    print("Event loop type:", type(asyncio.get_event_loop()))
     final_prompt, best_documents, scores = request.question, None, None
     if request.use_rag:
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(request.question,
-                                                                request.use_reranking,
-                                                                           request.k)
+                                                               request.use_reranking,
+                                                                         request.k)
     # we keep the query_simple function to get the answer
     tasks = [
         rag_pipeline.query_simple(
@@ -486,8 +484,6 @@ async def get_pdf(source_file: str):
 
 async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
     print("_rag_preprocess")
-    print("Event loop policy:", asyncio.get_event_loop_policy())
-    print("Event loop type:", type(asyncio.get_event_loop()))
     final_prompt, best_documents = request.question, None, None
     if request.use_rag:
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(request.question,

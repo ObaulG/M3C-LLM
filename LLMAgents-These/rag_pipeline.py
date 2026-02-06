@@ -185,35 +185,41 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         print("retrieve_top_k_chunks_from_db")
         aconn = await database.get_db_connection()
         print(aconn)
-        async with aconn:
+        try:
             results = await database.get_top_k_similar_chunks(aconn,
                                                               embedding=prompt_embeddings,
                                                               model_name=self.embedder_name,
                                                               k=k)
-        await aconn.close()
 
-        rag_sources = []
-        for row in results:
-            metadata = {
-                "chunk_id": row["chunk_id"],
-                "document_id": row["document_id"],
-                "num_page": row["num_page"],
-                "position_in_page": row["position_in_page"],
-                "token_count": row["token_count"],
-                # Ajouter d'autres métadonnées si nécessaire
-            }
-            # Fusionner les métadonnées existantes (JSON) avec les métadonnées extraites
-            if row["metadata"]:
-                metadata.update(row["metadata"])
+            rag_sources = []
+            for row in results:
+                metadata = {
+                    "chunk_id": row["chunk_id"],
+                    "document_id": row["document_id"],
+                    "num_page": row["num_page"],
+                    "position_in_page": row["position_in_page"],
+                    "token_count": row["token_count"],
+                    # Ajouter d'autres métadonnées si nécessaire
+                }
+                # Fusionner les métadonnées existantes (JSON) avec les métadonnées extraites
+                if row["metadata"]:
+                    metadata.update(row["metadata"])
 
-            rag_source = RAGSource(
-                content=row["content"],
-                score=row["similarity"],
-                metadata=metadata
-            )
-            rag_sources.append(rag_source)
+                # Ajouter les données du document aux métadonnées
+                document_data = await database.get_document_data_from_chunk_id(row["chunk_id"], aconn)
+                if document_data:
+                    metadata["document_data"] = document_data
 
-        return rag_sources
+                rag_source = RAGSource(
+                    content=row["content"],
+                    score=row["similarity"],
+                    metadata=metadata
+                )
+                rag_sources.append(rag_source)
+
+            return rag_sources
+        finally:
+            await aconn.close()
 
     def _build_augmented_prompt(self, initial_prompt: str, sources: List[RAGSource]) -> str:
         chunk_lines = [f"[Document {i}] : {sources[i].content}" for i in range(len(sources))]
