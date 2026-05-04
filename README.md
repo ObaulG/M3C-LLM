@@ -170,7 +170,7 @@ API_PORT=8000
 ### Installation des Dépendances
 
 ```bash
-# Depuis le dossier LLMAgents-These
+# Depuis le dossier app
 pip install -r requirements.txt
 ```
 
@@ -853,7 +853,7 @@ python scripts/create_embeddings.py
 #### 3. Lancer le Serveur
 
 ```bash
-# Depuis LLMAgents-These/
+# Depuis app/
 uvicorn api_server:app --reload --port 8000
 
 # Ou avec les variables d'environnement
@@ -869,7 +869,7 @@ MISTRAL_API_KEY=votre_cle uvicorn api_server:app --host 0.0.0.0 --port 8000
 #### 5. Servir le Frontend (Option 1 : Simple)
 
 ```bash
-# Depuis LLMAgents-These/static
+# Depuis app/static
 python -m http.server 8001
 # Accéder à http://localhost:8001/pdf_chat_interface.html
 ```
