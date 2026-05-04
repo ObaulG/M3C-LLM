@@ -682,9 +682,11 @@ async def export_session(session_id: str):
 @app.get("/get_pdf")
 async def get_pdf(document_id: str):
 
+    document_id = document_id.replace(".pdf", "")
     # note: pour l'instant, l'id du document est également son nom dans le dossier
     file_path = f"C:/Users/xenyi/Documents/Ressources-Pro/Thèse/M3C-documents/{document_id}.pdf"
     if not os.path.exists(file_path):
+        print("file not found...")
         raise HTTPException(status_code=404, detail="Fichier non trouvé")
 
     return FileResponse(file_path, media_type="application/pdf")
