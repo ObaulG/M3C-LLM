@@ -34,3 +34,5 @@ tiktoken==0.9.0
 torch==2.9.1+cu130
 transformers==5.1.0
 uvicorn==0.44.0
+
+opentsne

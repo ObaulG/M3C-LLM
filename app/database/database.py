@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 import psycopg
 from psycopg import Connection, AsyncConnection
@@ -716,6 +716,70 @@ async def delete_questions_for_pages_1_to_12(
             deleted_question_ids.append(question_id)
             print(f"question {question_id} was deleted")
     return deleted_question_ids
+
+async def get_chunk_embeddings_with_metadata(
+    conn,
+    document_id: Optional[str] = None,
+    limit: Optional[int] = None,
+    with_text_content: Optional[bool] = False,
+    model_name: str = "mistral-embed"
+) -> List[Dict[str, Any]]:
+    """
+    Récupère les chunks avec leurs embeddings et métadonnées.
+    
+    Args:
+        conn: Connexion à la base de données PostgreSQL
+        document_id: Filtre optionnel par document ID
+        limit: Limite optionnelle du nombre de résultats
+        model_name: Nom du modèle d'embedding à utiliser
+    
+    Returns:
+        Liste de dictionnaires contenant chunk_id, document_id, content, embedding, 
+        num_page, position_in_page, token_count, metadata
+    """
+    async with conn.cursor() as cur:
+        # Build the query to fetch chunks with their embeddings
+        query = f"""
+            SELECT 
+                c.chunk_id,
+                c.document_id,
+                {"c.content," if with_text_content else ""}
+                c.num_page,
+                c.position_in_page,
+                c.token_count,
+                c.metadata,
+                ce.embedding
+            FROM chunks c
+            JOIN chunk_embeddings ce ON c.chunk_id = ce.chunk_id
+            WHERE ce.model_name = %s
+        """
+        params = [model_name]
+        
+        if document_id is not None:
+            query += " AND c.document_id = %s"
+            params.append(document_id)
+        
+        query += " ORDER BY c.document_id, c.num_page, c.position_in_page"
+        
+        if limit is not None:
+            query += " LIMIT %s"
+            params.append(limit)
+        
+        await cur.execute(query, params)
+        rows = await cur.fetchall()
+        
+        # Get column names
+        column_names = [desc[0] for desc in cur.description]
+        
+        # Convert rows to list of dicts
+        results = []
+        for row in rows:
+            row_dict = dict(zip(column_names, row))
+            results.append(row_dict)
+
+        return results
+
+
 # Fonction pour extraire le document_id depuis un chunk_id
 def extract_document_id(chunk_id):
     return chunk_id.split("-")[0]

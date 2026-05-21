@@ -1,4 +1,5 @@
-interaction_id,timestamp,question,answer,model,k,use_reranking,total_time,consumed_energy_Wh,num_sources,document_id
+interaction_id,timestamp,question,answer,model,k,use_reranking,total_time,consumed_energy_Wh,num_sources,document_id
+
 6fc5eb88-4596-40e8-84b6-7a928de8fa2b,2026-05-19T15:35:51.649174,Liens politiques entre clans et mafia ?,"Les extraits de documents révèlent des **liens étroits entre les clans politiques, le système clientéliste et les organisations mafieuses en Corse**, bien que les dynamiques diffèrent de celles de la mafia sicilienne. Voici une synthèse structurée :
 
 ---
@@ -45,5 +46,7 @@ Les liens entre **clans politiques et mafia** en Corse reposent sur :
 2. Des **collaborations ponctuelles** entre nationalistes et banditisme, notamment via des mécanismes financiers ([Document 2]).
 3. Une **infiltration des institutions** (assassinats de figures économiques, trafics) dans un contexte de **fragmentation des réseaux** ([Document 0]).
 
-Ces dynamiques diffèrent de la mafia sicilienne par leur **absence de structure unifiée**, mais leur **impact sur la société** (corruption, violences) est tout aussi profond.",mistral-medium,3,False,18.80589246749878,0.0,3,8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56
-9ee7e53e-c093-47ff-93f8-96bc22a110d2,2026-05-19T15:36:01.369103,Quels sont les autres sports pratiqués ?,Je n'ai pas assez d'informations pour répondre à cette question (les extraits de documents ne mentionnent pas les sports pratiqués en Corse).,mistral-medium,3,False,1.0219600200653076,0.0,3,8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56
+Ces dynamiques diffèrent de la mafia sicilienne par leur **absence de structure unifiée**, mais leur **impact sur la société** (corruption, violences) est tout aussi profond.",mistral-medium,3,False,18.80589246749878,0.0,3,8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56
+
+9ee7e53e-c093-47ff-93f8-96bc22a110d2,2026-05-19T15:36:01.369103,Quels sont les autres sports pratiqués ?,Je n'ai pas assez d'informations pour répondre à cette question (les extraits de documents ne mentionnent pas les sports pratiqués en Corse).,mistral-medium,3,False,1.0219600200653076,0.0,3,8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56
+

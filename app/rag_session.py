@@ -50,6 +50,14 @@ class RAGInteraction(BaseModel):
         default=None, 
         description="Métadonnées supplémentaires (use_rag, include_quantitative, etc.)"
     )
+    question_embedding: Optional[List[float]] = Field(
+        default=None, 
+        description="Embedding vectoriel de la question"
+    )
+    answer_embedding: Optional[List[float]] = Field(
+        default=None, 
+        description="Embedding vectoriel de la réponse"
+    )
 
 
 class RAGSession(BaseModel):

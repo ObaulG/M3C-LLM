@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Visualization - t-SNE Projection</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="rag_visualization.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RAG Embeddings Visualization</h1>
+            <p>Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE</p>
+        </header>
+
+        <main>
+            <section class="controls">
+                <div class="control-group">
+                    <h2>Documents</h2>
+                    <div class="form-group">
+                        <label for="document-select">Sélectionner un document:</label>
+                        <select id="document-select" class="form-control">
+                            <option value="">-- Tous les documents --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="limit-input">Limite de chunks:</label>
+                        <input type="number" id="limit-input" class="form-control" value="200" min="10" max="1000">
+                    </div>
+                    <button id="load-btn" class="btn btn-primary">Charger les embeddings</button>
+                </div>
+
+                <div class="control-group">
+                    <h2>Paramètres t-SNE</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="perplexity-input">Perplexity:</label>
+                            <input type="number" id="perplexity-input" class="form-control" value="30" min="5" max="50" step="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="learning-rate-input">Learning Rate:</label>
+                            <input type="number" id="learning-rate-input" class="form-control" value="200" min="10" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="iterations-input">Iterations:</label>
+                            <input type="number" id="iterations-input" class="form-control" value="1000" min="250" max="5000">
+                        </div>
+                    </div>
+                    <button id="compute-tsne-btn" class="btn btn-secondary" disabled>Calculer t-SNE</button>
+                    <button id="reset-view-btn" class="btn btn-tertiary">Réinitialiser la vue</button>
+                </div>
+
+                <div class="control-group">
+                    <h2>Filtrage</h2>
+                    <div class="form-group">
+                        <label for="page-filter">Filtrer par page:</label>
+                        <input type="text" id="page-filter" class="form-control" placeholder="ex: 1, 5-10">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="show-query-toggle" checked> 
+                            Afficher les requêtes
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="status-bar" id="status-bar">
+                <span id="status-text">Prêt</span>
+                <span id="progress-text"></span>
+            </section>
+
+            <section class="visualization-container">
+                <div id="plot-container"></div>
+            </section>
+
+            <section class="info-panel" id="info-panel">
+                <h3>Informations</h3>
+                <div id="info-content"></div>
+                <button id="close-info-btn" class="btn-close">×</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>API Status: <span id="api-status">Connecting...</span></p>
+        </footer>
+    </div>
+
+    <script src="rag_visualization.js"></script>
+</body>
+</html>
