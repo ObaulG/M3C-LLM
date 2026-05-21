@@ -643,6 +643,7 @@ async def compare_multiple_queries(request: MultipleQueriesComparisonRequest):
     Returns:
         MultipleQueriesComparisonResponse with similarity matrix
     """
+    print("compare_multiple_queries")
     try:
         if not request.queries:
             raise HTTPException(
@@ -721,6 +722,7 @@ async def get_visualization_data(
     Returns:
         VisualizationDataResponse with all data needed for visualization
     """
+
     try:
         conn = await get_db_connection()
         chunks_data = await get_chunk_embeddings_with_metadata(

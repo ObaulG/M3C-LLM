@@ -215,9 +215,8 @@ def initialize_rag():
     try:
         # Initialiser le pipeline RAG v3
         rag_pipeline = RAGPipeline(load_local=False)
-        print("\n" + "=" * 60)
-        print("SystÃ¨me RAG simple initialisÃ©")
-        print("=" * 60 + "\n")
+        # for api_visualization
+        set_rag_pipeline(rag_pipeline)
         return True
     except Exception as e:
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")

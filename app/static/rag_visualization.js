@@ -18,6 +18,8 @@ let state = {
     documents: [],           // List of available documents
     chunks: [],              // Loaded chunk data with embeddings
     queries: [],             // Query data (if available)
+    userQueries: [],         // Liste des requêtes utilisateur
+    queryEmbeddings: [],    // Embeddings des requêtes utilisateur
     projectedData: null,     // t-SNE projected coordinates
     selectedDocument: null,  // Currently selected document filter
     plot: null,              // Plotly plot reference
@@ -45,6 +47,9 @@ function initialize() {
     
     // Initialize plot
     initializePlot();
+    
+    // Initialiser avec un champ de requête vide
+    addQueryInput();
     
     updateStatus('Prêt');
 }
@@ -76,10 +81,261 @@ function bindEvents() {
         document.getElementById('info-panel').classList.remove('visible');
     });
     
+    // Boutons requêtes utilisateur
+    document.getElementById('add-query-btn').addEventListener('click', () => addQueryInput());
+    document.getElementById('generate-embeddings-btn').addEventListener('click', generateAllQueryEmbeddings);
+    document.getElementById('clear-queries-btn').addEventListener('click', clearAllQueries);
+    
     // Parameter inputs
     ['perplexity-input', 'learning-rate-input', 'iterations-input', 'limit-input'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateComputeButton);
     });
+}
+
+// ============================================================================
+// QUERY INPUT MANAGEMENT FUNCTIONS
+// ============================================================================
+
+function addQueryInput(index = null) {
+    const container = document.getElementById('queries-container');
+    const queryIndex = index !== null ? index : state.userQueries.length;
+    
+    const queryGroup = document.createElement('div');
+    queryGroup.className = 'query-input-group';
+    queryGroup.dataset.index = queryIndex;
+    
+    queryGroup.innerHTML = `
+        <div class="form-group">
+            <label for="query-${queryIndex}">Requête ${queryIndex + 1}:</label>
+            <div class="query-input-row">
+                <textarea id="query-${queryIndex}" class="form-control query-textarea" 
+                          placeholder="Entrez votre requête ici..." rows="2"></textarea>
+                <button class="btn btn-close remove-query-btn" data-index="${queryIndex}" title="Supprimer">×</button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(queryGroup);
+    
+    queryGroup.querySelector('.remove-query-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(e.target.dataset.index);
+        removeQueryInput(idx);
+    });
+    
+    if (state.userQueries.length <= queryIndex) {
+        state.userQueries[queryIndex] = '';
+    }
+}
+
+function removeQueryInput(index) {
+    const container = document.getElementById('queries-container');
+    const queryGroup = container.querySelector(`[data-index="${index}"]`);
+    if (queryGroup) {
+        queryGroup.remove();
+    }
+    
+    state.userQueries.splice(index, 1);
+    state.queryEmbeddings.splice(index, 1);
+    rebuildQueryInputs();
+}
+
+function rebuildQueryInputs() {
+    const container = document.getElementById('queries-container');
+    container.innerHTML = '';
+    state.userQueries.forEach((text, idx) => {
+        addQueryInput(idx);
+        const textarea = container.querySelector(`#query-${idx}`);
+        if (textarea) textarea.value = text;
+    });
+}
+
+function clearAllQueries() {
+    state.userQueries = [];
+    state.queryEmbeddings = [];
+    document.getElementById('queries-container').innerHTML = '';
+    document.getElementById('queries-status').textContent = '';
+    state.queries = [];
+    if (state.projectedData) {
+        renderPlot();
+    }
+    addQueryInput();
+}
+
+function updateQueriesStatus(text, isError = false) {
+    const statusEl = document.getElementById('queries-status');
+    statusEl.textContent = text;
+    statusEl.style.color = isError ? '#dc3545' : '#667eea';
+}
+
+async function generateAllQueryEmbeddings() {
+    const container = document.getElementById('queries-container');
+    const textareas = container.querySelectorAll('.query-textarea');
+    
+    const queries = Array.from(textareas).map(ta => ta.value.trim()).filter(q => q !== '');
+    
+    if (queries.length === 0) {
+        updateQueriesStatus('Veuillez entrer au moins une requête', true);
+        return;
+    }
+    
+    updateQueriesStatus(`Génération des embeddings pour ${queries.length} requêtes...`);
+    setLoading(true);
+    
+    try {
+        const requestBody = {
+            queries: queries,
+            session_id: null,
+            document_id: state.selectedDocument || null
+        };
+        
+        const response = await fetch(`${API_BASE}/compare-multiple-queries`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        state.userQueries = queries;
+        state.queryEmbeddings = data.query_embeddings;
+        
+        state.queries = data.query_embeddings.map((embedding, idx) => ({
+            query_id: data.query_ids[idx],
+            text: queries[idx],
+            embedding: embedding,
+            timestamp: new Date().toISOString(),
+            model: data.model || 'mistral-embed'
+        }));
+        
+        if (state.projectedData && state.chunks.length > 0) {
+            await projectQueriesWithTSNE();
+        } else if (state.queries.length > 0) {
+            await projectQueriesOnly();
+        }
+        
+        updateQueriesStatus(`${queries.length} embeddings générés avec succès`);
+        renderPlot();
+        
+    } catch (error) {
+        console.error('Error generating embeddings:', error);
+        updateQueriesStatus('Erreur: ' + error.message, true);
+    } finally {
+        setLoading(false);
+    }
+}
+
+async function projectQueriesWithTSNE() {
+    if (!state.projectedData || state.queryEmbeddings.length === 0) {
+        return;
+    }
+    
+    const allEmbeddings = [
+        ...state.chunks.map(c => c.embedding),
+        ...state.queryEmbeddings
+    ];
+    
+    const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
+    const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
+    const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+    
+    const requestBody = {
+        embeddings: allEmbeddings,
+        n_components: 2,
+        perplexity: perplexity,
+        learning_rate: learningRate,
+        n_iter: iterations,
+        random_state: 42
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE}/visualization/tsne`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const numChunks = state.chunks.length;
+        
+        for (let i = 0; i < numChunks; i++) {
+            state.chunks[i].x = data.projected_embeddings[i][0];
+            state.chunks[i].y = data.projected_embeddings[i][1];
+        }
+        
+        for (let i = 0; i < state.queryEmbeddings.length; i++) {
+            if (!state.queries[i]) state.queries[i] = {};
+            state.queries[i].x = data.projected_embeddings[numChunks + i][0];
+            state.queries[i].y = data.projected_embeddings[numChunks + i][1];
+        }
+        
+        state.projectedData.coordinates = data.projected_embeddings;
+        state.projectedData.parameters = data.parameters;
+        
+    } catch (error) {
+        console.error('Error projecting queries:', error);
+    }
+}
+
+async function projectQueriesOnly() {
+    if (state.queryEmbeddings.length === 0) {
+        return;
+    }
+    
+    const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
+    const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
+    const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+    
+    const requestBody = {
+        embeddings: state.queryEmbeddings,
+        n_components: 2,
+        perplexity: perplexity,
+        learning_rate: learningRate,
+        n_iter: iterations,
+        random_state: 42
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE}/visualization/tsne`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        for (let i = 0; i < state.queryEmbeddings.length; i++) {
+            if (!state.queries[i]) state.queries[i] = {};
+            state.queries[i].x = data.projected_embeddings[i][0];
+            state.queries[i].y = data.projected_embeddings[i][1];
+        }
+        
+        state.projectedData = {
+            coordinates: data.projected_embeddings,
+            parameters: data.parameters
+        };
+        
+    } catch (error) {
+        console.error('Error projecting queries:', error);
+    }
 }
 
 // ============================================================================
@@ -276,7 +532,10 @@ function initializePlot() {
 }
 
 function renderPlot() {
-    if (!state.projectedData || state.chunks.length === 0) {
+    const hasChunksWithProjection = state.projectedData && state.chunks.length > 0 && state.chunks.some(c => c.x !== undefined);
+    const hasQueriesWithCoords = state.queries.length > 0 && state.queries.some(q => q.x !== undefined);
+    
+    if (!hasChunksWithProjection && !hasQueriesWithCoords) {
         return;
     }
     
@@ -436,14 +695,17 @@ function updateStatus(text, isError = false) {
 function setLoading(isLoading) {
     const loadBtn = document.getElementById('load-btn');
     const computeBtn = document.getElementById('compute-tsne-btn');
+    const generateQueriesBtn = document.getElementById('generate-embeddings-btn');
     
     if (isLoading) {
         loadBtn.disabled = true;
         computeBtn.disabled = true;
+        if (generateQueriesBtn) generateQueriesBtn.disabled = true;
         loadBtn.textContent = 'Chargement...';
     } else {
         loadBtn.disabled = false;
         computeBtn.disabled = !state.chunks.length;
+        if (generateQueriesBtn) generateQueriesBtn.disabled = false;
         loadBtn.textContent = 'Charger les embeddings';
     }
 }
@@ -579,4 +841,3 @@ async function loadSessionInteractions(sessionId) {
         return [];
     }
 }
-

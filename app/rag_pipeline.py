@@ -13,6 +13,8 @@ import rank_bm25
 import database
 import pynvml
 
+from api_visualization import set_rag_pipeline
+
 # Listes des modèles (déjà définies)
 MISTRAL_MODELS = [
     "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
@@ -82,6 +84,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         print("\n" + "=" * 60)
         print("Système RAG basique initialisé...")
         print("=" * 60 + "\n")
+
 
     async def query_simple(self,
                            prompt: str,

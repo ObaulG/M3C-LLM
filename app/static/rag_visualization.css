@@ -380,3 +380,40 @@ footer {
 .color-13 { background: #3a7bd5; }
 .color-14 { background: #00d2d3; }
 .color-15 { background: #5f27cd; }
+
+/* Styles pour les requêtes utilisateur */
+.query-input-group {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.query-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.query-textarea {
+    flex: 1;
+    min-width: 250px;
+    resize: vertical;
+}
+
+.remove-query-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 1.2em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+#queries-status {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+#queries-container {
+    min-height: 60px;
+}
