@@ -47,9 +47,13 @@ if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
 import torch
 import uvicorn
 
+from api_visualization import router as viz_router, set_rag_pipeline, set_embedding_model
+
 import json
 from datetime import datetime
 from pathlib import Path
+
+from api_visualization import router as viz_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -134,6 +138,7 @@ class HealthResponse(BaseModel):
     rag_initialized: bool = Field(..., description="Le systÃ¨me RAG est-il initialisÃ©")
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
+
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small")
 final_evaluator = get_final_evaluator_agent("mistral-small")
@@ -175,6 +180,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
+app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
+
 # === CONFIGURATION CORS ===
 # TODO: spÃ©cifier les domaines autorisÃ©s
 app.add_middleware(

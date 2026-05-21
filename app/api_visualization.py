@@ -18,6 +18,8 @@ from rag_session import RAGSessionManager
 import numpy as np
 from openTSNE import TSNE
 
+router = APIRouter()
+
 # Global variable to store the rag_pipeline for embedding generation
 # Will be set from api_server after initialization
 RAG_PIPELINE = None
@@ -82,9 +84,6 @@ async def generate_embedding(text: str) -> List[float]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating embedding: {str(e)}"
         )
-
-
-router = APIRouter(tags=["RAG Visualization"])
 
 # ============================================================================
 # MODELS
@@ -293,6 +292,7 @@ async def get_embeddings(
     Returns:
         EmbeddingsResponse with chunk embeddings and optional query embeddings
     """
+
     if model_name is None:
         model_name = EMBEDDING_MODEL_NAME
     
