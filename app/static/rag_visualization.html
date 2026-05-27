@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG Visualization - t-SNE Projection</title>
+    <title>RAG Visualization - t-SNE & UMAP Projection</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="rag_visualization.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -12,11 +12,22 @@
     <div class="container">
         <header>
             <h1>RAG Embeddings Visualization</h1>
-            <p>Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE</p>
+            <p>Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE ou UMAP</p>
         </header>
 
         <main>
             <section class="controls">
+                <div class="control-group">
+                    <h2>Méthode de projection</h2>
+                    <div class="projection-method-selector">
+                        <label>
+                            <input type="radio" name="projection-method" value="tsne" checked> t-SNE
+                        </label>
+                        <label>
+                            <input type="radio" name="projection-method" value="umap"> UMAP
+                        </label>
+                    </div>
+                </div>
                 <div class="control-group">
                     <h2>Documents</h2>
                     <div class="form-group">
@@ -34,21 +45,43 @@
 
                 <div class="control-group">
                     <h2>Paramètres t-SNE</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="perplexity-input">Perplexity:</label>
-                            <input type="number" id="perplexity-input" class="form-control" value="30" min="5" max="50" step="5">
-                        </div>
-                        <div class="form-group">
-                            <label for="learning-rate-input">Learning Rate:</label>
-                            <input type="number" id="learning-rate-input" class="form-control" value="200" min="10" max="1000">
-                        </div>
-                        <div class="form-group">
-                            <label for="iterations-input">Iterations:</label>
-                            <input type="number" id="iterations-input" class="form-control" value="1000" min="250" max="5000">
+                    <div id="tsne-params">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perplexity-input">Perplexity:</label>
+                                <input type="number" id="perplexity-input" class="form-control" value="30" min="5" max="50" step="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="learning-rate-input">Learning Rate:</label>
+                                <input type="number" id="learning-rate-input" class="form-control" value="200" min="10" max="1000">
+                            </div>
+                            <div class="form-group">
+                                <label for="iterations-input">Iterations:</label>
+                                <input type="number" id="iterations-input" class="form-control" value="1000" min="250" max="5000">
+                            </div>
                         </div>
                     </div>
-                    <button id="compute-tsne-btn" class="btn btn-secondary" disabled>Calculer t-SNE</button>
+                    <div id="umap-params" class="hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="n-neighbors-input">n_neighbors:</label>
+                                <input type="number" id="n-neighbors-input" class="form-control" value="15" min="2" max="200">
+                            </div>
+                            <div class="form-group">
+                                <label for="min-dist-input">min_dist:</label>
+                                <input type="number" id="min-dist-input" class="form-control" value="0.1" min="0" max="1" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="metric-select">Metric:</label>
+                                <select id="metric-select" class="form-control">
+                                    <option value="cosine">cosine</option>
+                                    <option value="euclidean">euclidean</option>
+                                    <option value="manhattan">manhattan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="compute-projection-btn" class="btn btn-secondary" disabled>Calculer la projection</button>
                     <button id="reset-view-btn" class="btn btn-tertiary">Réinitialiser la vue</button>
                 </div>
 
@@ -66,6 +99,9 @@
                     </div>
                 </div>
 
+            </section>
+
+            <section>
                 <div class="control-group">
                     <h2>Requêtes utilisateur</h2>
                     <div id="queries-container">
@@ -78,9 +114,7 @@
                     </div>
                     <div id="queries-status" class="status-text"></div>
                 </div>
-
             </section>
-
             <section class="status-bar" id="status-bar">
                 <span id="status-text">Prêt</span>
                 <span id="progress-text"></span>

@@ -17,6 +17,7 @@ from rag_session import RAGSessionManager
 
 import numpy as np
 from openTSNE import TSNE
+from umap import UMAP
 
 router = APIRouter()
 
@@ -123,6 +124,23 @@ class TSNERequest(BaseModel):
 
 class TSNEResponse(BaseModel):
     """Response containing t-SNE projection results."""
+    projected_embeddings: List[List[float]] = Field(..., description="2D/3D projected coordinates")
+    parameters: Dict[str, Any] = Field(..., description="Parameters used for the projection")
+    timestamp: str = Field(..., description="Response timestamp")
+
+
+class UMAPRequest(BaseModel):
+    """Request to compute UMAP projection."""
+    embeddings: List[List[float]] = Field(..., description="List of embedding vectors to project")
+    n_components: int = Field(2, description="Number of dimensions to project to", ge=1, le=3)
+    n_neighbors: int = Field(15, description="Number of neighbors for UMAP", ge=2, le=200)
+    min_dist: float = Field(0.1, description="Minimum distance between points", ge=0.0, le=1.0)
+    metric: str = Field("cosine", description="Distance metric to use")
+    random_state: Optional[int] = Field(None, description="Random seed for reproducibility")
+
+
+class UMAPResponse(BaseModel):
+    """Response containing UMAP projection results."""
     projected_embeddings: List[List[float]] = Field(..., description="2D/3D projected coordinates")
     parameters: Dict[str, Any] = Field(..., description="Parameters used for the projection")
     timestamp: str = Field(..., description="Response timestamp")
@@ -406,6 +424,74 @@ async def compute_tsne_projection(request: TSNERequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error computing t-SNE: {str(e)}"
+        )
+
+
+@router.post("/visualization/umap", response_model=UMAPResponse, tags=["Visualization"])
+async def compute_umap_projection(request: UMAPRequest):
+    """
+    Compute UMAP projection for a set of embeddings.
+    
+    Uses the umap-learn library to reduce dimensionality to 2D (or 3D).
+    
+    Args:
+        request: UMAPRequest containing embeddings and parameters
+        
+    Returns:
+        UMAPResponse with 2D/3D projected coordinates
+    """
+    try:
+        embeddings_array = np.array(request.embeddings, dtype=np.float32)
+        print("embeddings converted to np.array")
+        
+        if embeddings_array.size == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No embeddings provided"
+            )
+        
+        if embeddings_array.ndim != 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Embeddings must be a 2D array (samples x features)"
+            )
+        
+        reducer = UMAP(
+            n_components=request.n_components,
+            n_neighbors=request.n_neighbors,
+            min_dist=request.min_dist,
+            metric=request.metric,
+            random_state=request.random_state,
+            verbose=False
+        )
+        print("UMAP reducer created")
+        
+        projected = reducer.fit_transform(embeddings_array)
+        print("UMAP projection computed")
+        
+        return UMAPResponse(
+            projected_embeddings=projected.tolist(),
+            parameters={
+                "n_components": request.n_components,
+                "n_neighbors": request.n_neighbors,
+                "min_dist": request.min_dist,
+                "metric": request.metric,
+                "input_shape": embeddings_array.shape,
+                "random_state": request.random_state
+            },
+            timestamp=datetime.now().isoformat()
+        )
+        
+    except ImportError as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"UMAP library not installed: {str(e)}. Please install with: pip install umap-learn"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error computing UMAP: {str(e)}"
         )
 
 

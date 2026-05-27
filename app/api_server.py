@@ -28,6 +28,7 @@ from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               SessionStatus,
                               EvaluationResult,
                               from_AgentEvaluationResult_to_EvaluationResult, session_status_to_dict)
+from session_csv_logger import log_response_to_csv
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent, \
     ListAgentEvaluationResult
@@ -500,12 +501,12 @@ async def init_question_session(document_id: str,
     print(question_pages)
     question_session_manager.add_questions(session_id, questions_ids, questions_texts, question_pages)
     return question_session_manager.get_session_status(session_id)
-@app.post("/api/sessions/message",
+@app.post("/api/sessions/questions/message",
           response_model=QuestionSessionResponse)
-async def submit_message(request: QuestionSessionMessage):
+async def submit_question_session_message(request: QuestionSessionMessage):
     """
-    Ajoute un message Ã  la conversation d'une session. L'agent analyse la rÃ©ponse pour vÃ©rifier
-    si c'est la rÃ©ponse Ã  la question en cours, ou une demande de contexte supplÃ©mentaire.
+    Ajoute un message à la conversation d'une session. L'agent analyse la réponse pour vérifier
+    si c'est la réponse à la question en cours, ou une demande de contexte supplémentaire.
     """
     start_time = time.time()
     total_input_tokens = 0
@@ -549,9 +550,9 @@ async def submit_message(request: QuestionSessionMessage):
         message_type=message_type
     )
     match message_type:
-        case "rÃ©ponse":
+        case "réponse":
             if not question["answers"]:
-                raise HTTPException(status_code=500, detail="Pas de rÃ©ponse prÃ©vue pour cette question...")
+                raise HTTPException(status_code=500, detail="Pas de réponse prévue pour cette question...")
             # il peut y avoir plusieurs rÃ©ponses, on ne garde que la
             # 1Ã¨re
             expected_answer = question["answers"][0]["content"]
@@ -611,18 +612,22 @@ async def submit_message(request: QuestionSessionMessage):
             message = evaluation_result.feedback
         case "demande_renseignement":
             # faire appel Ã  un LLM pour rÃ©pondre Ã  la question
-            message = "Message de demande de renseignement dÃ©tectÃ© (pas implÃ©mentÃ© pour l'instant)"
+            message = "Message de demande de renseignement détecté (pas implémenté pour l'instant)"
             pass
         case "hors_sujet":
-            message = "Message hors-sujet dÃ©tectÃ© (pas implÃ©mentÃ© pour l'instant)"
+            message = "Message hors-sujet détecté (pas implémenté pour l'instant)"
             pass
         case "autre":
-            message = "Message classÃ© hors-catÃ©gorie..."
+            message = "Message classé hors-catégorie..."
             pass
     total_time = time.time() - start_time
     print("user response: ", user_response)
-    # mettre Ã  jour la session
+    # mettre à jour la session
     question_session_manager.add_response(session_id, user_response)
+
+    # Log la réponse dans le CSV pour évaluation humaine
+    log_response_to_csv(session_id, user_response)
+
     session_response = QuestionSessionResponse(
         session_status=question_session_manager.get_session_status(session_id),
         computed_message_type=message_type,
@@ -632,7 +637,7 @@ async def submit_message(request: QuestionSessionMessage):
         total_time=total_time,
         # note: le format de token_usage se calque sur celui de LangChain
         #       le JS fonctionne sur ce format (pour l'instant)
-        # TODO: il sera Ã  modifier plus tard.
+        # TODO: il sera à modifier plus tard.
         metadata={"token_usage":{
                 "input_tokens": total_input_tokens,
                 "output_tokens": total_output_tokens,}}

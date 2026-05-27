@@ -7,3 +7,4 @@ Quand a été créé le CAPES de corse ?
 
 La réponse est correcte, mais une source récupérée avec le RAG traite du "Cap Corse", sémantiquement proche de "CAPES de Corse"
 mais totalement différent
+

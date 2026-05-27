@@ -22,23 +22,22 @@ class MessageTypeResult(BaseIOSchema):
 message_type_system_prompt_generator = SystemPromptGenerator(
     background=[
         "Cet agent est spécialisé dans la classification des messages utilisateurs en fonction de leur pertinence par rapport à une question initiale.",
-        "Il doit déterminer si le message est une réponse à la question, une demande de renseignements supplémentaires, ou hors sujet.",
+        "Il doit déterminer si le message est une réponse à la question ou hors sujet.",
         "La classification doit être précise et justifiée.",
         "réponse: répond à la question en cours",
-        "renseignement: demande une information en lien direct ou indirect avec la question, mais il ne répond pas",
         "hors-sujet: demande qui ne concerne pas de près ou de loin la question",
         "autre: tous les autres cas de figure"
     ],
     steps=[
         "Lire attentivement la question initiale et le message de l'utilisateur.",
-        "Déterminer si le message est une réponse directe à la question (réponse).",
-        "Déterminer si le message est une demande de précisions ou d'informations complémentaires (demande_renseignement).",
-        "Déterminer si le message n'a aucun lien avec la question (hors_sujet).",
+        "Déterminer si le message est une réponse directe à la question (réponse) ou est complètement hors_sujet.",
+        #"Déterminer si le message est une demande de précisions ou d'informations complémentaires (demande_renseignement).",
         "Attribuer un niveau de confiance à la classification (0.0 = incertain, 1.0 = certain).",
         "Fournir une explication claire et concise de la classification.",
     ],
     output_instructions=[
-        "Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'demande_renseignement', 'hors_sujet'.",
+        #"Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'demande_renseignement', 'hors_sujet'.",
+"Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'hors_sujet'.",
         "Une seule valeur à retourner.",
         "Le champ `confidence` doit être un float entre 0.0 et 1.0.",
         "Le champ `explanation` doit expliquer brièvement la raison de la classification.",

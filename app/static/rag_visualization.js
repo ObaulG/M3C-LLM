@@ -20,11 +20,12 @@ let state = {
     queries: [],             // Query data (if available)
     userQueries: [],         // Liste des requêtes utilisateur
     queryEmbeddings: [],    // Embeddings des requêtes utilisateur
-    projectedData: null,     // t-SNE projected coordinates
+    projectedData: null,     // Projected coordinates
     selectedDocument: null,  // Currently selected document filter
     plot: null,              // Plotly plot reference
     colors: {},              // Color map for documents
-    isComputing: false       // Flag to prevent multiple computations
+    isComputing: false,      // Flag to prevent multiple computations
+    projectionMethod: 'tsne'  // 'tsne' or 'umap'
 };
 
 // ============================================================================
@@ -51,18 +52,43 @@ function initialize() {
     // Initialiser avec un champ de requête vide
     addQueryInput();
     
+    // Initialize projection parameters visibility
+    toggleProjectionParams();
+    
     updateStatus('Prêt');
+}
+
+function toggleProjectionParams() {
+    const tsneParams = document.getElementById('tsne-params');
+    const umapParams = document.getElementById('umap-params');
+    
+    if (state.projectionMethod === 'tsne') {
+        tsneParams.classList.remove('hidden');
+        umapParams.classList.add('hidden');
+    } else {
+        tsneParams.classList.add('hidden');
+        umapParams.classList.remove('hidden');
+    }
 }
 
 function bindEvents() {
     // Load embeddings button
     document.getElementById('load-btn').addEventListener('click', loadEmbeddings);
     
-    // Compute t-SNE button
-    document.getElementById('compute-tsne-btn').addEventListener('click', computeTSNE);
+    // Compute projection button
+    document.getElementById('compute-projection-btn').addEventListener('click', computeProjection);
     
     // Reset view button
     document.getElementById('reset-view-btn').addEventListener('click', resetView);
+    
+    // Projection method selector
+    document.querySelectorAll('input[name="projection-method"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            state.projectionMethod = e.target.value;
+            toggleProjectionParams();
+            updateComputeButton();
+        });
+    });
     
     // Document select change
     document.getElementById('document-select').addEventListener('change', (e) => {
@@ -215,7 +241,7 @@ async function generateAllQueryEmbeddings() {
         }));
         
         if (state.projectedData && state.chunks.length > 0) {
-            await projectQueriesWithTSNE();
+            await projectQueries();
         } else if (state.queries.length > 0) {
             await projectQueriesOnly();
         }
@@ -231,7 +257,7 @@ async function generateAllQueryEmbeddings() {
     }
 }
 
-async function projectQueriesWithTSNE() {
+async function projectQueries() {
     if (!state.projectedData || state.queryEmbeddings.length === 0) {
         return;
     }
@@ -241,21 +267,41 @@ async function projectQueriesWithTSNE() {
         ...state.queryEmbeddings
     ];
     
-    const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
-    const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
-    const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+    let requestBody, endpoint;
     
-    const requestBody = {
-        embeddings: allEmbeddings,
-        n_components: 2,
-        perplexity: perplexity,
-        learning_rate: learningRate,
-        n_iter: iterations,
-        random_state: 42
-    };
+    if (state.projectionMethod === 'tsne') {
+        const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
+        const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
+        const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+        
+        requestBody = {
+            embeddings: allEmbeddings,
+            n_components: 2,
+            perplexity: perplexity,
+            learning_rate: learningRate,
+            n_iter: iterations,
+            random_state: 42
+        };
+        endpoint = '/visualization/tsne';
+    } else {
+        // UMAP
+        const nNeighbors = parseInt(document.getElementById('n-neighbors-input').value) || 15;
+        const minDist = parseFloat(document.getElementById('min-dist-input').value) || 0.1;
+        const metric = document.getElementById('metric-select').value || 'cosine';
+        
+        requestBody = {
+            embeddings: allEmbeddings,
+            n_components: 2,
+            n_neighbors: nNeighbors,
+            min_dist: minDist,
+            metric: metric,
+            random_state: 42
+        };
+        endpoint = '/visualization/umap';
+    }
     
     try {
-        const response = await fetch(`${API_BASE}/visualization/tsne`, {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -285,7 +331,7 @@ async function projectQueriesWithTSNE() {
         state.projectedData.parameters = data.parameters;
         
     } catch (error) {
-        console.error('Error projecting queries:', error);
+        console.error(`Error projecting queries with ${state.projectionMethod}:`, error);
     }
 }
 
@@ -294,21 +340,41 @@ async function projectQueriesOnly() {
         return;
     }
     
-    const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
-    const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
-    const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+    let requestBody, endpoint;
     
-    const requestBody = {
-        embeddings: state.queryEmbeddings,
-        n_components: 2,
-        perplexity: perplexity,
-        learning_rate: learningRate,
-        n_iter: iterations,
-        random_state: 42
-    };
+    if (state.projectionMethod === 'tsne') {
+        const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
+        const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
+        const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+        
+        requestBody = {
+            embeddings: state.queryEmbeddings,
+            n_components: 2,
+            perplexity: perplexity,
+            learning_rate: learningRate,
+            n_iter: iterations,
+            random_state: 42
+        };
+        endpoint = '/visualization/tsne';
+    } else {
+        // UMAP
+        const nNeighbors = parseInt(document.getElementById('n-neighbors-input').value) || 15;
+        const minDist = parseFloat(document.getElementById('min-dist-input').value) || 0.1;
+        const metric = document.getElementById('metric-select').value || 'cosine';
+        
+        requestBody = {
+            embeddings: state.queryEmbeddings,
+            n_components: 2,
+            n_neighbors: nNeighbors,
+            min_dist: minDist,
+            metric: metric,
+            random_state: 42
+        };
+        endpoint = '/visualization/umap';
+    }
     
     try {
-        const response = await fetch(`${API_BASE}/visualization/tsne`, {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -334,7 +400,7 @@ async function projectQueriesOnly() {
         };
         
     } catch (error) {
-        console.error('Error projecting queries:', error);
+        console.error(`Error projecting queries only with ${state.projectionMethod}:`, error);
     }
 }
 
@@ -430,35 +496,55 @@ async function loadEmbeddings() {
     }
 }
 
-async function computeTSNE() {
+async function computeProjection() {
     if (state.isComputing || state.chunks.length === 0) {
         return;
     }
     
     state.isComputing = true;
     setLoading(true);
-    updateStatus('Calcul de la projection t-SNE...');
+    updateStatus(`Calcul de la projection ${state.projectionMethod.toUpperCase()}...`);
     
     try {
-        const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
-        const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
-        const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
-        
         // Extract embeddings from chunks
         const embeddings = state.chunks.map(c => c.embedding);
         
-        const requestBody = {
-            embeddings: embeddings,
-            n_components: 2,
-            perplexity: perplexity,
-            learning_rate: learningRate,
-            n_iter: iterations,
-            random_state: 42
-        };
+        let requestBody, endpoint;
+        
+        if (state.projectionMethod === 'tsne') {
+            const perplexity = parseFloat(document.getElementById('perplexity-input').value) || 30;
+            const learningRate = parseFloat(document.getElementById('learning-rate-input').value) || 200;
+            const iterations = parseInt(document.getElementById('iterations-input').value) || 1000;
+            
+            requestBody = {
+                embeddings: embeddings,
+                n_components: 2,
+                perplexity: perplexity,
+                learning_rate: learningRate,
+                n_iter: iterations,
+                random_state: 42
+            };
+            endpoint = '/visualization/tsne';
+        } else {
+            // UMAP
+            const nNeighbors = parseInt(document.getElementById('n-neighbors-input').value) || 15;
+            const minDist = parseFloat(document.getElementById('min-dist-input').value) || 0.1;
+            const metric = document.getElementById('metric-select').value || 'cosine';
+            
+            requestBody = {
+                embeddings: embeddings,
+                n_components: 2,
+                n_neighbors: nNeighbors,
+                min_dist: minDist,
+                metric: metric,
+                random_state: 42
+            };
+            endpoint = '/visualization/umap';
+        }
         
         updateStatus(`Envoi des ${embeddings.length} embeddings au serveur...`);
         
-        const response = await fetch(`${API_BASE}/visualization/tsne`, {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -482,12 +568,12 @@ async function computeTSNE() {
             chunk.y = data.projected_embeddings[index][1];
         });
         
-        updateStatus(`Projection terminée!`);
+        updateStatus(`Projection ${state.projectionMethod.toUpperCase()} terminée!`);
         renderPlot();
         
     } catch (error) {
-        console.error('Error computing t-SNE:', error);
-        updateStatus('Erreur: Impossible de calculer t-SNE', true);
+        console.error(`Error computing ${state.projectionMethod}:`, error);
+        updateStatus(`Erreur: Impossible de calculer ${state.projectionMethod.toUpperCase()}`, true);
     } finally {
         state.isComputing = false;
         setLoading(false);
@@ -694,7 +780,7 @@ function updateStatus(text, isError = false) {
 
 function setLoading(isLoading) {
     const loadBtn = document.getElementById('load-btn');
-    const computeBtn = document.getElementById('compute-tsne-btn');
+    const computeBtn = document.getElementById('compute-projection-btn');
     const generateQueriesBtn = document.getElementById('generate-embeddings-btn');
     
     if (isLoading) {
@@ -711,8 +797,9 @@ function setLoading(isLoading) {
 }
 
 function updateComputeButton() {
-    const computeBtn = document.getElementById('compute-tsne-btn');
+    const computeBtn = document.getElementById('compute-projection-btn');
     computeBtn.disabled = state.chunks.length === 0 || state.isComputing;
+    computeBtn.textContent = `Calculer ${state.projectionMethod.toUpperCase()}`;
 }
 
 function generateColors() {
