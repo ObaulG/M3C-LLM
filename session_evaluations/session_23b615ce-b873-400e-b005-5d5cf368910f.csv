@@ -1,0 +1,3 @@
+timestamp,session_id,question_id,question_text,user_answer,score,feedback,model,message_type
+2026-05-26T12:19:03.094398,23b615ce-b873-400e-b005-5d5cf368910f,9158,Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?,"il se fonde sur une ethnicisation du groupe racisant, avec une violence plus symbolique que physique",,,,réponse
+2026-05-26T12:19:20.909757,23b615ce-b873-400e-b005-5d5cf368910f,9158,Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?,"il se fonde sur une ethnicisation du groupe racisant, avec une violence plus symbolique que physique",,,,réponse

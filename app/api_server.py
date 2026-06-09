@@ -29,12 +29,15 @@ from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               EvaluationResult,
                               from_AgentEvaluationResult_to_EvaluationResult, session_status_to_dict)
 from session_csv_logger import log_response_to_csv
+from evaluation_logger import log_evaluation_to_csv, get_reference_answers, get_reference_answer
+from evaluation_feedback_logger import log_feedback_to_csv
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent, \
-    ListAgentEvaluationResult
+    ListAgentEvaluationResult, AgentEvaluationResult
 from agents.message_evaluator_agent import get_message_type_agent, MessageTypeRequestInput
 from database.database import (get_db_connection,
                                get_all_documents,
+                               get_questions_by_document_id,
                                get_question_by_id,
                                get_questions_by_ids,
                                get_chunks_by_question_id,
@@ -141,7 +144,7 @@ class HealthResponse(BaseModel):
     version: str = Field(..., description="Version de l'API")
 
 qa_agent = get_qa_agent()
-evaluation_agent = get_evaluator_agent("mistral-small")
+evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
 final_evaluator = get_final_evaluator_agent("mistral-small")
 message_ev_agent = get_message_type_agent()
 question_session_manager = QuestionSessionManager()
@@ -759,6 +762,236 @@ async def get_documents_list():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la rÃ©cupÃ©ration des documents: {str(e)}"
         )
+
+# Pydantic model for Question response
+class QuestionResponse(BaseModel):
+    question_id: int = Field(..., description="Identifiant de la question")
+    content: str = Field(..., description="Contenu de la question")
+    status: str = Field(..., description="Statut de la question")
+    difficulty_level: int = Field(..., description="Niveau de difficulté")
+    created_by: Optional[str] = Field(None, description="Créé par")
+    validated_by: Optional[str] = Field(None, description="Validé par")
+    chunk_id: Optional[str] = Field(None, description="ID du chunk associé")
+    answers: List[Dict] = Field(default_factory=list, description="Liste des réponses")
+
+class QuestionsListResponse(BaseModel):
+    document_id: str = Field(..., description="Identifiant du document")
+    questions: List[QuestionResponse] = Field(..., description="Liste des questions")
+    count: int = Field(..., description="Nombre total de questions")
+    timestamp: str = Field(..., description="Horodatage de la réponse")
+
+@app.get("/api/questions/{document_id}", response_model=QuestionsListResponse, tags=["Questions"])
+async def get_questions_for_document(
+    document_id: str,
+    include_answers: bool = True,
+    status_filter: Optional[str] = None,
+    difficulty_filter: Optional[int] = None,
+    nb_limit: Optional[int] = None
+):
+    """
+    Récupère toutes les questions/réponses pour un document spécifique.
+    
+    Args:
+        document_id: Identifiant du document
+        include_answers: Si True, inclut les réponses associées
+        status_filter: Filtre par statut (ex: "generated", "validated")
+        difficulty_filter: Filtre par niveau de difficulté (1-5)
+        nb_limit: Limite le nombre de questions retournées
+        
+    Returns:
+        QuestionsListResponse: Liste des questions avec leurs réponses
+    """
+    try:
+        conn = await get_db_connection()
+        questions = await get_questions_by_document_id(
+            document_id, conn,
+            include_answers=include_answers,
+            status_filter=status_filter,
+            difficulty_filter=difficulty_filter,
+            nb_limit=nb_limit
+        )
+        await conn.close()
+        
+        # Convertir en QuestionResponse
+        question_responses = []
+        for q in questions:
+            question_responses.append(QuestionResponse(
+                question_id=q["question_id"],
+                content=q["content"],
+                status=q["status"],
+                difficulty_level=q["difficulty_level"],
+                created_by=q["created_by"],
+                validated_by=q["validated_by"],
+                chunk_id=q.get("chunk_id"),
+                answers=q.get("answers", [])
+            ))
+        
+        return QuestionsListResponse(
+            document_id=document_id,
+            questions=question_responses,
+            count=len(question_responses),
+            timestamp=datetime.now().isoformat()
+        )
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la récupération des questions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des questions: {str(e)}"
+        )
+
+# === ENDPOINTS D'ÉVALUATION ===
+@app.post("/api/evaluate", tags=["Evaluation"])
+async def evaluate_answer(request: EvaluateRequestInput):
+    """
+    Évalue une réponse utilisateur par rapport à une réponse attendue.
+    Utilise l'agent évaluateur existant.
+    
+    Args:
+        request: EvaluateRequestInput avec question, expected_answer, user_answer
+    
+    Returns:
+        AgentEvaluationResult avec score (1-10) et feedback
+    """
+    try:
+        print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée")
+        evaluation = await evaluation_agent.run_async(request)
+        print(f"[{datetime.now().isoformat()}] Évaluation terminée: score={evaluation.score}")
+        return evaluation
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de l'évaluation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'évaluation: {str(e)}"
+        )
+
+@app.get("/api/reference-answers", tags=["Evaluation"])
+async def get_all_reference_answers():
+    """
+    Récupère toutes les paires question/réponse de référence depuis le CSV.
+    
+    Returns:
+        Dictionnaire avec question_id comme clé et {answer_id, question_content, response_answer} comme valeur
+    """
+    try:
+        reference_data = get_reference_answers()
+        return {"reference_answers": reference_data, "count": len(reference_data)}
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors du chargement des réponses de référence: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors du chargement des réponses de référence: {str(e)}"
+        )
+
+@app.get("/api/reference-answers/{question_id}", tags=["Evaluation"])
+async def get_reference_answer_by_id(question_id: int):
+    """
+    Récupère la réponse de référence pour une question spécifique.
+    
+    Args:
+        question_id: ID de la question
+    
+    Returns:
+        Dictionnaire avec answer_id, question_content, response_answer
+    """
+    try:
+        reference_answer = get_reference_answer(question_id)
+        if reference_answer is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Aucune réponse de référence trouvée pour la question {question_id}"
+            )
+        return reference_answer
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur: {str(e)}"
+        )
+
+class EvaluationSaveRequest(BaseModel):
+    """Modèle de requête pour sauvegarder une évaluation"""
+    question_id: int = Field(..., description="ID de la question")
+    answer_id: Optional[str] = Field(None, description="ID de la réponse de référence")
+    evaluated_answer: str = Field(..., description="Réponse qui a été évaluée")
+    score: Optional[int] = Field(None, description="Note (1-10)", ge=1, le=10)
+    feedback: str = Field(..., description="Commentaire sur l'évaluation")
+    evaluation_type: str = Field("auto", description="Type d'évaluation: 'auto' ou 'manual'")
+    evaluation_source: Optional[str] = Field(None, description="Source de la réponse évaluée: 'llm' ou 'user'")
+    model_used: Optional[str] = Field(None, description="Modèle utilisé pour l'évaluation automatique")
+    question_content: Optional[str] = Field(None, description="Contenu de la question")
+    reference_answer: Optional[str] = Field(None, description="Réponse de référence")
+
+
+class EvaluationFeedbackRequest(BaseModel):
+    """Modèle de requête pour sauvegarder un feedback humain sur une évaluation IA"""
+    question_id: int = Field(..., description="ID de la question")
+    chunk_id: Optional[str] = Field(None, description="ID du chunk associé")
+    question_content: Optional[str] = Field(None, description="Contenu de la question")
+    user_answer: str = Field(..., description="Réponse qui a été évaluée")
+    ai_score: int = Field(..., description="Note générée par l'IA", ge=1, le=10)
+    ai_feedback: str = Field(..., description="Commentaire généré par l'IA")
+    human_rating: int = Field(..., description="Note humaine sur l'évaluation IA (1-10)", ge=1, le=10)
+    human_comment: Optional[str] = Field(None, description="Commentaire humain sur l'évaluation IA")
+
+
+@app.post("/api/evaluations/save", tags=["Evaluation"])
+async def save_evaluation(request: EvaluationSaveRequest):
+    """
+    Sauvegarde une évaluation dans le fichier question-answer-reference-eval.csv.
+    
+    Args:
+        request: EvaluationSaveRequest avec toutes les données d'évaluation
+    
+    Returns:
+        Message de confirmation avec le chemin du fichier
+    """
+    try:
+        evaluation_data = request.model_dump()
+        filepath = log_evaluation_to_csv(evaluation_data)
+        print(f"[{datetime.now().isoformat()}] Évaluation sauvegardée dans {filepath}")
+        return {
+            "message": "Évaluation sauvegardée avec succès",
+            "filepath": filepath,
+            "evaluation_id": f"{request.question_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la sauvegarde: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la sauvegarde: {str(e)}"
+        )
+
+
+@app.post("/api/evaluation-feedback/save", tags=["Evaluation"])
+async def save_evaluation_feedback(request: EvaluationFeedbackRequest):
+    """
+    Sauvegarde un feedback humain sur une évaluation IA dans le fichier evaluation-feedback.csv.
+    
+    Args:
+        request: EvaluationFeedbackRequest avec toutes les données de feedback
+    
+    Returns:
+        Message de confirmation avec le chemin du fichier
+    """
+    try:
+        feedback_data = request.model_dump()
+        filepath = log_feedback_to_csv(feedback_data)
+        print(f"[{datetime.now().isoformat()}] Feedback sur évaluation IA sauvegardé dans {filepath}")
+        return {
+            "message": "Feedback sur évaluation IA sauvegardé avec succès",
+            "filepath": filepath,
+            "feedback_id": f"{request.question_id}_fb_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la sauvegarde du feedback: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la sauvegarde du feedback: {str(e)}"
+        )
+
+
 async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
     print("_rag_preprocess")
     final_prompt, best_documents = request.question, None, None

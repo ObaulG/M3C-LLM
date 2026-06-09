@@ -20,12 +20,13 @@ MISTRAL_MODELS = [
     "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
     "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
 ]
-GEMINI_MODELS = [
-    "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemma-3-1b", "gemma-3-2b",
-    "gemma-3-4b", "gemma-3-12b", "gemma-3-27b", "gemini-2.5-flash-live", "gemini-2.0-flash-live"
-]
-OLLAMA_MODELS = ["ministral-3:3b", "cas/ministral-8b-instruct-2410_q4km"]
-
+#GEMINI_MODELS = [
+#    "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemma-3-1b", "gemma-3-2b",
+#    "gemma-3-4b", "gemma-3-12b", "gemma-3-27b", "gemini-2.5-flash-live", "gemini-2.0-flash-live"
+#]
+GEMINI_MODELS = []
+#OLLAMA_MODELS = ["ministral-3:3b", "cas/ministral-8b-instruct-2410_q4km"]
+OLLAMA_MODELS = []
 class RetrievalResult(BaseModel):
     """Modèle Pydantic pour décrire le résultat d'une requête RAG."""
     response: str

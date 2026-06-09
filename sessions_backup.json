@@ -257,5 +257,152 @@
       "number_of_agents": 3,
       "server_shutdown_at": "2026-05-17T17:56:52.699541"
     }
+  },
+  {
+    "session_id": "3960ab7c-9fed-4fe4-b73e-71cce367ce55",
+    "document_id": "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-05-26T11:33:41.326910",
+    "time_elapsed_secs": 904,
+    "responses": [
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "il se manifeste par une violence plutôt symbolique  et moins physique",
+        "date_sent": "2026-05-26T11:42:52.333978",
+        "evaluation": null,
+        "message_type": "réponse"
+      },
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "aa",
+        "date_sent": "2026-05-26T11:43:32.686889",
+        "evaluation": null,
+        "message_type": "autre"
+      }
+    ],
+    "questions_ids": [
+      9158,
+      9235,
+      9389,
+      10040
+    ],
+    "questions_text": [
+      "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+      "Pourquoi la lutte contre le système mafieux en Corse est-elle décrite comme plus difficile qu'en Sicile ? Expliquez en vous appuyant sur les différences structurelles entre les deux régions.",
+      "Pourquoi le football, malgré son histoire conflictuelle, reste-t-il un pilier identitaire pour les Corses selon le texte ? Citez deux éléments clés mentionnés dans le document qui illustrent cette affirmation.",
+      "Pourquoi la création du GR20 est-elle considérée comme emblématique dans la stratégie de diversification touristique de la Corse ?"
+    ],
+    "pages": [
+      43,
+      46,
+      53,
+      81
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-05-26T11:48:46.027338"
+    }
+  },
+  {
+    "session_id": "d3dad899-f55e-402b-bd95-f6f856a874ba",
+    "document_id": "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-05-26T11:56:13.522721",
+    "time_elapsed_secs": 92,
+    "responses": [
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "il se fonde sur une ethnicisation du groupe racisant",
+        "date_sent": "2026-05-26T11:56:59.672795",
+        "evaluation": null,
+        "message_type": "demande_renseignement"
+      },
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "il se fonde sur une ethnicisation du groupe racisant, avec une violence plus symbolique que physique",
+        "date_sent": "2026-05-26T11:57:34.532019",
+        "evaluation": null,
+        "message_type": "demande_renseignement"
+      }
+    ],
+    "questions_ids": [
+      9158,
+      9235,
+      9389,
+      10040
+    ],
+    "questions_text": [
+      "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+      "Pourquoi la lutte contre le système mafieux en Corse est-elle décrite comme plus difficile qu'en Sicile ? Expliquez en vous appuyant sur les différences structurelles entre les deux régions.",
+      "Pourquoi le football, malgré son histoire conflictuelle, reste-t-il un pilier identitaire pour les Corses selon le texte ? Citez deux éléments clés mentionnés dans le document qui illustrent cette affirmation.",
+      "Pourquoi la création du GR20 est-elle considérée comme emblématique dans la stratégie de diversification touristique de la Corse ?"
+    ],
+    "pages": [
+      43,
+      46,
+      53,
+      81
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-05-26T11:57:46.094654"
+    }
+  },
+  {
+    "session_id": "23b615ce-b873-400e-b005-5d5cf368910f",
+    "document_id": "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-05-26T12:18:44.319713",
+    "time_elapsed_secs": 196,
+    "responses": [
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "il se fonde sur une ethnicisation du groupe racisant, avec une violence plus symbolique que physique",
+        "date_sent": "2026-05-26T12:19:03.094398",
+        "evaluation": null,
+        "message_type": "réponse"
+      },
+      {
+        "question_id": 9158,
+        "question_text": "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+        "user_answer": "il se fonde sur une ethnicisation du groupe racisant, avec une violence plus symbolique que physique",
+        "date_sent": "2026-05-26T12:19:20.909757",
+        "evaluation": null,
+        "message_type": "réponse"
+      }
+    ],
+    "questions_ids": [
+      9158,
+      9235,
+      9389,
+      10040
+    ],
+    "questions_text": [
+      "Pourquoi peut-on dire que le racisme évoqué dans le texte est à la fois normalisé et décomplexé en Corse ?",
+      "Pourquoi la lutte contre le système mafieux en Corse est-elle décrite comme plus difficile qu'en Sicile ? Expliquez en vous appuyant sur les différences structurelles entre les deux régions.",
+      "Pourquoi le football, malgré son histoire conflictuelle, reste-t-il un pilier identitaire pour les Corses selon le texte ? Citez deux éléments clés mentionnés dans le document qui illustrent cette affirmation.",
+      "Pourquoi la création du GR20 est-elle considérée comme emblématique dans la stratégie de diversification touristique de la Corse ?"
+    ],
+    "pages": [
+      43,
+      46,
+      53,
+      81
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-05-26T12:22:00.867411"
+    }
   }
 ]
