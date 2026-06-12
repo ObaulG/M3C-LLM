@@ -11,8 +11,36 @@ let allDocuments = [];
  * Initialise la page au chargement
  */
 document.addEventListener('DOMContentLoaded', function() {
-    loadDocuments();
-    setupEventListeners();
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    
+    if (sessionId) {
+        // Mode session : masquer la sidebar et charger les questions de la session
+        const sidebar = document.querySelector('.sidebar');
+        const header = document.querySelector('.header');
+        
+        if (sidebar) {
+            sidebar.style.display = 'none';
+        }
+        
+        if (header) {
+            const title = header.querySelector('h1');
+            if (title) {
+                title.textContent = '📝 Révision de la session';
+            }
+            const subtitle = header.querySelector('p');
+            if (subtitle) {
+                subtitle.textContent = `ID de session: ${sessionId}`;
+            }
+        }
+        
+        // Charger les questions de la session
+        loadSessionQuestions(sessionId);
+    } else {
+        // Mode normal : charger les documents
+        loadDocuments();
+        setupEventListeners();
+    }
 });
 
 /**
@@ -76,6 +104,82 @@ async function loadDocuments() {
     } catch (error) {
         console.error('Erreur lors du chargement des documents:', error);
         documentListElement.innerHTML = `<li class="empty-state"><p>Erreur: ${error.message}</p></li>`;
+    } finally {
+        loadingElement.classList.remove('active');
+    }
+}
+
+/**
+ * Charge les questions d'une session utilisateur
+ * @param {string} sessionId - L'ID de la session
+ */
+async function loadSessionQuestions(sessionId) {
+    const loadingElement = document.getElementById('loadingQuestions');
+    const contentElement = document.getElementById('questionsContent');
+    
+    try {
+        loadingElement.classList.add('active');
+        contentElement.innerHTML = '';
+        
+        const response = await fetch(`/api/sessions/questions/${sessionId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const sessionData = await response.json();
+        
+        if (!sessionData || !sessionData.responses) {
+            contentElement.innerHTML = `
+                <div class="empty-state">
+                    <h3>Aucune réponse dans cette session</h3>
+                    <p>La session ne contient aucune réponse enregistrée.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Convertir les réponses de la session en format compatible avec displayQuestions
+        const questions = sessionData.responses.map((response, index) => {
+            // Trouver le chunk_id ou la page si disponible
+            let chunkId = null;
+            let pageInfo = null;
+            
+            if (sessionData.chunk_ids && sessionData.chunk_ids[index]) {
+                chunkId = sessionData.chunk_ids[index];
+            }
+            if (sessionData.pages && sessionData.pages[index]) {
+                pageInfo = sessionData.pages[index];
+            }
+            
+            return {
+                question_id: response.question_id,
+                content: response.question_text,
+                status: 'answered',
+                difficulty_level: 3,
+                created_by: 'Session utilisateur',
+                answers: [{
+                    content: response.user_answer,
+                    is_correct: response.evaluation ? (response.evaluation.score >= 7) : false,
+                    is_user_answer: true
+                }],
+                chunk_id: chunkId || `session-${pageInfo}`,
+                page: pageInfo,
+                session_evaluation: response.evaluation
+            };
+        });
+        
+        // Afficher les questions avec le message de session
+        displayQuestions(questions, questions.length);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement de la session:', error);
+        contentElement.innerHTML = `
+            <div class="empty-state">
+                <h3>Erreur de chargement</h3>
+                <p>Une erreur est survenue: ${error.message}</p>
+            </div>
+        `;
     } finally {
         loadingElement.classList.remove('active');
     }

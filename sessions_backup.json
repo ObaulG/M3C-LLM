@@ -404,5 +404,519 @@
       "number_of_agents": 3,
       "server_shutdown_at": "2026-05-26T12:22:00.867411"
     }
+  },
+  {
+    "session_id": "d07eff0b-630a-4483-93cb-722c58c5a575",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-09T15:34:44.489707",
+    "time_elapsed_secs": 1159,
+    "responses": [],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-09T15:54:03.868074"
+    }
+  },
+  {
+    "session_id": "93f97571-dbd7-49c2-b146-d930d3905cae",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-09T18:00:16.541902",
+    "time_elapsed_secs": 342,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "car il sépare les deux mers, la méditérranée et tyrrhénienne, relie plusieurs communes et porte un lourd souvenir du passé de la 2nde gm",
+        "date_sent": "2026-06-09T18:00:28.583731",
+        "evaluation": {
+          "score": 6,
+          "feedback": "La réponse mentionne partiellement des éléments pertinents, comme la séparation des deux mers et le lien historique avec la Seconde Guerre mondiale, mais elle manque de précision sur le symbolisme spécifique lié à la vision des Bastiais (« les deux mers ») et à leur traversée est-ouest. Le contexte culturel et émotionnel du lieu n'est pas suffisamment développé, ce qui limite la justesse de l'explication.",
+          "model": null
+        },
+        "message_type": "réponse"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-09T18:03:38.717913",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-09T18:04:18.676255",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-09T18:04:26.417333",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-09T18:05:58.757310"
+    }
+  },
+  {
+    "session_id": "9d6edf0d-c541-41ca-a6da-132ba8acf81c",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-09T18:07:09.789380",
+    "time_elapsed_secs": 79,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-09T18:07:35.446029",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-09T18:08:29.122896"
+    }
+  },
+  {
+    "session_id": "950756e8-2172-465c-9041-b322168fc354",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-09T18:22:05.955737",
+    "time_elapsed_secs": 153,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-09T18:22:18.914151",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-09T18:24:39.464666"
+    }
+  },
+  {
+    "session_id": "69e74e40-e80e-4b03-a3b9-202b6c2c300b",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-10T10:06:34.525946",
+    "time_elapsed_secs": 467,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-10T10:07:12.932872",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-10T10:14:21.883226"
+    }
+  },
+  {
+    "session_id": "bc485dde-4f2a-4514-8aad-a1e65eb55c44",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-10T10:16:23.707041",
+    "time_elapsed_secs": 775,
+    "responses": [],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-10T10:29:18.968829"
+    }
+  },
+  {
+    "session_id": "adf8052f-b062-4854-ba75-17e802ed4461",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-10T10:22:59.038483",
+    "time_elapsed_secs": 379,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-10T10:23:11.896947",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-10T10:29:18.987266"
+    }
+  },
+  {
+    "session_id": "2bd49f49-8915-4c29-85b5-f95ee5000a22",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-10T10:31:19.385545",
+    "time_elapsed_secs": 0,
+    "responses": [],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-10T10:31:19.519614"
+    }
+  },
+  {
+    "session_id": "591a6290-ae98-4979-a42f-29e2cb5c4c02",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-10T10:31:53.668015",
+    "time_elapsed_secs": 9,
+    "responses": [],
+    "questions_ids": [],
+    "questions_text": [],
+    "pages": [],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-10T10:32:02.852714"
+    }
+  },
+  {
+    "session_id": "6f56f370-bb65-4fa6-8e8a-ecccd47317e3",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-12T09:49:47.505295",
+    "time_elapsed_secs": 3455,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-12T09:51:49.944757",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-12T10:47:22.834228"
+    }
+  },
+  {
+    "session_id": "93112be9-5a25-4942-837d-157e4c9855a8",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-12T10:49:40.518001",
+    "time_elapsed_secs": 181,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-12T10:49:52.817624",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-12T10:50:07.684982",
+        "evaluation": null,
+        "message_type": "hors_sujet"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-12T10:52:42.058945"
+    }
+  },
+  {
+    "session_id": "1974c03e-a0c7-4d36-9e26-2ee28322c494",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 0,
+    "completed": false,
+    "created_at": "2026-06-12T11:34:09.324926",
+    "time_elapsed_secs": 342,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-12T11:34:19.736631",
+        "evaluation": {
+          "score": 4,
+          "feedback": "La réponse mentionne partiellement un aspect symbolique du col de Teghime, mais elle s’éloigne de la question principale en introduisant un élément non pertinent (l’écologie et la décharge publique). Le lien avec les Bastiais et leur perception des « deux mers » n’est pas évoqué, ce qui est pourtant central dans la réponse attendue. Une précision sur le rôle historique et culturel du col pour les habitants aurait été plus adaptée.",
+          "model": null
+        },
+        "message_type": "réponse"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-12T11:39:51.817194"
+    }
   }
 ]

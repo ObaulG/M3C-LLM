@@ -20,6 +20,8 @@ from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
+
+import database
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               QuestionSessionManager,
@@ -63,15 +65,15 @@ from api_visualization import router as viz_router
 load_dotenv()
 # === MODELS PYDANTIC ===
 class QueryRequest(BaseModel):
-    """ModÃ¨le de requÃªte pour poser une question"""
+    """ModÃ¨le de requête pour poser une question"""
     question: str = Field(..., description="Question Ã  poser au chatbot", min_length=1)
-    models: List[str] = Field(..., description="ModÃ¨les utilisÃ©s pour la gÃ©nÃ©ration")
-    k: int = Field(3, description="Nombre de documents Ã  rÃ©cupÃ©rer", ge=1, le=20)
+    models: List[str] = Field(..., description="ModÃ¨les utilisés pour la génération")
+    k: int = Field(3, description="Nombre de documents Ã  récupérer", ge=1, le=20)
     use_rag: bool = Field(False, description="Utiliser le RAG pour s'appuyer sur des ressources existantes")
     rag_monodocument_id: Optional[str]= Field(None, description="RAG sur un seul document dont on fournit l'identifiant")
-    use_reranking: bool = Field(False, description="Utiliser le reranking pour amÃ©liorer les rÃ©sultats")
-    include_quantitative: bool = Field(True, description="Inclure les donnÃ©es quantitatives")
-    session_id: Optional[str] = Field(None, description="ID de session pour rÃ©cupÃ©rer l'historique des messages")
+    use_reranking: bool = Field(False, description="Utiliser le reranking pour améliorer les résultats")
+    include_quantitative: bool = Field(True, description="Inclure les données quantitatives")
+    session_id: Optional[str] = Field(None, description="ID de session pour récupérer l'historique des messages")
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -84,43 +86,43 @@ class QueryRequest(BaseModel):
         }
     )
 class QueryResponse(BaseModel):
-    """ModÃ¨le de rÃ©ponse Ã  une question"""
-    answer: str = Field(..., description="RÃ©ponse gÃ©nÃ©rÃ©e par le chatbot")
+    """ModÃ¨le de réponse Ã  une question"""
+    answer: str = Field(..., description="Réponse générée par le chatbot")
     sources: Optional[List[RAGSource]] = Field(
         None,
-        description="Sources utilisÃ©es pour la rÃ©ponse dans le cas oÃ¹ le RAG est activÃ©"
+        description="Sources utilisées pour la réponse dans le cas oÃ¹ le RAG est activé"
     )
-    total_time: float = Field(..., description="Temps total de la gÃ©nÃ©ration")
-    metadata: Dict = Field(..., description="MÃ©tadonnÃ©es de la requÃªte")
-    timestamp: str = Field(..., description="Horodatage de la rÃ©ponse")
+    total_time: float = Field(..., description="Temps total de la génération")
+    metadata: Dict = Field(..., description="Métadonnées de la requête")
+    timestamp: str = Field(..., description="Horodatage de la réponse")
 class QueryCompareResponse(BaseModel):
     responses: List[QueryResponse]
-    total_time: float = Field(..., description="Temps total de la gÃ©nÃ©ration")
-    metadata: Dict = Field(..., description="MÃ©tadonnÃ©es de la requÃªte")
-    timestamp: str = Field(..., description="Horodatage de la rÃ©ponse")
+    total_time: float = Field(..., description="Temps total de la génération")
+    metadata: Dict = Field(..., description="Métadonnées de la requête")
+    timestamp: str = Field(..., description="Horodatage de la réponse")
 class DocumentResponse(BaseModel):
-    """ModÃ¨le de rÃ©ponse pour un document"""
+    """ModÃ¨le de réponse pour un document"""
     document_id: str = Field(..., description="Identifiant du document")
     file_name: str = Field(..., description="Nom du fichier")
     file_path: str = Field(..., description="Chemin du fichier")
     file_size: int = Field(..., description="Taille du fichier en octets")
-    created_at: str = Field(..., description="Date de crÃ©ation")
+    created_at: str = Field(..., description="Date de création")
     updated_at: str = Field(..., description="Date de mise Ã  jour")
 class DocumentsListResponse(BaseModel):
-    """ModÃ¨le de rÃ©ponse pour la liste des documents"""
+    """ModÃ¨le de réponse pour la liste des documents"""
     documents: List[DocumentResponse] = Field(..., description="Liste des documents")
     count: int = Field(..., description="Nombre total de documents")
-    timestamp: str = Field(..., description="Horodatage de la rÃ©ponse")
+    timestamp: str = Field(..., description="Horodatage de la réponse")
 class RAGParameters(BaseModel):
     nb_sources: int
     reranking: bool
 class LLMCallData(BaseModel):
     model: str
-    framework: Optional[str] = Field(None, description="Framework utilisÃ© pour l'appel.")
-    input_tokens: Optional[int] = Field(None, description="Nombre de tokens d'entrÃ©e.")
+    framework: Optional[str] = Field(None, description="Framework utilisé pour l'appel.")
+    input_tokens: Optional[int] = Field(None, description="Nombre de tokens d'entrée.")
     output_tokens: Optional[int] = Field(None, description="Nombre de tokens de sortie.")
     rag_parameters: Optional[RAGParameters]
-    consumed_energy_Wh: Optional[float] = Field(None, description="Consommation estimÃ©e pour des modÃ¨les en local.")
+    consumed_energy_Wh: Optional[float] = Field(None, description="Consommation estimée pour des modÃ¨les en local.")
     total_time: Optional[float]
 class QuestionSessionMessage(BaseModel):
     session_id: str
@@ -128,29 +130,29 @@ class QuestionSessionMessage(BaseModel):
 class QuestionSessionResponse(BaseModel):
     session_status: SessionStatus
     computed_message_type: str
-    # TODO: utiliser une structure pour indiquer les donnÃ©es de consommation
-    #       en tokens. PrÃ©voir Ã©galement un type gÃ©nÃ©rique.
+    # TODO: utiliser une structure pour indiquer les données de consommation
+    #       en tokens. Prévoir également un type générique.
     metadata: dict
     total_time: float
     message: str
-    # pour faciliter le traitement cÃ´tÃ© client
+    # pour faciliter le traitement cÃ´té client
     new_question: bool
     is_finished: bool
 class HealthResponse(BaseModel):
-    """ModÃ¨le de rÃ©ponse pour le health check"""
+    """ModÃ¨le de réponse pour le health check"""
     status: str = Field(..., description="Ã‰tat du serveur")
-    rag_initialized: bool = Field(..., description="Le systÃ¨me RAG est-il initialisÃ©")
+    rag_initialized: bool = Field(..., description="Le systÃ¨me RAG est-il initialisé")
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
 final_evaluator = get_final_evaluator_agent("mistral-small")
-message_ev_agent = get_message_type_agent()
+message_ev_agent = get_message_type_agent("ministral-3b-2410")
 question_session_manager = QuestionSessionManager()
 rag_session_manager = RAGSessionManager()
 models_evaluator = ["ministral-8b-latest"]
-# Contient les instances d'agent effectuant les Ã©valuations pour chaque modÃ¨le
+# Contient les instances d'agent effectuant les évaluations pour chaque modÃ¨le
 # dans models_evaluator
 evaluators = []
 # === GESTION DU CYCLE DE VIE ===
@@ -161,8 +163,8 @@ async def lifespan(app: FastAPI):
     initialize_rag()
     initialize_evaluators()
     yield
-    # Shutdown (si nÃ©cessaire)
-    print("ArrÃªt du serveur : sauvegarde des sessions...")
+    # Shutdown (si nécessaire)
+    print("Arrêt du serveur : sauvegarde des sessions...")
     for session_id in question_session_manager.sessions:
         status = question_session_manager.get_session_status(session_id)
         session_dict = session_status_to_dict(status)
@@ -172,7 +174,7 @@ async def lifespan(app: FastAPI):
             "server_shutdown_at": datetime.now().isoformat(),
         }
         append_session_to_json(session_dict)
-    print("Sauvegarde terminÃ©e.")
+    print("Sauvegarde terminée.")
     pass
 # === APPLICATION FASTAPI ===
 app = FastAPI(
@@ -187,18 +189,18 @@ app.mount("/static", StaticFiles(directory="app/static", html=True), name="stati
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
 
 # === CONFIGURATION CORS ===
-# TODO: spÃ©cifier les domaines autorisÃ©s
+# TODO: spécifier les domaines autorisés
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # En production: ["http://localhost:3000", "https://votre-domaine.com"]
     allow_credentials=True,
     allow_methods=["*"],  # GET, POST, etc.
-    allow_headers=["*"],  # Headers autorisÃ©s
+    allow_headers=["*"],  # Headers autorisés
 )
 # === INITIALISATION DU RAG ===
 def initialize_rag():
     """
-    Initialise le pipeline RAG au dÃ©marrage du serveur
+    Initialise le pipeline RAG au démarrage du serveur
     Charge:
     - L'API key OpenAI depuis .env
     - La base ChromaDB
@@ -209,12 +211,12 @@ def initialize_rag():
     print("\n" + "=" * 60)
     print("INITIALISATION DU SYSTÃˆME RAG v3")
     print("=" * 60 + "\n")
-    # VÃ©rifier la prÃ©sence de l'API Mistral AI
+    # Vérifier la présence de l'API Mistral AI
     mistral_api_key = os.getenv("MISTRAL_API_KEY")
     if not mistral_api_key:
         raise RuntimeError(
-            "MISTRAL_API_KEY non trouvÃ©e dans les variables d'environnement. "
-            "Veuillez crÃ©er un fichier .env avec votre clÃ© API."
+            "MISTRAL_API_KEY non trouvée dans les variables d'environnement. "
+            "Veuillez créer un fichier .env avec votre clé API."
         )
     try:
         # Initialiser le pipeline RAG v3
@@ -242,7 +244,7 @@ async def root():
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
-    VÃ©rifie l'Ã©tat de santÃ© du serveur et du systÃ¨me RAG
+    Vérifie l'état de santé du serveur et du systÃ¨me RAG
     Returns:
         HealthResponse avec le statut du serveur
     """
@@ -255,7 +257,7 @@ async def health_check():
 #
 # @app.post("/analyze_document", response_model=List[Question])
 # def analyze_document(request: DocumentRequest):
-#     """GÃ©nÃ¨re des questions Ã  partir d'un document."""
+#     """GénÃ¨re des questions Ã  partir d'un document."""
 #     try:
 #         questions = document_analyzer(request.text)
 #         return questions
@@ -264,7 +266,7 @@ async def health_check():
 #
 # @app.post("/evaluate_response", response_model=Feedback)
 # def evaluate_response(request: UserResponseRequest):
-#     """Ã‰value la rÃ©ponse de l'utilisateur Ã  la question en cours."""
+#     """Ã‰value la réponse de l'utilisateur Ã  la question en cours."""
 #     try:
 #         feedback = tutor_evaluator(request.response)
 #         return feedback
@@ -273,7 +275,7 @@ async def health_check():
 #
 # @app.post("/session/{command}", response_model=Dict)
 # def manage_session(command: str):
-#     """GÃ¨re l'Ã©tat de la session (reset, history)."""
+#     """GÃ¨re l'état de la session (reset, history)."""
 #     try:
 #         result = state_manager(command)
 #         return result
@@ -296,46 +298,46 @@ async def query_simple(request: QueryRequest):
     if not request.models:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Aucun modÃ¨le sÃ©lectionnÃ©. Veuillez spÃ©cifier au moins un modÃ¨le."
+            detail="Aucun modÃ¨le sélectionné. Veuillez spécifier au moins un modÃ¨le."
         )
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requÃªte: {request.question}\n ModÃ¨le: {request.models[0]}")
+        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}\n ModÃ¨le: {request.models[0]}")
         answer, total_time, consumed_energy_Wh = await rag_pipeline.query_simple(
             prompt=request.question,
             model=request.models[0]
         )
-        # Construire la rÃ©ponse
+        # Construire la réponse
         response = _build_query_simple_response(request, answer, total_time, consumed_energy_Wh)
-        print(f"[{datetime.now().isoformat()}] RÃ©ponse gÃ©nÃ©rÃ©e")
+        print(f"[{datetime.now().isoformat()}] Réponse générée")
         return response
     except Exception as e:
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors du traitement de la requÃªte: {str(e)}"
+            detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
 @app.post("/api/query/rag",
           response_model=QueryResponse,
           tags=["Query"])
 async def query_rag(request: QueryRequest):
     """
-    Pose une question au systÃ¨me et retourne la rÃ©ponse en fournissant les sources
+    Pose une question au systÃ¨me et retourne la réponse en fournissant les sources
     Args:
         request: QueryRequest contenant la question et les paramÃ¨tres
     Returns:
-        QueryResponse avec la rÃ©ponse et les sources
+        QueryResponse avec la réponse et les sources
     Raises:
-        HTTPException 503: Si le systÃ¨me RAG n'est pas initialisÃ©
+        HTTPException 503: Si le systÃ¨me RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    # VÃ©rifier que le RAG est initialisÃ©
+    # Vérifier que le RAG est initialisé
     if rag_pipeline is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le systÃ¨me RAG n'est pas encore initialisÃ©. Veuillez rÃ©essayer dans quelques instants."
+            detail="Le systÃ¨me RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
         )
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requÃªte: {request.question}")
+        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
         answer, retrieval_results, total_time, consumed_energy_Wh = await rag_pipeline.query_rag(
             prompt=request.question,
             model=request.models[0],
@@ -349,7 +351,7 @@ async def query_rag(request: QueryRequest):
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors du traitement de la requÃªte: {str(e)}"
+            detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
     response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
     return response
@@ -392,7 +394,7 @@ async def query_compare(request: QueryRequest):
             responses_list.append(_build_query_rag_response(request, answer, best_documents, total_time, consumed_energy_Wh))
         else:
             responses_list.append(_build_query_simple_response(request, answer, total_time, consumed_energy_Wh))
-    print(f"[{datetime.now().isoformat()}] RÃ©ponses gÃ©nÃ©rÃ©es pour tous les modÃ¨les")
+    print(f"[{datetime.now().isoformat()}] Réponses générées pour tous les modÃ¨les")
     return QueryCompareResponse(
         responses=responses_list,
         timestamp=str(datetime.now().isoformat()),
@@ -404,29 +406,29 @@ async def query_compare(request: QueryRequest):
           tags=["Query"])
 async def query_single_doc_rag(request: QueryRequest):
     """
-    Pose une question au systÃ¨me en utilisant le RAG sur un seul document spÃ©cifique.
-    Sauvegarde Ã©galement l'historique d'une session utilisateur
+    Pose une question au systÃ¨me en utilisant le RAG sur un seul document spécifique.
+    Sauvegarde également l'historique d'une session utilisateur
     Args:
         request: QueryRequest contenant la question et les paramÃ¨tres
     Returns:
-        QueryResponse avec la rÃ©ponse et les sources
+        QueryResponse avec la réponse et les sources
     Raises:
-        HTTPException 503: Si le systÃ¨me RAG n'est pas initialisÃ©
+        HTTPException 503: Si le systÃ¨me RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    # VÃ©rifier que le RAG est initialisÃ©
+    # Vérifier que le RAG est initialisé
     if rag_pipeline is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le systÃ¨me RAG n'est pas encore initialisÃ©. Veuillez rÃ©essayer dans quelques instants."
+            detail="Le systÃ¨me RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
         )
-    # VÃ©rifier qu'un document_id est fourni
+    # Vérifier qu'un document_id est fourni
     if not request.rag_monodocument_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Aucun document_id spÃ©cifiÃ© pour le RAG sur un seul document."
+            detail="Aucun document_id spécifié pour le RAG sur un seul document."
         )
-    # RÃ©cupÃ©rer l'historique de la session si session_id est fourni
+    # Récupérer l'historique de la session si session_id est fourni
     session_messages = []
     print("session_id:", request.session_id)
     if request.session_id:
@@ -435,7 +437,7 @@ async def query_single_doc_rag(request: QueryRequest):
         # list of {"role": "user"|"assistant", "content": "..."}
         session_messages.extend(session.to_messages())
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requÃªte single-doc RAG: {request.question}")
+        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête single-doc RAG: {request.question}")
         # Ajouter l'historique au prompt si disponible
         prompt_with_history = request.question
         if session_messages:
@@ -456,7 +458,7 @@ async def query_single_doc_rag(request: QueryRequest):
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors du traitement de la requÃªte: {str(e)}"
+            detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
     print("creating RAGInteraction")
     rag_interaction = RAGInteraction(
@@ -478,32 +480,40 @@ async def query_single_doc_rag(request: QueryRequest):
 async def init_question_session(document_id: str,
                                 premade_session: bool = True):
     """
-    Initialise une nouvelle session de questions/rÃ©ponses pour un document donnÃ©.
-    Retourne l'ID de la session et les questions gÃ©nÃ©rÃ©es.
+    Initialise une nouvelle session de questions/réponses pour un document donné.
+    Retourne l'ID de la session et les questions générées.
     """
+    
     session_id = question_session_manager.create_session(document_id, premade_session)
     if not premade_session:
-        # TODO: pour plus tard, en rÃ©cupÃ©rant l'historique de l'utilisateur
-        #       et Ã©ventuellement ses prÃ©fÃ©rences. Suite de questions recommandÃ©es
-        #       par LLM, IA plus classique, ou bien crÃ©Ã©e et corrigÃ©e par des utilisateurs
-        #       experts ou vÃ©rifiÃ©s.
+        # TODO: pour plus tard, en récupérant l'historique de l'utilisateur
+        #       et éventuellement ses préférences. Suite de questions recommandées
+        #       par LLM, IA plus classique, ou bien créée et corrigée par des utilisateurs
+        #       experts ou vérifiés.
         raise NotImplementedError
+    database.insert_session(get_db_connection(),
+                            session_id,
+                            None,
+                            document_id,
+                            datetime.now().isoformat())
+    
+    # on détermine les questions qui seront posées. La sélection est faite à l'avance.
     questions_ids = PREMADE_QUESTIONS_BY_DOCUMENT_ID[document_id]
     conn = await get_db_connection()
     questions_tasks = [get_question_by_id(conn, question_id, include_answers=False) for question_id in questions_ids]
     questions = await asyncio.gather(*questions_tasks)
-    # note: une liste par question, car une question peut avoir plusieurs chunks
-    # TODO: il faudra ajouter avec le document la mÃ©thode de chunking utilisÃ©e,
-    #       car pour le mÃªme document, il peut Ãªtre dÃ©coupÃ© de plusieurs maniÃ¨res, donc avoir
-    #       plusieurs chunks pour la mÃªme question.
+    # note: il y a une liste par question, car une question peut avoir plusieurs chunks
+    # TODO: il faudra ajouter avec le document la méthode de chunking utilisée,
+    #       car pour le même document, il peut être découpé de plusieurs maniÃ¨res, donc avoir
+    #       plusieurs chunks pour la même question.
     questions_chunks_tasks = [get_chunks_by_question_id(question_id, conn) for question_id in questions_ids]
     questions_chunks = await asyncio.gather(*questions_chunks_tasks)
     questions_texts = [question["content"] for question in questions]
     question_pages = [chunk[0]["num_page"] for chunk in questions_chunks]
-    print(questions_texts)
-    print(question_pages)
+
     question_session_manager.add_questions(session_id, questions_ids, questions_texts, question_pages)
     return question_session_manager.get_session_status(session_id)
+
 @app.post("/api/sessions/questions/message",
           response_model=QuestionSessionResponse)
 async def submit_question_session_message(request: QuestionSessionMessage):
@@ -511,6 +521,9 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     Ajoute un message à la conversation d'une session. L'agent analyse la réponse pour vérifier
     si c'est la réponse à la question en cours, ou une demande de contexte supplémentaire.
     """
+
+    # TODO: fonction trop longue, à découper
+
     start_time = time.time()
     total_input_tokens = 0
     total_output_tokens = 0
@@ -518,18 +531,21 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     user_message = request.user_message
     session = question_session_manager.get_session(session_id)
     if not session:
-        raise HTTPException(status_code=404, detail="Session non trouvÃ©e")
+        raise HTTPException(status_code=404, detail="Session non trouvée")
     if not evaluators:
-        logging.error("Evaluateurs non initialisÃ©s")
-        raise HTTPException(status_code=500, detail="Evaluateurs non initialisÃ©s")
+        logging.error("Evaluateurs non initialisés")
+        raise HTTPException(status_code=500, detail="Evaluateurs non initialisés")
     current_question_id = question_session_manager.get_current_question_id(session_id)
     if not current_question_id:
-        raise HTTPException(status_code=500, detail="Erreur dÃ©tectÃ©e lors du traitement de la session")
-    # rÃ©cupÃ©rer la question et ses rÃ©ponses
+        raise HTTPException(status_code=500, detail="Erreur détectée lors du traitement de la session")
+    # récupérer la question et ses réponses
     question = await get_question_by_id(await get_db_connection(),
                                         current_question_id,
                                         include_answers=True)
-    # vÃ©rification du type de message
+    # vérification du type de message.
+    # Initialement, traité avec un LLM mais depuis un changement de modèle,
+    # beaucoup de réponses sortent comme hors-sujet ??
+
     # -> Tuple[OutputSchema, TokenCountResult, int]
     result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
                                                                    user_input=MessageTypeRequestInput(
@@ -556,7 +572,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
         case "réponse":
             if not question["answers"]:
                 raise HTTPException(status_code=500, detail="Pas de réponse prévue pour cette question...")
-            # il peut y avoir plusieurs rÃ©ponses, on ne garde que la
+            # il peut y avoir plusieurs réponses, on ne garde que la
             # 1Ã¨re
             expected_answer = question["answers"][0]["content"]
             evaluation_input = EvaluateRequestInput(
@@ -564,7 +580,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                 expected_answer=expected_answer,
                 user_answer=user_message
             )
-            # note: les evaluators sont initialisÃ©s avec des clients async.
+            # note: les evaluators sont initialisés avec des clients async.
             # pour pouvoir effectuer ces appels en parallÃ¨le.
             evaluations = []
             """
@@ -605,16 +621,16 @@ async def submit_question_session_message(request: QuestionSessionMessage):
             user_response.evaluation = evaluation_result
             if evaluation_result.score >= 7:
                 # Si le score est suffisant, passer Ã  la question suivante
-                # peut Ã©galement marquer la fin de la session si c'Ã©tait la derniÃ¨re qst
+                # peut également marquer la fin de la session si c'était la derniÃ¨re qst
                 question_session_manager.increment_current_index(session_id)
                 is_finished = question_session_manager.is_finished(session_id)
                 if not is_finished:
                     new_question = True
-            # le client pourra dÃ©tÃ©cter les changements par rapport Ã  l'ancienne version de
+            # le client pourra détécter les changements par rapport Ã  l'ancienne version de
             # sessionStatus : chgt de question, question Ã  refaire, ou fin de session
             message = evaluation_result.feedback
         case "demande_renseignement":
-            # faire appel Ã  un LLM pour rÃ©pondre Ã  la question
+            # faire appel Ã  un LLM pour répondre Ã  la question
             message = "Message de demande de renseignement détecté (pas implémenté pour l'instant)"
             pass
         case "hors_sujet":
@@ -627,9 +643,37 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     print("user response: ", user_response)
     # mettre à jour la session
     question_session_manager.add_response(session_id, user_response)
-
+    print("session updated:")
+    print(question_session_manager.get_session(session_id))
     # Log la réponse dans le CSV pour évaluation humaine
     log_response_to_csv(session_id, user_response)
+    # Sauvegarder dans la base SQL
+    try:
+        conn = await get_db_connection()
+        async with conn.cursor() as cursor:
+            # Insérer dans session_answers
+            await cursor.execute("""
+                INSERT INTO session_answers 
+                (session_id, question_id, question_text, answer_text, 
+                 llm_comment, llm_rating, llm_model, message_type, answered_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            """, (
+                session_id,
+                user_response.question_id,
+                user_response.question_text,
+                user_response.user_answer,
+                user_response.evaluation.feedback if user_response.evaluation else None,
+                user_response.evaluation.score if user_response.evaluation else None,
+                user_response.evaluation.model if user_response.evaluation else None,
+                user_response.message_type
+            ))
+            await conn.commit()
+    except Exception as e:
+        logging.error(f"Erreur lors de l'insertion dans session_answers: {e}")
+        # Ne pas bloquer l'exécution si l'insertion échoue
+        pass
+    finally:
+        await conn.close()
 
     session_response = QuestionSessionResponse(
         session_status=question_session_manager.get_session_status(session_id),
@@ -649,7 +693,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
 @app.get("/api/sessions/rag/init/{document_id}")
 async def create_rag_session(document_id: str) -> dict:
     """
-    CrÃ©Ã©e un session_id de RAG retournÃ© Ã  l'utilisateur
+    Créée un session_id de RAG retourné Ã  l'utilisateur
     """
     session_id = rag_session_manager.create_session(document_id)
     print("session created : ", session_id)
@@ -657,7 +701,7 @@ async def create_rag_session(document_id: str) -> dict:
 @app.get("/api/sessions/rag/{rag_session_id}")
 async def get_rag_session(rag_session_id: str) -> RAGSession:
     """
-    RÃ©cupÃ¨re l'Ã©tat actuel d'une RAGSession.
+    RécupÃ¨re l'état actuel d'une RAGSession.
     """
     print("retrieving session: ", rag_session_id)
     session = rag_session_manager.get_session(rag_session_id)
@@ -665,16 +709,16 @@ async def get_rag_session(rag_session_id: str) -> RAGSession:
 @app.get("/api/sessions/questions/export/{session_id}")
 async def export_question_session(session_id: str):
     """
-    Exporte les rÃ©ponses d'une session au format CSV.
+    Exporte les réponses d'une session au format CSV.
     """
     session = question_session_manager.get_session(session_id)
     if not session:
-        raise HTTPException(status_code=404, detail="Session non trouvÃ©e")
-    # GÃ©nÃ©rer le nom du fichier CSV
+        raise HTTPException(status_code=404, detail="Session non trouvée")
+    # Générer le nom du fichier CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"session_{session_id}_{timestamp}.csv"
     filepath = os.path.join("exports", filename)
-    # CrÃ©er le dossier "exports" s'il n'existe pas
+    # Créer le dossier "exports" s'il n'existe pas
     os.makedirs("exports", exist_ok=True)
     # Ã‰crire le CSV
     with open(filepath, mode="w", newline="", encoding="utf-8") as csvfile:
@@ -708,6 +752,30 @@ async def export_question_session(session_id: str):
                 prev_question = row["question_text"]
             writer.writerow(row)
     return FileResponse(filepath, media_type="text/csv", filename=filename)
+
+@app.get("/api/sessions/questions/{session_id}", tags=["Sessions"])
+async def get_question_session(session_id: str):
+    """
+    Récupère une session de questions/réponses par son ID.
+    
+    Args:
+        session_id: Identifiant de la session
+    
+    Returns:
+        SessionStatus: L'état complet de la session avec toutes les réponses
+    """
+    try:
+        session = question_session_manager.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session non trouvée")
+        return session
+    except Exception as e:
+        print(f"Erreur lors de la récupération de la session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur: {str(e)}"
+        )
+
 @app.get("/api/sessions/rag/export/{session_id}")
 async def export_rag_session(session_id: str):
     # writes the csv
@@ -715,32 +783,32 @@ async def export_rag_session(session_id: str):
     print("creating file at", file_path)
     success = rag_session_manager.export_session_to_csv(session_id)
     if not success:
-        raise HTTPException(status_code=500, detail="Erreur lors de la crÃ©ation du fichier CSV. Veuillez rÃ©essayer plus tard.")
+        raise HTTPException(status_code=500, detail="Erreur lors de la création du fichier CSV. Veuillez réessayer plus tard.")
     return FileResponse(file_path, media_type="text/csv", filename=file_path)
 @app.get("/get_pdf")
 async def get_pdf(document_id: str):
     document_id = document_id.replace(".pdf", "")
-    # note: pour l'instant, l'id du document est Ã©galement son nom dans le dossier
+    # note: pour l'instant, l'id du document est également son nom dans le dossier
     file_path = f"{DOCUMENTS_PATH}/{document_id}.pdf"
     if not os.path.exists(file_path):
         print("file not found...")
-        raise HTTPException(status_code=404, detail="Fichier non trouvÃ©")
+        raise HTTPException(status_code=404, detail="Fichier non trouvé")
     return FileResponse(file_path, media_type="application/pdf")
 @app.get("/api/documents", response_model=DocumentsListResponse, tags=["Documents"])
 async def get_documents_list():
     """
-    RÃ©cupÃ¨re la liste de tous les documents disponibles dans la base de donnÃ©es.
+    RécupÃ¨re la liste de tous les documents disponibles dans la base de données.
     Returns:
-        DocumentsListResponse: Liste des documents avec leurs mÃ©tadonnÃ©es
+        DocumentsListResponse: Liste des documents avec leurs métadonnées
     """
     try:
-        # Connexion Ã  la base de donnÃ©es
+        # Connexion Ã  la base de données
         conn = await get_db_connection()
-        # RÃ©cupÃ©rer tous les documents
+        # Récupérer tous les documents
         documents = await get_all_documents(conn)
         # Fermer la connexion
         await conn.close()
-        # Construire la rÃ©ponse
+        # Construire la réponse
         document_responses = []
         for doc in documents:
             document_responses.append(DocumentResponse(
@@ -757,10 +825,10 @@ async def get_documents_list():
             timestamp=datetime.now().isoformat()
         )
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR lors de la rÃ©cupÃ©ration des documents: {str(e)}")
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la récupération des documents: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la rÃ©cupÃ©ration des documents: {str(e)}"
+            detail=f"Erreur lors de la récupération des documents: {str(e)}"
         )
 
 # Pydantic model for Question response
@@ -975,6 +1043,7 @@ async def save_evaluation_feedback(request: EvaluationFeedbackRequest):
     Returns:
         Message de confirmation avec le chemin du fichier
     """
+    print(request)
     try:
         feedback_data = request.model_dump()
         filepath = log_feedback_to_csv(feedback_data)
@@ -1015,7 +1084,7 @@ def _build_query_simple_response(request: QueryRequest,
         },
         timestamp=datetime.now().isoformat()
     )
-    print(f"[{datetime.now().isoformat()}] RÃ©ponse gÃ©nÃ©rÃ©e")
+    print(f"[{datetime.now().isoformat()}] Réponse générée")
     return response
 def _build_query_rag_response(request: QueryRequest,
                               answer: BaseMessage,
@@ -1034,9 +1103,9 @@ def _build_query_rag_response(request: QueryRequest,
     # usage_metadata={'input_tokens': 944,
     #                 'output_tokens': 686,
     #                 'total_tokens': 1630}
-    # Convertir les rÃ©sultats en format API
+    # Convertir les résultats en format API
     print("_build_query_rag_response")
-    # Construire la rÃ©ponse
+    # Construire la réponse
     response = QueryResponse(
         answer=answer.content,
         total_time=total_time,
@@ -1052,13 +1121,13 @@ def _build_query_rag_response(request: QueryRequest,
         },
         timestamp=datetime.now().isoformat()
     )
-    print(f"[{datetime.now().isoformat()}] RÃ©ponse gÃ©nÃ©rÃ©e avec {len(response.sources)} sources")
+    print(f"[{datetime.now().isoformat()}] Réponse générée avec {len(response.sources)} sources")
     return response
 
 def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessions_backup.json"):
     """
     Ajoute une session Ã  un fichier JSON existant.
-    CrÃ©e le fichier s'il n'existe pas.
+    Crée le fichier s'il n'existe pas.
     """
     file = Path(file_path)
     sessions_data = []
@@ -1071,7 +1140,7 @@ def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessi
                 sessions_data = []
     # Ajouter la nouvelle session
     sessions_data.append(session_dict)
-    # RÃ©Ã©crire le fichier
+    # Réécrire le fichier
     with open(file, "w", encoding="utf-8") as f:
         json.dump(sessions_data, f, indent=2, ensure_ascii=False)
 if __name__ == "__main__":

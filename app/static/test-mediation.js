@@ -275,20 +275,32 @@ async function sendMessage() {
         sendButton.disabled = false;
     }
     else{
-        // indiquer la fin de la session.
-        addMessageToChat("Bravo, vous avez terminé cette courte session d'introduction. Avez-vous des retours?", "info");
-
-        const questionnaireUrl = "https://paulpg.limesurvey.net/234267?lang=fr&newtest=Y";
-        const response = confirm("Souhaitez-vous accéder au questionnaire maintenant ?");
-        if (response) {
-          window.open(questionnaireUrl, "_blank");
-        }
+        await endSession("finished");
     }
-
-
 }
 
+async function endSession(reason){
+    // indiquer la fin de la session.
+    addMessageToChat("Bravo, vous avez terminé cette courte session d'introduction. Avez-vous des retours?", "info");
 
+    // Proposer de revoir les réponses
+    const sessionId = sessionResponse.session_status.session_id;
+    const reviewUrl = `questions_management.html?session_id=${sessionId}`;
+
+    const questionnaireUrl = "https://paulpg.limesurvey.net/234267?lang=fr&newtest=Y";
+    const response = confirm("Souhaitez-vous accéder au questionnaire maintenant ?");
+    if (response) {
+      window.open(questionnaireUrl, "_blank");
+    }
+
+    // Toujours rediriger vers la page de révision après un court délai
+    setTimeout(() => {
+        const goToReview = confirm("Voulez-vous revoir vos réponses ?");
+        if (goToReview) {
+            window.location.href = reviewUrl;
+        }
+    }, 1000);
+}
 // Fonction pour exporter les questions et réponses en CSV
 async function exportToCSV() {
     const sessionId = localStorage.getItem('sessionId');
@@ -298,7 +310,7 @@ async function exportToCSV() {
     }
     
     try {
-        const response = await fetch(`/api/sessions/export/${sessionId}`);
+        const response = await fetch(`/api/sessions/questions/export/${sessionId}`);
         if (!response.ok) {
             throw new Error('Erreur lors de l\'export');
         }
@@ -351,4 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ajouter le bouton à côté du bouton d'envoi
     const sendButtonContainer = sendButton.parentNode;
     sendButtonContainer.appendChild(exportButton);
+});
+
+window.addEventListener("beforeunload", async function(e){
+   await endSession("leave");
 });

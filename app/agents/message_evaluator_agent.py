@@ -19,18 +19,19 @@ class MessageTypeResult(BaseIOSchema):
     confidence: float  # Niveau de confiance (0.0 à 1.0)
     explanation: str  # Explication de la classification
 
+# provoque BEAUCOUP de catégorisation hors-sujet !
 message_type_system_prompt_generator = SystemPromptGenerator(
     background=[
         "Cet agent est spécialisé dans la classification des messages utilisateurs en fonction de leur pertinence par rapport à une question initiale.",
         "Il doit déterminer si le message est une réponse à la question ou hors sujet.",
         "La classification doit être précise et justifiée.",
-        "réponse: répond à la question en cours",
+        "réponse: répond à la question en cours, ou a un lien avec les éléments présents dans la question",
         "hors-sujet: demande qui ne concerne pas de près ou de loin la question",
         "autre: tous les autres cas de figure"
     ],
     steps=[
-        "Lire attentivement la question initiale et le message de l'utilisateur.",
-        "Déterminer si le message est une réponse directe à la question (réponse) ou est complètement hors_sujet.",
+        "Lire la question initiale et le message de l'utilisateur.",
+        "Déterminer si le message est une réponse à la question (réponse) ou est hors_sujet.",
         #"Déterminer si le message est une demande de précisions ou d'informations complémentaires (demande_renseignement).",
         "Attribuer un niveau de confiance à la classification (0.0 = incertain, 1.0 = certain).",
         "Fournir une explication claire et concise de la classification.",
@@ -39,19 +40,20 @@ message_type_system_prompt_generator = SystemPromptGenerator(
         #"Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'demande_renseignement', 'hors_sujet'.",
 "Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'hors_sujet'.",
         "Une seule valeur à retourner.",
+        "Ne classe pas hors_sujet des messages qui ont un lien avec la question"
         "Le champ `confidence` doit être un float entre 0.0 et 1.0.",
         "Le champ `explanation` doit expliquer brièvement la raison de la classification.",
         "La réponse doit être rédigée en français et adaptée au contexte.",
     ],
 )
 
-def get_message_type_agent(model: str = "mistral-small"):
+def get_message_type_agent(model: str = "ministral-3b-2410"):
     client = get_mistral_client()
     message_type_agent = AtomicAgent[MessageTypeRequestInput, MessageTypeResult](
         config=AgentConfig(
             client=client,
             model=model,
-            history=ChatHistory(),
+            history=None,
             system_prompt_generator=message_type_system_prompt_generator,
         )
     )

@@ -137,6 +137,96 @@ async def insert_embedding_model(conn, model_name, description, dimension):
             print(f"Erreur lors de l'insertion du modèle {model_name}: {e}")
             return False
 
+async def insert_session(
+    conn,
+    session_id: str,
+    user_id: int,
+    document_id: str,
+    started_at: str = None,
+    ended_at: str = None,
+    is_active: bool = True
+) -> bool:
+    """
+    Insère une nouvelle session dans la table `sessions`.
+
+    Args:
+        conn: Connexion à la base de données PostgreSQL.
+        session_id (str): Identifiant unique de la session (clé primaire).
+        user_id (int): Identifiant de l'utilisateur associé à la session.
+        document_id (str): Identifiant du document associé à la session.
+        started_at (str, optionnel): Date de début de la session (format TIMESTAMP). Par défaut, NOW().
+        ended_at (str, optionnel): Date de fin de la session (format TIMESTAMP). Par défaut, NULL.
+        is_active (bool, optionnel): Indique si la session est active. Par défaut, True.
+
+    Returns:
+        bool: True si l'insertion a réussi, False si la session existait déjà ou en cas d'erreur.
+    """
+    async with conn.cursor() as cur:
+        try:
+            await cur.execute(
+                """
+                INSERT INTO sessions (session_id, user_id, document_id, started_at, ended_at, is_active)
+                VALUES (%s, %s, %s, COALESCE(%s, NOW()), %s, %s)
+                ON CONFLICT (session_id) DO NOTHING;
+                """,
+                (session_id, user_id, document_id, started_at, ended_at, is_active),
+            )
+            return cur.rowcount > 0
+        except Exception as e:
+            print(f"Erreur lors de l'insertion de la session {session_id}: {e}")
+            return False
+
+async def insert_session_answer(
+    conn,
+    session_id: str,
+    question_id: int,
+    question_text: str,
+    answer_text: str,
+    llm_comment: str = None,
+    llm_rating: int = None,
+    llm_model: str = None,
+    message_type: str = None,
+    answered_at: str = None
+) -> bool:
+    """
+    Insère une réponse de session dans la table `session_answers`.
+
+    Args:
+        conn: Connexion à la base de données PostgreSQL.
+        session_id (str): Identifiant de la session associée.
+        question_id (int): Identifiant de la question associée.
+        question_text (str): Texte de la question.
+        answer_text (str): Texte de la réponse.
+        llm_comment (str, optionnel): Commentaire du LLM.
+        llm_rating (int, optionnel): Note attribuée par le LLM.
+        llm_model (str, optionnel): Modèle LLM utilisé (ex: "mistral-tiny").
+        message_type (str, optionnel): Type de message (ex: "réponse", "demande_renseignement").
+        answered_at (str, optionnel): Date de la réponse (format TIMESTAMP). Par défaut, NOW().
+
+    Returns:
+        bool: True si l'insertion a réussi, False en cas d'erreur.
+    """
+    async with conn.cursor() as cur:
+        try:
+            await cur.execute(
+                """
+                INSERT INTO session_answers (
+                    session_id, question_id, question_text, answer_text,
+                    llm_comment, llm_rating, llm_model, message_type, answered_at
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, NOW()))
+                RETURNING answer_id;
+                """,
+                (
+                    session_id, question_id, question_text, answer_text,
+                    llm_comment, llm_rating, llm_model, message_type, answered_at
+                ),
+            )
+            return cur.rowcount > 0
+        except Exception as e:
+            print(f"Erreur lors de l'insertion de la réponse pour la session {session_id}: {e}")
+            return False
+
 async def get_question_by_id(conn,
                              question_id: int,
                              include_answers: bool = False) -> dict:

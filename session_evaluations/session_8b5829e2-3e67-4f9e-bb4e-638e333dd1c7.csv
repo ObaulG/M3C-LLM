@@ -1,0 +1,2 @@
+timestamp,session_id,question_id,question_text,user_answer,score,feedback,model,message_type
+2026-06-09T18:26:26.294810,8b5829e2-3e67-4f9e-bb4e-638e333dd1c7,249,Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?,"Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",,,,hors_sujet

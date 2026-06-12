@@ -112,7 +112,6 @@ def session_status_to_dict(session_status: SessionStatus) -> Dict[str, Any]:
         return {
             "score": evaluation.score,
             "feedback": evaluation.feedback,
-            "cosine_similarity": evaluation.cosine_similarity,
             "model": evaluation.model,
         }
 
@@ -186,6 +185,8 @@ class QuestionSessionManager:
             "created_at": datetime.now(),
             "premade": premade_session,
         }
+        print("Session créée : ", session_id)
+        print(self.sessions)
         return session_id
 
     def add_questions(self,

@@ -149,7 +149,7 @@ def get_evaluator_agent_local(model: str = "ministral-3:3b",
             client=client,
             model=model,
             mode=Mode.MD_JSON,
-            history=ChatHistory(),
+            history=None,
             tools=None,
             system_prompt_generator=evaluation_system_prompt_generator_bis,
             model_api_parameters={"temperature": 0.05},
@@ -158,23 +158,17 @@ def get_evaluator_agent_local(model: str = "ministral-3:3b",
     return evaluation_agent
 
 async def run_raw(agent, input_data: EvaluateRequestInput) -> AgentEvaluationResult:
-    """
-    Effectué
-    """
     raw_output = await agent.run_async(input_data)
 
-    # 1️⃣ Extraire bloc JSON si présent
     match = re.search(r"```json\s*(.*?)\s*```", raw_output, re.DOTALL)
     if match:
         json_str = match.group(1)
     else:
         json_str = raw_output.strip()
 
-    # 2️⃣ Charger JSON
     try:
         data = json.loads(json_str)
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON returned by model:\n{raw_output}") from e
 
-    # 3️⃣ Validation Pydantic
     return AgentEvaluationResult.model_validate(data)
