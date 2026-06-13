@@ -12,7 +12,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from database.database import get_db_connection, get_all_documents, get_chunks_for_document, get_chunk_embeddings_with_metadata
+from database.database import get_db_connection, get_all_documents, get_chunks_for_document, get_chunk_embeddings_with_metadata_qdrant
 from rag_session import RAGSessionManager
 
 import numpy as np

@@ -1,4 +1,6 @@
 atomic_agents==2.7.5
+aiomysql
+qdrant_client
 faiss_cpu==1.10.0
 fastapi==0.136.0
 google-genai

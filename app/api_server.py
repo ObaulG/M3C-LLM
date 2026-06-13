@@ -43,7 +43,10 @@ from database.database import (get_db_connection,
                                get_question_by_id,
                                get_questions_by_ids,
                                get_chunks_by_question_id,
-                               get_chunks_by_question_ids)
+                               get_chunks_by_question_ids,
+                               insert_chunk_embeddings_batch_qdrant,
+                               insert_document,
+                               insert_chunks)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -186,6 +189,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
+app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="admin")
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
 
 # === CONFIGURATION CORS ===
@@ -1124,6 +1128,323 @@ def _build_query_rag_response(request: QueryRequest,
     print(f"[{datetime.now().isoformat()}] Réponse générée avec {len(response.sources)} sources")
     return response
 
+def split_text_into_chunks(text: str, chunk_size: int, overlap: int) -> List[str]:
+    """Découpe un texte en chunks avec recouvrement.
+    
+    Args:
+        text: Texte à découper
+        chunk_size: Taille maximale d'un chunk en caractères
+        overlap: Nombre de caractères de recouvrement entre les chunks
+        
+    Returns:
+        Liste des chunks
+    """
+    if not text or chunk_size <= 0:
+        return []
+    
+    chunks = []
+    start = 0
+    overlap = min(overlap, chunk_size)  # Assurer que overlap <= chunk_size
+    
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(text[start:end])
+        if end == len(text):
+            break
+        start = end - overlap
+    
+    return chunks
+
+
+# ============================================================================
+# MODÈLES PYDANTIC POUR L'ADMINISTRATION
+# ============================================================================
+
+class AdminStatsResponse(BaseModel):
+    """Réponse pour les statistiques d'indexation"""
+    documents_count: int = Field(..., description="Nombre total de documents indexés")
+    chunks_count: int = Field(..., description="Nombre total de chunks indexés")
+    embeddings_count: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Nombre d'embeddings par modèle"
+    )
+    documents_with_extracted_text_count: int = Field(
+        0,
+        description="Nombre de documents avec contenu extrait (extracted_text)"
+    )
+    timestamp: str = Field(..., description="Horodatage de la réponse")
+
+
+class IndexDocumentsRequest(BaseModel):
+    """Requête pour l'indexation des documents existants"""
+    indexation_type: str = Field(
+        ...,
+        description="Type d'indexation: 'all-metadata' pour TOUS les docs par métadonnées, 'all-with-text' pour TOUS les docs avec extracted_text par contenu",
+        pattern="^(all-metadata|all-with-text)$"
+    )
+    chunk_size: int = Field(
+        2700,
+        description="Taille des chunks en caractères (utilisé seulement si indexation_type='all-with-text')",
+        ge=100,
+        le=10000
+    )
+    chunk_overlap: int = Field(
+        400,
+        description="Recouvrement entre chunks en caractères (utilisé seulement si indexation_type='all-with-text')",
+        ge=0,
+        le=5000
+    )
+
+
+class IndexDocumentsResponse(BaseModel):
+    """Réponse pour l'indexation des documents"""
+    success: bool = Field(..., description="Indique si l'indexation a réussi")
+    processed_documents: int = Field(..., description="Nombre de documents traités")
+    chunks_created: int = Field(0, description="Nombre de chunks créés")
+    embeddings_generated: int = Field(0, description="Nombre d'embeddings générés")
+    chunks_by_document: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Nombre de chunks créés par document"
+    )
+    errors: List[str] = Field(default_factory=list, description="Liste des erreurs éventuelles")
+    timestamp: str = Field(..., description="Horodatage de la réponse")
+
+
+# ============================================================================
+# ENDPOINTS D'ADMINISTRATION
+# ============================================================================
+
+@app.get("/api/admin/documents", tags=["Admin"])
+async def get_admin_documents():
+    """
+    Récupère la liste des documents existants pour l'interface d'administration.
+    
+    Returns:
+        Liste des documents avec leurs métadonnées et indication de la présence de extracted_text.
+    """
+    try:
+        conn = await get_db_connection()
+        documents = await database.get_all_documents_with_details(conn)
+        await conn.close()
+        
+        return {
+            "documents": documents,
+            "count": len(documents),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        print(f"Erreur dans get_admin_documents: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des documents: {str(e)}"
+        )
+
+
+@app.get("/api/admin/stats", response_model=AdminStatsResponse, tags=["Admin"])
+async def get_admin_stats():
+    """
+    Récupère les statistiques d'indexation de l'application.
+    
+    Returns:
+        Statistiques sur le nombre de documents, chunks et embeddings indexés.
+    """
+    try:
+        stats = await database.get_admin_stats()
+        
+        return AdminStatsResponse(
+            documents_count=stats["documents_count"],
+            chunks_count=stats["chunks_count"],
+            embeddings_count=stats["embeddings_count"],
+            documents_with_extracted_text_count=stats.get("documents_with_extracted_text_count", 0),
+            timestamp=datetime.now().isoformat()
+        )
+    
+    except Exception as e:
+        print(f"Erreur dans get_admin_stats: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des statistiques: {str(e)}"
+        )
+
+
+@app.post("/api/admin/documents/index", 
+          response_model=IndexDocumentsResponse,
+          tags=["Admin"])
+async def index_existing_documents(request: IndexDocumentsRequest):
+    """
+    Indexe des documents EXISTANTS dans la base de données.
+    
+    Selon le type d'indexation:
+    - 'metadata': Indexe uniquement les métadonnées des documents (file_name, file_path, etc.)
+    - 'content': Découpe le contenu extrait (extracted_text) en chunks et indexe chaque chunk
+    
+    Les documents doivent déjà exister dans la base de données.
+    
+    Args:
+        request: IndexDocumentsRequest avec document_ids, indexation_type, chunk_size, chunk_overlap
+        
+    Returns:
+        IndexDocumentsResponse avec le résultat de l'indexation
+    """
+    try:
+        conn = await get_db_connection()
+        
+        processed_documents = 0
+        chunks_created = 0
+        embeddings_generated = 0
+        chunks_by_document = {}
+        errors = []
+        
+        # Préparer les embeddings batch pour Qdrant
+        embeddings_batch = []
+        
+        # Récupérer les documents selon le type d'indexation
+        if request.indexation_type == "all-metadata":
+            # Indexer TOUS les documents par métadonnées
+            docs_map = await database.get_all_documents_for_metadata_indexing(conn)
+        elif request.indexation_type == "all-with-text":
+            # Indexer TOUS les documents avec extracted_text par contenu
+            docs_map = await database.get_all_documents_with_extracted_text(conn)
+        else:
+            errors.append(f"Type d'indexation inconnu: {request.indexation_type}")
+            docs_map = {}
+        print(f"{len(docs_map)} documents à indexer")
+        # Traiter chaque document
+        for doc_id, doc_data in docs_map.items():
+            
+            try:
+                if request.indexation_type == "all-metadata":
+                    # Indexation par métadonnées : créer un embedding pour les métadonnées du document
+                    # Construire un texte à partir des métadonnées
+                    metadata_text = f"Document ID: {doc_data['document_id']}\n"
+                    metadata_text += f"File Name: {doc_data['file_name']}\n"
+                    if doc_data.get('file_path'):
+                        metadata_text += f"File Path: {doc_data['file_path']}\n"
+                    if doc_data.get('metadata'):
+                        metadata_text += f"Metadata: {json.dumps(doc_data['metadata'])}\n"
+                    
+                    # Générer l'embedding pour les métadonnées
+                    try:
+                        embedding = rag_pipeline._get_prompt_embeddings(metadata_text)
+                        
+                        # Créer un chunk spécial pour les métadonnées
+                        chunk_id = f"{doc_id}_metadata"
+                        
+                        embeddings_batch.append({
+                            "chunk_id": chunk_id,
+                            "document_id": doc_id,
+                            "model_name": rag_pipeline.embedder_name,
+                            "embedding": embedding,
+                            "content": metadata_text,
+                            "num_page": None,
+                            "position_in_page": 0,
+                            "token_count": len(metadata_text),
+                            "metadata": {"type": "metadata"}
+                        })
+                        
+                        embeddings_generated += 1
+                        chunks_by_document[doc_id] = 1
+                        chunks_created += 1
+                        
+                    except Exception as e:
+                        errors.append(f"Erreur génération embedding pour métadonnées de {doc_id}: {str(e)}")
+                    
+                elif request.indexation_type == "all-with-text":
+                    # Indexation par contenu : découper extracted_text en chunks
+                    extracted_text = doc_data.get("extracted_text", "")
+                    
+                    if not extracted_text:
+                        errors.append(f"Document {doc_id} n'a pas de contenu extrait (extracted_text)")
+                        continue
+                    
+                    # 1. Découper le texte en chunks
+                    chunks = split_text_into_chunks(
+                        extracted_text,
+                        request.chunk_size,
+                        request.chunk_overlap
+                    )
+                    
+                    if not chunks:
+                        errors.append(f"Document {doc_id}: aucun chunk généré")
+                        continue
+                    
+                    # 2. Insérer les chunks dans MySQL
+                    chunks_data = []
+                    for i, chunk_content in enumerate(chunks):
+                        chunk_id = f"{doc_id}_chunk_{i}"
+                        chunks_data.append((
+                            chunk_id,
+                            doc_id,
+                            7,  # strategy_id = 7 (découpage en caractères)
+                            chunk_content,
+                            None,  # num_page
+                            i,     # position_in_page
+                            len(chunk_content),  # token_count
+                            doc_data.get("metadata", {})
+                        ))
+                    
+                    await insert_chunks(conn, chunks_data)
+                    
+                    # 3. Préparer les embeddings pour Qdrant
+                    for i, chunk_content in enumerate(chunks):
+                        chunk_id = f"{doc_id}_chunk_{i}"
+                        
+                        try:
+                            embedding = rag_pipeline._get_prompt_embeddings(chunk_content)
+                            
+                            embeddings_batch.append({
+                                "chunk_id": chunk_id,
+                                "document_id": doc_id,
+                                "model_name": rag_pipeline.embedder_name,
+                                "embedding": embedding,
+                                "content": chunk_content,
+                                "num_page": None,
+                                "position_in_page": i,
+                                "token_count": len(chunk_content),
+                                "metadata": doc_data.get("metadata", {})
+                            })
+                            
+                            embeddings_generated += 1
+                        except Exception as e:
+                            errors.append(f"Erreur génération embedding pour {doc_id}_chunk_{i}: {str(e)}")
+                    
+                    chunks_by_document[doc_id] = len(chunks)
+                    chunks_created += len(chunks)
+                    
+                processed_documents += 1
+                
+            except Exception as e:
+                errors.append(f"Erreur pour document {doc_id}: {str(e)}")
+        
+        # 4. Insérer tous les embeddings dans Qdrant en batch
+        if embeddings_batch:
+            try:
+                await insert_chunk_embeddings_batch_qdrant(embeddings_batch)
+            except Exception as e:
+                errors.append(f"Erreur lors de l'insertion des embeddings dans Qdrant: {str(e)}")
+        
+        await conn.close()
+        
+        return IndexDocumentsResponse(
+            success=True,
+            processed_documents=processed_documents,
+            chunks_created=chunks_created,
+            embeddings_generated=embeddings_generated,
+            chunks_by_document=chunks_by_document,
+            errors=errors,
+            timestamp=datetime.now().isoformat()
+        )
+    
+    except Exception as e:
+        print(f"Erreur dans index_existing_documents: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'indexation: {str(e)}"
+        )
+
+
 def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessions_backup.json"):
     """
     Ajoute une session Ã  un fichier JSON existant.
@@ -1143,6 +1464,7 @@ def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessi
     # Réécrire le fichier
     with open(file, "w", encoding="utf-8") as f:
         json.dump(sessions_data, f, indent=2, ensure_ascii=False)
+
 if __name__ == "__main__":
     # Configuration du serveur
     host = os.getenv("API_HOST", "0.0.0.0")  # 0.0.0.0 pour accepter les connexions externes

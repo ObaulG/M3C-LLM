@@ -1,33 +1,275 @@
 from typing import Optional, List, Dict, Any
 
-import psycopg
-from psycopg import Connection, AsyncConnection
+import aiomysql
+from qdrant_client import QdrantClient, models
 
-# Configuration de la base de données
+# Configuration de la base de données MySQL
 DB_CONFIG = {
     "host": "localhost",
-    "dbname": "mediationllm",
-    "user": "postgres",
-    "password": "postgres",
+    "port": 8081,
+    "db": "m3c_database",
+    "user": "root",
+    "password": "rootpassword",
+    "autocommit": True
 }
 
-# Connexion à la base de données
-async def get_db_connection() -> AsyncConnection:
-    return await psycopg.AsyncConnection.connect(**DB_CONFIG)
+# Configuration Qdrant
+QDRANT_CONFIG = {
+    "host": "localhost",
+    "port": 6333,
+}
+
+# Client Qdrant (synchrone, compatible avec async via threads)
+qdrant_client = QdrantClient(**QDRANT_CONFIG)
+
+# Connexion à la base de données MySQL
+async def get_db_connection():
+    return await aiomysql.connect(**DB_CONFIG)
+
+
+# ============================================================================
+# FONCTIONS QDRANT POUR LES EMBEDDINGS
+# ============================================================================
+
+async def ensure_qdrant_collection(model_name: str, vector_size: int):
+    """Crée une collection Qdrant si elle n'existe pas."""
+    try:
+        qdrant_client.get_collection(model_name)
+    except:
+        qdrant_client.create_collection(
+            collection_name=model_name,
+            vectors_config=models.VectorParams(
+                size=vector_size, 
+                distance=models.Distance.COSINE
+            )
+        )
+
+
+async def insert_chunk_embedding_qdrant(
+    chunk_id: str, 
+    document_id: str, 
+    model_name: str, 
+    embedding: list,
+    content: str = None, 
+    num_page: int = None, 
+    position_in_page: int = None,
+    token_count: int = None, 
+    metadata: dict = None
+):
+    """Insère un embedding pour un chunk dans Qdrant."""
+    await ensure_qdrant_collection(model_name, len(embedding))
+    
+    # Préparer le payload
+    payload = {
+        "chunk_id": chunk_id,
+        "document_id": document_id,
+        "model_name": model_name,
+    }
+    if content: payload["content"] = content
+    if num_page is not None: payload["num_page"] = num_page
+    if position_in_page is not None: payload["position_in_page"] = position_in_page
+    if token_count is not None: payload["token_count"] = token_count
+    if metadata: payload["metadata"] = metadata
+    
+    # Insérer le point
+    qdrant_client.upsert(
+        collection_name=model_name,
+        points=[
+            models.PointStruct(
+                id=str(chunk_id),
+                vector=embedding,
+                payload=payload
+            )
+        ]
+    )
+
+
+async def insert_chunk_embeddings_batch_qdrant(embeddings_batch: list):
+    """
+    Insertion par batch d'embeddings dans Qdrant.
+    
+    Args:
+        embeddings_batch: Liste de dicts avec keys:
+            chunk_id, document_id, model_name, embedding, content, 
+            num_page, position_in_page, token_count, metadata
+    """
+    # Grouper par model_name
+    by_model = {}
+    for item in embeddings_batch:
+        model = item["model_name"]
+        if model not in by_model:
+            by_model[model] = []
+        by_model[model].append(item)
+    
+    # Traiter chaque modèle
+    for model_name, items in by_model.items():
+        await ensure_qdrant_collection(model_name, len(items[0]["embedding"]))
+        
+        points = []
+        for item in items:
+            payload = {
+                "chunk_id": item["chunk_id"],
+                "document_id": item["document_id"],
+                "model_name": model_name,
+            }
+            if "content" in item and item["content"]: 
+                payload["content"] = item["content"]
+            if "num_page" in item and item["num_page"] is not None: 
+                payload["num_page"] = item["num_page"]
+            if "position_in_page" in item and item["position_in_page"] is not None:
+                payload["position_in_page"] = item["position_in_page"]
+            if "token_count" in item and item["token_count"] is not None:
+                payload["token_count"] = item["token_count"]
+            if "metadata" in item and item["metadata"]:
+                payload["metadata"] = item["metadata"]
+            
+            points.append(models.PointStruct(
+                id=str(item["chunk_id"]),
+                vector=item["embedding"],
+                payload=payload
+            ))
+        
+        qdrant_client.upsert(
+            collection_name=model_name,
+            points=points,
+            wait=True
+        )
+
+
+async def get_top_k_similar_chunks_qdrant(
+    embedding: list, 
+    model_name: str, 
+    k: int = 3, 
+    specified_document_id: str = None
+) -> list:
+    """
+    Récupère les k chunks les plus similaires à un embedding donné.
+    
+    Args:
+        embedding: Embedding de référence sous forme de liste
+        model_name: Nom du modèle d'embedding (collection Qdrant)
+        k: Nombre de résultats à retourner
+        specified_document_id: Filtre optionnel par document_id
+        
+    Returns:
+        Liste de dicts avec chunk_id, document_id, content, metadata, similarity
+    """
+    # Filtre optionnel par document
+    query_filter = None
+    if specified_document_id:
+        query_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="document_id",
+                    match=models.MatchValue(value=specified_document_id)
+                )
+            ]
+        )
+    
+    # Recherche
+    results = qdrant_client.search(
+        collection_name=model_name,
+        query_vector=embedding,
+        limit=k,
+        query_filter=query_filter,
+        with_payload=True,
+        with_vectors=False
+    )
+    
+    # Formater les résultats
+    return [
+        {
+            "chunk_id": r.id,
+            "document_id": r.payload.get("document_id"),
+            "content": r.payload.get("content"),
+            "num_page": r.payload.get("num_page"),
+            "position_in_page": r.payload.get("position_in_page"),
+            "token_count": r.payload.get("token_count"),
+            "metadata": r.payload.get("metadata"),
+            "similarity": r.score
+        }
+        for r in results
+    ]
+
+
+async def get_chunk_embeddings_with_metadata_qdrant(
+    model_name: str = "mistral-embed",
+    document_id: str = None,
+    limit: int = None
+) -> list:
+    """
+    Récupère les chunks avec leurs embeddings et métadonnées depuis Qdrant.
+    
+    Args:
+        model_name: Nom du modèle (collection Qdrant)
+        document_id: Filtre optionnel par document
+        limit: Limite du nombre de résultats
+        
+    Returns:
+        Liste de dicts avec toutes les informations des chunks et leurs embeddings
+    """
+    # Filtre par document si spécifié
+    query_filter = None
+    if document_id:
+        query_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="document_id",
+                    match=models.MatchValue(value=document_id)
+                )
+            ]
+        )
+    
+    # Récupérer tous les points (ou limité)
+    points, _ = qdrant_client.scroll(
+        collection_name=model_name,
+        query_filter=query_filter,
+        limit=limit,
+        with_payload=True,
+        with_vectors=True
+    )
+    
+    return [
+        {
+            "chunk_id": p.id,
+            "document_id": p.payload.get("document_id"),
+            "embedding": p.vector,
+            "content": p.payload.get("content"),
+            "num_page": p.payload.get("num_page"),
+            "position_in_page": p.payload.get("position_in_page"),
+            "token_count": p.payload.get("token_count"),
+            "metadata": p.payload.get("metadata")
+        }
+        for p in points
+    ]
+
+
+# ============================================================================
+# FONCTIONS MySQL POUR LES DONNÉES RELATIONNELLES
+# ============================================================================
 
 # Fonction pour insérer un document
 async def insert_document(conn, document_id, file_name, file_path, file_size):
     async with conn.cursor() as cur:
+        # Utiliser INSERT IGNORE pour éviter les doublons
         await cur.execute(
             """
-            INSERT INTO documents (document_id, file_name, file_path, file_size)
+            INSERT IGNORE INTO documents (document_id, file_name, file_path, file_size)
             VALUES (%s, %s, %s, %s)
-            ON CONFLICT (document_id) DO NOTHING
-            RETURNING document_id;
             """,
             (document_id, file_name, file_path, file_size),
         )
-        return await cur.fetchone()[0] if cur.rowcount > 0 else None
+        # Vérifier si l'insertion a réussi
+        if cur.rowcount > 0:
+            return document_id
+        else:
+            # Le document existait déjà, retourner l'ID existant
+            await cur.execute(
+                "SELECT document_id FROM documents WHERE document_id = %s",
+                (document_id,)
+            )
+            result = await cur.fetchone()
+            return result[0] if result else None
 
 # Fonction pour insérer une stratégie de chunking
 async def insert_chunking_strategy(conn, name, description, method, chunk_size, overlap):
@@ -51,70 +293,42 @@ async def insert_chunking_strategy(conn, name, description, method, chunk_size, 
         await cur.execute(
             """
             INSERT INTO chunking_strategies (name, description, method, chunk_size, overlap)
-            VALUES (%s, %s, %s, %s, %s) RETURNING strategy_id;
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (name, description, method, chunk_size, overlap),
         )
-        return await cur.fetchone()[0]
+        # MySQL ne supporte pas RETURNING, utiliser LAST_INSERT_ID()
+        return cur.lastrowid
 
 # Fonction pour insérer des chunks
 async def insert_chunks(conn, chunks_data):
     async with conn.cursor() as cur:
+        # Utiliser INSERT IGNORE pour éviter les doublons
         await cur.executemany(
             """
-            INSERT INTO chunks (chunk_id, document_id, strategy_id, content, num_page, position_in_page, token_count, metadata)
+            INSERT IGNORE INTO chunks (chunk_id, document_id, strategy_id, content, num_page, position_in_page, token_count, metadata)
             VALUES %s
-            ON CONFLICT (chunk_id) DO NOTHING;
             """,
             chunks_data,
         )
 
-# Fonction pour insérer des embeddings
-async def insert_chunk_embeddings(conn, chunk_id, model_name, embedding):
-    """
-    Insère un embedding pour un chunk et un modèle donné dans la table `chunk_embeddings`.
+# NOTE: Les fonctions suivantes sont OBSOLÈTES et remplacées par les versions Qdrant
+# Utiliser à la place: insert_chunk_embedding_qdrant() et insert_chunk_embeddings_batch_qdrant()
 
-    Args:
-        conn: Connexion à la base de données PostgreSQL.
-        chunk_id (str): Identifiant du chunk.
-        model_name (str): Nom du modèle d'embedding.
-        embedding (list): Embedding sous forme de liste (converti depuis numpy.ndarray).
-    """
-    async with conn.cursor() as cur:
-        await cur.execute(
-            """
-            INSERT INTO chunk_embeddings (chunk_id, model_name, embedding)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (chunk_id, model_name) DO NOTHING;
-            """,
-            (chunk_id, model_name, embedding),
-        )
+# async def insert_chunk_embeddings(conn, chunk_id, model_name, embedding):
+#     """OBSOLÈTE - Utiliser insert_chunk_embedding_qdrant()"""
+#     pass
 
-async def insert_chunk_embeddings_batch(conn, embeddings_batch):
-    """
-    Insère un lot d'embeddings pour des chunks et modèles donnés.
-
-    Args:
-        conn: Connexion à la base de données PostgreSQL.
-        embeddings_batch (list): Liste de tuples (chunk_id, model_name, embedding).
-    """
-    async with conn.cursor() as cur:
-        await conn.executemany(
-            cur,
-            """
-            INSERT INTO chunk_embeddings (chunk_id, model_name, embedding)
-            VALUES %s
-            ON CONFLICT (chunk_id, model_name) DO NOTHING;
-            """,
-            embeddings_batch,
-        )
+# async def insert_chunk_embeddings_batch(conn, embeddings_batch):
+#     """OBSOLÈTE - Utiliser insert_chunk_embeddings_batch_qdrant()"""
+#     pass
 
 async def insert_embedding_model(conn, model_name, description, dimension):
     """
-    Insère un modèle d'embedding dans la table `embedding_models`.
+    Insère un modèle d'embedding dans la table `embedding_models` (MySQL).
 
     Args:
-        conn: Connexion à la base de données PostgreSQL.
+        conn: Connexion à la base de données MySQL.
         model_name (str): Nom unique du modèle (clé primaire).
         description (str): Description du modèle.
         dimension (int): Dimension des embeddings générés par ce modèle.
@@ -126,9 +340,8 @@ async def insert_embedding_model(conn, model_name, description, dimension):
         try:
             await cur.execute(
                 """
-                INSERT INTO embedding_models (model_name, description, dimension)
+                INSERT IGNORE INTO embedding_models (model_name, description, dimension)
                 VALUES (%s, %s, %s)
-                ON CONFLICT (model_name) DO NOTHING;
                 """,
                 (model_name, description, dimension),
             )
@@ -165,9 +378,8 @@ async def insert_session(
         try:
             await cur.execute(
                 """
-                INSERT INTO sessions (session_id, user_id, document_id, started_at, ended_at, is_active)
+                INSERT IGNORE INTO sessions (session_id, user_id, document_id, started_at, ended_at, is_active)
                 VALUES (%s, %s, %s, COALESCE(%s, NOW()), %s, %s)
-                ON CONFLICT (session_id) DO NOTHING;
                 """,
                 (session_id, user_id, document_id, started_at, ended_at, is_active),
             )
@@ -215,7 +427,6 @@ async def insert_session_answer(
                     llm_comment, llm_rating, llm_model, message_type, answered_at
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, NOW()))
-                RETURNING answer_id;
                 """,
                 (
                     session_id, question_id, question_text, answer_text,
@@ -227,6 +438,59 @@ async def insert_session_answer(
             print(f"Erreur lors de l'insertion de la réponse pour la session {session_id}: {e}")
             return False
 
+async def get_resource_basic_metadata(conn, resource_id):
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT id, title, resource_type, owner_id, is_public, created, modified
+            FROM resource
+            WHERE id = %s
+            """,
+            (resource_id,)
+        )
+        result = await cur.fetchone()
+        if result:
+            return {
+                "id": result[0],
+                "title": result[1],
+                "resource_type": result[2],
+                "owner_id": result[3],
+                "is_public": bool(result[4]),
+                "created": result[5],
+                "modified": result[6]
+            }
+        return None
+
+async def get_resource_full_metadata(conn, resource_id):
+    async with conn.cursor() as cur:
+        # Récupérer les métadonnées de base
+        basic_metadata = await get_resource_basic_metadata(conn, resource_id)
+        if not basic_metadata:
+            return None
+
+        # Récupérer les métadonnées détaillées (champs + valeurs)
+        await cur.execute(
+            """
+            SELECT p.local_name, v.value, v.type, v.lang
+            FROM value v
+            JOIN property p ON v.property_id = p.id
+            WHERE v.resource_id = %s
+            """,
+            (resource_id,)
+        )
+        detailed_metadata = await cur.fetchall()
+
+        # Construire un dictionnaire avec les métadonnées
+        metadata = {**basic_metadata, "details": {}}
+        for row in detailed_metadata:
+            field_name, value, value_type, lang = row
+            metadata["details"][field_name] = {
+                "value": value,
+                "type": value_type,
+                "lang": lang
+            }
+
+        return metadata
 async def get_question_by_id(conn,
                              question_id: int,
                              include_answers: bool = False) -> dict:
@@ -273,13 +537,15 @@ async def get_questions_by_ids(question_ids: list[str], conn) -> list[dict]:
     if not question_ids:
         return []
 
-    query = """
+    # MySQL utilise IN au lieu de ANY
+    placeholders = ", ".join(["%s"] * len(question_ids))
+    query = f"""
         SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
         FROM questions q
-        WHERE q.question_id = ANY(%s)
+        WHERE q.question_id IN ({placeholders})
     """
     async with conn.cursor() as cur:
-        await cur.execute(query, (question_ids,))
+        await cur.execute(query, tuple(question_ids))
         rows = await cur.fetchall()
 
     return [
@@ -370,13 +636,15 @@ async def get_chunks_by_question_ids(question_ids: list[int], conn):
         return []
 
     async with conn.cursor() as cur:
-        # Utilisation de ANY pour filtrer sur plusieurs question_id
-        await cur.execute("""
+        # MySQL utilise IN au lieu de ANY
+        placeholders = ", ".join(["%s"] * len(question_ids))
+        query = f"""
             SELECT c.chunk_id, c.content, c.num_page, c.position_in_page, qc.question_id
             FROM chunks c
             JOIN question_chunks qc ON c.chunk_id = qc.chunk_id
-            WHERE qc.question_id = ANY(%s)
-        """, (question_ids,))
+            WHERE qc.question_id IN ({placeholders})
+        """
+        await cur.execute(query, tuple(question_ids))
 
         rows = await cur.fetchall()
         return [
@@ -391,57 +659,14 @@ async def get_chunks_by_question_ids(question_ids: list[int], conn):
         ]
 
 
-async def get_top_k_similar_chunks_cossim(conn,
-                                          embedding: list[float],
-                                          model_name: str,
-                                          k=3,
-                                          specified_document_id: Optional[str] = None):
-    """
-    Récupère les k meilleurs documents en fonction de la similarité cosinus avec un embedding donné.
+# NOTE: Les fonctions suivantes sont OBSOLÈTES et remplacées par Qdrant
+# Utiliser à la place: get_top_k_similar_chunks_qdrant()
 
-    Args:
-        conn: Connexion à la base de données PostgreSQL.
-        embedding (list): Embedding de référence sous forme de liste.
-        model_name (str): Nom du modèle d'embedding utilisé.
-        k (int): Nombre de documents similaires à retourner.
+# async def get_top_k_similar_chunks_cossim(conn, embedding, model_name, k, specified_document_id):
+#     """OBSOLÈTE - Utiliser get_top_k_similar_chunks_qdrant()"""
+#     pass
 
-    Returns:
-        list: Liste des k meilleurs documents avec leur score de similarité.
-    """
-    print("get_top_k_similar_chunks")
-    print(specified_document_id)
-    async with conn.cursor() as cur:
-        # Requête pour récupérer les k meilleurs documents
-        query = """
-                SELECT c.chunk_id, \
-                       c.document_id, \
-                       c.content, \
-                       c.num_page, \
-                       c.position_in_page, \
-                       c.token_count, \
-                       c.metadata, \
-                       1 - (ce.embedding <=> %s::vector) AS similarity
-                FROM chunk_embeddings ce \
-                         JOIN \
-                     chunks c ON ce.chunk_id = c.chunk_id
-                WHERE ce.model_name = %s
-                AND (%s::text IS NULL OR c.document_id = %s::text)
-                ORDER BY similarity DESC
-                    LIMIT %s;
-                """
-
-        # Exécuter la requête
-        await cur.execute(query, (embedding, model_name, specified_document_id, specified_document_id, k))
-        rows = await cur.fetchall()
-
-        # Récupérer les noms des colonnes
-        column_names = [desc[0] for desc in cur.description]
-
-        # Convertir chaque ligne en dictionnaire
-        results = [dict(zip(column_names, row)) for row in rows]
-        return results
-
-async def get_top_k_similar_chunks_cossim_python(conn, embedding: list[float], model_name: str, k=3):
+# async def get_top_k_similar_chunks_cossim_python(conn, embedding, model_name, k):
     """
     Récupère les k meilleurs documents en fonction de la similarité cosinus avec un embedding donné.
     La comparaison est effectuée directement sur Python et non par Postgres.
@@ -454,22 +679,9 @@ async def get_top_k_similar_chunks_cossim_python(conn, embedding: list[float], m
     Returns:
         list: Liste des k meilleurs documents avec leur score de similarité.
     """
+    pass  # OBSOLÈTE - Utiliser get_top_k_similar_chunks_qdrant()
 
-    async with conn.cursor() as cur:
-        # On va récupérer les informations des chunks pour pouvoir réaliser
-        # les calculs
-        query = """
-                SELECT c.chunk_id, \
-                       c.document_id, \
-                       c.content, \
-                       c.num_page, \
-                       ce.embeddings
-                FROM chunk_embeddings ce \
-                         JOIN \
-                     chunks c ON ce.chunk_id = c.chunk_id
-                WHERE ce.model_name = %s
 
-                """
 async def save_question_to_db(
     question: str,
     answer: str,
@@ -484,10 +696,8 @@ async def save_question_to_db(
         await cur.execute("""
             INSERT INTO questions (content, status, difficulty_level, created_by, validated_by)
             VALUES (%s, %s, %s, %s, %s)
-            RETURNING question_id
         """, (question, "generated", difficulty_level, None, None))
-        result = await cur.fetchone()
-        question_id = result[0]
+        question_id = cur.lastrowid
 
         # 2. Lier la question au chunk
         await cur.execute("""
@@ -689,16 +899,16 @@ async def get_document_data_from_chunk_id(chunk_id: str, conn) -> Optional[Dict]
     async with conn.cursor() as cur:
         # Extraire le document_id du chunk_id
         document_id = extract_document_id(chunk_id)
-        
+
         # Récupérer les données du document
         await cur.execute("""
             SELECT document_id, file_name, file_path, file_size, created_at, updated_at
             FROM documents
             WHERE document_id = %s
         """, (document_id,))
-        
+
         result = await cur.fetchone()
-        
+
         if result:
             return {
                 "document_id": result[0],
@@ -708,7 +918,7 @@ async def get_document_data_from_chunk_id(chunk_id: str, conn) -> Optional[Dict]
                 "created_at": result[4],
                 "updated_at": result[5]
             }
-        
+
         return None
 
 async def get_all_documents(conn) -> List[Dict]:
@@ -727,9 +937,9 @@ async def get_all_documents(conn) -> List[Dict]:
             FROM documents
             ORDER BY created_at DESC
         """)
-        
+
         results = await cur.fetchall()
-        
+
         documents = []
         for result in results:
             documents.append({
@@ -740,7 +950,7 @@ async def get_all_documents(conn) -> List[Dict]:
                 "created_at": result[4],
                 "updated_at": result[5]
             })
-        
+
         return documents
 
 async def delete_questions_for_pages_1_to_12(
@@ -807,73 +1017,320 @@ async def delete_questions_for_pages_1_to_12(
             print(f"question {question_id} was deleted")
     return deleted_question_ids
 
-async def get_chunk_embeddings_with_metadata(
-    conn,
-    document_id: Optional[str] = None,
-    limit: Optional[int] = None,
-    with_text_content: Optional[bool] = False,
-    model_name: str = "mistral-embed"
-) -> List[Dict[str, Any]]:
+# NOTE: Fonction OBSOLÈTE - Utiliser get_chunk_embeddings_with_metadata_qdrant()
+# async def get_chunk_embeddings_with_metadata(
+#     conn,
+#     document_id: Optional[str] = None,
+#     limit: Optional[int] = None,
+#     with_text_content: Optional[bool] = False,
+#     model_name: str = "mistral-embed"
+# ) -> List[Dict[str, Any]]:
     """
     Récupère les chunks avec leurs embeddings et métadonnées.
-    
+
     Args:
         conn: Connexion à la base de données PostgreSQL
         document_id: Filtre optionnel par document ID
         limit: Limite optionnelle du nombre de résultats
         model_name: Nom du modèle d'embedding à utiliser
-    
+
     Returns:
-        Liste de dictionnaires contenant chunk_id, document_id, content, embedding, 
+        Liste de dictionnaires contenant chunk_id, document_id, content, embedding,
         num_page, position_in_page, token_count, metadata
     """
+#     async with conn.cursor() as cur:
+
+
+# ============================================================================
+# FONCTIONS POUR L'ADMINISTRATION - INDEXATION
+# ============================================================================
+
+async def get_all_documents_with_details(conn) -> List[Dict]:
+    """
+    Récupère tous les documents avec leurs détails (extracted_text, metadata).
+    Gère automatiquement les cas où ces colonnes n'existent pas.
+    
+    Args:
+        conn: Connexion MySQL
+        
+    Returns:
+        Liste de dictionnaires avec les documents et leurs détails
+    """
     async with conn.cursor() as cur:
-        # Build the query to fetch chunks with their embeddings
-        query = f"""
-            SELECT 
-                c.chunk_id,
-                c.document_id,
-                {"c.content," if with_text_content else ""}
-                c.num_page,
-                c.position_in_page,
-                c.token_count,
-                c.metadata,
-                ce.embedding
-            FROM chunks c
-            JOIN chunk_embeddings ce ON c.chunk_id = ce.chunk_id
-            WHERE ce.model_name = %s
-        """
-        params = [model_name]
+        # Essayer avec extracted_text et metadata
+        try:
+            await cur.execute("""
+                SELECT document_id, file_name, file_path, file_size, created_at, updated_at, 
+                       extracted_text, metadata 
+                FROM documents 
+                ORDER BY created_at DESC
+            """)
+            results = await cur.fetchall()
+            has_extracted_text_col = True
+        except Exception:
+            # Si la colonne n'existe pas, essayer sans
+            try:
+                await cur.execute("""
+                    SELECT document_id, file_name, file_path, file_size, created_at, updated_at, 
+                           metadata 
+                    FROM documents 
+                    ORDER BY created_at DESC
+                """)
+                results = await cur.fetchall()
+                has_extracted_text_col = False
+            except Exception:
+                # Si metadata n'existe pas non plus
+                await cur.execute("""
+                    SELECT document_id, file_name, file_path, file_size, created_at, updated_at 
+                    FROM documents 
+                    ORDER BY created_at DESC
+                """)
+                results = await cur.fetchall()
+                has_extracted_text_col = False
+    
+    documents = []
+    for result in results:
+        doc = {
+            "document_id": result[0],
+            "file_name": result[1],
+            "file_path": result[2],
+            "file_size": result[3],
+            "created_at": str(result[4]),
+            "updated_at": str(result[5])
+        }
         
-        if document_id is not None:
-            query += " AND c.document_id = %s"
-            params.append(document_id)
+        # Ajouter extracted_text si disponible
+        if has_extracted_text_col and len(result) > 6:
+            doc["extracted_text"] = result[6]
         
-        query += " ORDER BY c.document_id, c.num_page, c.position_in_page"
+        # Ajouter metadata si disponible
+        if len(result) > 7:
+            doc["metadata"] = result[7] if result[7] else {}
+        elif len(result) > 6 and not has_extracted_text_col:
+            doc["metadata"] = result[6] if result[6] else {}
         
-        if limit is not None:
-            query += " LIMIT %s"
-            params.append(limit)
+        # Déterminer si le document a du contenu extrait
+        doc["has_extracted_text"] = bool(doc.get("extracted_text"))
         
-        await cur.execute(query, params)
-        rows = await cur.fetchall()
-        
-        # Get column names
-        column_names = [desc[0] for desc in cur.description]
-        
-        # Convert rows to list of dicts
-        results = []
-        for row in rows:
-            row_dict = dict(zip(column_names, row))
-            results.append(row_dict)
+        documents.append(doc)
+    
+    return documents
 
-        return results
+
+async def get_documents_by_ids(conn, document_ids: List[str]) -> Dict[str, Dict]:
+    """
+    Récupère des documents spécifiques avec leurs détails.
+    
+    Args:
+        conn: Connexion MySQL
+        document_ids: Liste des IDs de documents à récupérer
+        
+    Returns:
+        Dictionnaire mapping document_id -> document data
+    """
+    placeholders = ", ".join(["%s"] * len(document_ids))
+    
+    async with conn.cursor() as cur:
+        # Essayer avec extracted_text et metadata
+        try:
+            query = f"""
+                SELECT document_id, file_name, file_path, file_size, extracted_text, metadata 
+                FROM documents 
+                WHERE document_id IN ({placeholders})
+            """
+            await cur.execute(query, tuple(document_ids))
+            results = await cur.fetchall()
+            has_extracted_text_col = True
+        except Exception:
+            # Essayer sans extracted_text
+            try:
+                query = f"""
+                    SELECT document_id, file_name, file_path, file_size, metadata 
+                    FROM documents 
+                    WHERE document_id IN ({placeholders})
+                """
+                await cur.execute(query, tuple(document_ids))
+                results = await cur.fetchall()
+                has_extracted_text_col = False
+            except Exception:
+                # Essayer sans metadata non plus
+                query = f"""
+                    SELECT document_id, file_name, file_path, file_size 
+                    FROM documents 
+                    WHERE document_id IN ({placeholders})
+                """
+                await cur.execute(query, tuple(document_ids))
+                results = await cur.fetchall()
+                has_extracted_text_col = False
+    
+    docs_map = {}
+    for row in results:
+        doc_data = {
+            "document_id": row[0],
+            "file_name": row[1],
+            "file_path": row[2],
+            "file_size": row[3]
+        }
+        
+        # Ajouter extracted_text si disponible
+        if has_extracted_text_col and len(row) > 4:
+            doc_data["extracted_text"] = row[4]
+        
+        # Ajouter metadata si disponible
+        if len(row) > 5:
+            doc_data["metadata"] = row[5] if row[5] else {}
+        elif len(row) > 4 and not has_extracted_text_col:
+            doc_data["metadata"] = row[4] if row[4] else {}
+        
+        docs_map[row[0]] = doc_data
+    
+    return docs_map
 
 
-# Fonction pour extraire le document_id depuis un chunk_id
-def extract_document_id(chunk_id):
-    return chunk_id.split("-")[0]
+async def get_all_documents_for_metadata_indexing(conn) -> Dict[str, Dict]:
+    """
+    Récupère TOUS les documents pour indexation par métadonnées.
+    
+    Args:
+        conn: Connexion MySQL
+        
+    Returns:
+        Dictionnaire mapping document_id -> document data
+    """
+    all_docs = await get_all_documents_with_details(conn)
+    return {doc["document_id"]: doc for doc in all_docs}
 
-# Fonction pour extraire le numéro du chunk depuis un chunk_id
-def extract_chunk_position(chunk_id):
-    return int(chunk_id.split("-")[1])
+
+async def get_all_documents_with_extracted_text(conn) -> Dict[str, Dict]:
+    """
+    Récupère TOUS les documents qui ont un extracted_text pour indexation par contenu.
+    
+    Args:
+        conn: Connexion MySQL
+        
+    Returns:
+        Dictionnaire mapping document_id -> document data (seulement ceux avec extracted_text)
+    """
+    all_docs = await get_all_documents_with_details(conn)
+    # Filtrer pour garder seulement ceux avec extracted_text
+    return {doc["document_id"]: doc for doc in all_docs if doc.get("has_extracted_text")}
+
+
+async def count_documents_with_extracted_text(conn) -> int:
+    """
+    Compte le nombre de documents qui ont un extrait_text.
+    
+    Args:
+        conn: Connexion MySQL
+        
+    Returns:
+        Nombre de documents avec extracted_text
+    """
+    try:
+        async with conn.cursor() as cur:
+            try:
+                await cur.execute("SELECT COUNT(*) FROM documents WHERE extracted_text IS NOT NULL AND extracted_text != ''")
+                count = (await cur.fetchone())[0] or 0
+            except Exception:
+                # Si la colonne n'existe pas, retourner 0
+                await cur.execute("SELECT COUNT(*) FROM documents")
+                count = (await cur.fetchone())[0] or 0
+        return count
+    except Exception:
+        return 0
+
+
+async def get_documents_with_extracted_text_count() -> int:
+    """
+    Récupère le nombre de documents avec un champ extracted_text.
+    Ouvre et ferme sa propre connexion à la base de données.
+    
+    Returns:
+        Nombre de documents avec extracted_text
+    """
+    conn = await get_db_connection()
+    try:
+        return await count_documents_with_extracted_text(conn)
+    finally:
+        await conn.close()
+
+
+async def get_db_stats() -> Dict[str, Any]:
+    """
+    Récupère les statistiques MySQL pour l'administration.
+    
+    Returns:
+        Dictionnaire avec:
+        - documents_count: Nombre de documents
+        - chunks_count: Nombre de chunks
+        - documents_with_extracted_text_count: Nombre de documents avec extracted_text
+    """
+    conn = await get_db_connection()
+    
+    try:
+        async with conn.cursor() as cur:
+            # Compter les documents
+            await cur.execute("SELECT COUNT(*) FROM documents")
+            documents_count = (await cur.fetchone())[0] or 0
+            
+            # Compter les chunks
+            await cur.execute("SELECT COUNT(*) FROM chunks")
+            chunks_count = (await cur.fetchone())[0] or 0
+            
+            # Compter les documents avec extracted_text
+            try:
+                await cur.execute("SELECT COUNT(*) FROM documents WHERE extracted_text IS NOT NULL AND extracted_text != ''")
+                docs_with_text = (await cur.fetchone())[0] or 0
+            except Exception:
+                docs_with_text = 0
+        
+        return {
+            "documents_count": documents_count,
+            "chunks_count": chunks_count,
+            "documents_with_extracted_text_count": docs_with_text
+        }
+    finally:
+        await conn.close()
+
+
+async def get_qdrant_stats() -> Dict[str, int]:
+    """
+    Récupère les statistiques Qdrant (nombre d'embeddings par collection).
+    
+    Returns:
+        Dictionnaire mapping collection_name -> nombre de points
+    """
+    embeddings_count = {}
+    try:
+        collections = qdrant_client.get_collections()
+        for collection in collections.collections:
+            collection_name = collection.name
+            points_count = qdrant_client.get_collection(collection_name).points_count or 0
+            embeddings_count[collection_name] = points_count
+    except Exception as e:
+        print(f"Erreur lors de la récupération des stats Qdrant: {e}")
+    
+    return embeddings_count
+
+
+async def get_admin_stats() -> Dict[str, Any]:
+    """
+    Récupère les statistiques d'indexation pour l'administration.
+    
+    Returns:
+        Dictionnaire avec:
+        - documents_count: Nombre de documents
+        - chunks_count: Nombre de chunks
+        - embeddings_count: Dictionnaire {model_name: count}
+        - documents_with_extracted_text_count: Nombre de documents avec extracted_text
+    """
+    db_stats = await get_db_stats()
+    embeddings_count = await get_qdrant_stats()
+    
+    return {
+        **db_stats,
+        "embeddings_count": embeddings_count
+    }
+#         # Build the query to fetch chunks with their embeddings
+#         query = f"""
+#             SELECT

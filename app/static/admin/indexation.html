@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Indexation des Documents</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+        .main_container { display: flex; height: 100vh; width: 100%; }
+        .sidebar { width: 300px; background: white; border-right: 1px solid #ddd; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .header { background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); color: white; padding: 20px; text-align: center; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .nav-links { display: flex; justify-content: center; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+        .nav-link { color: white; text-decoration: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.2); }
+        .nav-link.active { background: rgba(255, 255, 255, 0.3); }
+        .stats-section { margin-bottom: 20px; }
+        .stats-section h3 { color: #b74420; margin-bottom: 15px; font-size: 16px; border-bottom: 2px solid #b74420; padding-bottom: 5px; }
+        .stat-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .stat-card .value { font-size: 24px; font-weight: bold; color: #b74420; }
+        .embeddings-list { margin-top: 10px; }
+        .embedding-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; font-size: 12px; }
+        .embedding-item:last-child { border-bottom: none; }
+        .refresh-btn { background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 13px; width: 100%; margin-top: 10px; }
+        .refresh-btn:hover { opacity: 0.9; }
+        .admin-content { padding: 20px; flex: 1; overflow-y: auto; }
+        .section-title { font-size: 20px; color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e0e0e0; }
+        .form-section { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; font-size: 14px; }
+        .form-group .description { font-size: 12px; color: #888; margin-top: 4px; }
+        .input-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .input-group .input-wrapper { flex: 1; min-width: 150px; }
+        .input-group input { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+        .input-group input:focus { outline: none; border-color: #b74420; }
+        .btn { padding: 12px 24px; background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .results-section { margin-top: 25px; }
+        .result-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .result-card.success { border-left: 4px solid #28a745; background: #d4edda; }
+        .result-card.error { border-left: 4px solid #dc3545; background: #f8d7da; }
+        .result-card.warning { border-left: 4px solid #ffc107; background: #fff3cd; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .result-title { font-size: 15px; font-weight: 600; color: #333; }
+        .result-time { font-size: 12px; color: #666; }
+        .result-details { font-size: 13px; color: #555; line-height: 1.6; }
+        .result-item { margin: 5px 0; padding: 5px; background: rgba(255,255,255,0.5); border-radius: 4px; }
+        .error-item { color: #dc3545; padding: 5px; margin: 5px 0; background: rgba(220,53,69,0.1); border-radius: 4px; font-size: 13px; }
+        .loading { display: none; text-align: center; padding: 40px; color: #666; }
+        .loading.active { display: block; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #b74420; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .progress-container { margin-top: 15px; }
+        .progress-bar { height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); transition: width 0.3s; }
+        .progress-text { text-align: center; font-size: 12px; color: #666; margin-top: 5px; }
+        .indexation-type { display: flex; gap: 20px; margin: 20px 0; }
+        .indexation-option { flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .indexation-option:hover { border-color: #b74420; background: #f8f9fa; }
+        .indexation-option.selected { border-color: #b74420; background: #fff8f8; box-shadow: 0 0 0 3px rgba(183,68,32,0.1); }
+        .indexation-option input { display: none; }
+        .indexation-option label { display: flex; flex-direction: column; cursor: pointer; }
+        .indexation-option .title { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .indexation-option .desc { font-size: 13px; color: #666; }
+        .count-info { font-size: 13px; color: #666; margin-bottom: 15px; }
+        .count-info strong { color: #b74420; }
+        @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } .indexation-type { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Statistiques</h3>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="label">Documents totaux</div>
+                    <div class="value" id="documentsCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Chunks indexés</div>
+                    <div class="value" id="chunksCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Embeddings</div>
+                    <div class="value" id="totalEmbeddings">-</div>
+                    <div class="embeddings-list" id="embeddingsList"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Avec extracted_text</div>
+                    <div class="value" id="docsWithExtractedText">-</div>
+                </div>
+                <button class="refresh-btn" onclick="loadStats()">🔄 Rafraîchir</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="header">
+                <h1>📊 Administration - Indexation</h1>
+                <p>Indexez tous les documents par métadonnées ou par contenu extrait</p>
+                <div class="nav-links">
+                    <a href="../m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
+                    <a href="../question_session.html" class="nav-link">Chatbot Inversé</a>
+                    <a href="../rag_visualization.html" class="nav-link">Visualisation RAG</a>
+                    <a href="../questions_management.html" class="nav-link">Gestion Q/R</a>
+                    <a href="indexation.html" class="nav-link active">Administration</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <h2 class="section-title">Indexation des Documents</h2>
+                
+                <div class="form-section">
+                    <h3>Choisissez le type d'indexation</h3>
+                    
+                    <div class="count-info">
+                        <strong id="totalDocsCount">-</strong> documents au total | 
+                        <strong id="docsWithTextCount">-</strong> ont un contenu extrait (extracted_text)
+                    </div>
+                    
+                    <div class="indexation-type">
+                        <div class="indexation-option selected" data-type="all-metadata">
+                            <input type="radio" name="indexType" value="all-metadata" checked id="optAllMetadata">
+                            <label for="optAllMetadata">
+                                <span class="title">📋 Tous les documents - Métadonnées</span>
+                                <span class="desc">Indexer les métadonnées de TOUS les documents existants</span>
+                            </label>
+                        </div>
+                        <div class="indexation-option" data-type="with-text">
+                            <input type="radio" name="indexType" value="with-text" id="optWithText">
+                            <label for="optWithText">
+                                <span class="title">📄 Documents avec extracted_text - Contenu</span>
+                                <span class="desc">Indexer le contenu extrait (découpé en chunks) de TOUS les documents qui ont un extracted_text</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="chunkParameters" style="display: none; margin-top: 20px;">
+                        <h4 style="color: #b74420; margin-bottom: 15px;">Paramètres de Découpage</h4>
+                        <div class="input-group">
+                            <div class="input-wrapper">
+                                <label for="chunkSize">Taille des Chunks (caractères)</label>
+                                <input type="number" id="chunkSize" value="2700" min="100" max="10000">
+                                <div class="description">Taille maximale de chaque chunk</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="chunkOverlap">Recouvrement (caractères)</label>
+                                <input type="number" id="chunkOverlap" value="400" min="0" max="5000">
+                                <div class="description">Recouvrement entre les chunks</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="startIndexation()" id="indexBtn" style="margin-top: 20px;">
+                        Lancer l'Indexation
+                    </button>
+                </div>
+                
+                <div class="results-section">
+                    <div id="resultsContainer"></div>
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Indexation en cours, veuillez patienter...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="indexation.js"></script>
+</body>
+</html>

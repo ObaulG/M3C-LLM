@@ -1,0 +1,11 @@
+name: "bge"
+model_name: "BAAI/bge-large-en-v1.5"
+dimension: 1024
+docker:
+  image: "focused_feistel"
+  port: 8000
+  gpu: true  # Utilise le GPU si disponible
+  volumes: []  # Pas besoin de volume pour ce modèle
+api:
+  endpoint: "http://localhost:8001/encode"
+  batch_size: 16

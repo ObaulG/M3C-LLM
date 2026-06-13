@@ -918,5 +918,77 @@
       "number_of_agents": 3,
       "server_shutdown_at": "2026-06-12T11:39:51.817194"
     }
+  },
+  {
+    "session_id": "1bcb416d-dea5-41e6-b53b-30e6baf78c3d",
+    "document_id": "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d",
+    "current_index": 1,
+    "completed": false,
+    "created_at": "2026-06-12T12:31:48.837314",
+    "time_elapsed_secs": 1620,
+    "responses": [
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en deux mers. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+        "date_sent": "2026-06-12T12:32:07.643259",
+        "evaluation": {
+          "score": 4,
+          "feedback": "La réponse mentionne partiellement un aspect symbolique du col de Teghime, mais elle s’éloigne totalement du contexte historique et culturel attendu. Elle introduit des éléments non pertinents, comme la question écologique et la décharge publique, qui ne sont pas liés à la question posée. Une réponse plus précise aurait dû insister sur le lien entre le col et la perception des Bastiais concernant les « deux mers » et leur importance symbolique dans leur identité locale.",
+          "model": null
+        },
+        "message_type": "réponse"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en créant la mer tyrrhénienne",
+        "date_sent": "2026-06-12T12:33:34.147651",
+        "evaluation": {
+          "score": 6,
+          "feedback": "La réponse aborde partiellement le concept clé des « deux mers » évoqué dans la réponse attendue, mais elle reste incomplète et simplifiée. Elle ne mentionne pas le lien avec le trajet est-ouest ni le caractère imaginaire de cette division, ni le contexte identitaire des Bastiais. Une formulation plus précise et plus détaillée aurait été nécessaire pour couvrir tous les éléments essentiels.",
+          "model": null
+        },
+        "message_type": "réponse"
+      },
+      {
+        "question_id": 249,
+        "question_text": "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+        "user_answer": "Teghime coupe symboliquement la méditérranée en créant la mer tyrrhénienne. Les bastiais l'empruntent pour rejoindre St Florent, en traversant de l'est vers l'ouest",
+        "date_sent": "2026-06-12T12:35:00.400525",
+        "evaluation": {
+          "score": 8,
+          "feedback": "La réponse intègre correctement l'idée de la division symbolique de la Méditerranée en deux parties et mentionne explicitement le trajet est-ouest, ce qui correspond bien aux éléments clés de la réponse attendue. Cependant, elle manque de précision sur le fait que cette division est imaginaire et ne mentionne pas explicitement le lien avec l'identité ou la perception locale des Bastiais. Une formulation légèrement plus complète aurait renforcé la réponse.",
+          "model": null
+        },
+        "message_type": "réponse"
+      }
+    ],
+    "questions_ids": [
+      249,
+      370,
+      737,
+      786,
+      115
+    ],
+    "questions_text": [
+      "Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
+      "Comment le mouvement de revitalisation culturelle corse, appelé 'Riacquistu', s'est-il manifesté dans les années 1970, notamment à travers la musique ?",
+      "En quoi le collège Simon-Jean Vinciguerra est-il considéré comme un 'monument vivant' selon le texte ?",
+      "Pourquoi la ville de Bastia a-t-elle pu ressentir un sentiment d'injustice envers Ajaccio en 1811 ?",
+      "Pourquoi peut-on dire que Sermanu est un symbole de résistance dans le contexte du chant corse ?"
+    ],
+    "pages": [
+      16,
+      31,
+      76,
+      82,
+      32
+    ],
+    "metadata": {
+      "llm_used": "mistral-7b",
+      "number_of_agents": 3,
+      "server_shutdown_at": "2026-06-12T12:58:48.905468"
+    }
   }
 ]
