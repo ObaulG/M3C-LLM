@@ -1,15 +1,15 @@
 from typing import Optional, List, Dict, Any
-
+import asyncio
 import aiomysql
 from qdrant_client import QdrantClient, models
 
 # Configuration de la base de données MySQL
 DB_CONFIG = {
     "host": "localhost",
-    "port": 8081,
+    "port": 3306,
     "db": "m3c_database",
-    "user": "root",
-    "password": "rootpassword",
+    "user": "OBL",
+    "password": "azerty",
     "autocommit": True
 }
 
@@ -22,9 +22,16 @@ QDRANT_CONFIG = {
 # Client Qdrant (synchrone, compatible avec async via threads)
 qdrant_client = QdrantClient(**QDRANT_CONFIG)
 
+# Contient les resource_id (table value) dont le champ extracted_text contient un texte valide et vérifié,
+# avec un nombre minimum d'artefacts
+VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
+                          116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
+
+
 # Connexion à la base de données MySQL
 async def get_db_connection():
-    return await aiomysql.connect(**DB_CONFIG)
+    loop = asyncio.get_event_loop()
+    return await aiomysql.connect(**DB_CONFIG, loop=loop)
 
 
 # ============================================================================
@@ -1229,11 +1236,11 @@ async def count_documents_with_extracted_text(conn) -> int:
     try:
         async with conn.cursor() as cur:
             try:
-                await cur.execute("SELECT COUNT(*) FROM documents WHERE extracted_text IS NOT NULL AND extracted_text != ''")
+                await cur.execute("SELECT COUNT(*) FROM resource WHERE extracted_text IS NOT NULL AND extracted_text != ''")
                 count = (await cur.fetchone())[0] or 0
             except Exception:
                 # Si la colonne n'existe pas, retourner 0
-                await cur.execute("SELECT COUNT(*) FROM documents")
+                await cur.execute("SELECT COUNT(*) FROM resource")
                 count = (await cur.fetchone())[0] or 0
         return count
     except Exception:
@@ -1255,42 +1262,57 @@ async def get_documents_with_extracted_text_count() -> int:
         await conn.close()
 
 
-async def get_db_stats() -> Dict[str, Any]:
+async def get_pdf_media_items() -> List[Dict[str, Any]]:
     """
-    Récupère les statistiques MySQL pour l'administration.
+    Récupère tous les médias de type PDF depuis la table media.
     
     Returns:
-        Dictionnaire avec:
-        - documents_count: Nombre de documents
-        - chunks_count: Nombre de chunks
-        - documents_with_extracted_text_count: Nombre de documents avec extracted_text
+        Liste de dicts avec item_id, storage_id, extension
     """
     conn = await get_db_connection()
-    
     try:
         async with conn.cursor() as cur:
-            # Compter les documents
-            await cur.execute("SELECT COUNT(*) FROM documents")
-            documents_count = (await cur.fetchone())[0] or 0
-            
-            # Compter les chunks
-            await cur.execute("SELECT COUNT(*) FROM chunks")
-            chunks_count = (await cur.fetchone())[0] or 0
-            
-            # Compter les documents avec extracted_text
-            try:
-                await cur.execute("SELECT COUNT(*) FROM documents WHERE extracted_text IS NOT NULL AND extracted_text != ''")
-                docs_with_text = (await cur.fetchone())[0] or 0
-            except Exception:
-                docs_with_text = 0
-        
-        return {
-            "documents_count": documents_count,
-            "chunks_count": chunks_count,
-            "documents_with_extracted_text_count": docs_with_text
-        }
+            await cur.execute("""
+                SELECT item_id, storage_id, extension 
+                FROM media 
+                WHERE LOWER(extension) = 'pdf'
+            """)
+            rows = await cur.fetchall()
+            return [
+                {"item_id": row[0], "storage_id": row[1], "extension": row[2]}
+                for row in rows
+            ]
     finally:
         await conn.close()
+
+
+async def get_pdf_media_item(item_id: int) -> Optional[Dict[str, Any]]:
+    """
+    Récupère un seul média PDF depuis la table media par son item_id.
+    
+    Args:
+        item_id: L'identifiant de l'item à récupérer
+        
+    Returns:
+        Dict avec item_id, storage_id, extension ou None si non trouvé
+    """
+    conn = await get_db_connection()
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT item_id, storage_id, extension 
+                FROM media 
+                WHERE item_id = %s AND LOWER(extension) = 'pdf'
+            """, (item_id,))
+            row = await cur.fetchone()
+            if row:
+                return {"item_id": row[0], "storage_id": row[1], "extension": row[2]}
+            return None
+    finally:
+        await conn.close()
+
+
+
 
 
 async def get_qdrant_stats() -> Dict[str, int]:
@@ -1324,7 +1346,11 @@ async def get_admin_stats() -> Dict[str, Any]:
         - embeddings_count: Dictionnaire {model_name: count}
         - documents_with_extracted_text_count: Nombre de documents avec extracted_text
     """
-    db_stats = await get_db_stats()
+    documents_with_extracted_text = await count_documents_with_extracted_text()
+    print("documents_with_extracted_text: ", documents_with_extracted_text)
+    document_with_clear_text = len(VALID_TEXT_RESOURCE_ID)
+    print("document_with_clear_text: ", document_with_clear_text)
+
     embeddings_count = await get_qdrant_stats()
     
     return {

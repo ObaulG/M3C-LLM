@@ -46,7 +46,8 @@ from database.database import (get_db_connection,
                                get_chunks_by_question_ids,
                                insert_chunk_embeddings_batch_qdrant,
                                insert_document,
-                               insert_chunks)
+                               insert_chunks,
+                               VALID_TEXT_RESOURCE_ID)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -1248,6 +1249,7 @@ async def get_admin_stats():
     Returns:
         Statistiques sur le nombre de documents, chunks et embeddings indexés.
     """
+    print("retrieving stats")
     try:
         stats = await database.get_admin_stats()
         
@@ -1286,6 +1288,8 @@ async def index_existing_documents(request: IndexDocumentsRequest):
     Returns:
         IndexDocumentsResponse avec le résultat de l'indexation
     """
+    print("Requête d'indexation")
+    print(request)
     try:
         conn = await get_db_connection()
         
@@ -1303,8 +1307,10 @@ async def index_existing_documents(request: IndexDocumentsRequest):
             # Indexer TOUS les documents par métadonnées
             docs_map = await database.get_all_documents_for_metadata_indexing(conn)
         elif request.indexation_type == "all-with-text":
-            # Indexer TOUS les documents avec extracted_text par contenu
-            docs_map = await database.get_all_documents_with_extracted_text(conn)
+            # Indexer uniquement les documents valides avec extracted_text
+            all_docs = await database.get_all_documents_with_extracted_text(conn)
+            docs_map = {doc_id: doc for doc_id, doc in all_docs.items()
+                        if int(doc_id) in VALID_TEXT_RESOURCE_ID}
         else:
             errors.append(f"Type d'indexation inconnu: {request.indexation_type}")
             docs_map = {}
