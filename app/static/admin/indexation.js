@@ -3,55 +3,102 @@
 
 const API_BASE = '';
 
+// Variables globales pour SSE
+let currentJobId = null;
+let eventSource = null;
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
-    loadStats();
     setupRadioButtons();
+    loadEmbedders();
+    loadIndexingCount();
 });
 
 // ============================================================================
-// GESTION DES STATISTIQUES
+// GESTION DES EMBEDDERS
 // ============================================================================
 
-async function loadStats() {
+let availableEmbedders = [];
+
+async function loadEmbedders() {
     try {
-        const response = await fetch(`${API_BASE}/api/admin/stats`);
-        if (!response.ok) throw new Error(`HTTP: ${response.status}`);
+        const response = await fetch(`${API_BASE}/api/embedders`);
+        if (!response.ok) {
+            console.warn('Impossible de charger les embedders:', response.status);
+            // Masquer le sélecteur si l'API n'est pas disponible
+            const select = document.getElementById('embedderSelect');
+            if (select) {
+                select.innerHTML = '<option value="">Embedders non disponibles</option>';
+            }
+            return;
+        }
+        
+        availableEmbedders = await response.json();
+        populateEmbedderSelect();
+    } catch (error) {
+        console.error('Erreur lors du chargement des embedders:', error);
+        const select = document.getElementById('embedderSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Erreur de chargement</option>';
+        }
+    }
+}
+
+async function loadIndexingCount() {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/documents/index/count`);
+        if (!response.ok) {
+            console.warn('Impossible de charger le compte des documents:', response.status);
+            return;
+        }
         
         const data = await response.json();
-        
-        // Mettre à jour les stats principales
-        document.getElementById('documentsCount').textContent = data.documents_count || 0;
-        document.getElementById('chunksCount').textContent = data.chunks_count || 0;
-        
-        // Total embeddings
-        const totalEmbeddings = Object.values(data.embeddings_count || {}).reduce((sum, count) => sum + count, 0);
-        document.getElementById('totalEmbeddings').textContent = totalEmbeddings || 0;
-        
-        // Documents avec extracted_text
-        const docsWithText = data.documents_with_extracted_text_count || 0;
-        document.getElementById('docsWithExtractedText').textContent = docsWithText;
-        document.getElementById('totalDocsCount').textContent = data.documents_count || 0;
-        document.getElementById('docsWithTextCount').textContent = docsWithText;
-        
-        // Liste des embeddings par modèle
-        const embeddingsList = document.getElementById('embeddingsList');
-        embeddingsList.innerHTML = '';
-        
-        if (data.embeddings_count && Object.keys(data.embeddings_count).length > 0) {
-            for (const [model, count] of Object.entries(data.embeddings_count)) {
-                const item = document.createElement('div');
-                item.className = 'embedding-item';
-                item.innerHTML = `<span>${model}</span><strong>${count}</strong>`;
-                embeddingsList.appendChild(item);
-            }
-        } else {
-            embeddingsList.innerHTML = '<div style="font-size: 12px; color: #999;">Aucun embedding trouvé</div>';
+        const badge = document.getElementById('m3cCountBadge');
+        if (badge && data.pdf_from_m3c_count !== undefined) {
+            badge.textContent = `(${data.pdf_from_m3c_count} documents disponibles)`;
         }
     } catch (error) {
-        console.error('Erreur chargement stats:', error);
-        showError('Impossible de charger les statistiques: ' + error.message);
+        console.error('Erreur lors du chargement du compte:', error);
     }
+}
+
+function populateEmbedderSelect() {
+    const select = document.getElementById('embedderSelect');
+    if (!select) return;
+    
+    if (availableEmbedders.length === 0) {
+        select.innerHTML = '<option value="">Aucun embedder disponible</option>';
+        return;
+    }
+    
+    let html = '';
+    // Ajouter un embedder par défaut si disponible
+    const defaultEmbedder = availableEmbedders.find(e => e.is_default);
+    
+    availableEmbedders.forEach(embedder => {
+        const isDefault = embedder.is_default;
+        html += `<option value="${embedder.model_name}" ${isDefault ? 'selected' : ''}>`;
+        html += `${embedder.name} (${embedder.type})`;
+        if (embedder.model_name) {
+            html += ` - ${embedder.model_name}`;
+        }
+        if (embedder.dimension) {
+            html += ` [${embedder.dimension}d]`;
+        }
+        html += `</option>`;
+    });
+    
+    select.innerHTML = html;
+}
+
+function getSelectedEmbedder() {
+    const select = document.getElementById('embedderSelect');
+    if (select && select.value) {
+        return select.value;
+    }
+    // Retourner le premier embedder par défaut si disponible
+    const defaultEmbedder = availableEmbedders.find(e => e.is_default);
+    return defaultEmbedder ? defaultEmbedder.name : null;
 }
 
 // ============================================================================
@@ -75,7 +122,7 @@ function setupRadioButtons() {
 
 function updateChunkParametersVisibility(type) {
     const paramsDiv = document.getElementById('chunkParameters');
-    if (type === 'all-with-text') {
+    if (type === 'all-with-text' || type === 'pdf-from-m3c') {
         paramsDiv.style.display = 'block';
     } else {
         paramsDiv.style.display = 'none';
@@ -89,7 +136,7 @@ function updateChunkParametersVisibility(type) {
 async function startIndexation() {
     const indexType = document.querySelector('input[name="indexType"]:checked').value;
     
-    if (indexType === 'all-with-text') {
+    if (indexType === 'all-with-text' || indexType === 'pdf-from-m3c') {
         const chunkSize = parseInt(document.getElementById('chunkSize').value);
         const chunkOverlap = parseInt(document.getElementById('chunkOverlap').value);
         
@@ -104,26 +151,57 @@ async function startIndexation() {
         }
     }
     
+    const selectedEmbedder = getSelectedEmbedder();
+    
     showLoading(true);
     updateProgress(0, 'Préparation...');
     
     try {
+        const requestBody = {
+            indexation_type: indexType,
+            chunk_size: indexType === 'all-with-text' ? parseInt(document.getElementById('chunkSize').value) : 2700,
+            chunk_overlap: indexType === 'all-with-text' ? parseInt(document.getElementById('chunkOverlap').value) : 400
+        };
+        
+        // Ajouter l'embedder si sélectionné
+        if (selectedEmbedder) {
+            requestBody.embedder_name = selectedEmbedder;
+        }
+        
         const response = await fetch(`${API_BASE}/api/admin/documents/index`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                indexation_type: indexType,
-                chunk_size: indexType === 'all-with-text' ? parseInt(document.getElementById('chunkSize').value) : 2700,
-                chunk_overlap: indexType === 'all-with-text' ? parseInt(document.getElementById('chunkOverlap').value) : 400
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) throw new Error(`HTTP: ${response.status}`);
         
         const data = await response.json();
-        showLoading(false);
+        
+        // Extraire le job_id de la réponse
+        let jobId = null;
+        if (data.errors && data.errors.length > 0) {
+            // Le job_id est dans le message d'erreur (format: "Job XXX démarré...")
+            const match = data.errors[0].match(/Job ([a-f0-9\-]+) démarré/);
+            if (match) {
+                jobId = match[1];
+            }
+        }
+        // Sinon, vérifier si la réponse contient directement un job_id
+        if (!jobId && data.job_id) {
+            jobId = data.job_id;
+        }
+        
+        // S'abonner aux événements SSE si on a un job_id
+        if (jobId) {
+            subscribeToJobEvents(jobId);
+            // Ne pas appeler showLoading(false) ici, car le job est en cours
+            // La fonction SSE gérera l'affichage de fin
+        } else {
+            showLoading(false);
+        }
+        
         displayResults(data);
-        loadStats();
     } catch (error) {
         showLoading(false);
         console.error('Erreur indexation:', error);
@@ -238,4 +316,52 @@ function showSuccess(message) {
             </div>
         `;
     }
+}
+
+// ==========================================================================
+// SERVER-SENT EVENTS (SSE)
+// ==========================================================================
+
+function subscribeToJobEvents(jobId) {
+    // Fermer la connexion existante
+    if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+    }
+    
+    currentJobId = jobId;
+    const eventUrl = `${API_BASE}/api/admin/documents/index/job/${jobId}/events`;
+    eventSource = new EventSource(eventUrl);
+    
+    eventSource.onopen = function() {
+        console.log(`[SSE] Connecté au job ${jobId}`);
+    };
+    
+    eventSource.onerror = function(error) {
+        console.error('[SSE] Erreur:', error);
+        showLoading(false);
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        showError(`Erreur de connexion SSE pour le job ${jobId}`);
+    };
+    
+    eventSource.addEventListener('job_completed', function(event) {
+        const data = JSON.parse(event.data);
+        console.log('[SSE] Job terminé:', data);
+        
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        
+        showLoading(false);
+        
+        if (data.status === 'completed') {
+            showSuccess(`✅ Job ${data.job_id} terminé! ${data.processed_items}/${data.total_items} documents traités`);
+        } else {
+            showError(`❌ Job ${data.job_id} terminé avec erreurs. ${data.processed_items}/${data.total_items} documents traités`);
+        }
+    });
 }

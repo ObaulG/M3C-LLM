@@ -1,11 +1,11 @@
-from embedders.base import BaseEmbedder
+from app.embedders.BaseEmbedder import BaseEmbedder
 from typing import List, Dict, Any
 import requests
-import docker
 import time
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class DockerEmbedder(BaseEmbedder):
     def __init__(
@@ -23,38 +23,18 @@ class DockerEmbedder(BaseEmbedder):
         self.dimension = dimension
         self.batch_size = batch_size
         self.timeout = timeout
-        self._start_container()
 
-    def _start_container(self):
-        """Démarre le conteneur Docker si ce n'est pas déjà fait."""
-        client = docker.from_env()
-        container_name = f"{self.model_name.replace('/', '-')}-embedder"
+    @property
+    def name(self) -> str:
+        return f"docker-{self.model_name}"
+
+    def ping(self) -> bool:
+        """Vérifie que le conteneur Docker est en cours d'exécution et que l'API répond."""
         try:
-            # Vérifie si le conteneur existe déjà
-            container = client.containers.get(container_name)
-            if container.status != "running":
-                container.start()
-        except docker.errors.NotFound:
-            # Lance un nouveau conteneur
-            logger.info(f"Starting Docker container for {self.model_name}...")
-            container = client.containers.run(
-                image=self.docker_config["image"],
-                ports={f"{self.docker_config['port']}/tcp": self.docker_config["port"]},
-                detach=True,
-                name=container_name,
-                device_requests=[
-                    docker.types.DeviceRequest(count=1, capabilities=[["gpu"]])
-                ] if self.docker_config.get("gpu", False) else None,
-                volumes=self.docker_config.get("volumes", []),
-                environment=self.docker_config.get("environment", {}),
-            )
-            logger.info(f"Container {container_name} started.")
-        except docker.errors.APIError as e:
-            logger.error(f"Failed to start container: {e}")
-            raise
-
-        # Attend que l'API soit prête (naïf, à améliorer avec un health check)
-        time.sleep(5)
+            response = requests.get(f"{self.api_endpoint}/health", timeout=5)
+            return response.status_code == 200
+        except Exception:
+            return False
 
     def embed(self, text: str) -> List[float]:
         """Embed un seul texte via l'API locale."""

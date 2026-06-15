@@ -2,6 +2,7 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/app/database/chunks.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/app/database/create_indexing_jobs_table.sql" dialect="MariaDB" />
     <file url="file://$PROJECT_DIR$/app/database/create_session.sql" dialect="PostgreSQL" />
   </component>
 </project>

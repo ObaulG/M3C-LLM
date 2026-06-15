@@ -26,6 +26,7 @@ psycopg==3.3.2
 psycopg2==2.9.11
 pydantic==2.13.2
 python-dotenv==1.2.2
+pypdf
 rank_bm25==0.2.2
 Requests==2.33.1
 scikit_learn==1.8.0

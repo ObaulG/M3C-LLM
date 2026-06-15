@@ -27,3 +27,7 @@ class BaseEmbedder(ABC):
     def ping(self) -> bool:
         """Vérifie que l'embedder est disponible (ex: API reachable, modèle chargé)."""
         pass
+
+    def embed_query(self, text: str) -> List[float]:
+        """Embed un texte (alias pour compatibilité avec l'ancien code)."""
+        return self.embed(text)

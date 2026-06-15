@@ -1,5 +1,6 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 import asyncio
+import json
 import aiomysql
 from qdrant_client import QdrantClient, models
 
@@ -24,9 +25,9 @@ qdrant_client = QdrantClient(**QDRANT_CONFIG)
 
 # Contient les resource_id (table value) dont le champ extracted_text contient un texte valide et vérifié,
 # avec un nombre minimum d'artefacts
-VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
-                          116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
-
+#VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
+#                          116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
+VALID_TEXT_RESOURCE_ID = [116738, 116782]
 
 # Connexion à la base de données MySQL
 async def get_db_connection():
@@ -61,11 +62,18 @@ async def insert_chunk_embedding_qdrant(
     num_page: int = None, 
     position_in_page: int = None,
     token_count: int = None, 
-    metadata: dict = None
+    metadata: dict = None,
+    collection_name: str = None
 ):
-    """Insère un embedding pour un chunk dans Qdrant."""
-    await ensure_qdrant_collection(model_name, len(embedding))
+    """Insère un embedding pour un chunk dans Qdrant.
     
+    Returns:
+        Le résultat de l'upsert (UpsertResult du client Qdrant)
+    """
+    # Utiliser collection_name si fourni, sinon model_name
+    final_collection_name = collection_name or model_name
+    await ensure_qdrant_collection(final_collection_name, len(embedding))
+    print(f"Collection {final_collection_name} vérifiée.")
     # Préparer le payload
     payload = {
         "chunk_id": chunk_id,
@@ -78,9 +86,9 @@ async def insert_chunk_embedding_qdrant(
     if token_count is not None: payload["token_count"] = token_count
     if metadata: payload["metadata"] = metadata
     
-    # Insérer le point
-    qdrant_client.upsert(
-        collection_name=model_name,
+    # Insérer le point et retourner le résultat
+    return qdrant_client.upsert(
+        collection_name=final_collection_name,
         points=[
             models.PointStruct(
                 id=str(chunk_id),
@@ -145,22 +153,25 @@ async def insert_chunk_embeddings_batch_qdrant(embeddings_batch: list):
 
 async def get_top_k_similar_chunks_qdrant(
     embedding: list, 
-    model_name: str, 
+    collection_name: str,
     k: int = 3, 
-    specified_document_id: str = None
+    specified_document_id: str = None,
+    with_payload: bool = True,
 ) -> list:
     """
     Récupère les k chunks les plus similaires à un embedding donné.
     
     Args:
         embedding: Embedding de référence sous forme de liste
-        model_name: Nom du modèle d'embedding (collection Qdrant)
+        collection_name: Nom de la collection Qdrant
         k: Nombre de résultats à retourner
         specified_document_id: Filtre optionnel par document_id
         
     Returns:
         Liste de dicts avec chunk_id, document_id, content, metadata, similarity
     """
+    import asyncio
+    
     # Filtre optionnel par document
     query_filter = None
     if specified_document_id:
@@ -173,34 +184,36 @@ async def get_top_k_similar_chunks_qdrant(
             ]
         )
     
-    # Recherche
-    results = qdrant_client.search(
-        collection_name=model_name,
-        query_vector=embedding,
+    # Exécuter la recherche de manière asynchrone
+    # (qdrant_client.search est bloquant, donc on l'exécute dans un thread)
+    results = await asyncio.to_thread(
+        qdrant_client.query_points,
+        collection_name=collection_name,
+        query=embedding,
         limit=k,
         query_filter=query_filter,
-        with_payload=True,
-        with_vectors=False
+        with_payload=with_payload,
     )
-    
+    results = results.points
+
     # Formater les résultats
     return [
         {
-            "chunk_id": r.id,
-            "document_id": r.payload.get("document_id"),
-            "content": r.payload.get("content"),
-            "num_page": r.payload.get("num_page"),
-            "position_in_page": r.payload.get("position_in_page"),
-            "token_count": r.payload.get("token_count"),
-            "metadata": r.payload.get("metadata"),
-            "similarity": r.score
+            "chunk_id": point.payload.get("chunk_id"),
+            "document_id": point.payload.get("document_id"),
+            "content": point.payload.get("content"),
+            "num_page": point.payload.get("num_page"),
+            "position_in_page": point.payload.get("position_in_page"),
+            "token_count": point.payload.get("token_count"),
+            "metadata": point.payload.get("metadata"),
+            "similarity": point.score
         }
-        for r in results
+        for point in results
     ]
 
 
 async def get_chunk_embeddings_with_metadata_qdrant(
-    model_name: str = "mistral-embed",
+    collection_name: str,
     document_id: str = None,
     limit: int = None
 ) -> list:
@@ -208,7 +221,7 @@ async def get_chunk_embeddings_with_metadata_qdrant(
     Récupère les chunks avec leurs embeddings et métadonnées depuis Qdrant.
     
     Args:
-        model_name: Nom du modèle (collection Qdrant)
+        collection_name: Nom de la collection Qdrant
         document_id: Filtre optionnel par document
         limit: Limite du nombre de résultats
         
@@ -229,7 +242,7 @@ async def get_chunk_embeddings_with_metadata_qdrant(
     
     # Récupérer tous les points (ou limité)
     points, _ = qdrant_client.scroll(
-        collection_name=model_name,
+        collection_name=collection_name,
         query_filter=query_filter,
         limit=limit,
         with_payload=True,
@@ -254,30 +267,6 @@ async def get_chunk_embeddings_with_metadata_qdrant(
 # ============================================================================
 # FONCTIONS MySQL POUR LES DONNÉES RELATIONNELLES
 # ============================================================================
-
-# Fonction pour insérer un document
-async def insert_document(conn, document_id, file_name, file_path, file_size):
-    async with conn.cursor() as cur:
-        # Utiliser INSERT IGNORE pour éviter les doublons
-        await cur.execute(
-            """
-            INSERT IGNORE INTO documents (document_id, file_name, file_path, file_size)
-            VALUES (%s, %s, %s, %s)
-            """,
-            (document_id, file_name, file_path, file_size),
-        )
-        # Vérifier si l'insertion a réussi
-        if cur.rowcount > 0:
-            return document_id
-        else:
-            # Le document existait déjà, retourner l'ID existant
-            await cur.execute(
-                "SELECT document_id FROM documents WHERE document_id = %s",
-                (document_id,)
-            )
-            result = await cur.fetchone()
-            return result[0] if result else None
-
 # Fonction pour insérer une stratégie de chunking
 async def insert_chunking_strategy(conn, name, description, method, chunk_size, overlap):
     async with conn.cursor() as cur:
@@ -307,28 +296,87 @@ async def insert_chunking_strategy(conn, name, description, method, chunk_size, 
         # MySQL ne supporte pas RETURNING, utiliser LAST_INSERT_ID()
         return cur.lastrowid
 
+# Fonction pour insérer un document dans text_documents
+async def insert_text_document(conn, source_type: str, source_id: str, content: str) -> int:
+    """
+    Insère un document dans text_documents et retourne son id.
+    Utilise INSERT IGNORE pour éviter les doublons.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            INSERT IGNORE INTO text_documents (source_type, source_id, content)
+            VALUES (%s, %s, %s)
+            """,
+            (source_type, source_id, content)
+        )
+        if cur.rowcount > 0:
+            return cur.lastrowid
+        else:
+            # Document existait déjà, retourner l'ID existant
+            await cur.execute(
+                "SELECT id FROM text_documents WHERE source_type = %s AND source_id = %s",
+                (source_type, source_id)
+            )
+            result = await cur.fetchone()
+            return result[0] if result else None
+
+
+# Fonction pour récupérer ou créer une stratégie de chunking
+async def get_or_create_chunking_strategy(
+    conn, 
+    name: str, 
+    method: str, 
+    chunk_size: int = None,
+    char_size: int = None, 
+    overlap: int = 0
+) -> int:
+    """
+    Récupère ou crée une stratégie de chunking et retourne son id.
+    """
+    async with conn.cursor() as cur:
+        # Vérifier si la stratégie existe déjà
+        await cur.execute(
+            """
+            SELECT id FROM text_chunking_strategies
+            WHERE name = %s AND method = %s AND chunk_size = %s AND overlap = %s
+            """,
+            (name, method, chunk_size, overlap)
+        )
+        result = await cur.fetchone()
+        if result:
+            return result[0]
+        
+        # Créer une nouvelle stratégie
+        await cur.execute(
+            """
+            INSERT INTO text_chunking_strategies (name, description, method, chunk_size, char_size, overlap)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (name, f"{method}_chunk:{chunk_size}_overlap:{overlap}", method, 
+             chunk_size, char_size or chunk_size, overlap)
+        )
+        return cur.lastrowid
+
+
 # Fonction pour insérer des chunks
 async def insert_chunks(conn, chunks_data):
+    """
+    Insère des chunks dans text_chunks.
+    
+    chunks_data: Liste de tuples (id, document_id, strategy_id, content, 
+                                  num_page, position_in_page, token_count, character_count)
+    """
     async with conn.cursor() as cur:
         # Utiliser INSERT IGNORE pour éviter les doublons
         await cur.executemany(
             """
-            INSERT IGNORE INTO chunks (chunk_id, document_id, strategy_id, content, num_page, position_in_page, token_count, metadata)
-            VALUES %s
+            INSERT IGNORE INTO text_chunks 
+            (id, document_id, strategy_id, content, num_page, position_in_page, token_count, character_count)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
             chunks_data,
         )
-
-# NOTE: Les fonctions suivantes sont OBSOLÈTES et remplacées par les versions Qdrant
-# Utiliser à la place: insert_chunk_embedding_qdrant() et insert_chunk_embeddings_batch_qdrant()
-
-# async def insert_chunk_embeddings(conn, chunk_id, model_name, embedding):
-#     """OBSOLÈTE - Utiliser insert_chunk_embedding_qdrant()"""
-#     pass
-
-# async def insert_chunk_embeddings_batch(conn, embeddings_batch):
-#     """OBSOLÈTE - Utiliser insert_chunk_embeddings_batch_qdrant()"""
-#     pass
 
 async def insert_embedding_model(conn, model_name, description, dimension):
     """
@@ -446,58 +494,35 @@ async def insert_session_answer(
             return False
 
 async def get_resource_basic_metadata(conn, resource_id):
+    """
+    Retourne un Dict contenant le titre (1), l'auteur (2), la date (7) d'un resource à partir
+    de son id.
+    Note: dans la BDD M3C, un resource contient le titre, et d'autres informations.
+    Les métadonnées d'un resource sont contenues dans la table value, et dans cette table, on attribue
+    à chaque id de property une valeur correspondante.
+    Exemple: dans property, les id 1 et 2 sont respectivement "title" et "author"
+    Pour récupérer le titre et l'auteur de la resource_id 116738, on ira chercher dans value
+    les lignes avec property_id à 1 et 2.
+    """
     async with conn.cursor() as cur:
-        await cur.execute(
-            """
-            SELECT id, title, resource_type, owner_id, is_public, created, modified
-            FROM resource
-            WHERE id = %s
-            """,
-            (resource_id,)
-        )
+        await cur.execute("""
+                          SELECT MAX(CASE WHEN v.property_id = 1 THEN v.value END) as title,
+                                 MAX(CASE WHEN v.property_id = 2 THEN v.value END) as creator,
+                                 MAX(CASE WHEN v.property_id = 7 THEN v.value END) as date
+                          FROM value v
+                          WHERE v.resource_id = %s""", (resource_id,))
+
         result = await cur.fetchone()
-        if result:
-            return {
-                "id": result[0],
-                "title": result[1],
-                "resource_type": result[2],
-                "owner_id": result[3],
-                "is_public": bool(result[4]),
-                "created": result[5],
-                "modified": result[6]
-            }
-        return None
 
-async def get_resource_full_metadata(conn, resource_id):
-    async with conn.cursor() as cur:
-        # Récupérer les métadonnées de base
-        basic_metadata = await get_resource_basic_metadata(conn, resource_id)
-        if not basic_metadata:
-            return None
+        if not result:
+            return {"title": None, "creator": None, "created_at": None}
 
-        # Récupérer les métadonnées détaillées (champs + valeurs)
-        await cur.execute(
-            """
-            SELECT p.local_name, v.value, v.type, v.lang
-            FROM value v
-            JOIN property p ON v.property_id = p.id
-            WHERE v.resource_id = %s
-            """,
-            (resource_id,)
-        )
-        detailed_metadata = await cur.fetchall()
+        return {
+            "title": result[0],
+            "creator": result[1],
+            "created_at": result[2]
+        }
 
-        # Construire un dictionnaire avec les métadonnées
-        metadata = {**basic_metadata, "details": {}}
-        for row in detailed_metadata:
-            field_name, value, value_type, lang = row
-            metadata["details"][field_name] = {
-                "value": value,
-                "type": value_type,
-                "lang": lang
-            }
-
-        return metadata
 async def get_question_by_id(conn,
                              question_id: int,
                              include_answers: bool = False) -> dict:
@@ -892,45 +917,12 @@ async def get_questions_by_chunk_id(
 
     return questions
 
-async def get_document_data_from_chunk_id(chunk_id: str, conn) -> Optional[Dict]:
-    """
-    Récupère les données d'un document à partir d'un chunk_id.
-
-    Args:
-        chunk_id (str): L'identifiant du chunk.
-        conn: Connexion à la base de données.
-
-    Returns:
-        Optional[Dict]: Dictionnaire contenant les données du document, ou None si non trouvé.
-    """
-    async with conn.cursor() as cur:
-        # Extraire le document_id du chunk_id
-        document_id = extract_document_id(chunk_id)
-
-        # Récupérer les données du document
-        await cur.execute("""
-            SELECT document_id, file_name, file_path, file_size, created_at, updated_at
-            FROM documents
-            WHERE document_id = %s
-        """, (document_id,))
-
-        result = await cur.fetchone()
-
-        if result:
-            return {
-                "document_id": result[0],
-                "file_name": result[1],
-                "file_path": result[2],
-                "file_size": result[3],
-                "created_at": result[4],
-                "updated_at": result[5]
-            }
-
-        return None
-
 async def get_all_documents(conn) -> List[Dict]:
     """
-    Récupère tous les documents de la base de données.
+    Récupère les informations de base des documents :
+    - document_id, file_name (construit depuis storage_id + extension),
+    - titre (property_id=1), créateur (property_id=2),
+    - created_at, updated_at.
 
     Args:
         conn: Connexion à la base de données.
@@ -938,11 +930,21 @@ async def get_all_documents(conn) -> List[Dict]:
     Returns:
         List[Dict]: Liste de tous les documents avec leurs métadonnées.
     """
+    print("retrieving documents...")
     async with conn.cursor() as cur:
         await cur.execute("""
-            SELECT document_id, file_name, file_path, file_size, created_at, updated_at
-            FROM documents
-            ORDER BY created_at DESC
+            SELECT
+                td.source_id as document_id,
+                CONCAT(m.storage_id, '.', m.extension) as file_name,
+                v_title.value as title,
+                v_creator.value as creator,
+                td.created_at,
+                td.updated_at
+            FROM text_documents td
+            LEFT JOIN media m ON td.source_id = m.item_id AND m.extension = "pdf"
+            LEFT JOIN value v_title ON td.source_id = v_title.resource_id AND v_title.property_id = 1
+            LEFT JOIN value v_creator ON td.source_id = v_creator.resource_id AND v_creator.property_id = 2
+            ORDER BY td.created_at DESC
         """)
 
         results = await cur.fetchall()
@@ -952,8 +954,8 @@ async def get_all_documents(conn) -> List[Dict]:
             documents.append({
                 "document_id": result[0],
                 "file_name": result[1],
-                "file_path": result[2],
-                "file_size": result[3],
+                "title": result[2],
+                "creator": result[3],
                 "created_at": result[4],
                 "updated_at": result[5]
             })
@@ -1052,175 +1054,6 @@ async def delete_questions_for_pages_1_to_12(
 # FONCTIONS POUR L'ADMINISTRATION - INDEXATION
 # ============================================================================
 
-async def get_all_documents_with_details(conn) -> List[Dict]:
-    """
-    Récupère tous les documents avec leurs détails (extracted_text, metadata).
-    Gère automatiquement les cas où ces colonnes n'existent pas.
-    
-    Args:
-        conn: Connexion MySQL
-        
-    Returns:
-        Liste de dictionnaires avec les documents et leurs détails
-    """
-    async with conn.cursor() as cur:
-        # Essayer avec extracted_text et metadata
-        try:
-            await cur.execute("""
-                SELECT document_id, file_name, file_path, file_size, created_at, updated_at, 
-                       extracted_text, metadata 
-                FROM documents 
-                ORDER BY created_at DESC
-            """)
-            results = await cur.fetchall()
-            has_extracted_text_col = True
-        except Exception:
-            # Si la colonne n'existe pas, essayer sans
-            try:
-                await cur.execute("""
-                    SELECT document_id, file_name, file_path, file_size, created_at, updated_at, 
-                           metadata 
-                    FROM documents 
-                    ORDER BY created_at DESC
-                """)
-                results = await cur.fetchall()
-                has_extracted_text_col = False
-            except Exception:
-                # Si metadata n'existe pas non plus
-                await cur.execute("""
-                    SELECT document_id, file_name, file_path, file_size, created_at, updated_at 
-                    FROM documents 
-                    ORDER BY created_at DESC
-                """)
-                results = await cur.fetchall()
-                has_extracted_text_col = False
-    
-    documents = []
-    for result in results:
-        doc = {
-            "document_id": result[0],
-            "file_name": result[1],
-            "file_path": result[2],
-            "file_size": result[3],
-            "created_at": str(result[4]),
-            "updated_at": str(result[5])
-        }
-        
-        # Ajouter extracted_text si disponible
-        if has_extracted_text_col and len(result) > 6:
-            doc["extracted_text"] = result[6]
-        
-        # Ajouter metadata si disponible
-        if len(result) > 7:
-            doc["metadata"] = result[7] if result[7] else {}
-        elif len(result) > 6 and not has_extracted_text_col:
-            doc["metadata"] = result[6] if result[6] else {}
-        
-        # Déterminer si le document a du contenu extrait
-        doc["has_extracted_text"] = bool(doc.get("extracted_text"))
-        
-        documents.append(doc)
-    
-    return documents
-
-
-async def get_documents_by_ids(conn, document_ids: List[str]) -> Dict[str, Dict]:
-    """
-    Récupère des documents spécifiques avec leurs détails.
-    
-    Args:
-        conn: Connexion MySQL
-        document_ids: Liste des IDs de documents à récupérer
-        
-    Returns:
-        Dictionnaire mapping document_id -> document data
-    """
-    placeholders = ", ".join(["%s"] * len(document_ids))
-    
-    async with conn.cursor() as cur:
-        # Essayer avec extracted_text et metadata
-        try:
-            query = f"""
-                SELECT document_id, file_name, file_path, file_size, extracted_text, metadata 
-                FROM documents 
-                WHERE document_id IN ({placeholders})
-            """
-            await cur.execute(query, tuple(document_ids))
-            results = await cur.fetchall()
-            has_extracted_text_col = True
-        except Exception:
-            # Essayer sans extracted_text
-            try:
-                query = f"""
-                    SELECT document_id, file_name, file_path, file_size, metadata 
-                    FROM documents 
-                    WHERE document_id IN ({placeholders})
-                """
-                await cur.execute(query, tuple(document_ids))
-                results = await cur.fetchall()
-                has_extracted_text_col = False
-            except Exception:
-                # Essayer sans metadata non plus
-                query = f"""
-                    SELECT document_id, file_name, file_path, file_size 
-                    FROM documents 
-                    WHERE document_id IN ({placeholders})
-                """
-                await cur.execute(query, tuple(document_ids))
-                results = await cur.fetchall()
-                has_extracted_text_col = False
-    
-    docs_map = {}
-    for row in results:
-        doc_data = {
-            "document_id": row[0],
-            "file_name": row[1],
-            "file_path": row[2],
-            "file_size": row[3]
-        }
-        
-        # Ajouter extracted_text si disponible
-        if has_extracted_text_col and len(row) > 4:
-            doc_data["extracted_text"] = row[4]
-        
-        # Ajouter metadata si disponible
-        if len(row) > 5:
-            doc_data["metadata"] = row[5] if row[5] else {}
-        elif len(row) > 4 and not has_extracted_text_col:
-            doc_data["metadata"] = row[4] if row[4] else {}
-        
-        docs_map[row[0]] = doc_data
-    
-    return docs_map
-
-
-async def get_all_documents_for_metadata_indexing(conn) -> Dict[str, Dict]:
-    """
-    Récupère TOUS les documents pour indexation par métadonnées.
-    
-    Args:
-        conn: Connexion MySQL
-        
-    Returns:
-        Dictionnaire mapping document_id -> document data
-    """
-    all_docs = await get_all_documents_with_details(conn)
-    return {doc["document_id"]: doc for doc in all_docs}
-
-
-async def get_all_documents_with_extracted_text(conn) -> Dict[str, Dict]:
-    """
-    Récupère TOUS les documents qui ont un extracted_text pour indexation par contenu.
-    
-    Args:
-        conn: Connexion MySQL
-        
-    Returns:
-        Dictionnaire mapping document_id -> document data (seulement ceux avec extracted_text)
-    """
-    all_docs = await get_all_documents_with_details(conn)
-    # Filtrer pour garder seulement ceux avec extracted_text
-    return {doc["document_id"]: doc for doc in all_docs if doc.get("has_extracted_text")}
 
 
 async def count_documents_with_extracted_text(conn) -> int:
@@ -1298,18 +1131,21 @@ async def get_pdf_media_item(item_id: int) -> Optional[Dict[str, Any]]:
     """
     conn = await get_db_connection()
     try:
-        async with conn.cursor() as cur:
-            await cur.execute("""
-                SELECT item_id, storage_id, extension 
-                FROM media 
-                WHERE item_id = %s AND LOWER(extension) = 'pdf'
-            """, (item_id,))
-            row = await cur.fetchone()
-            if row:
-                return {"item_id": row[0], "storage_id": row[1], "extension": row[2]}
-            return None
-    finally:
-        await conn.close()
+        async with conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT item_id, storage_id, extension 
+                    FROM media 
+                    WHERE item_id = %s AND LOWER(extension) = 'pdf'
+                """, (item_id,))
+                row = await cur.fetchone()
+                if row:
+                    return {"item_id": row[0], "storage_id": row[1], "extension": row[2]}
+                return None
+    except Exception as e:
+        print(e)
+        return None
+
 
 
 
@@ -1339,24 +1175,203 @@ async def get_admin_stats() -> Dict[str, Any]:
     """
     Récupère les statistiques d'indexation pour l'administration.
     
-    Returns:
-        Dictionnaire avec:
-        - documents_count: Nombre de documents
-        - chunks_count: Nombre de chunks
-        - embeddings_count: Dictionnaire {model_name: count}
-        - documents_with_extracted_text_count: Nombre de documents avec extracted_text
+    Note: Non implémentée pour le moment
     """
-    documents_with_extracted_text = await count_documents_with_extracted_text()
-    print("documents_with_extracted_text: ", documents_with_extracted_text)
-    document_with_clear_text = len(VALID_TEXT_RESOURCE_ID)
-    print("document_with_clear_text: ", document_with_clear_text)
+    raise NotImplementedError("get_admin_stats n'est pas encore implémentée")
 
-    embeddings_count = await get_qdrant_stats()
+
+# ============================================================================
+# FONCTIONS POUR L'INDEXATION DES PDFs DEPUIS M3C
+# ============================================================================
+
+# Configuration M3C
+M3C_BASE_URL = "https://m3c.universita.corsica/files/original/"
+
+
+async def get_pdf_name_from_resource_id(conn, resource_id: int) -> str:
+    """
+    Récupère le nom du PDF avec extension du resource_id fourni.
+    """
+
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT CONCAT(media.storage_id, ".", extension) AS filename
+                FROM media
+                WHERE item_id=%s and LOWER(extension) = 'pdf'
+            """,(resource_id,))
+
+            filename = await cur.fetchone()
+            return filename["filename"]
+
+async def get_pdf_url_for_resource(resource_id: int) -> Optional[str]:
+    """
+    Récupère l'URL du PDF pour un resource_id donné.
+    Hypothèse: resource_id correspond à item_id dans la table media.
     
-    return {
-        **db_stats,
-        "embeddings_count": embeddings_count
-    }
+    Args:
+        resource_id: L'identifiant du resource (utilisé comme item_id)
+        
+    Returns:
+        URL complète du PDF ou None si non trouvé
+    """
+    media = await get_pdf_media_item(resource_id)
+    if media:
+        return f"{M3C_BASE_URL}{media['storage_id']}.{media['extension']}"
+    return None
+
+
+# ============================================================================
+# FONCTIONS DE GESTION DES JOBS D'INDEXATION
+# ============================================================================
+
+async def create_indexing_job(
+    conn,
+    job_id: str,
+    job_type: str,
+    total_items: int,
+    parameters: dict = None
+) -> bool:
+    """Crée un nouveau job d'indexation dans la base de données."""
+    try:
+        async with conn.cursor() as cur:
+            parameters_json = json.dumps(parameters) if parameters else json.dumps({})
+            await cur.execute("""
+                INSERT INTO indexing_jobs 
+                (job_id, job_type, status, total_items, processed_items, progress, parameters)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                job_id, job_type, "pending", total_items, 0,
+                json.dumps({}), parameters_json
+            ))
+            return cur.rowcount > 0
+    except Exception as e:
+        print(f"Erreur création job {job_id}: {e}")
+        return False
+
+
+async def get_indexing_job(conn, job_id: str) -> Optional[dict]:
+    """Récupère les informations d'un job d'indexation."""
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT job_id, job_type, status, created_at, updated_at,
+                       total_items, processed_items, progress, parameters, error_message
+                FROM indexing_jobs
+                WHERE job_id = %s
+            """, (job_id,))
+            row = await cur.fetchone()
+            if row:
+                return {
+                    "job_id": row[0], "job_type": row[1], "status": row[2],
+                    "created_at": str(row[3]), "updated_at": str(row[4]),
+                    "total_items": row[5], "processed_items": row[6],
+                    "progress": json.loads(row[7]) if row[7] else {},
+                    "parameters": json.loads(row[8]) if row[8] else {},
+                    "error_message": row[9]
+                }
+            return None
+    except Exception as e:
+        print(f"Erreur récupération job {job_id}: {e}")
+        return None
+
+
+async def update_indexing_job(
+    conn, job_id: str, status: str,
+    progress: dict = None, processed_items: int = None,
+    error_message: str = None
+) -> bool:
+    """Met à jour l'état d'un job d'indexation."""
+    try:
+        async with conn.cursor() as cur:
+            updates = ["status = %s"]
+            params = [status]
+            
+            if progress is not None:
+                updates.append("progress = %s")
+                params.append(json.dumps(progress))
+            if processed_items is not None:
+                updates.append("processed_items = %s")
+                params.append(processed_items)
+            if error_message is not None:
+                updates.append("error_message = %s")
+                params.append(error_message)
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+            
+            query = f"UPDATE indexing_jobs SET {', '.join(updates)} WHERE job_id = %s"
+            params.append(job_id)
+            await cur.execute(query, tuple(params))
+            return cur.rowcount > 0
+    except Exception as e:
+        print(f"Erreur mise à jour job {job_id}: {e}")
+        return False
+
+
+async def get_latest_job_by_type(conn, job_type: str, exclude_status: list = None) -> Optional[dict]:
+    """Récupère le job le plus récent d'un type donné."""
+    try:
+        async with conn.cursor() as cur:
+            query = """
+                SELECT job_id, job_type, status, created_at, updated_at,
+                       total_items, processed_items, progress, parameters, error_message
+                FROM indexing_jobs
+                WHERE job_type = %s
+            """
+            params = [job_type]
+            if exclude_status:
+                placeholders = ", ".join(["%s"] * len(exclude_status))
+                query += f" AND status NOT IN ({placeholders})"
+                params.extend(exclude_status)
+            query += " ORDER BY created_at DESC LIMIT 1"
+            await cur.execute(query, tuple(params))
+            row = await cur.fetchone()
+            if row:
+                return {
+                    "job_id": row[0], "job_type": row[1], "status": row[2],
+                    "created_at": str(row[3]), "updated_at": str(row[4]),
+                    "total_items": row[5], "processed_items": row[6],
+                    "progress": json.loads(row[7]) if row[7] else {},
+                    "parameters": json.loads(row[8]) if row[8] else {},
+                    "error_message": row[9]
+                }
+            return None
+    except Exception as e:
+        print(f"Erreur récupération dernier job type {job_type}: {e}")
+        return None
+
+
+async def get_all_indexing_jobs(conn, status_filter: str = None) -> list:
+    """Récupère tous les jobs d'indexation."""
+    try:
+        async with conn.cursor() as cur:
+            query = """
+                SELECT job_id, job_type, status, created_at, updated_at,
+                       total_items, processed_items, progress, parameters, error_message
+                FROM indexing_jobs
+            """
+            params = []
+            if status_filter:
+                query += " WHERE status = %s"
+                params.append(status_filter)
+            query += " ORDER BY created_at DESC"
+            await cur.execute(query, tuple(params))
+            rows = await cur.fetchall()
+            return [{
+                "job_id": row[0], "job_type": row[1], "status": row[2],
+                "created_at": str(row[3]), "updated_at": str(row[4]),
+                "total_items": row[5], "processed_items": row[6],
+                "progress": json.loads(row[7]) if row[7] else {},
+                "parameters": json.loads(row[8]) if row[8] else {},
+                "error_message": row[9]
+            } for row in rows]
+    except Exception as e:
+        print(f"Erreur récupération tous les jobs: {e}")
+        return []
+
+
+# Note: La table indexing_jobs doit être créée dans MySQL
+# SQL: CREATE TABLE IF NOT EXISTS indexing_jobs (...)
+
 #         # Build the query to fetch chunks with their embeddings
 #         query = f"""
 #             SELECT

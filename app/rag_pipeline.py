@@ -14,6 +14,9 @@ import database
 import pynvml
 
 from api_visualization import set_rag_pipeline
+from app.embedders.BaseEmbedder import BaseEmbedder
+from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection
+from embedders import get_embedder_instance
 
 # Listes des modèles (déjà définies)
 MISTRAL_MODELS = [
@@ -65,18 +68,22 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
 """
 
     def __init__(self,
-                 load_local:bool = False):
+                 load_local:bool = False,
+                 embedder_name: Optional[str] = None):
         """
         Initialise le pipeline RAG v1
+        
+        Args:
+            load_local: Si True, charge les modèles locaux Ollama
+            embedder_name: le nom de l'embedder à utiliser. Si non fourni, charge l'embedder par défaut
         """
         print("\n" + "=" * 60)
         print("INITIALISATION RAG v1 (BASIQUE)")
         print("=" * 60)
         self.dict_llm: dict[str, BaseChatModel] = {}
         self._init_llm_instances(load_local=True)
-        self.embedder = MistralAIEmbeddings(model="mistral-embed")
-        self.embedder_name = "mistral-embed"
-        self.db_connection_factory = database.get_db_connection
+        
+        self.embedder = get_embedder_instance(embedder_name)
 
         # En effectuant le RAG avec k documents,
         # on multiplie le nombre de documents à collecter
@@ -193,7 +200,12 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         """
         try:
             # Utilise le modèle d'embeddings déjà initialisé dans la classe
-            embeddings = self.embedder.embed_query(prompt)
+            # Si embedder est un BaseEmbedder, utiliser embed()
+            # Sinon, utiliser embed_query() pour compatibilité avec MistralAIEmbeddings
+            if hasattr(self.embedder, 'embed'):
+                embeddings = self.embedder.embed(prompt)
+            else:
+                embeddings = self.embedder.embed_query(prompt)
             return embeddings
         except Exception as e:
             raise ValueError(f"Erreur lors de la transformation du prompt en embeddings : {e}")
@@ -203,7 +215,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                                        k: int = 3,
                                        specified_document_id: Optional[str] = None) -> List[RAGSource]:
         """
-        Recherche les k chunks les plus pertinents dans la base de données PostgreSQL,
+        Recherche les k chunks les plus pertinents dans la base de données Qdrant,
         en utilisant la similarité cosinus entre les embeddings.
 
         Args:
@@ -213,57 +225,64 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             List[RAGSource]: Liste de tuples (chunk, score) triés par pertinence.
         """
-
-        # c.chunk_id, \
-        #     c.document_id, \
-        #     c.content, \
-        #     c.num_page, \
-        #     c.position_in_page, \
-        #     c.token_count, \
-        #     c.metadata, \
-        #     1 - (ce.embedding <= > %s)
-        # AS
-        # similarity
         print("retrieve_top_k_chunks_from_db")
-        aconn = await database.get_db_connection()
-        print(aconn)
-        try:
-            results = await database.get_top_k_similar_chunks_cossim(aconn,
-                                                                     embedding=prompt_embeddings,
-                                                                     model_name=self.embedder_name,
-                                                                     k=k,
-                                                                     specified_document_id=specified_document_id)
 
-            rag_sources = []
-            for row in results:
-                metadata = {
-                    "chunk_id": row["chunk_id"],
-                    "document_id": row["document_id"],
-                    "num_page": row["num_page"],
-                    "position_in_page": row["position_in_page"],
-                    "token_count": row["token_count"],
-                    # Ajouter d'autres métadonnées si nécessaire
-                }
-                # Fusionner les métadonnées existantes (JSON) avec les métadonnées extraites
-                if row["metadata"]:
-                    metadata.update(row["metadata"])
+        # voir app/indexing/services.py, fonction process_pdf_indexing_job etape 5
+        # TODO: est-ce qu'on va utiliser plusieurs collections, ou une seule ?
+        # pour l'instant on garde ce modèle de nom
+        collection_name = f"LD-{self.embedder.name}-{self.embedder.dimension}"
 
-                # Ajouter les données du document aux métadonnées
-                document_data = await database.get_document_data_from_chunk_id(row["chunk_id"], aconn)
-                if document_data:
-                    metadata["document_data"] = document_data
+        results = await database.get_top_k_similar_chunks_qdrant(embedding=prompt_embeddings,
+                                                                 collection_name=collection_name,
+                                                                 k=k,
+                                                                 specified_document_id=specified_document_id)
+        """
+        [
+        {
+            "chunk_id": point.payload.get("chunk_id"),
+            "document_id": point.payload.get("document_id"),
+            "content": point.payload.get("content"),
+            "num_page": point.payload.get("num_page"),
+            "position_in_page": point.payload.get("position_in_page"),
+            "token_count": point.payload.get("token_count"),
+            "metadata": point.payload.get("metadata"),
+            "similarity": point.score
+        }
+        for point in results
+    ]
+        """
 
-                rag_source = RAGSource(
-                    content=row["content"],
-                    score_cossim=row["similarity"],
-                    score_bm25=None,
-                    metadata=metadata
-                )
-                rag_sources.append(rag_source)
+        # les données principales à transmettre sont toutes déjà présentes dans les points stockés dans la collection
+        # Qdrant. Dans le cas où on en voudrait plus, il faudra requêter la DB MySQL dans la table values.
 
-            return rag_sources
-        finally:
-            await aconn.close()
+        rag_sources = []
+        for row in results:
+            metadata = {
+                "chunk_id": row["chunk_id"],
+                "document_id": row["document_id"],
+                "num_page": row["num_page"],
+                "position_in_page": row["position_in_page"],
+                "token_count": row["token_count"],
+            }
+            # contient position_in_page; resource_id
+            if row["metadata"]:
+                metadata.update(row["metadata"])
+            print(metadata)
+            # on va requêter MySQL pour récupérer le nom, l'auteur et la date
+            # pour éviter un aller-retour supplémentaire avec l'utilisateur
+            async with await get_db_connection() as conn:
+                document_data_dict = await get_resource_basic_metadata(conn, metadata["resource_id"])
+                print("adding metadata:", document_data_dict)
+                metadata.update(document_data_dict)
+
+            rag_source = RAGSource(
+                content=row["content"],
+                score_cossim=row["similarity"],
+                score_bm25=None,
+                metadata=metadata
+            )
+            rag_sources.append(rag_source)
+        return rag_sources
 
     def _build_augmented_prompt(self, initial_prompt: str, sources: List[RAGSource]) -> str:
         chunk_lines = [f"[Document {i}] : {sources[i].content}" for i in range(len(sources))]

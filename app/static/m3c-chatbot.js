@@ -287,6 +287,8 @@ async function simpleQuery(params) {
 			populateDocumentSelector();
 		}
 
+		// Remarque: data.source contient un Array de RAGSource. Ces RAGSource ne contiennent pas
+		// les noms et auteurs, mais on peut les récupérer avec une autre requête
 		const botResponseDiv = createBotResponse(data);
 		console.log("botResponseDiv créé");
 		chatContainer.appendChild(botResponseDiv);

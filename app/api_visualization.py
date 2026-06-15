@@ -66,15 +66,23 @@ async def generate_embedding(text: str) -> List[float]:
     
     if RAG_PIPELINE is None:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="RAG pipeline not initialized. Cannot generate embeddings."
         )
     
     try:
-        if hasattr(RAG_PIPELINE, '_get_prompt_embeddings'):
+        # Essayer d'utiliser l'embedder directement
+        if hasattr(RAG_PIPELINE, 'embedder'):
+            embedder = RAG_PIPELINE.embedder
+            # Si c'est un BaseEmbedder, utiliser embed()
+            if hasattr(embedder, 'embed'):
+                return embedder.embed(text)
+            # Sinon, utiliser embed_query() pour compatibilité
+            elif hasattr(embedder, 'embed_query'):
+                return embedder.embed_query(text)
+        # Sinon, utiliser la méthode privée
+        elif hasattr(RAG_PIPELINE, '_get_prompt_embeddings'):
             return RAG_PIPELINE._get_prompt_embeddings(text)
-        elif hasattr(RAG_PIPELINE, 'embedder'):
-            return RAG_PIPELINE.embedder.embed_query(text)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

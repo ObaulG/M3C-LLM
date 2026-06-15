@@ -10,7 +10,7 @@ from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
 from unittest import case
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
 import database
+from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               QuestionSessionManager,
@@ -45,9 +46,8 @@ from database.database import (get_db_connection,
                                get_chunks_by_question_id,
                                get_chunks_by_question_ids,
                                insert_chunk_embeddings_batch_qdrant,
-                               insert_document,
                                insert_chunks,
-                               VALID_TEXT_RESOURCE_ID)
+                               VALID_TEXT_RESOURCE_ID, get_pdf_url_for_resource, get_pdf_name_from_resource_id)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -58,12 +58,14 @@ import torch
 import uvicorn
 
 from api_visualization import router as viz_router, set_rag_pipeline, set_embedding_model
+from app.embedders import create_mistral_embedder, get_default_embedder
+from app.embedders.router import router as embedders_router
 
 import json
 from datetime import datetime
-from pathlib import Path
 
-from api_visualization import router as viz_router
+# Import du router d'indexing
+from indexing.router import router as indexing_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -104,14 +106,15 @@ class QueryCompareResponse(BaseModel):
     total_time: float = Field(..., description="Temps total de la génération")
     metadata: Dict = Field(..., description="Métadonnées de la requête")
     timestamp: str = Field(..., description="Horodatage de la réponse")
+
 class DocumentResponse(BaseModel):
-    """ModÃ¨le de réponse pour un document"""
-    document_id: str = Field(..., description="Identifiant du document")
-    file_name: str = Field(..., description="Nom du fichier")
-    file_path: str = Field(..., description="Chemin du fichier")
-    file_size: int = Field(..., description="Taille du fichier en octets")
+    """Modèle de réponse pour un document contenant les informations de base"""
+    document_id: int = Field(..., description="Identifiant du document (item, ou source_id")
+    file_name: str = Field(..., description="Nom du fichier pour requête (uuid et extension")
+    title: str = Field(..., description="Titre du document")
+    author: str = Field(..., description="Auteur du document")
     created_at: str = Field(..., description="Date de création")
-    updated_at: str = Field(..., description="Date de mise Ã  jour")
+    updated_at: str = Field(..., description="Date de mise à jour")
 class DocumentsListResponse(BaseModel):
     """ModÃ¨le de réponse pour la liste des documents"""
     documents: List[DocumentResponse] = Field(..., description="Liste des documents")
@@ -192,6 +195,8 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
 app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="admin")
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
+app.include_router(indexing_router)
+app.include_router(embedders_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -214,20 +219,20 @@ def initialize_rag():
     """
     global rag_pipeline
     print("\n" + "=" * 60)
-    print("INITIALISATION DU SYSTÃˆME RAG v3")
+    print("Système RAG")
     print("=" * 60 + "\n")
     # Vérifier la présence de l'API Mistral AI
     mistral_api_key = os.getenv("MISTRAL_API_KEY")
-    if not mistral_api_key:
-        raise RuntimeError(
-            "MISTRAL_API_KEY non trouvée dans les variables d'environnement. "
-            "Veuillez créer un fichier .env avec votre clé API."
-        )
+    embedder_model_name = "mistral-embed"
     try:
-        # Initialiser le pipeline RAG v3
-        rag_pipeline = RAGPipeline(load_local=False)
+        # Initialiser le pipeline RAG v3 avec l'embedder
+        rag_pipeline = RAGPipeline(load_local=False, embedder_name=embedder_model_name)
         # for api_visualization
         set_rag_pipeline(rag_pipeline)
+        
+        # Mettre à jour le nom du modèle d'embedding pour api_visualization
+        set_embedding_model(embedder_model_name)
+        
         return True
     except Exception as e:
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
@@ -790,15 +795,48 @@ async def export_rag_session(session_id: str):
     if not success:
         raise HTTPException(status_code=500, detail="Erreur lors de la création du fichier CSV. Veuillez réessayer plus tard.")
     return FileResponse(file_path, media_type="text/csv", filename=file_path)
-@app.get("/get_pdf")
-async def get_pdf(document_id: str):
-    document_id = document_id.replace(".pdf", "")
-    # note: pour l'instant, l'id du document est également son nom dans le dossier
-    file_path = f"{DOCUMENTS_PATH}/{document_id}.pdf"
-    if not os.path.exists(file_path):
-        print("file not found...")
-        raise HTTPException(status_code=404, detail="Fichier non trouvé")
-    return FileResponse(file_path, media_type="application/pdf")
+
+@app.get("/get_pdf/by_filename")
+async def get_pdf_by_filename(file_name: str):
+    """
+    Effectue une requête sur le vrai site de la M3C à partir du file_name,
+    contenant l'extension
+    """
+    return await _get_pdf_by_filename(file_name)
+
+@app.get("/get_pdf/by_id")
+async def get_pdf_by_id(resource_id: int):
+    """
+    Requête la base MySQL avec le resource_id (table resource) présent dans text_chunks pour obtenir
+    le nom du PDF et le retourner
+    """
+    async with await get_db_connection() as conn:
+        pdf_name = await get_pdf_name_from_resource_id(conn, resource_id)
+    if not pdf_name:
+        raise HTTPException(status_code=404, detail="Aucun PDF trouvé pour le resource_id {}".format(resource_id))
+    return await _get_pdf_by_filename(pdf_name)
+
+async def _get_pdf_by_filename(filename: str):
+    """
+    Helper qui requête le PDF sur le site officiel de la M3C.
+    Retourne l'objet Response qui envoie le PDF
+    """
+    url = database.M3C_BASE_URL+filename
+    try:
+        pdf_bytes = await download_pdf(url)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except Exception as e:
+        print(f"Erreur lors du téléchargement de {filename}: {str(e)}")
+        return HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur - le PDF n'a pas pu être récupéré:")
+
 @app.get("/api/documents", response_model=DocumentsListResponse, tags=["Documents"])
 async def get_documents_list():
     """
@@ -807,20 +845,19 @@ async def get_documents_list():
         DocumentsListResponse: Liste des documents avec leurs métadonnées
     """
     try:
-        # Connexion Ã  la base de données
-        conn = await get_db_connection()
-        # Récupérer tous les documents
-        documents = await get_all_documents(conn)
-        # Fermer la connexion
-        await conn.close()
+        # Connexion à la base de données
+        async with await get_db_connection() as conn:
+            documents = await get_all_documents(conn)
+
         # Construire la réponse
         document_responses = []
+        print("retrieved!")
         for doc in documents:
             document_responses.append(DocumentResponse(
                 document_id=doc["document_id"],
                 file_name=doc["file_name"],
-                file_path=doc["file_path"],
-                file_size=doc["file_size"],
+                title=doc["title"],
+                author=doc["creator"],
                 created_at=str(doc["created_at"]),
                 updated_at=str(doc["updated_at"])
             ))
@@ -1176,40 +1213,6 @@ class AdminStatsResponse(BaseModel):
     timestamp: str = Field(..., description="Horodatage de la réponse")
 
 
-class IndexDocumentsRequest(BaseModel):
-    """Requête pour l'indexation des documents existants"""
-    indexation_type: str = Field(
-        ...,
-        description="Type d'indexation: 'all-metadata' pour TOUS les docs par métadonnées, 'all-with-text' pour TOUS les docs avec extracted_text par contenu",
-        pattern="^(all-metadata|all-with-text)$"
-    )
-    chunk_size: int = Field(
-        2700,
-        description="Taille des chunks en caractères (utilisé seulement si indexation_type='all-with-text')",
-        ge=100,
-        le=10000
-    )
-    chunk_overlap: int = Field(
-        400,
-        description="Recouvrement entre chunks en caractères (utilisé seulement si indexation_type='all-with-text')",
-        ge=0,
-        le=5000
-    )
-
-
-class IndexDocumentsResponse(BaseModel):
-    """Réponse pour l'indexation des documents"""
-    success: bool = Field(..., description="Indique si l'indexation a réussi")
-    processed_documents: int = Field(..., description="Nombre de documents traités")
-    chunks_created: int = Field(0, description="Nombre de chunks créés")
-    embeddings_generated: int = Field(0, description="Nombre d'embeddings générés")
-    chunks_by_document: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Nombre de chunks créés par document"
-    )
-    errors: List[str] = Field(default_factory=list, description="Liste des erreurs éventuelles")
-    timestamp: str = Field(..., description="Horodatage de la réponse")
-
 
 # ============================================================================
 # ENDPOINTS D'ADMINISTRATION
@@ -1241,214 +1244,22 @@ async def get_admin_documents():
         )
 
 
-@app.get("/api/admin/stats", response_model=AdminStatsResponse, tags=["Admin"])
+@app.get("/api/admin/stats", tags=["Admin"])
 async def get_admin_stats():
     """
     Récupère les statistiques d'indexation de l'application.
     
-    Returns:
-        Statistiques sur le nombre de documents, chunks et embeddings indexés.
-    """
-    print("retrieving stats")
-    try:
-        stats = await database.get_admin_stats()
-        
-        return AdminStatsResponse(
-            documents_count=stats["documents_count"],
-            chunks_count=stats["chunks_count"],
-            embeddings_count=stats["embeddings_count"],
-            documents_with_extracted_text_count=stats.get("documents_with_extracted_text_count", 0),
-            timestamp=datetime.now().isoformat()
-        )
+    Note: Non implémentée pour le moment
     
-    except Exception as e:
-        print(f"Erreur dans get_admin_stats: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la récupération des statistiques: {str(e)}"
-        )
+    Returns:
+        Erreur 501 Not Implemented
+    """
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="get_admin_stats n'est pas encore implémentée"
+    )
 
 
-@app.post("/api/admin/documents/index", 
-          response_model=IndexDocumentsResponse,
-          tags=["Admin"])
-async def index_existing_documents(request: IndexDocumentsRequest):
-    """
-    Indexe des documents EXISTANTS dans la base de données.
-    
-    Selon le type d'indexation:
-    - 'metadata': Indexe uniquement les métadonnées des documents (file_name, file_path, etc.)
-    - 'content': Découpe le contenu extrait (extracted_text) en chunks et indexe chaque chunk
-    
-    Les documents doivent déjà exister dans la base de données.
-    
-    Args:
-        request: IndexDocumentsRequest avec document_ids, indexation_type, chunk_size, chunk_overlap
-        
-    Returns:
-        IndexDocumentsResponse avec le résultat de l'indexation
-    """
-    print("Requête d'indexation")
-    print(request)
-    try:
-        conn = await get_db_connection()
-        
-        processed_documents = 0
-        chunks_created = 0
-        embeddings_generated = 0
-        chunks_by_document = {}
-        errors = []
-        
-        # Préparer les embeddings batch pour Qdrant
-        embeddings_batch = []
-        
-        # Récupérer les documents selon le type d'indexation
-        if request.indexation_type == "all-metadata":
-            # Indexer TOUS les documents par métadonnées
-            docs_map = await database.get_all_documents_for_metadata_indexing(conn)
-        elif request.indexation_type == "all-with-text":
-            # Indexer uniquement les documents valides avec extracted_text
-            all_docs = await database.get_all_documents_with_extracted_text(conn)
-            docs_map = {doc_id: doc for doc_id, doc in all_docs.items()
-                        if int(doc_id) in VALID_TEXT_RESOURCE_ID}
-        else:
-            errors.append(f"Type d'indexation inconnu: {request.indexation_type}")
-            docs_map = {}
-        print(f"{len(docs_map)} documents à indexer")
-        # Traiter chaque document
-        for doc_id, doc_data in docs_map.items():
-            
-            try:
-                if request.indexation_type == "all-metadata":
-                    # Indexation par métadonnées : créer un embedding pour les métadonnées du document
-                    # Construire un texte à partir des métadonnées
-                    metadata_text = f"Document ID: {doc_data['document_id']}\n"
-                    metadata_text += f"File Name: {doc_data['file_name']}\n"
-                    if doc_data.get('file_path'):
-                        metadata_text += f"File Path: {doc_data['file_path']}\n"
-                    if doc_data.get('metadata'):
-                        metadata_text += f"Metadata: {json.dumps(doc_data['metadata'])}\n"
-                    
-                    # Générer l'embedding pour les métadonnées
-                    try:
-                        embedding = rag_pipeline._get_prompt_embeddings(metadata_text)
-                        
-                        # Créer un chunk spécial pour les métadonnées
-                        chunk_id = f"{doc_id}_metadata"
-                        
-                        embeddings_batch.append({
-                            "chunk_id": chunk_id,
-                            "document_id": doc_id,
-                            "model_name": rag_pipeline.embedder_name,
-                            "embedding": embedding,
-                            "content": metadata_text,
-                            "num_page": None,
-                            "position_in_page": 0,
-                            "token_count": len(metadata_text),
-                            "metadata": {"type": "metadata"}
-                        })
-                        
-                        embeddings_generated += 1
-                        chunks_by_document[doc_id] = 1
-                        chunks_created += 1
-                        
-                    except Exception as e:
-                        errors.append(f"Erreur génération embedding pour métadonnées de {doc_id}: {str(e)}")
-                    
-                elif request.indexation_type == "all-with-text":
-                    # Indexation par contenu : découper extracted_text en chunks
-                    extracted_text = doc_data.get("extracted_text", "")
-                    
-                    if not extracted_text:
-                        errors.append(f"Document {doc_id} n'a pas de contenu extrait (extracted_text)")
-                        continue
-                    
-                    # 1. Découper le texte en chunks
-                    chunks = split_text_into_chunks(
-                        extracted_text,
-                        request.chunk_size,
-                        request.chunk_overlap
-                    )
-                    
-                    if not chunks:
-                        errors.append(f"Document {doc_id}: aucun chunk généré")
-                        continue
-                    
-                    # 2. Insérer les chunks dans MySQL
-                    chunks_data = []
-                    for i, chunk_content in enumerate(chunks):
-                        chunk_id = f"{doc_id}_chunk_{i}"
-                        chunks_data.append((
-                            chunk_id,
-                            doc_id,
-                            7,  # strategy_id = 7 (découpage en caractères)
-                            chunk_content,
-                            None,  # num_page
-                            i,     # position_in_page
-                            len(chunk_content),  # token_count
-                            doc_data.get("metadata", {})
-                        ))
-                    
-                    await insert_chunks(conn, chunks_data)
-                    
-                    # 3. Préparer les embeddings pour Qdrant
-                    for i, chunk_content in enumerate(chunks):
-                        chunk_id = f"{doc_id}_chunk_{i}"
-                        
-                        try:
-                            embedding = rag_pipeline._get_prompt_embeddings(chunk_content)
-                            
-                            embeddings_batch.append({
-                                "chunk_id": chunk_id,
-                                "document_id": doc_id,
-                                "model_name": rag_pipeline.embedder_name,
-                                "embedding": embedding,
-                                "content": chunk_content,
-                                "num_page": None,
-                                "position_in_page": i,
-                                "token_count": len(chunk_content),
-                                "metadata": doc_data.get("metadata", {})
-                            })
-                            
-                            embeddings_generated += 1
-                        except Exception as e:
-                            errors.append(f"Erreur génération embedding pour {doc_id}_chunk_{i}: {str(e)}")
-                    
-                    chunks_by_document[doc_id] = len(chunks)
-                    chunks_created += len(chunks)
-                    
-                processed_documents += 1
-                
-            except Exception as e:
-                errors.append(f"Erreur pour document {doc_id}: {str(e)}")
-        
-        # 4. Insérer tous les embeddings dans Qdrant en batch
-        if embeddings_batch:
-            try:
-                await insert_chunk_embeddings_batch_qdrant(embeddings_batch)
-            except Exception as e:
-                errors.append(f"Erreur lors de l'insertion des embeddings dans Qdrant: {str(e)}")
-        
-        await conn.close()
-        
-        return IndexDocumentsResponse(
-            success=True,
-            processed_documents=processed_documents,
-            chunks_created=chunks_created,
-            embeddings_generated=embeddings_generated,
-            chunks_by_document=chunks_by_document,
-            errors=errors,
-            timestamp=datetime.now().isoformat()
-        )
-    
-    except Exception as e:
-        print(f"Erreur dans index_existing_documents: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de l'indexation: {str(e)}"
-        )
 
 
 def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessions_backup.json"):
@@ -1475,7 +1286,7 @@ if __name__ == "__main__":
     # Configuration du serveur
     host = os.getenv("API_HOST", "0.0.0.0")  # 0.0.0.0 pour accepter les connexions externes
     port = int(os.getenv("API_PORT", "8000"))
-    reload = True
+    reload = False
     print("\n" + "=" * 60)
     print("DÃ‰MARRAGE DU SERVEUR API")
     print("=" * 60)
