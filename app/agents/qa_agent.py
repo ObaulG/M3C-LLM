@@ -2,7 +2,9 @@
 from atomic_agents import AtomicAgent, AgentConfig, BaseIOSchema
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 
+from .instructor_factory import create_client
 from .mistral_client import get_mistral_client
+from .prompt_loader import get_prompt
 
 class QuestionRequestInput(BaseIOSchema):
     """
@@ -26,7 +28,9 @@ class QuestionAnswerList(BaseIOSchema):
     """
     questions_answers: list[QuestionAnswer]
 
-system_prompt_generator = SystemPromptGenerator(
+
+# Fallback definition
+_FALLBACK_PROMPT = SystemPromptGenerator(
     background=[
         "This agent is specialized in generating comprehension questions and answer from a text.",
     ],
@@ -44,13 +48,20 @@ system_prompt_generator = SystemPromptGenerator(
     ],
 )
 
-def get_qa_agent(model: str = "mistral-medium"):
-    client = get_mistral_client()
+# Charger depuis YAML
+system_prompt_generator = get_prompt("qa", "default")
+if system_prompt_generator is None:
+    system_prompt_generator = _FALLBACK_PROMPT
+
+
+def get_qa_agent(model: str = "mistral-small", provider: str = "mistral", async_mode: bool = False):
+    client = create_client(provider, model, async_mode=async_mode)
     agent = AtomicAgent[QuestionRequestInput, QuestionAnswerList](
         config=AgentConfig(
             client=client,
             model=model,
-            history=ChatHistory(),
+            history=None,
+            tools=None,
             system_prompt_generator=system_prompt_generator,
         )
     )

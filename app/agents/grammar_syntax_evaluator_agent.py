@@ -1,20 +1,27 @@
 from atomic_agents.context import SystemPromptGenerator
+from .answer_evaluator_agent import EvaluateRequestInput, AgentEvaluationResult
+from .prompt_loader import get_prompt
 
-from answer_evaluator_agent import EvaluateRequestInput, AgentEvaluationResult
 
-evaluation_system_prompt_generator = SystemPromptGenerator(
+# Fallback definition
+_FALLBACK_PROMPT = SystemPromptGenerator(
     background=[
-        "Cet agent évalue la grammaire et la syntaxe d'un texte.",
-        "Il attribue une note de 1 à 10.",
+        "Cet agent evalue la grammaire et la syntaxe d'un texte.",
+        "Il attribue une note de 1 a 10.",
     ],
     steps=[
-        "Vérifier l'orthographe et la syntaxe du texte",
-        "Attribuer une note de 1 à 10 (1 = complètement incorrect, 10 = complet).",
+        "Verifier l'orthographe et la syntaxe du texte",
+        "Attribuer une note de 1 a 10 (1 = completement incorrect, 10 = complet).",
         "Fournir un commentaire pour expliquer la note.",
     ],
     output_instructions=[
-        "La note doit être un entier entre 1 et 10.",
-        "Le commentaire doit être clair, constructif et en français.",
-        "L'évaluation doit être légère. Ne pas pénaliser si l'utilisateur donne une réponse cohérente."
+        "La note doit etre un entier entre 1 et 10.",
+        "Le commentaire doit etre clair, constructif et en francais.",
+        "L'evaluation doit etre legere. Ne pas penaliser si l'utilisateur donne une reponse coherente."
     ],
 )
+
+# Charger depuis YAML (utilise le prompt de evaluators.yaml)
+evaluation_system_prompt_generator = get_prompt("evaluators", "grammar_syntax_evaluation")
+if evaluation_system_prompt_generator is None:
+    evaluation_system_prompt_generator = _FALLBACK_PROMPT

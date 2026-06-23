@@ -37,6 +37,7 @@ from evaluation_feedback_logger import log_feedback_to_csv
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent, \
     ListAgentEvaluationResult, AgentEvaluationResult
+from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
 from agents.message_evaluator_agent import get_message_type_agent, MessageTypeRequestInput
 from database.database import (get_db_connection,
                                get_all_documents,
@@ -66,6 +67,12 @@ from datetime import datetime
 
 # Import du router d'indexing
 from indexing.router import router as indexing_router
+
+# Import du router de génération de questions
+from question_answer.router import router as question_answer_router
+
+# Import du router pour l'évaluation des messages
+from question_answer.message_evaluator_router import router as message_evaluator_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -197,6 +204,8 @@ app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
 app.include_router(indexing_router)
 app.include_router(embedders_router)
+app.include_router(question_answer_router)
+app.include_router(message_evaluator_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -487,13 +496,13 @@ async def query_single_doc_rag(request: QueryRequest):
     return response
 @app.post("/api/sessions/questions/init/{document_id}",
           response_model=SessionStatus)
-async def init_question_session(document_id: str,
+async def init_question_session(document_id: int,
                                 premade_session: bool = True):
     """
     Initialise une nouvelle session de questions/réponses pour un document donné.
     Retourne l'ID de la session et les questions générées.
     """
-    
+    document_id = int(document_id)
     session_id = question_session_manager.create_session(document_id, premade_session)
     if not premade_session:
         # TODO: pour plus tard, en récupérant l'historique de l'utilisateur
@@ -501,23 +510,23 @@ async def init_question_session(document_id: str,
         #       par LLM, IA plus classique, ou bien créée et corrigée par des utilisateurs
         #       experts ou vérifiés.
         raise NotImplementedError
-    database.insert_session(get_db_connection(),
-                            session_id,
-                            None,
-                            document_id,
-                            datetime.now().isoformat())
+    async with await get_db_connection() as conn:
+        await database.insert_session(conn,
+                                session_id,
+                                None,
+                                document_id,
+                                datetime.now().isoformat())
     
     # on détermine les questions qui seront posées. La sélection est faite à l'avance.
-    questions_ids = PREMADE_QUESTIONS_BY_DOCUMENT_ID[document_id]
-    conn = await get_db_connection()
-    questions_tasks = [get_question_by_id(conn, question_id, include_answers=False) for question_id in questions_ids]
-    questions = await asyncio.gather(*questions_tasks)
+    questions_ids = PREMADE_QUESTIONS_BY_DOCUMENT_ID[int(document_id)]
+    async with await get_db_connection() as conn:
+        questions = await get_questions_by_ids(questions_ids, conn)
+
     # note: il y a une liste par question, car une question peut avoir plusieurs chunks
     # TODO: il faudra ajouter avec le document la méthode de chunking utilisée,
     #       car pour le même document, il peut être découpé de plusieurs maniÃ¨res, donc avoir
     #       plusieurs chunks pour la même question.
-    questions_chunks_tasks = [get_chunks_by_question_id(question_id, conn) for question_id in questions_ids]
-    questions_chunks = await asyncio.gather(*questions_chunks_tasks)
+        questions_chunks = await get_chunks_by_question_ids(questions_ids, conn)
     questions_texts = [question["content"] for question in questions]
     question_pages = [chunk[0]["num_page"] for chunk in questions_chunks]
 
@@ -552,6 +561,8 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     question = await get_question_by_id(await get_db_connection(),
                                         current_question_id,
                                         include_answers=True)
+    # vérifier que les réponses existent
+    reference_answer = question.get("answers", [{}])[0].get("content", "") if question.get("answers") else ""
     # vérification du type de message.
     # Initialement, traité avec un LLM mais depuis un changement de modèle,
     # beaucoup de réponses sortent comme hors-sujet ??
@@ -560,6 +571,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
                                                                    user_input=MessageTypeRequestInput(
                                                                               current_question=question["content"],
+                                                                              reference_answer=reference_answer[0],
                                                                               user_message=user_message
                                                                    ),
                                                                    method = "run")
@@ -579,11 +591,10 @@ async def submit_question_session_message(request: QuestionSessionMessage):
         message_type=message_type
     )
     match message_type:
-        case "réponse":
+        case "reponse":
             if not question["answers"]:
                 raise HTTPException(status_code=500, detail="Pas de réponse prévue pour cette question...")
-            # il peut y avoir plusieurs réponses, on ne garde que la
-            # 1Ã¨re
+            # il peut y avoir plusieurs réponses, on ne garde que la 1ère
             expected_answer = question["answers"][0]["content"]
             evaluation_input = EvaluateRequestInput(
                 question=question['content'],
@@ -658,16 +669,17 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     # Log la réponse dans le CSV pour évaluation humaine
     log_response_to_csv(session_id, user_response)
     # Sauvegarder dans la base SQL
+    """
     try:
         conn = await get_db_connection()
         async with conn.cursor() as cursor:
             # Insérer dans session_answers
-            await cursor.execute("""
+            await cursor.execute(\"""
                 INSERT INTO session_answers 
                 (session_id, question_id, question_text, answer_text, 
                  llm_comment, llm_rating, llm_model, message_type, answered_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
-            """, (
+            \""", (
                 session_id,
                 user_response.question_id,
                 user_response.question_text,
@@ -684,7 +696,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
         pass
     finally:
         await conn.close()
-
+    """
     session_response = QuestionSessionResponse(
         session_status=question_session_manager.get_session_status(session_id),
         computed_message_type=message_type,
@@ -810,6 +822,7 @@ async def get_pdf_by_id(resource_id: int):
     Requête la base MySQL avec le resource_id (table resource) présent dans text_chunks pour obtenir
     le nom du PDF et le retourner
     """
+    print("get_pdf_by_id")
     async with await get_db_connection() as conn:
         pdf_name = await get_pdf_name_from_resource_id(conn, resource_id)
     if not pdf_name:
@@ -823,12 +836,13 @@ async def _get_pdf_by_filename(filename: str):
     """
     url = database.M3C_BASE_URL+filename
     try:
+        print("_get_pdf_by_filename")
         pdf_bytes = await download_pdf(url)
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f'attachment; filename="{filename}"'
+                "Content-Disposition": f'inline; filename="{filename}"'
             }
         )
     except Exception as e:
@@ -882,6 +896,7 @@ class QuestionResponse(BaseModel):
     created_by: Optional[str] = Field(None, description="Créé par")
     validated_by: Optional[str] = Field(None, description="Validé par")
     chunk_id: Optional[str] = Field(None, description="ID du chunk associé")
+    num_page: Optional[int] = Field(None, description="Numéro de page du chunk")
     answers: List[Dict] = Field(default_factory=list, description="Liste des réponses")
 
 class QuestionsListResponse(BaseModel):
@@ -912,15 +927,14 @@ async def get_questions_for_document(
         QuestionsListResponse: Liste des questions avec leurs réponses
     """
     try:
-        conn = await get_db_connection()
-        questions = await get_questions_by_document_id(
-            document_id, conn,
-            include_answers=include_answers,
-            status_filter=status_filter,
-            difficulty_filter=difficulty_filter,
-            nb_limit=nb_limit
-        )
-        await conn.close()
+        async with await get_db_connection() as conn:
+            questions = await get_questions_by_document_id(
+                document_id, conn,
+                include_answers=include_answers,
+                status_filter=status_filter,
+                difficulty_filter=difficulty_filter,
+                nb_limit=nb_limit
+            )
         
         # Convertir en QuestionResponse
         question_responses = []
@@ -933,6 +947,7 @@ async def get_questions_for_document(
                 created_by=q["created_by"],
                 validated_by=q["validated_by"],
                 chunk_id=q.get("chunk_id"),
+                num_page=q.get("num_page"),
                 answers=q.get("answers", [])
             ))
         
@@ -954,17 +969,25 @@ async def get_questions_for_document(
 async def evaluate_answer(request: EvaluateRequestInput):
     """
     Évalue une réponse utilisateur par rapport à une réponse attendue.
-    Utilise l'agent évaluateur existant.
+    Utilise l'agent évaluateur avec le modèle spécifié ou par défaut.
     
     Args:
-        request: EvaluateRequestInput avec question, expected_answer, user_answer
+        request: EvaluateRequestInput avec question, expected_answer, user_answer, model
+        model est au format <provider>/<model_name>
     
     Returns:
         AgentEvaluationResult avec score (1-10) et feedback
     """
     try:
-        print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée")
-        evaluation = await evaluation_agent.run_async(request)
+        print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée avec modèle: {request.model}")
+        
+        # Utiliser le modèle spécifié ou le modèle par défaut
+        provider, model = tuple(request.model.split("/")) if request.model else ("mistral", "mistral-small")
+        
+        # Créer un agent avec le modèle spécifié
+        evaluator = get_evaluator_agent(model, provider=provider, async_mode=True)
+        evaluation = await evaluator.run_async(request)
+        
         print(f"[{datetime.now().isoformat()}] Évaluation terminée: score={evaluation.score}")
         return evaluation
     except Exception as e:

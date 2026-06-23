@@ -16,6 +16,7 @@ class EvaluateRequestInput(BaseIOSchema):
     question: str
     expected_answer: str
     user_answer: str
+    model: Optional[str] = None
 
 class AgentEvaluationResult(BaseIOSchema):
     """
@@ -109,33 +110,37 @@ final_evaluation_system_prompt_generator = SystemPromptGenerator(
 def get_final_evaluator_agent(model: str = "mistral-medium",
                               provider: str = "mistral",
                               async_mode: bool = False):
-    client = create_client(provider, async_mode)
+    client = create_client(provider, model, async_mode)
     final_evaluation_agent = AtomicAgent[ListAgentEvaluationResult, AgentEvaluationResult](
         config=AgentConfig(
             client=client,
             model=model,
-            history=ChatHistory(),
+            history=None,
             system_prompt_generator=final_evaluation_system_prompt_generator,
         )
     )
     return final_evaluation_agent
 
 def get_evaluator_agent(model: str = "mistral-medium",
-                              provider: str = "mistral",
-                              async_mode: bool = False,
-                              custom_system_prompt_generator=None):
+                        provider: str = "mistral",
+                        async_mode: bool = False,
+                        custom_system_prompt_generator=None):
+
     system_prompt_generator = custom_system_prompt_generator if custom_system_prompt_generator else evaluation_system_prompt_generator
-    client = create_client(provider, model=None, async_mode=async_mode)
+    client = create_client(provider, model=model, async_mode=async_mode)
+
+    # Les modèles gemma ne prennent pas la temperature (ou alors pas sous ce nom)
+    model_api_parameters = {"temperature": 0.05,} if provider != "google" else {}
     # Supprimer format json en cas d'erreur
     evaluation_agent = AtomicAgent[EvaluateRequestInput, AgentEvaluationResult](
         config=AgentConfig(
             client=client,
             model=model,
             mode=Mode.JSON,
-            history=ChatHistory(),
+            history=None,
             tools=[],
             system_prompt_generator=system_prompt_generator,
-            model_api_parameters={"temperature": 0.05,},
+            model_api_parameters=model_api_parameters,
         )
     )
     return evaluation_agent
@@ -143,23 +148,42 @@ def get_evaluator_agent(model: str = "mistral-medium",
 def get_evaluator_agent_local(model: str = "ministral-3:3b",
                               provider: str = "ollama",
                               async_mode: bool = False):
-    client = create_client(provider, async_mode)
+    client = create_client(provider, model, async_mode)
     evaluation_agent = AtomicAgent[EvaluateRequestInput, str](
         config=AgentConfig(
             client=client,
             model=model,
-            mode=Mode.MD_JSON,
             history=None,
             tools=None,
             system_prompt_generator=evaluation_system_prompt_generator_bis,
-            model_api_parameters={"temperature": 0.05},
+            model_api_parameters={"temperature": 0.05, "max_tokens": 2048},
+        )
+    )
+    return evaluation_agent
+
+def get_evaluator_agent_local_bis(model: str = "ministral-3:3b", provider: str = "ollama", async_mode: bool = False):
+    from openai import OpenAI
+    import instructor
+
+    client = instructor.from_provider(f"ollama/{model}", mode=instructor.Mode.JSON, async_client=async_mode)
+
+    evaluation_agent = AtomicAgent[EvaluateRequestInput, AgentEvaluationResult](
+        config=AgentConfig(
+            client=client,
+            model=model,
+            mode=instructor.Mode.JSON,
+            history=None,
+            tools=None,
+            system_prompt_generator=evaluation_system_prompt_generator_bis,
+            model_api_parameters={"temperature": 0.05, "max_tokens": 2048},
         )
     )
     return evaluation_agent
 
 async def run_raw(agent, input_data: EvaluateRequestInput) -> AgentEvaluationResult:
+    print("run_raw")
     raw_output = await agent.run_async(input_data)
-
+    print("raw_output:\n", raw_output)
     match = re.search(r"```json\s*(.*?)\s*```", raw_output, re.DOTALL)
     if match:
         json_str = match.group(1)

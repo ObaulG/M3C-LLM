@@ -22,11 +22,22 @@ from database.database import (
     insert_text_document,
     get_or_create_chunking_strategy,
     ensure_qdrant_collection,
-    qdrant_client
+    qdrant_client,
+    get_db_connection,
+    get_chunks_for_document,
+    get_resource_full_metadata
 )
 from qdrant_client import models
 from embedders import get_embedder_instance
 from .sse_manager import sse_manager
+from app.jobs.manager import (
+    create_job as _create_job,
+    get_job as _get_job,
+    get_jobs_by_type as _get_jobs_by_type,
+    get_all_jobs as _get_all_jobs,
+    get_latest_job as _get_latest_job,
+    update_job as _update_job,
+)
 
 # Tokenizer pour le comptage des tokens
 _TOKENIZER = None
@@ -66,6 +77,20 @@ async def download_pdf(url: str, timeout: int = 300) -> bytes:
                 text = await response.text()
                 raise Exception(f"HTTP {response.status} pour {url}: {text[:200]}")
 
+async def download_pdf_stream(url: str, timeout: int = 300):
+    """
+    Télécharge un PDF de manière asynchrone en streaming.
+    Retourne un générateur asynchrone pour FastAPI.
+    """
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
+            if response.status == 200:
+                # On lit le contenu par morceaux
+                async for chunk in response.content.iter_chunked(8192):  # 8 Ko par morceau
+                    yield chunk
+            else:
+                text = await response.text()
+                raise Exception(f"HTTP {response.status} pour {url}: {text[:200]}")
 
 def split_text_into_chunks(text: str, chunk_size: int, overlap: int) -> List[str]:
     """Découpe un texte en chunks avec recouvrement.
@@ -168,35 +193,8 @@ async def process_pdf_from_m3c(resource_id: int, chunk_size: int, overlap: int) 
 
 
 # ============================================================================
-# GESTION LOCALE DES JOBS (remplace MySQL)
+# GESTION DES JOBS - Utilise le module central app.jobs
 # ============================================================================
-
-JOBS_FILE = Path("app/indexing/jobs.json")
-
-
-def _ensure_jobs_file():
-    """Crée le fichier jobs.json s'il n'existe pas."""
-    JOBS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if not JOBS_FILE.exists():
-        with open(JOBS_FILE, 'w', encoding='utf-8') as f:
-            json.dump({}, f, indent=2)
-
-
-def _load_jobs() -> Dict[str, dict]:
-    """Charge tous les jobs depuis le fichier JSON."""
-    _ensure_jobs_file()
-    try:
-        with open(JOBS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        return {}
-
-
-def _save_jobs(jobs: Dict[str, dict]) -> None:
-    """Sauvegarde tous les jobs dans le fichier JSON."""
-    _ensure_jobs_file()
-    with open(JOBS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(jobs, f, indent=2, ensure_ascii=False)
 
 
 def create_indexing_job(job_type: str = "pdf-from-m3c", parameters: dict = None) -> str:
@@ -204,32 +202,18 @@ def create_indexing_job(job_type: str = "pdf-from-m3c", parameters: dict = None)
     Crée un nouveau job d'indexation.
     
     Args:
-        job_type: Type de job (ex: "pdf-from-m3c")
+        job_type: Catégorie de documents (ex: "pdf-from-m3c", "all-metadata", "all-with-text")
         parameters: Paramètres du job (chunk_size, chunk_overlap, embedder_name)
     
     Returns:
         job_id: L'ID unique du job créé
     """
-    jobs = _load_jobs()
-    job_id = str(uuid.uuid4())
-    
-    now = datetime.now().isoformat()
-    job = {
-        "job_id": job_id,
-        "job_type": job_type,
-        "status": "pending",
-        "created_at": now,
-        "updated_at": now,
-        "total_items": len(VALID_TEXT_RESOURCE_ID),
-        "processed_items": 0,
-        "progress": {},
-        "parameters": parameters or {},
-        "error_message": None
-    }
-    
-    jobs[job_id] = job
-    _save_jobs(jobs)
-    return job_id
+    return _create_job(
+        job_type="indexing",
+        document_categories=[job_type],
+        parameters=parameters or {},
+        total_items=len(VALID_TEXT_RESOURCE_ID)
+    )
 
 
 def get_indexing_job(job_id: str) -> Optional[dict]:
@@ -242,8 +226,7 @@ def get_indexing_job(job_id: str) -> Optional[dict]:
     Returns:
         Le job sous forme de dict, ou None s'il n'existe pas
     """
-    jobs = _load_jobs()
-    return jobs.get(job_id)
+    return _get_job(job_id)
 
 
 def update_indexing_job(
@@ -251,7 +234,7 @@ def update_indexing_job(
     status: str,
     progress: dict = None,
     processed_items: int = None,
-    id_embeddings_missing: list = [],
+    id_embeddings_missing: list = None,
     error_message: str = None
 ) -> bool:
     """
@@ -262,71 +245,315 @@ def update_indexing_job(
         status: Nouveau statut (pending, running, completed, failed, cancelled)
         progress: Progression détaillée (optionnel)
         processed_items: Nombre d'éléments traités (optionnel)
+        id_embeddings_missing: Liste des embeddings manquants (optionnel)
         error_message: Message d'erreur (optionnel)
     
     Returns:
         True si la mise à jour a réussi, False sinon
     """
-    jobs = _load_jobs()
-    
-    if job_id not in jobs:
-        return False
-    
-    job = jobs[job_id]
-    job["status"] = status
-    job["updated_at"] = datetime.now().isoformat()
-    job["id_embeddings_missing"] = id_embeddings_missing
-    if progress is not None:
-        job["progress"] = progress
-    if processed_items is not None:
-        job["processed_items"] = processed_items
-    if error_message is not None:
-        job["error_message"] = error_message
-    
-    _save_jobs(jobs)
-    return True
+    update_kwargs = {
+        "status": status,
+        "progress": progress,
+        "processed_items": processed_items,
+        "id_embeddings_missing": id_embeddings_missing,
+        "error_message": error_message
+    }
+    return _update_job(job_id, **update_kwargs)
 
 
 def get_latest_job_by_type(job_type: str, exclude_status: list = None) -> Optional[dict]:
     """
-    Récupère le job le plus récent d'un type donné.
+    Récupère le job le plus récent d'un type donné ou d'une catégorie de documents.
     
     Args:
-        job_type: Type de job à filtrer (ex: "pdf-from-m3c")
+        job_type: Type de tâche (ex: "indexing") OU catégorie de documents (ex: "pdf-from-m3c")
         exclude_status: Liste des statuts à exclure (optionnel)
     
     Returns:
         Le job le plus récent sous forme de dict, ou None si aucun trouvé
     """
-    jobs = _load_jobs()
-    matching_jobs = [job for job in jobs.values() if job.get("job_type") == job_type]
+    # D'abord essayer de filtrer par job_type (nouvelle nomenclature)
+    job = _get_latest_job(job_type, exclude_status)
+    if job:
+        return job
     
-    if exclude_status:
-        matching_jobs = [job for job in matching_jobs if job.get("status") not in exclude_status]
+    # Sinon, essayer de filtrer par document_categories (compatibilité)
+    # Chercher tous les jobs indexing et filtrer par document_categories
+    indexing_jobs = _get_jobs_by_type("indexing")
+    matching_jobs = [
+        j for j in indexing_jobs 
+        if job_type in j.get("document_categories", [])
+        and (exclude_status is None or j.get("status") not in exclude_status)
+    ]
     
-    if not matching_jobs:
-        return None
+    if matching_jobs:
+        return max(matching_jobs, key=lambda j: j.get("created_at", ""))
     
-    return max(matching_jobs, key=lambda j: j.get("created_at", ""))
+    return None
 
 
-def get_all_indexing_jobs(status_filter: str = None) -> list:
+def get_all_indexing_jobs(status_filter: str = None, category_filter: str = None) -> list:
     """
     Récupère tous les jobs d'indexation.
     
     Args:
         status_filter: Filtre optionnel par statut
+        category_filter: Filtre optionnel par catégorie de documents
     
     Returns:
         Liste de tous les jobs
     """
-    jobs = _load_jobs()
-    all_jobs = list(jobs.values())
+    # Récupérer tous les jobs de type "indexing"
+    all_jobs = _get_jobs_by_type("indexing")
     
+    # Appliquer les filtres
     if status_filter:
         all_jobs = [job for job in all_jobs if job.get("status") == status_filter]
     
+    if category_filter:
+        all_jobs = [
+            job for job in all_jobs 
+            if category_filter in job.get("document_categories", [])
+        ]
+    
     return all_jobs
+
+
+def clean_metadata_value(value):
+    """
+    Nettoie une valeur de métadonnée : trim et normalise les espaces.
+    
+    Args:
+        value: La valeur à nettoyer (peut être None)
+        
+    Returns:
+        La valeur nettoyée ou None si vide
+    """
+    if not value:
+        return None
+    # Trim et remplacer les espaces/retours à la ligne multiples par un seul espace
+    cleaned = " ".join(str(value).strip().split())
+    return cleaned if cleaned else None
+
+
+def build_metadata_string(metadata: dict) -> str:
+    """
+    Construit une chaîne de caractères formatée à partir des métadonnées.
+    
+    Args:
+        metadata: Dict contenant les métadonnées avec clés :
+            title, creator, description, publisher, contributor, date,
+            type, language, abstract, subjects (liste)
+            
+    Returns:
+        Chaîne de caractères formatée pour les embeddings
+    """
+    lines = []
+    
+    # Titre
+    title = clean_metadata_value(metadata.get("title"))
+    if title:
+        lines.append(f"Titre: {title}")
+    
+    # Auteurs (creator et contributor)
+    authors = []
+    creator = clean_metadata_value(metadata.get("creator"))
+    if creator:
+        authors.append(creator)
+    contributor = clean_metadata_value(metadata.get("contributor"))
+    if contributor:
+        authors.append(contributor)
+    if authors:
+        lines.append(f"Auteurs: {", ".join(authors)}")
+    
+    # Résumé (privilégier abstract si disponible, sinon description)
+    abstract = clean_metadata_value(metadata.get("abstract"))
+    description = clean_metadata_value(metadata.get("description"))
+    summary = abstract or description
+    if summary:
+        lines.append(f"Résumé: {summary}")
+    
+    # Éditeur
+    publisher = clean_metadata_value(metadata.get("publisher"))
+    if publisher:
+        lines.append(f"Éditeur: {publisher}")
+    
+    # Date
+    date = clean_metadata_value(metadata.get("date"))
+    if date:
+        lines.append(f"Date: {date}")
+    
+    # Type
+    type_ = clean_metadata_value(metadata.get("type"))
+    if type_:
+        lines.append(f"Type: {type_}")
+    
+    # Langue
+    language = clean_metadata_value(metadata.get("language"))
+    if language:
+        lines.append(f"Langue: {language}")
+    
+    # Mots-clés (un par ligne)
+    subjects = metadata.get("subjects", [])
+    if subjects:
+        lines.append("Mots-clés:")
+        for subject in subjects:
+            cleaned_subject = clean_metadata_value(subject)
+            if cleaned_subject:
+                lines.append(cleaned_subject)
+    
+    return "\n".join(lines)
+
+
+async def process_metadata_indexing_job(job_id: str, embedder_name: str):
+    """
+    Traite un job d'indexation (création d'embeddings) des métadonnées de chaque item.
+    
+    Pour chaque resource_id, récupère les métadonnées, construit une chaîne formatée,
+    génère l'embedding et le sauvegarde dans Qdrant.
+    
+    Args:
+        job_id: L'ID du job à traiter
+        embedder_name: Le nom de l'embedding model à utiliser
+        
+    Returns:
+        Dict avec le résultat du traitement
+    """
+    from database.database import get_db_connection
+    
+    job = get_indexing_job(job_id)
+    if not job:
+        raise Exception(f"Job {job_id} non trouvé")
+
+    if job["status"] == "completed":
+        return {"success": True, "message": "Job déjà terminé", "job_id": job_id, "processed_items": job["processed_items"]}
+
+    if job["status"] == "cancelled":
+        return {"success": False, "message": "Job annulé", "job_id": job_id, "processed_items": job["processed_items"]}
+
+    # Autoriser la reprise des jobs "failed" ou "running" - les mettre à jour en "running"
+    update_indexing_job(job_id, "running")
+
+    progress = job.get("progress", {})
+    if not progress:
+        progress = {}
+
+    processed_count = job.get("processed_items", 0)
+    errors = []
+    all_missing_embeddings = []
+
+    # récupérer l'embedder
+    try:
+        embedder = get_embedder_instance(embedder_name)
+    except ValueError as e:
+        errors.append(f"embedder_name invalide - {e}")
+        return {"success": False, "message": "Job annulé", "job_id": job_id, "processed_items": job["processed_items"], "errors": errors}
+
+    model_name = embedder.name
+
+    for i, resource_id in enumerate(VALID_TEXT_RESOURCE_ID):
+        resource_id_str = str(resource_id)
+        print(f"Métadonnées {i+1}/{len(VALID_TEXT_RESOURCE_ID)} - resource_id {resource_id_str}")
+
+        # Vérifier si déjà complété
+        doc_progress = progress.get(resource_id_str, {})
+        if doc_progress.get("status") == "completed":
+            processed_count += 1
+            print("already completed")
+            continue
+
+        # Mettre à jour status en processing sur ce document
+        progress[resource_id_str] = {
+            "status": "processing",
+            "started_at": datetime.now().isoformat()
+        }
+        update_indexing_job(job_id, "running", progress=progress)
+
+        try:
+            # Récupérer les métadonnées
+            conn = await get_db_connection()
+            metadata = await get_resource_full_metadata(conn, resource_id)
+            await conn.close()
+
+            if not metadata or all(v is None or v == [] for k, v in metadata.items()):
+                raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
+
+            # Construire la chaîne de métadonnées
+            metadata_string = build_metadata_string(metadata)
+            
+            if not metadata_string:
+                raise ValueError("La chaîne de métadonnées est vide")
+
+            # Générer l'embedding pour les métadonnées
+            print(f"Génération embedding pour métadonnées de {resource_id_str}")
+            embedding = embedder.embed(metadata_string)
+
+            # Créer la collection Qdrant
+            vector_size = embedder.dimension
+            collection_name = f"MD-{model_name}-{vector_size}"
+            
+            await ensure_qdrant_collection(collection_name, vector_size)
+
+            # Créer un document_id unique pour les métadonnées
+            document_id = f"metadata-{resource_id}"
+            chunk_id = f"{document_id}-metadata"
+
+            # Insérer dans Qdrant
+            result = await insert_chunk_embedding_qdrant(
+                chunk_id=chunk_id,
+                document_id=document_id,
+                model_name=model_name,
+                embedding=embedding,
+                content=metadata_string,
+                metadata={"resource_id": resource_id, "source": "metadata"},
+                collection_name=collection_name
+            )
+            print(f"Embedding sauvegardé - operation_id: {result.operation_id}")
+
+            progress[resource_id_str] = {
+                "status": "completed",
+                "chunks_count": 1,
+                "embeddings_count": 1,
+                "document_id": document_id,
+                "processed_at": datetime.now().isoformat()
+            }
+            processed_count += 1
+
+        except Exception as e:
+            errors.append(f"Resource {resource_id}: {str(e)}")
+            progress[resource_id_str] = {
+                "status": "failed",
+                "error": str(e),
+                "processed_at": datetime.now().isoformat()
+            }
+            print(f"Erreur pour {resource_id_str}: {str(e)}")
+
+        if processed_count % 3 == 0 or errors:
+            update_indexing_job(
+                job_id, "running",
+                progress=progress,
+                processed_items=processed_count
+            )
+
+    total_resources = len(VALID_TEXT_RESOURCE_ID)
+    status = "completed" if processed_count == total_resources and not errors else "failed"
+    error_msg = "; ".join(errors) if errors else None
+
+    update_indexing_job(
+        job_id, status,
+        progress=progress,
+        processed_items=processed_count,
+        error_message=error_msg
+    )
+
+    return {
+        "success": status == "completed",
+        "message": f"Job {status}",
+        "job_id": job_id,
+        "processed_items": processed_count,
+        "total_items": total_resources,
+        "errors": errors
+    }
 
 
 async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, embedder_name: str):
@@ -371,100 +598,169 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
         resource_id_str = str(resource_id)
         print(f"Document {i+1}/{len(VALID_TEXT_RESOURCE_ID)} - resource_id {resource_id_str}")
 
-        if resource_id_str in progress and progress[resource_id_str].get("status") == "completed":
+        # Vérifier si déjà complété
+        doc_progress = progress.get(resource_id_str, {})
+        if doc_progress.get("status") == "completed":
             processed_count += 1
             print("already completed")
             continue
 
+        # Mettre à jour status en processing sur ce document
         progress[resource_id_str] = {
             "status": "processing",
             "started_at": datetime.now().isoformat()
         }
         update_indexing_job(job_id, "running", progress=progress)
 
+        # Récupérer text_document_id si déjà créé
+        text_document_id = doc_progress.get("text_document_id")
+        
+        # Si les chunks n'existent pas, les créer
+        if not text_document_id:
+
+            # Générer les chunks (téléchargement PDF, découpage)
+            try:
+                chunks_data, error = await process_pdf_from_m3c(resource_id, chunk_size, overlap)
+            except OSError as e:
+                print(f"La connexion à la DB MySQL a échoué - {e}")
+                errors.append(f"La connexion à la DB MySQL a échoué - {e}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": f"La connexion à la DB MySQL a échoué - {e}",
+                    "processed_at": datetime.now().isoformat()
+                }
+                continue
+
+            if error:
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": error,
+                    "processed_at": datetime.now().isoformat()
+                }
+                errors.append(f"Resource {resource_id}: {error}")
+                continue
+
+            if not chunks_data:
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": "Aucun chunk généré",
+                    "processed_at": datetime.now().isoformat()
+                }
+                errors.append(f"Resource {resource_id}: Aucun chunk généré")
+                continue
+
+            print("PDF retrieved")
+            
+            # Insérer le document texte
+            conn = await get_db_connection()
+            try:
+                text_document_id = await insert_text_document(
+                    conn, "pdf", str(resource_id),
+                    "".join([chunk["content"] for chunk in chunks_data])
+                )
+                if not text_document_id:
+                    raise ValueError("insert_text_document a retourné None")
+            except Exception as e:
+                errors.append(f"Resource {resource_id}: {e}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": f"Erreur insertion document: {e}",
+                    "processed_at": datetime.now().isoformat()
+                }
+                continue
+
+            # Créer la stratégie de chunking
+            strategy_name = f"recursive_char_{chunk_size}_overlap_{overlap}"
+            try:
+                chunking_strategy_id = await get_or_create_chunking_strategy(
+                    conn,
+                    strategy_name,
+                    "character",
+                    chunk_size,
+                    chunk_size,
+                    overlap
+                )
+                if not chunking_strategy_id:
+                    raise ValueError("get_or_create_chunking_strategy a retourné None")
+            except Exception as e:
+                errors.append(f"Resource {resource_id}: {e}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": f"Erreur création stratégie: {e}",
+                    "processed_at": datetime.now().isoformat()
+                }
+                continue
+
+            # Insérer les chunks en BDD
+            try:
+                chunks_data_for_db = []
+                for chunk_info in chunks_data:
+                    chunk_id = str(uuid.uuid4())
+                    chunks_data_for_db.append((
+                        chunk_id,
+                        text_document_id,
+                        chunking_strategy_id,
+                        chunk_info["content"],
+                        chunk_info["num_page"],
+                        chunk_info["position_in_page"],
+                        chunk_info["token_count"],
+                        chunk_info["character_count"]
+                    ))
+                await insert_chunks(conn, chunks_data_for_db)
+                print("chunks inserted in mySQL")
+            except Exception as e:
+                errors.append(f"Resource {resource_id}: {e}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": f"Erreur insertion chunks: {e}",
+                    "processed_at": datetime.now().isoformat()
+                }
+                continue
+        else:
+            # Les chunks existent déjà
+            chunking_strategy_id = doc_progress.get("chunking_strategy_id")
+            print(f"Chunking déjà terminé pour {resource_id_str} avec stratégie {chunking_strategy_id}")
+
+        # Dans TOUS les cas, récupérer les chunks depuis la BDD
         try:
-            # Générer les chunks pour ce document et récupérer le texte complet
-            chunks, error = await process_pdf_from_m3c(resource_id, chunk_size, overlap)
-        except OSError as e:
-            print(f"La connexion à la DB MySQL a échoué - {e}")
-            errors.append(f"La connexion à la DB MySQL a échoué - {e}")
-
-        if error:
-            progress[resource_id_str] = {
-                "status": "failed",
-                "error": error,
-                "processed_at": datetime.now().isoformat()
-            }
-            errors.append(f"Resource {resource_id}: {error}")
-            continue
-
-        if not chunks:
-            progress[resource_id_str] = {
-                "status": "failed",
-                "error": "Aucun chunk généré",
-                "processed_at": datetime.now().isoformat()
-            }
-            errors.append(f"Resource {resource_id}: Aucun chunk généré")
-            continue
-
-        print("PDF retrieved")
-        # 1. Insérer le document dans text_documents AVANT la boucle sur les chunks
-        conn = await get_db_connection()
-        try:
-            text_document_id = await insert_text_document(conn, "pdf", str(resource_id), "".join([chunk["content"] for chunk in chunks]))
-            if not text_document_id:
-                raise ValueError
+            conn = await get_db_connection()
+            existing_chunks = await get_chunks_for_document(text_document_id, conn)
+            await conn.close()
+            
+            if not existing_chunks:
+                errors.append(f"Resource {resource_id}: Aucun chunk trouvé pour document_id {text_document_id}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": "Aucun chunk trouvé en BDD",
+                    "processed_at": datetime.now().isoformat()
+                }
+                continue
+            
+            # Convertir les chunks au format attendu pour l'embedding
+            chunks = []
+            chunk_ids = []
+            for chunk in existing_chunks:
+                chunk_id = chunk.get("id") or str(uuid.uuid4())
+                chunk_ids.append(chunk_id)
+                chunks.append({
+                    "content": chunk.get("content", ""),
+                    "num_page": chunk.get("num_page", 0),
+                    "position_in_page": chunk.get("position_in_page", 0),
+                    "token_count": chunk.get("token_count", 0),
+                    "character_count": chunk.get("character_count", 0),
+                    "metadata": chunk.get("metadata", {})
+                })
+            
+            print(f"Récupéré {len(chunks)} chunks pour {resource_id_str}")
+            
         except Exception as e:
-            errors.append(f"Resource {resource_id}: {e}")
+            errors.append(f"Resource {resource_id}: Erreur récupération chunks - {str(e)}")
             progress[resource_id_str] = {
                 "status": "failed",
-                "error": f"Erreur insertion document pour resource_id {resource_id}",
+                "error": f"Erreur récupération chunks: {str(e)}",
                 "processed_at": datetime.now().isoformat()
             }
             continue
-
-        # 2. Obtenir ou créer la stratégie de chunking
-        strategy_name = f"recursive_char_{chunk_size}_overlap_{overlap}"
-        try:
-            strategy_id = await get_or_create_chunking_strategy(
-                conn,
-                strategy_name,
-                "character",
-                chunk_size,
-                chunk_size,
-                overlap
-            )
-            if not strategy_id:
-                raise ValueError
-        except Exception as e:
-            errors.append(f"Resource {resource_id}: {e}")
-            progress[resource_id_str] = {
-                "status": "failed",
-                "error": f"Erreur création ou récupération de strategy_name pour resource_id {resource_id}",
-                "processed_at": datetime.now().isoformat()
-            }
-            continue
-
-        # 3. Préparer les chunks pour insertion
-        chunks_data = []
-        chunk_ids = []
-        for i, chunk_info in enumerate(chunks):
-            chunk_id = str(uuid.uuid4())
-            chunk_ids.append(chunk_id)
-            chunks_data.append((
-                chunk_id,
-                text_document_id,
-                strategy_id,
-                chunk_info["content"],
-                chunk_info["num_page"],
-                chunk_info["position_in_page"],
-                chunk_info["token_count"],
-                chunk_info["character_count"]
-            ))
-
-        # 4. Insérer les chunks dans text_chunks
-        await insert_chunks(conn, chunks_data)
-        print("chunks inserted in mySQL")
 
         # 5. Créer la collection Qdrant avec le bon format
         vector_size = embedder.dimension
@@ -515,6 +811,9 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
             "status": "completed",
             "chunks_count": len(chunks),
             "id_missing_embeddings": id_missing_embeddings,
+            "chunking_completed": True,
+            "chunking_strategy_id": chunking_strategy_id,
+            "text_document_id": text_document_id,
             "processed_at": datetime.now().isoformat()
         }
         processed_count += 1

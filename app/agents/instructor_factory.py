@@ -5,9 +5,19 @@ from instructor import Instructor, AsyncInstructor
 from mistralai.client import Mistral
 from fastapi import HTTPException
 from openai import OpenAI, AsyncOpenAI
+from google import genai
+from google.genai import types
 
-
-GOOGLE_MODELS = ["gemma-3-4b-it", "gemma-3-12b-it", "gemma-3-27b-it"]
+MISTRAL_MODELS = [
+    "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
+    "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
+]
+GOOGLE_MODELS = ["gemma-4-26b-a4b-it", "gemma-4-31b-it"]
+OLLAMA_MODELS = ["ministral-3:3b", "mistral:7b",
+                 "gouranshitera/bloom-1b1", "gouranshitera/bloomz-1b7",
+                 "gemma4:e2b",
+                 "llama3.2:1b", "llama3.2:3b",
+                 "qwen3.5:0.8b", "qwen3.5:2b", "qwen3.5:4b"]
 
 def create_client(
     provider: Literal["mistral", "ollama", "google"],
@@ -41,14 +51,18 @@ def create_client(
         )
 
 def _create_gemma_client(model: str, async_mode: bool) -> Union[Instructor, AsyncInstructor]:
-    GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+    GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
     if not GOOGLE_API_KEY:
         raise HTTPException(
             status_code=500,
-            detail="La clé API Mistral n'est pas définie. Veuillez configurer la variable d'environnement MISTRAL_API_KEY."
+            detail="La clé API Google n'est pas définie. Veuillez configurer la variable d'environnement GEMINI_API_KEY."
         )
 
-    client = instructor.from_provider(f"google/{model}", async_client=async_mode)
+    client = instructor.from_provider(f"google/{model}",
+                                      api_key=GOOGLE_API_KEY,
+                                      async_client=async_mode,)
+   #                                   mode=instructor.Mode.GENAI_TOOLS)
+
     return client
 def _create_mistral_client(async_mode: bool) -> Union[Instructor, AsyncInstructor]:
     """Crée un client Mistral."""

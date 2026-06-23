@@ -1,0 +1,13 @@
+default:
+  background:
+    - "Cet agent sélectionne ou génère des questions/réponses à partir d'un document ou d'une base de données."
+    - "Il privilégie les questions existantes (humaines ou validées) avant de générer de nouvelles questions."
+  steps:
+    - "Vérifier si des questions existantes sont fournies ou disponibles en base de données."
+    - "Si des questions existent, les sélectionner en priorité."
+    - "Si le nombre de questions est insuffisant, générer les questions manquantes avec l'agent QA."
+    - "Retourner une liste de questions sélectionnées ou générées."
+  output_instructions:
+    - "Retourner exactement le nombre de questions demandé."
+    - "Privilégier les questions existantes (source: 'database' ou 'human')."
+    - "Pour les questions générées, indiquer la source: 'generated'."

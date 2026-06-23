@@ -17,6 +17,7 @@ from app.embedders import get_embedder_instance
 from database.database import VALID_TEXT_RESOURCE_ID
 from .services import (
     process_pdf_indexing_job,
+    process_metadata_indexing_job,
     create_indexing_job,
     get_latest_job_by_type,
     update_indexing_job,
@@ -46,6 +47,7 @@ async def index_existing_documents(request: IndexDocumentsRequest):
     Indexe des documents EXISTANTS dans la base de données.
 
     Selon le type d'indexation:
+    - 'metadata-only': Indexe uniquement les métadonnées des items (titre, auteur, mots-clés, etc.)
     - 'all-metadata': Indexe uniquement les métadonnées des documents (file_name, file_path, etc.)
     - 'all-with-text': Découpe le contenu extrait (extracted_text) en chunks et indexe chaque chunk
     - 'pdf-from-m3c': Télécharge les PDFs depuis M3C, découpe et indexe (via job asynchrone)
@@ -91,6 +93,11 @@ async def index_existing_documents(request: IndexDocumentsRequest):
                 current_job_id,
                 request.chunk_size,
                 request.chunk_overlap,
+                request.embedder_name,
+            ))
+        elif request.indexation_type == "metadata-only":
+            asyncio_mod.create_task(process_metadata_indexing_job(
+                current_job_id,
                 request.embedder_name,
             ))
         elif request.indexation_type == "all-metadata":
@@ -200,6 +207,88 @@ async def start_indexing_job_endpoint(request: IndexJobRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du démarrage du job: {str(e)}"
+        )
+
+
+@router.post("/job/start/metadata",
+          response_model=IndexJobControlResponse,
+          summary="Démarrer un job d'indexation des métadonnées")
+async def start_metadata_indexing_job(request: IndexJobRequest):
+    """
+    Démarre un nouveau job d'indexation des métadonnées pour tous les resource_id valides.
+    """
+    from database.database import VALID_TEXT_RESOURCE_ID
+    from .services import (
+        process_metadata_indexing_job,
+        create_indexing_job,
+        get_latest_job_by_type,
+        update_indexing_job,
+        get_indexing_job
+    )
+    
+    try:
+        # Vérifier s'il existe un job metadata en cours
+        existing_job = get_latest_job_by_type(
+            "metadata-only",
+            exclude_status=["completed", "cancelled"]
+        )
+        
+        if existing_job and not request.force_restart:
+            return IndexJobControlResponse(
+                success=False,
+                job_id=existing_job["job_id"],
+                message=f"Un job metadata est déjà en cours (ID: {existing_job['job_id']})",
+                job_status=IndexJobStatusResponse(**existing_job)
+            )
+        
+        if existing_job and request.force_restart:
+            update_indexing_job(
+                existing_job["job_id"],
+                status="cancelled",
+                error_message="Redémarré manuellement par l'utilisateur"
+            )
+        
+        job_id = create_indexing_job(
+            job_type="metadata-only",
+            parameters={
+                "embedder_name": request.embedder_name,
+            }
+        )
+        print("metadata job_id: ", job_id)
+        asyncio.create_task(process_metadata_indexing_job(
+            job_id,
+            request.embedder_name
+        ))
+        
+        # Récupérer le job pour construire le job_status
+        job = get_indexing_job(job_id)
+        job_status = IndexJobStatusResponse(**job) if job else IndexJobStatusResponse(
+            job_id=job_id,
+            job_type="metadata-only",
+            status="pending",
+            total_items=len(VALID_TEXT_RESOURCE_ID),
+            processed_items=0,
+            progress={},
+            parameters={"embedder_name": request.embedder_name},
+            created_at=datetime.now().isoformat(),
+            updated_at=datetime.now().isoformat(),
+            error_message=None
+        )
+        
+        return IndexJobControlResponse(
+            success=True,
+            job_id=job_id,
+            message=f"Job metadata {job_id} démarré en arrière-plan",
+            job_status=job_status
+        )
+        
+    except Exception as e:
+        print(f"Erreur démarrage job metadata: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors du démarrage du job metadata: {str(e)}"
         )
 
 

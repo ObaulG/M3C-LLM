@@ -83,7 +83,7 @@ async function loadDocuments() {
 
         const data = await response.json();
         allDocuments = data.documents;
-
+        console.log(allDocuments);
         if (allDocuments.length === 0) {
             documentListElement.innerHTML = '<li class="empty-state"><p>Aucun document disponible</p></li>';
             return;
@@ -95,9 +95,10 @@ async function loadDocuments() {
             li.className = 'document-item';
             li.dataset.documentId = doc.document_id;
             li.innerHTML = `
-                <h4>${doc.file_name}</h4>
+                <h4>${doc.title}</h4>
                 <p>Taille: ${formatFileSize(doc.file_size)}</p>
             `;
+            li.onclick = () => selectDocument(doc.document_id);
             documentListElement.appendChild(li);
         });
 
@@ -327,6 +328,7 @@ function displayQuestions(questions, count) {
         const chunkInfo = question.chunk_id ? `
             <div class="chunk-info">
                 Chunk ID: ${question.chunk_id}
+                ${question.num_page ? `<br>Page: ${question.num_page}` : ''}
             </div>
         ` : '';
 
@@ -529,6 +531,7 @@ function resetFilters() {
     document.getElementById('difficultyFilter').value = '';
     document.getElementById('limitFilter').value = '';
     document.getElementById('chunkFilter').value = '';
+    document.getElementById('modelFilter').value = '';
     
     if (currentDocumentId) {
         loadQuestions(currentDocumentId);
@@ -844,7 +847,11 @@ async function evaluateAnswer(questionId) {
     }
 
     try {
-        console.log(`Évaluation: questionId=${questionId}, question="${questionText}", expected="${expectedAnswer.substring(0,50)}...", user="${userAnswer.substring(0,50)}..."`);
+        // Récupérer le modèle sélectionné
+        const modelSelect = document.getElementById('modelFilter');
+        const selectedModel = modelSelect ? modelSelect.value : '';
+        
+        console.log(`Évaluation: questionId=${questionId}, question="${questionText}", expected="${expectedAnswer.substring(0,50)}...", user="${userAnswer.substring(0,50)}...", model="${selectedModel}"`);
         const response = await fetch('/api/evaluate', {
             method: 'POST',
             headers: {
@@ -853,7 +860,8 @@ async function evaluateAnswer(questionId) {
             body: JSON.stringify({
                 question: questionText,
                 expected_answer: expectedAnswer,
-                user_answer: userAnswer
+                user_answer: userAnswer,
+                model: selectedModel
             })
         });
 
@@ -882,7 +890,7 @@ async function evaluateAnswer(questionId) {
         // Stocker les résultats pour la sauvegarde
         if (scoreElement) {
             scoreElement.dataset.evaluationType = 'auto';
-            scoreElement.dataset.modelUsed = 'mistral-small';
+            scoreElement.dataset.modelUsed = selectedModel || 'mistral-small';
         }
         
         // Afficher un message de succès

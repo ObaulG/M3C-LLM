@@ -56,9 +56,8 @@ function populateDocumentList(documents) {
         const docItem = document.createElement('li');
         docItem.className = 'document-item';
         docItem.innerHTML = `
-            <h4>${doc.file_name}</h4>
-            <p>Taille: ${formatFileSize(doc.file_size)}</p>
-            <p>Créé: ${formatDate(doc.created_at)}</p>
+            <h4>${doc.title}</h4>
+            <p>Auteur(s): ${formatFileSize(doc.creator)}</p>
         `;
         docItem.onclick = () => selectDocument(doc.document_id);
         documentList.appendChild(docItem);
@@ -143,7 +142,7 @@ async function selectDocument(docId) {
     currentDocument = docId;
 
     // Charger le PDF
-    const pdfUrl = `http://localhost:8000/get_pdf?document_id=${encodeURIComponent(docId)}`;
+    const pdfUrl = `http://localhost:8000/get_pdf/by_id?resource_id=${docId}`;
     loadPDF(pdfUrl);
 
     // Masquer le sélecteur et afficher le visualiseur

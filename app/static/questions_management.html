@@ -592,6 +592,27 @@
                     <input type="text" id="chunkFilter" placeholder="Ex: 1, 2, 123">
                 </div>
 
+                <div class="filter-group">
+                    <label for="modelFilter">Modèle LLM pour l'évaluation</label>
+                    <select id="modelFilter">
+                        <option value="">Modèle par défaut (mistral-small)</option>
+                        <option value="mistral/mistral-tiny">Mistral Tiny</option>
+                        <option value="mistral/mistral-small">Mistral Small</option>
+                        <option value="mistral/mistral-medium">Mistral Medium</option>
+                        <option value="mistral/mistral-large-2411">Mistral Large</option>
+                        <option value="mistral/ministral-3b-2410">MiniStral 3B</option>
+                        <option value="mistral/ministral-8b-2410">MiniStral 8B</option>
+                        <option value="mistral/open-mistral-7b">Open Mistral 7B</option>
+                        <option value="mistral/open-mistral-nemo">Open Mistral Nemo</option>
+                        <option value="google/gemma-4-26b-a4b-it">Gemma 4 26B</option>
+                        <option value="google/gemma-4-31b-it">Gemma 4 31B</option>
+                        <option value="ollama/gemma4:e2b">Gemma4 - E2B</option>
+                        <option value="ollama/llama3.2:1b">Llama3.2 - 1B</option>
+                        <option value="ollama/llama3.2:3b">Llama3.2 - 3B</option>
+                        <option value="ollama/ministral-3:3b">Ministral 3 - 3B</option>
+                    </select>
+                </div>
+
                 <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
                 <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 10px;">Réinitialiser</button>
             </div>

@@ -141,6 +141,8 @@ function createShowPdfButton(source) {
 
         const numPage = source.metadata.num_page;
         const serverUrl = "http://localhost:8000";
+
+        // route vers la requête
         let pdfUrl = `${serverUrl}/get_pdf/by_id?resource_id=${resource_id}`;
 
         if (numPage !== undefined && numPage !== null) {

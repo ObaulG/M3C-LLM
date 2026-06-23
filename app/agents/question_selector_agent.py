@@ -14,50 +14,58 @@ from database.database import get_questions_by_document_id
 
 class QuestionSelectionInput(BaseModel):
     """
-    Entrée pour la sélection de questions.
+    Entree pour la selection de questions.
     """
     document_id: str
     document_content: str
     num_questions: int = 3
-    existing_questions: Optional[List[dict]] = None  # Questions existantes (ex: depuis la base de données)
+    existing_questions: Optional[List[dict]] = None
 
 class SelectedQuestion(BaseModel):
     """
-    Une question sélectionnée ou générée.
+    Une question selectionnee ou generee.
     """
     question_text: str
     answer_text: str
-    source: str  # "database", "generated", ou "human"
+    source: str
 
 class SelectedQuestionsList(BaseModel):
     """
-    Liste des questions sélectionnées.
+    Liste des questions selectionnees.
     """
     questions: List[SelectedQuestion]
 
+
+# Fallback definition
+_FALLBACK_PROMPT = SystemPromptGenerator(
+    background=[
+        "Cet agent selectionne ou genere des questions/reponses a partir d'un document ou d'une base de donnees.",
+        "Il privilegiera les questions existantes (humaines ou validees) avant de generer de nouvelles questions.",
+    ],
+    steps=[
+        "Verifier si des questions existantes sont fournies ou disponibles en base de donnees.",
+        "Si des questions existent, les selectionner en priorite.",
+        "Si le nombre de questions est insuffisant, generer les questions manquantes avec l'agent QA.",
+        "Retourner une liste de questions selectionnees ou generees.",
+    ],
+    output_instructions=[
+        "Retourner exactement le nombre de questions demande.",
+        "Privilégier les questions existantes (source: 'database' ou 'human').",
+        "Pour les questions generees, indiquer la source: 'generated'.",
+    ],
+)
+
+
 class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestionsList]):
     def __init__(self, model: str = "mistral-medium"):
-        # Initialiser l'agent QA pour générer des questions si nécessaire
-        self.qa_agent = get_qa_agent(model)
+        from .prompt_loader import get_prompt
+        
+        # Initialiser l'agent QA pour generer des questions si necessaire
+        self.qa_agent = get_qa_agent(model, "mistral", False)
 
-        # Prompt système pour l'agent de sélection
-        system_prompt_generator = SystemPromptGenerator(
-            background=[
-                "Cet agent sélectionne ou génère des questions/réponses à partir d'un document ou d'une base de données.",
-                "Il privilégie les questions existantes (humaines ou validées) avant de générer de nouvelles questions.",
-            ],
-            steps=[
-                "Vérifier si des questions existantes sont fournies ou disponibles en base de données.",
-                "Si des questions existent, les sélectionner en priorité.",
-                "Si le nombre de questions est insuffisant, générer les questions manquantes avec l'agent QA.",
-                "Retourner une liste de questions sélectionnées ou générées.",
-            ],
-            output_instructions=[
-                "Retourner exactement le nombre de questions demandé.",
-                "Privilégier les questions existantes (source: 'database' ou 'human').",
-                "Pour les questions générées, indiquer la source: 'generated'.",
-            ],
-        )
+        # Prompt systeme pour l'agent de selection
+        loaded = get_prompt("question_selector", "default")
+        system_prompt_generator = loaded if loaded is not None else _FALLBACK_PROMPT
 
         super().__init__(
             config=AgentConfig(
@@ -70,16 +78,16 @@ class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestion
 
     def run(self, input_data: QuestionSelectionInput) -> SelectedQuestionsList:
         """
-        Sélectionne ou génère des questions en fonction des entrées.
+        Selectionne ou genere des questions en fonction des entrees.
         """
         selected_questions = []
 
-        # 1. Récupérer les questions existantes (depuis la base de données ou l'entrée)
+        # 1. Recuperer les questions existantes (depuis la base de donnees ou l'entree)
         existing_questions = input_data.existing_questions or []
         if not existing_questions:
             existing_questions = get_questions_by_document_id(input_data.document_id)
 
-        # 2. Ajouter les questions existantes à la liste
+        # 2. Ajouter les questions existantes a la liste
         for q in existing_questions:
             selected_questions.append(
                 SelectedQuestion(
@@ -89,7 +97,7 @@ class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestion
                 )
             )
 
-        # 3. Générer les questions manquantes si nécessaire
+        # 3. Generer les questions manquantes si necessaire
         if len(selected_questions) < input_data.num_questions:
             num_missing = input_data.num_questions - len(selected_questions)
             generated_questions = self._generate_questions(
@@ -102,10 +110,10 @@ class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestion
 
     def _generate_questions(self, document_content: str, num_questions: int) -> List[SelectedQuestion]:
         """
-        Génère de nouvelles questions avec l'agent QA.
+        Genere de nouvelles questions avec l'agent QA.
         """
         response = self.qa_agent.run({
-            "message": f"Génère {num_questions} questions.",
+            "message": f"Genere {num_questions} questions.",
             "document": document_content
         })
 
@@ -118,8 +126,4 @@ class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestion
             for qa in response.questions_answers
         ]
 
-def get_question_selector_agent(model: str = "mistral-medium") -> QuestionSelectorAgent:
-    """
-    Fabrique pour obtenir l'agent de sélection de questions.
-    """
-    return QuestionSelectorAgent(model)
+

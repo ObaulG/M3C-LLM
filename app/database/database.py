@@ -25,9 +25,9 @@ qdrant_client = QdrantClient(**QDRANT_CONFIG)
 
 # Contient les resource_id (table value) dont le champ extracted_text contient un texte valide et vérifié,
 # avec un nombre minimum d'artefacts
-#VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
-#                          116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
-VALID_TEXT_RESOURCE_ID = [116738, 116782]
+VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
+                          116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
+#VALID_TEXT_RESOURCE_ID = [116738, 116782]
 
 # Connexion à la base de données MySQL
 async def get_db_connection():
@@ -523,74 +523,191 @@ async def get_resource_basic_metadata(conn, resource_id):
             "created_at": result[2]
         }
 
-async def get_question_by_id(conn,
-                             question_id: int,
-                             include_answers: bool = False) -> dict:
-    question_data = {}
+
+async def get_resource_full_metadata(conn, resource_id):
+    """
+    Récupère toutes les métadonnées pertinentes pour un resource.
+    Property IDs: 1=title, 2=creator, 3=subject, 4=description, 5=publisher,
+                  6=contributor, 7=date, 8=type, 12=language, 19=abstract
+    
+    Args:
+        conn: Connexion à la base de données
+        resource_id: L'ID de la ressource
+        
+    Returns:
+        Dict avec toutes les métadonnées et une liste pour les subjects (multi-valued)
+    """
     async with conn.cursor() as cur:
+        # Récupérer les valeurs simples (une seule valeur attendue)
+        await cur.execute("""
+                          SELECT 
+                              MAX(CASE WHEN v.property_id = 1 THEN v.value END) as title,
+                              MAX(CASE WHEN v.property_id = 2 THEN v.value END) as creator,
+                              MAX(CASE WHEN v.property_id = 4 THEN v.value END) as description,
+                              MAX(CASE WHEN v.property_id = 5 THEN v.value END) as publisher,
+                              MAX(CASE WHEN v.property_id = 6 THEN v.value END) as contributor,
+                              MAX(CASE WHEN v.property_id = 7 THEN v.value END) as date,
+                              MAX(CASE WHEN v.property_id = 8 THEN v.value END) as type,
+                              MAX(CASE WHEN v.property_id = 12 THEN v.value END) as language,
+                              MAX(CASE WHEN v.property_id = 19 THEN v.value END) as abstract
+                          FROM value v
+                          WHERE v.resource_id = %s""", (resource_id,))
+
+        result = await cur.fetchone()
+
+        # Récupérer les subjects (multi-valued)
+        await cur.execute("""
+                          SELECT v.value 
+                          FROM value v 
+                          WHERE v.resource_id = %s AND v.property_id = 3""", (resource_id,))
+        subjects_result = await cur.fetchall()
+        subjects = [row[0] for row in subjects_result if row[0]]
+
+        if not result:
+            return {
+                "title": None, "creator": None, "description": None,
+                "publisher": None, "contributor": None, "date": None,
+                "type": None, "language": None, "abstract": None,
+                "subjects": []
+            }
+
+        return {
+            "title": result[0],
+            "creator": result[1],
+            "description": result[2],
+            "publisher": result[3],
+            "contributor": result[4],
+            "date": result[5],
+            "type": result[6],
+            "language": result[7],
+            "abstract": result[8],
+            "subjects": subjects
+        }
+
+
+from typing import Dict, List, Optional
+
+async def get_question_by_id(
+    conn,
+    question_id: int,
+    include_answers: bool = True,
+) -> Optional[Dict]:
+    """
+    Récupère une question par son ID, avec éventuellement ses réponses.
+
+    Args:
+        conn: Connexion à la base de données asyncpg.
+        question_id (int): L'identifiant de la question.
+        include_answers (bool): Si True, inclut les réponses associées.
+
+    Returns:
+        Optional[Dict]: Dictionnaire représentant la question et ses réponses, ou None si non trouvée.
+    """
+    async with conn.cursor() as cur:
+        # Récupérer la question
         await cur.execute("""
             SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
-            FROM questions q
+            FROM text_questions q
             WHERE q.question_id = %s
         """, (question_id,))
         result = await cur.fetchone()
-        question_data["question_id"] = result[0]
-        question_data["content"] = result[1]
-        question_data["status"] = result[2]
-        question_data["difficulty_level"] = result[3]
-        question_data["created_by"] = result[4]
-        question_data["validated_by"] = result[5]
+
+        if not result:
+            return None
+
+        question_id, content, status, difficulty_level, created_by, validated_by = result
+        question = {
+            "question_id": question_id,
+            "content": content,
+            "status": status,
+            "difficulty_level": difficulty_level,
+            "created_by": created_by,
+            "validated_by": validated_by,
+            "answers": []
+        }
 
         if include_answers:
-            # Récupérer les réponses associées
-            await cur.execute("""
-                              SELECT content, created_by
-                              FROM question_answers
-                              WHERE question_id = %s
-                              """, (question_id,))
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT content, is_correct, created_by
+                    FROM text_question_answers
+                    WHERE question_id = %s
+                """, (question_id,))
             answer_rows = await cur.fetchall()
-            question_data["answers"] = [{"content": answer[0],
-                                         "created_by": answer[1]}
-                                        for answer in answer_rows]
-        return question_data
 
-async def get_questions_by_ids(question_ids: list[str], conn) -> list[dict]:
+            for answer_row in answer_rows:
+                answer_content, is_correct, answer_created_by = answer_row
+                question["answers"].append({
+                    "content": answer_content,
+                    "is_correct": is_correct,
+                    "created_by": answer_created_by
+                })
+
+        return question
+
+async def get_questions_by_ids(
+    question_ids: List[str],
+    conn,
+    include_answers: bool = True,
+) -> List[Dict]:
     """
-    Récupère les questions correspondant à une liste d'IDs.
+    Récupère les questions correspondant à une liste d'IDs, avec éventuellement leurs réponses.
 
     Args:
         question_ids: Liste des IDs des questions à récupérer.
-        conn: Connexion à la base de données.
+        conn: Connexion à la base de données asyncpg.
+        include_answers: Si True, inclut les réponses associées.
 
     Returns:
-        Liste de dictionnaires représentant les questions trouvées.
-        Retourne une liste vide si aucune question n'est trouvée.
+        Liste de dictionnaires représentant les questions et leurs réponses.
     """
     if not question_ids:
         return []
 
-    # MySQL utilise IN au lieu de ANY
     placeholders = ", ".join(["%s"] * len(question_ids))
     query = f"""
         SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
-        FROM questions q
+        FROM text_questions q
         WHERE q.question_id IN ({placeholders})
     """
+
     async with conn.cursor() as cur:
         await cur.execute(query, tuple(question_ids))
-        rows = await cur.fetchall()
+        question_rows = await cur.fetchall()
 
-    return [
-        {
-            "question_id": row[0],
-            "content": row[1],
-            "status": row[2],
-            "difficulty_level": row[3],
-            "created_by": row[4],
-            "validated_by": row[5],
+    questions = []
+    for row in question_rows:
+        question_id, content, status, difficulty_level, created_by, validated_by = row
+        question = {
+            "question_id": question_id,
+            "content": content,
+            "status": status,
+            "difficulty_level": difficulty_level,
+            "created_by": created_by,
+            "validated_by": validated_by,
+            "answers": []
         }
-        for row in rows
-    ]
+
+        if include_answers:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT content, is_correct, created_by
+                    FROM text_question_answers
+                    WHERE question_id = %s
+                """, (question_id,))
+            answer_rows = await cur.fetchall()
+
+            for answer_row in answer_rows:
+                answer_content, is_correct, answer_created_by = answer_row
+                question["answers"].append({
+                    "content": answer_content,
+                    "is_correct": is_correct,
+                    "created_by": answer_created_by
+                })
+
+        questions.append(question)
+
+    return questions
 
 async def get_chunk_by_id(chunk_id: int, conn) -> dict:
     """
@@ -600,7 +717,9 @@ async def get_chunk_by_id(chunk_id: int, conn) -> dict:
         await cur.execute("""
                           SELECT c.chunk_id, c.content, c.num_page, c.position_in_page, c.metadata
                           FROM chunks c
-                          WHERE c.chunk_id = %s""", (chunk_id,))
+                          WHERE c.chunk_id = %s
+                          ORDER BY 'num_page' ASC 
+                          """, (chunk_id,))
         row = await cur.fetchone()
         return {"chunk_id": row[0],
                  "content": row[1],
@@ -608,10 +727,27 @@ async def get_chunk_by_id(chunk_id: int, conn) -> dict:
                  "position_in_page": row[3],
                  "metadata": row[4]}
 
+
+async def get_all_text_chunks(conn):
+    async with conn.cursor() as cur:
+        await cur.execute("""
+        SELECT id, content, num_page, position_in_page, character_count, token_count, document_id
+        FROM text_chunks
+        ORDER BY `document_id` ASC, `num_page` ASC, `position_in_page` ASC;
+        """)
+        rows = await cur.fetchall()
+        return [{
+            "id": row[0],
+            "content": row[1],
+            "num_page": row[2],
+            "position_in_page": row[3],
+            "character_count": row[4],
+            "token_count": row[5],
+            "document_id": row[6]} for row in rows]
 async def get_chunks_for_document(
-    document_id: str,
+    document_id: int,
     conn,
-    chunking_strategy_id: int = 7
+    chunking_strategy_id: int = 1
 ):
     """Récupère tous les chunks d'un document depuis la base de données.
     Filtre par chunking_strategy_id si fourni.
@@ -619,21 +755,23 @@ async def get_chunks_for_document(
     1 - découpage initial en chunks de 800 tokens et overlap de 100 tokens
     7 - découpage en chunks de 2700 caractères et overlap de 400 caractères
     """
-    query = """
-        SELECT chunk_id, content
-        FROM chunks
-        WHERE document_id = %s
-    """
-    params = [document_id]
-
-    if chunking_strategy_id is not None:
-        query += " AND strategy_id = %s"
-        params.append(chunking_strategy_id)
 
     async with conn.cursor() as cur:
-        await cur.execute(query, params)
-        return await cur.fetchall()
+        await cur.execute("""
+            SELECT id, content, num_page, position_in_page, character_count, token_count,
+            FROM text_chunks
+            WHERE document_id = %s
+                AND strategy_id = %s
+        """, (document_id, chunking_strategy_id))
 
+        rows = await cur.fetchall()
+        return [{
+            "id": row[0],
+            "content": row[1],
+            "num_page": row[2],
+            "position_in_page": row[3],
+            "character_count": row[4],
+            "token_count": row[5]} for row in rows]
 
 async def get_chunks_by_question_id(question_id: int, conn):
     """
@@ -641,54 +779,65 @@ async def get_chunks_by_question_id(question_id: int, conn):
     """
     async with conn.cursor() as cur:
         await cur.execute("""
-            SELECT c.chunk_id, c.content, c.num_page, c.position_in_page, qc.question_id
-            FROM chunks c
-            JOIN question_chunks qc ON c.chunk_id = qc.chunk_id
+            SELECT qc.chunk_id, c.content, c.num_page, c.position_in_page
+            FROM text_question_chunks qc
+            JOIN text_chunks c ON c.chunk_id = qc.chunk_id
             WHERE qc.question_id = %s""", (question_id,))
         rows = await cur.fetchall()
         return [{"chunk_id": row[0],
                  "content": row[1],
                  "num_page": row[2],
                  "position_in_page": row[3],
-                 "question_id": row[4]} for row in rows]
+                 "question_id": question_id} for row in rows]
 
 
-async def get_chunks_by_question_ids(question_ids: list[int], conn):
+async def get_chunks_by_question_ids(
+    question_ids: List[int],
+    conn,
+) -> List[List[Dict]]:
     """
-    Récupère les chunks associés à une liste de questions via la table question_chunks.
+    Récupère les chunks associés à une liste de questions.
+    Retourne une liste de listes, où chaque sous-liste contient les chunks d'une question.
 
     Args:
-        question_ids: Liste des identifiants de questions.
-        conn: Connexion à la base de données.
+        question_ids: Liste des IDs des questions.
+        conn: Connexion à la base de données asyncpg.
 
     Returns:
-        Liste de dictionnaires représentant les chunks associés à chaque question.
+        Liste de listes de dictionnaires, chaque sous-liste représentant les chunks d'une question.
     """
     if not question_ids:
         return []
 
-    async with conn.cursor() as cur:
-        # MySQL utilise IN au lieu de ANY
-        placeholders = ", ".join(["%s"] * len(question_ids))
-        query = f"""
-            SELECT c.chunk_id, c.content, c.num_page, c.position_in_page, qc.question_id
-            FROM chunks c
-            JOIN question_chunks qc ON c.chunk_id = qc.chunk_id
-            WHERE qc.question_id IN ({placeholders})
-        """
-        await cur.execute(query, tuple(question_ids))
+    placeholders = ", ".join(["%s"] * len(question_ids))
+    query = f"""
+        SELECT qc.question_id, qc.chunk_id, c.content, c.num_page, c.position_in_page
+        FROM text_question_chunks qc
+        JOIN text_chunks c ON c.id = qc.chunk_id
+        WHERE qc.question_id IN ({placeholders})
+        ORDER BY qc.question_id
+    """
 
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(question_ids))
         rows = await cur.fetchall()
-        return [
-            {
-                "chunk_id": row[0],
-                "content": row[1],
-                "num_page": row[2],
-                "position_in_page": row[3],
-                "question_id": row[4]
-            }
-            for row in rows
-        ]
+
+    # Regrouper les chunks par question_id
+    chunks_by_question = {}
+    for row in rows:
+        question_id, chunk_id, content, num_page, position_in_page = row
+        if question_id not in chunks_by_question:
+            chunks_by_question[question_id] = []
+        chunks_by_question[question_id].append({
+            "chunk_id": chunk_id,
+            "content": content,
+            "num_page": num_page,
+            "position_in_page": position_in_page,
+            "question_id": question_id
+        })
+
+    # Retourner les chunks dans l'ordre des question_ids demandées
+    return [chunks_by_question.get(qid, []) for qid in question_ids]
 
 
 # NOTE: Les fonctions suivantes sont OBSOLÈTES et remplacées par Qdrant
@@ -726,20 +875,20 @@ async def save_question_to_db(
     async with conn.cursor() as cur:
         # 1. Insérer la question
         await cur.execute("""
-            INSERT INTO questions (content, status, difficulty_level, created_by, validated_by)
+            INSERT INTO text_questions (content, status, difficulty_level, created_by, validated_by)
             VALUES (%s, %s, %s, %s, %s)
         """, (question, "generated", difficulty_level, None, None))
         question_id = cur.lastrowid
 
         # 2. Lier la question au chunk
         await cur.execute("""
-            INSERT INTO question_chunks (question_id, chunk_id)
+            INSERT INTO text_question_chunks (question_id, chunk_id)
             VALUES (%s, %s)
         """, (question_id, chunk_id))
 
         # 3. Insérer la réponse
         await cur.execute("""
-            INSERT INTO question_answers (question_id, content, is_correct, created_by)
+            INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
             VALUES (%s, %s, %s, %s)
         """, (question_id, answer, True, None))
 
@@ -770,79 +919,93 @@ async def get_questions_by_document_id(
         List[Dict]: Liste de dictionnaires représentant les questions et leurs réponses.
     """
     questions = []
+    cur = await conn.cursor()
+    
+    # 1. Trouver l'ID interne du document à partir du source_id
+    await cur.execute("""
+        SELECT id FROM text_documents WHERE source_id = %s
+    """, (document_id,))
+    doc_result = await cur.fetchone()
+    
+    if not doc_result:
+        return []
+    
+    internal_document_id = doc_result[0]
+    
+    # 2. Récupérer tous les chunk_ids pour ce document
+    await cur.execute("""
+        SELECT id FROM text_chunks WHERE document_id = %s
+    """, (internal_document_id,))
+    chunk_rows = await cur.fetchall()
+    
+    if not chunk_rows:
+        return []
+    
+    chunk_ids = [row[0] for row in chunk_rows]
+    
+    # 3. Récupérer les questions associées à ces chunks
+    params = chunk_ids
+    placeholders = ",".join(["%s"] * len(chunk_ids))
+    query = f"""
+        SELECT DISTINCT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by, qc.chunk_id, tc.num_page
+        FROM text_question_chunks qc
+        JOIN text_questions q ON qc.question_id = q.question_id
+        JOIN text_chunks tc ON qc.chunk_id = tc.id
+        WHERE qc.chunk_id IN ({placeholders})
+    """
+    
+    if status_filter:
+        query += " AND q.status = %s"
+        params.append(status_filter)
 
-    async with conn.cursor() as cur:
-        await cur.execute("""
-            SELECT chunk_id
-            FROM chunks
-            WHERE document_id = %s
-        """, (document_id,))
-        chunk_rows = await cur.fetchall()
+    if difficulty_filter:
+        query += " AND q.difficulty_level = %s"
+        params.append(difficulty_filter)
 
-        if not chunk_rows:
-            return questions
+    if theme_filter:
+        query += " AND q.theme = %s"
+        params.append(theme_filter)
 
-        chunk_ids = [row[0] for row in chunk_rows]
+    if nb_limit:
+        query += " LIMIT %s"
+        params.append(nb_limit)
 
-        query = """
-            SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by, qc.chunk_id
-            FROM question_chunks qc
-            JOIN questions q ON qc.question_id = q.question_id
-            WHERE qc.chunk_id = ANY(%s)
-        """
-        params = [chunk_ids]
+    await cur.execute(query, params)
+    question_rows = await cur.fetchall()
 
-        if status_filter:
-            query += " AND q.status = %s"
-            params.append(status_filter)
+    # 4. Pour chaque question, récupérer les réponses si nécessaire
+    for row in question_rows:
+        question_id, content, status, difficulty_level, created_by, validated_by, chunk_id, num_page = row
+        question = {
+            "question_id": question_id,
+            "content": content,
+            "status": status,
+            "difficulty_level": difficulty_level,
+            "created_by": created_by,
+            "validated_by": validated_by,
+            "chunk_id": chunk_id,
+            "num_page": num_page,
+            "answers": []
+        }
 
-        if difficulty_filter:
-            query += " AND q.difficulty_level = %s"
-            params.append(difficulty_filter)
+        if include_answers:
+            # Récupérer les réponses associées
+            await cur.execute("""
+                SELECT content, is_correct, created_by
+                FROM text_question_answers
+                WHERE question_id = %s
+            """, (question_id,))
+            answer_rows = await cur.fetchall()
 
-        if theme_filter:
-            query += " AND q.theme = %s"
-            params.append(theme_filter)
+            for answer_row in answer_rows:
+                answer_content, is_correct, answer_created_by = answer_row
+                question["answers"].append({
+                    "content": answer_content,
+                    "is_correct": is_correct,
+                    "created_by": answer_created_by
+                })
 
-        if nb_limit:
-            query += " LIMIT %s"
-            params.append(nb_limit)
-
-        await cur.execute(query, params)
-        question_rows = await cur.fetchall()
-
-        # 3. Pour chaque question, récupérer les réponses si nécessaire
-        for row in question_rows:
-            question_id, content, status, difficulty_level, created_by, validated_by, chunk_id = row
-            question = {
-                "question_id": question_id,
-                "content": content,
-                "status": status,
-                "difficulty_level": difficulty_level,
-                "created_by": created_by,
-                "validated_by": validated_by,
-                "chunk_id": chunk_id,
-                "answers": []
-            }
-
-            if include_answers:
-                # Récupérer les réponses associées
-                await cur.execute("""
-                    SELECT content, is_correct, created_by
-                    FROM question_answers
-                    WHERE question_id = %s
-                """, (question_id,))
-                answer_rows = await cur.fetchall()
-
-                for answer_row in answer_rows:
-                    answer_content, is_correct, answer_created_by = answer_row
-                    question["answers"].append({
-                        "content": answer_content,
-                        "is_correct": is_correct,
-                        "created_by": answer_created_by
-                    })
-
-            questions.append(question)
+        questions.append(question)
 
     return questions
 
@@ -1193,16 +1356,15 @@ async def get_pdf_name_from_resource_id(conn, resource_id: int) -> str:
     Récupère le nom du PDF avec extension du resource_id fourni.
     """
 
-    async with await get_db_connection() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute("""
-                SELECT CONCAT(media.storage_id, ".", extension) AS filename
-                FROM media
-                WHERE item_id=%s and LOWER(extension) = 'pdf'
-            """,(resource_id,))
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT CONCAT(media.storage_id, ".", extension) AS filename
+            FROM media
+            WHERE item_id=%s and LOWER(extension) = 'pdf'
+        """,(resource_id,))
 
-            filename = await cur.fetchone()
-            return filename["filename"]
+        filename = (await cur.fetchone())[0]
+        return filename
 
 async def get_pdf_url_for_resource(resource_id: int) -> Optional[str]:
     """

@@ -39,3 +39,4 @@ transformers==5.1.0
 uvicorn==0.44.0
 
 opentsne
+jsonref

@@ -1,0 +1,53 @@
+chunk_summariser:
+  background:
+    - "Vous êtes un expert en résumé de documents. Votre tâche consiste à résumer un morceau de texte (chunk) en un paragraphe concis, tout en capturant les informations essentielles."
+  steps:
+    - "Lire attentivement le texte fourni."
+    - "Identifier les idées principales, les événements clés, les lieux, les personnages (le cas échéant), et les informations contextuelles importantes."
+    - "Rédiger un résumé clair et structuré en français, en mettant l'accent sur les éléments pertinents pour comprendre la Corse."
+    - "Si le chunk introduit des éléments pour la première fois (ex: un lieu, une tradition), les présenter brièvement."
+  output_instructions:
+    - "Le résumé doit être concis, rédigé en phrases complètes, sans liste à puces."
+    - "Maximum {{ max_words }} mots"
+    - "Éviter les phrases comme 'dans ce chunk' ou 'dans cette partie'. Le résumé doit sembler cohérent et autonome."
+
+summaries_merger:
+  background:
+    - "Vous êtes un expert en synthèse de documents. On cherche à résumer de manière récursive un document en résumant des morceaux de documents."
+    - "Les résumés proviennent d'un document long, et doivent être combinés pour former un résumé global."
+  steps:
+    - "Lire attentivement tous les résumés fournis."
+    - "Identifier les idées principales, les thèmes communs, et les informations clés à conserver."
+    - "Fusionner les résumés en un seul texte cohérent, en organisant les informations de manière logique (par exemple, par thème ou chronologie)."
+    - "Éviter les répétitions et privilégier les informations les plus pertinentes."
+  output_instructions:
+    - "Le résumé fusionné doit être clair, structuré, fluide et inclure les idées principales de tous les résumés fournis."
+    - "Maximum {{ max_words }} mots"
+    - "Éviter les phrases comme 'dans le premier résumé' ou 'dans le chunk précédent'. Le résumé doit sembler écrit d'un seul tenant."
+
+context_summaries_merger:
+  background:
+    - "Vous êtes un expert en synthèse de documents. On cherche à résumer de manière récursive un document en résumant des morceaux de documents."
+    - "Le contexte précédent et les résumés proviennent d'un document."
+  steps:
+    - "Lire attentivement le contexte précédent et les résumés fournis."
+    - "Identifier les informations clés dans le contexte et les résumés."
+    - "Fusionner le contexte et les résumés en un seul texte cohérent, en organisant les informations de manière logique."
+    - "Assurer la continuité entre le contexte et les nouveaux résumés."
+  output_instructions:
+    - "Le résumé fusionné doit être clair, structuré, fluide et inclure les idées principales de tous les résumés fournis."
+    - "Maximum {{ max_words }} mots"
+    - "Éviter les phrases comme 'dans le contexte précédent' ou 'dans les résumés suivants'. Le résumé doit sembler écrit d'un seul tenant."
+
+artifact_removal:
+  background:
+    - "Votre tâche consiste à nettoyer un résumé pour qu'il semble avoir été écrit en une seule fois."
+    - "Le résumé a été généré en plusieurs étapes, et peut contenir des artefacts de ce processus."
+  steps:
+    - "Lire attentivement le résumé fourni."
+    - "Supprimer toutes les phrases qui indiquent que le résumé a été développé progressivement (ex: 'dans cette partie', 'dans le chunk précédent')."
+    - "Supprimer toute information qui ne fait pas partie du contenu principal (ex: table des matières, remerciements, biographie de l'auteur)."
+  output_instructions:
+    - "Le résumé nettoyé doit sembler naturel et cohérent."
+    - "Ne pas ajouter ou modifier d'informations, seulement supprimer les artefacts."
+    - "Le résumé doit être fluide et facile à lire."
