@@ -20,6 +20,37 @@ OutputSchema = TypeVar('OutputSchema', bound=BaseIOSchema)
 logger = logging.getLogger(__name__)
 
 
+def _count_user_input_tokens(agent: AtomicAgent[InputSchema, OutputSchema], 
+                             user_input: Optional[InputSchema]) -> int:
+    """
+    Compte les tokens du user_input.
+    
+    Args:
+        agent: L'agent AtomicAgent
+        user_input: L'entrée utilisateur à compter
+        
+    Returns:
+        Le nombre de tokens dans le user_input (0 si None)
+    """
+    if user_input is None:
+        return 0
+    
+    try:
+        counter = get_token_counter()
+        
+        # Convertir user_input en texte (comme dans _count_output_tokens)
+        if hasattr(user_input, 'model_dump'):
+            user_input_text = str(user_input.model_dump())
+        else:
+            user_input_text = str(user_input)
+            
+        return counter.count_text(agent.model, user_input_text)
+        
+    except Exception as e:
+        logger.warning(f"Impossible de compter les tokens du user_input: {e}")
+        return 0
+
+
 def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema], 
                      user_input: Optional[InputSchema] = None,
                      method: str = "run") -> Tuple[OutputSchema, TokenCountResult, int]:
@@ -53,8 +84,22 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
         print(f"Réponse: {response}")
         ```
     """
-    # Compter les tokens d'entrée avant l'appel
-    input_token_result = agent.get_context_token_count()
+    # Obtenir le contexte de base (system prompt + historique + outils)
+    base_context_result = agent.get_context_token_count()
+    
+    # Compter les tokens du user_input séparément
+    user_input_tokens = _count_user_input_tokens(agent, user_input)
+    
+    # Créer un nouveau TokenCountResult avec les tokens combinés
+    input_token_result = TokenCountResult(
+        total=base_context_result.total + user_input_tokens,
+        system_prompt=base_context_result.system_prompt,
+        history=base_context_result.history,
+        tools=base_context_result.tools,
+        model=base_context_result.model,
+        max_tokens=base_context_result.max_tokens,
+        utilization=base_context_result.utilization
+    )
     
     # Stocker la méthode originale
     original_method = getattr(agent, method)
@@ -104,8 +149,22 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
         print(f"Réponse: {response}")
         ```
     """
-    # Compter les tokens d'entrée avant l'appel
-    input_token_result = agent.get_context_token_count()
+    # Obtenir le contexte de base (system prompt + historique + outils)
+    base_context_result = agent.get_context_token_count()
+    
+    # Compter les tokens du user_input séparément
+    user_input_tokens = _count_user_input_tokens(agent, user_input)
+    
+    # Créer un nouveau TokenCountResult avec les tokens combinés
+    input_token_result = TokenCountResult(
+        total=base_context_result.total + user_input_tokens,
+        system_prompt=base_context_result.system_prompt,
+        history=base_context_result.history,
+        tools=base_context_result.tools,
+        model=base_context_result.model,
+        max_tokens=base_context_result.max_tokens,
+        utilization=base_context_result.utilization
+    )
     
     # Stocker la méthode originale
     original_method = getattr(agent, method)
