@@ -40,18 +40,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --gid 1001 --no-create-home appuser
+
 # Copy installed Python packages from builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application source
-COPY . .
+# Copy only application source (not .env, .git, etc.)
+COPY app/ ./app/
+COPY requirements.txt .
 
 # PYTHONPATH so both `import database` and `from app.embedders import` work
 ENV PYTHONPATH=/app:/app/app
 
 # Create runtime directories expected by the app
-RUN mkdir -p /app/rag_sessions /app/rag_sessions_csv /app/session_evaluations /app/exports
+RUN mkdir -p /app/rag_sessions /app/rag_sessions_csv /app/session_evaluations /app/exports && \
+    chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 8000
 

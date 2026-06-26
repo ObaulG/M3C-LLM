@@ -2,3 +2,4 @@ app/config.py
 /rag_sessions
 rag_sessions_backup.json
 /exports
+.env
