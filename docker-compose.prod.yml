@@ -1,0 +1,11 @@
+services:
+  mysql:
+    ports: []  # pas de port public
+
+  qdrant:
+    ports: []  # pas de port public
+
+  api:
+    image: ghcr.io/${GHCR_USERNAME:?GHCR_USERNAME required}/m3c-llm:latest
+    ports:
+      - "127.0.0.1:8000:8000"
