@@ -1,0 +1,67 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: m3c-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}
+      MYSQL_DATABASE: ${DB_NAME:-m3c_database}
+      MYSQL_USER: ${DB_USER:-m3c_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.0
+    container_name: m3c-qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: m3c-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: m3c_database
+      DB_USER: ${DB_USER:-m3c_app}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
+    env_file:
+      - .env
+    volumes:
+      # Mount PDF directory if documents are on the host
+      # - /path/to/pdfs:/data/pdf
+      - api_sessions:/app/rag_sessions
+      - api_exports:/app/exports
+      - api_evaluations:/app/session_evaluations
+    depends_on:
+      mysql:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+
+volumes:
+  mysql_data:
+  qdrant_data:
+  api_sessions:
+  api_exports:
+  api_evaluations:

@@ -3,21 +3,22 @@ import asyncio
 import json
 import aiomysql
 from qdrant_client import QdrantClient, models
+import os
 
-# Configuration de la base de données MySQL
+# Configuration de la base de données MySQL (surchargeable via variables d'environnement)
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "db": "m3c_database",
-    "user": "OBL",
-    "password": "azerty",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "db": os.getenv("DB_NAME", "m3c_database"),
+    "user": os.getenv("DB_USER", "OBL"),
+    "password": os.getenv("DB_PASSWORD", ""),
     "autocommit": True
 }
 
-# Configuration Qdrant
+# Configuration Qdrant (surchargeable via variables d'environnement)
 QDRANT_CONFIG = {
-    "host": "localhost",
-    "port": 6333,
+    "host": os.getenv("QDRANT_HOST", "localhost"),
+    "port": int(os.getenv("QDRANT_PORT", "6333")),
 }
 
 # Client Qdrant (synchrone, compatible avec async via threads)

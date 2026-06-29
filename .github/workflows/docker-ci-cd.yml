@@ -1,0 +1,123 @@
+name: Build & Deploy to GHCR
+
+on:
+  push:
+    branches: [main, "feat/dockerize-ci-cd"]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: m3c-llm
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Docker image tags
+        id: meta
+        run: |
+          echo "tags=${{ env.REGISTRY }}/${{ secrets.GHCR_USERNAME }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ secrets.GHCR_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+
+  migrate-and-deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync migration files + deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            echo "→ Syncing migration files from repo..."
+            cd /opt/m3c-llm
+            git fetch origin main 2>/dev/null || true
+            git checkout origin/main -- app/database/migrations/ 2>/dev/null || true
+            mkdir -p /opt/m3c-backups
+
+            echo "→ Running database migrations..."
+            MYSQL_CMD="docker exec -i m3c-mysql mysql -u root -prootpassword m3c_database"
+
+            # Ensure tracking table exists
+            echo "CREATE TABLE IF NOT EXISTS schema_migrations (
+                version VARCHAR(20) PRIMARY KEY,
+                description VARCHAR(255),
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                checksum VARCHAR(64)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;" | $MYSQL_CMD 2>/dev/null
+
+            # Get already-applied versions
+            APPLIED=$(echo "SELECT version FROM schema_migrations ORDER BY version;" | $MYSQL_CMD -N 2>/dev/null || echo "")
+
+            # Apply pending migrations
+            for f in app/database/migrations/V*.sql; do
+                [ -f "$f" ] || continue
+                filename=$(basename "$f")
+                version=$(echo "$filename" | cut -d'_' -f1 | tr -d 'V')
+                desc=$(echo "$filename" | sed -E 's/^V[0-9]+__//; s/\.sql$//; s/_/ /g')
+
+                if echo "$APPLIED" | grep -qx "$version"; then
+                    echo "   [SKIP] $filename"
+                    continue
+                fi
+
+                echo "   [APPLY] $filename — $desc"
+
+                # Backup before migration
+                docker exec m3c-mysql mysqldump -u root -prootpassword \
+                    --single-transaction m3c_database 2>/dev/null \
+                    | gzip > "/opt/m3c-backups/pre-${version}-$(date +%F-%H%M%S).sql.gz" &
+
+                $MYSQL_CMD < "$f"
+                checksum=$(md5sum "$f" | cut -d' ' -f1)
+                echo "INSERT INTO schema_migrations (version, description, checksum)
+                      VALUES ('$version', '$desc', '$checksum')
+                      ON DUPLICATE KEY UPDATE applied_at = CURRENT_TIMESTAMP;" | $MYSQL_CMD
+                echo "       ✓ applied"
+            done
+
+            echo "→ Logging in to GHCR..."
+            docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin <<< "${{ secrets.GHCR_PAT }}"
+
+            echo "→ Pulling latest image..."
+            docker pull ghcr.io/${{ secrets.GHCR_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+            echo "→ Starting stack with prod override..."
+            GHCR_USERNAME=${{ secrets.GHCR_USERNAME }} \
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+            echo "→ Cleaning up old m3c-llm images..."
+            docker images ghcr.io/${{ secrets.GHCR_USERNAME }}/${{ env.IMAGE_NAME }} --format "{{.ID}}" \
+              | tail -n +2 \
+              | xargs -r docker rmi 2>/dev/null || true
+
+            echo "✓ Deployment complete"

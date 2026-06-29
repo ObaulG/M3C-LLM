@@ -1,0 +1,5 @@
+services:
+  api:
+    image: ghcr.io/${GHCR_USERNAME:?GHCR_USERNAME required}/m3c-llm:latest
+    ports:
+      - "127.0.0.1:8000:8000"
