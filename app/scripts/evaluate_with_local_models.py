@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from agents.instructor_factory import OLLAMA_MODELS
 from agents.answer_evaluator_agent import get_evaluator_agent_local, EvaluateRequestInput, run_raw, \
     AgentEvaluationResult, get_evaluator_agent_local_bis
+from agents.token_monitor import monitor_agent_call_async
 
 
 def parse_json_response(response_text: str) -> dict:
@@ -87,11 +88,20 @@ async def evaluate_row_with_model(row: dict, model: str) -> dict:
         model=model
     )
 
+    # Mesurer le temps d'exécution et capturer les tokens
+    start_time = time.time()
+    
     try:
-        #result = await run_raw(evaluator, input_data)
-        result = await evaluator.run_async(input_data)
+        # Utiliser monitor_agent_call_async pour obtenir les informations de tokens
+        result, input_token_result, output_tokens = await monitor_agent_call_async(
+            evaluator,
+            user_input=input_data,
+            method="run_async"
+        )
     except Exception as e:
         raise RuntimeError(f"Échec de l'évaluation avec {model} pour question_id {row.get('question_id', 'N/A')}: {e}")
+    
+    execution_time = time.time() - start_time
     
     # Créer une nouvelle ligne avec les résultats
     new_row = row.copy()
@@ -101,6 +111,12 @@ async def evaluate_row_with_model(row: dict, model: str) -> dict:
     new_row['evaluation_date'] = datetime.now().isoformat()
     new_row['evaluation_source'] = 'auto'
     new_row['evaluation_type'] = 'local'
+    
+    # Ajouter les métriques de performance
+    new_row['execution_time_seconds'] = f"{execution_time:.4f}"
+    new_row['input_tokens'] = input_token_result
+    new_row['output_tokens'] = output_tokens
+    new_row['total_tokens'] = input_token_result + output_tokens
     
     return new_row
 
@@ -150,6 +166,12 @@ async def main(limit=None, output_file=None, models = OLLAMA_MODELS):
     # Déterminer les colonnes (toutes les clés du premier dictionnaire)
     fieldnames = list(original_rows[0].keys()) if original_rows else []
     
+    # Ajouter les nouveaux champs pour le tracking de performance
+    additional_fields = ['execution_time_seconds', 'input_tokens', 'output_tokens', 'total_tokens']
+    for field in additional_fields:
+        if field not in fieldnames:
+            fieldnames.append(field)
+    
     # Écrire les lignes originales dans le CSV
     try:
         with open(output_csv_path, 'w', newline='', encoding='utf-8') as f:
@@ -170,6 +192,8 @@ async def main(limit=None, output_file=None, models = OLLAMA_MODELS):
         model_start_time = time.time()
         model_success_count = 0
         model_error_count = 0
+        model_total_input_tokens = 0
+        model_total_output_tokens = 0
         
         # Ouvrir le CSV en mode append pour ce modèle
         with open(output_csv_path, 'a', newline='', encoding='utf-8') as f:
@@ -183,6 +207,10 @@ async def main(limit=None, output_file=None, models = OLLAMA_MODELS):
                     # Évaluer avec ce modèle
                     new_row = await evaluate_row_with_model(row, model)
                     print(new_row)
+                    
+                    # Accumuler les stats de tokens pour ce modèle
+                    model_total_input_tokens += new_row.get('input_tokens', 0)
+                    model_total_output_tokens += new_row.get('output_tokens', 0)
                     
                     # Écrire la ligne dans le CSV immédiatement
                     writer.writerow(new_row)
@@ -205,6 +233,11 @@ async def main(limit=None, output_file=None, models = OLLAMA_MODELS):
                     error_row['evaluation_date'] = datetime.now().isoformat()
                     error_row['evaluation_source'] = 'auto'
                     error_row['evaluation_type'] = 'local'
+                    # Ajouter les champs de tracking pour les erreurs
+                    error_row['execution_time_seconds'] = ''
+                    error_row['input_tokens'] = ''
+                    error_row['output_tokens'] = ''
+                    error_row['total_tokens'] = ''
                     
                     # Écrire la ligne d'erreur dans le CSV immédiatement
                     writer.writerow(error_row)
@@ -217,8 +250,14 @@ async def main(limit=None, output_file=None, models = OLLAMA_MODELS):
         print(f"\nModèle {model} terminé:")
         print(f"  Succès: {model_success_count}")
         print(f"  Échecs: {model_error_count}")
-        print(f"  Durée: {model_duration:.2f} secondes")
-        print(f"  Moyenne par évaluation: {model_duration / len(rows_to_evaluate):.2f}s" if len(rows_to_evaluate) > 0 else "")
+        print(f"  Durée totale: {model_duration:.2f} secondes")
+        print(f"  Durée moyenne par évaluation: {model_duration / len(rows_to_evaluate):.2f}s" if len(rows_to_evaluate) > 0 else "")
+        print(f"  Tokens d'entrée totaux: {model_total_input_tokens}")
+        print(f"  Tokens de sortie totaux: {model_total_output_tokens}")
+        print(f"  Tokens totaux: {model_total_input_tokens + model_total_output_tokens}")
+        if model_success_count > 0:
+            print(f"  Tokens d'entrée moyens: {model_total_input_tokens / model_success_count:.1f}")
+            print(f"  Tokens de sortie moyens: {model_total_output_tokens / model_success_count:.1f}")
         print()
     
     if total_new_rows == 0 and len(rows_to_evaluate) > 0:
@@ -249,11 +288,9 @@ if __name__ == "__main__":
     )
     
     args = parser.parse_args()
-    models = ["ministral-3:3b", "mistral:7b",
-             "gouranshitera/bloom-1b1", "gouranshitera/bloomz-1b7",
-             "qwen3.5:0.8b", "qwen3.5:2b", "qwen3.5:4b"]
+    models = ["gemma4:e2b", "llama3.2:1b", "llama3.2:3b", "mistral:7b"]
     try:
-        asyncio.run(main(limit=args.limit, output_file=args.output))
+        asyncio.run(main(limit=args.limit, output_file=args.output, models=models))
     except KeyboardInterrupt:
         print("\n\nScript interrompu par l'utilisateur.")
         sys.exit(1)

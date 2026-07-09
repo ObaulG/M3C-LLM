@@ -36,7 +36,8 @@ from app.jobs.manager import (
 
 def create_question_generation_job(
     num_questions_per_doc: int = 3,
-    model_name: str = "mistral-small"
+    model_name: str = "mistral-small",
+    document_id: Optional[int] = None
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -44,6 +45,7 @@ def create_question_generation_job(
     Args:
         num_questions_per_doc: Nombre de questions à générer par chunk
         model_name: Nom du modèle LLM à utiliser
+        document_id: ID du document spécifique à traiter (optionnel). Si None, traite tous les documents validés.
         
     Returns:
         job_id: L'ID unique du job créé
@@ -54,7 +56,8 @@ def create_question_generation_job(
         document_categories=["validated-documents"],
         parameters={
             "num_questions_per_doc": num_questions_per_doc,
-            "model_name": model_name
+            "model_name": model_name,
+            "document_id": document_id
         },
         total_documents=0  # sera mis à jour lors du traitement avec le nombre de chunks
     )
@@ -270,7 +273,6 @@ async def generate_questions_for_chunk(
         Tuple de (QuestionAnswerList, error)
     """
     estimated_tokens = len(chunk_content.split()) + num_questions * 50
-    
     for attempt in range(max_retries):
         try:
             limits = check_api_limits(model_name, estimated_tokens)
@@ -281,9 +283,8 @@ async def generate_questions_for_chunk(
                 continue
         except Exception as e:
             print(f"Erreur vérification limites: {e}")
-        
         try:
-            provider, model = tuple("/".split(model_name))
+            provider, model = tuple(model_name.split("/"))
             qa_agent = get_qa_agent(model=model, provider=provider, async_mode=False)
             input_schema = QuestionRequestInput(
                 message="",
@@ -311,7 +312,7 @@ async def generate_questions_for_chunk(
 async def process_question_generation_job(job_id: str):
     """
     Traite un job de génération de questions en arrière-plan.
-    Génère des questions pour chaque chunk de chaque document validé.
+    Génère des questions pour chaque chunk de chaque document validé, ou pour un document spécifique.
     
     Args:
         job_id: L'ID du job à traiter
@@ -331,6 +332,7 @@ async def process_question_generation_job(job_id: str):
     num_questions = parameters.get("num_questions_per_doc", 3)
     # note: le provider est indiqué comme dans la syntaxe d'instructor
     model_name = parameters.get("model_name", "mistral/mistral-small")
+    document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
     
     errors = []
     progress = job.get("progress", {})
@@ -354,10 +356,10 @@ async def process_question_generation_job(job_id: str):
 
     # Récupérer tous les chunks des documents validés
     async with await get_db_connection() as conn:
-        all_chunks = await database.get_all_text_chunks(conn)
+        all_chunks = await database.get_all_text_chunks(conn, document_id)
         total_chunks = len(all_chunks)
     
-    print(f"{total_chunks} chunks à traiter...")
+    print(f"{total_chunks} chunks à traiter..." + (f" (document {document_id})" if document_id else ""))
     
     update_question_generation_job(
         job_id=job_id,

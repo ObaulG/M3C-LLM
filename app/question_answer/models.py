@@ -18,6 +18,10 @@ class QuestionGenerationRequest(BaseModel):
         default="mistral/mistral-medium",
         description="Nom du modèle LLM à utiliser pour la génération au format <provider>/<model_name>"
     )
+    document_id: Optional[int] = Field(
+        default=None,
+        description="ID du document spécifique à traiter. Si None, traite tous les documents validés (VALID_TEXT_RESOURCE_ID)."
+    )
 
 class QuestionGenerationResult(BaseModel):
     """Résultat de génération pour un document."""

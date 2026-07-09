@@ -235,12 +235,14 @@ async function sendMessage() {
         console.error('Erreur:', error);
         addMessageToChat("Erreur lors de la communication avec le serveur.", 'erreur');
         sendButton.disabled = false;
+        loading.classList.remove('active');
     };
 
     if (!response.ok) {
         addMessageToChat("Erreur lors de la communication avec le serveur.", 'erreur');
         throw new Error(`HTTP error! status: ${response.status}`);
     }   sendButton.disabled = false;
+    loading.classList.remove('active');
 
     const sessionResponse = await response.json();
     console.log(sessionResponse);
@@ -262,6 +264,7 @@ async function sendMessage() {
     console.log(botResponseDiv);
     chatContainer.appendChild(botResponseDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+    loading.classList.remove('active');
 
     console.log("réponse du bot ajoutée dans le DOM");
 

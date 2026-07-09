@@ -1,0 +1,64 @@
+# Ignorer les fichiers de développement et données
+.venv/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorer les fichiers de données locaux
+*.csv
+*.xlsx
+*.ods
+*.json
+*.pdf
+
+# Ignorer les fichiers de configuration locaux
+.env
+.env.local
+.env.*
+!.env.example
+
+# Ignorer les fichiers de logs et temporaires
+*.log
+*.tmp
+*.swp
+
+# Ignorer les fichiers Git
+.git/
+.gitignore
+.gitattributes
+
+# Ignorer les fichiers de documentation
+README.md
+
+# Ignorer les exports et données
+exports/
+rag_sessions/
+rag_sessions_csv/
+session_evaluations/
+temp_pdfs/
+
+# Ignorer les fichiers Docker (pour éviter les conflits)
+Dockerfile
+docker-compose.yml
+.dockerignore
+.docker/
+
+# Ignorer les scripts d'initialisation Docker
+docker/
+!docker/app/entrypoint.sh
+
+# Ignorer les fichiers de configuration IDE
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorer les fichiers de build Python
+*.egg-info/
+dist/
+build/
+
+# Ignorer les fichiers système
+.DS_Store
+Thumbs.db

@@ -15,7 +15,8 @@ PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
 }
 """
 PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
-    116782 : [1356, 1410, 1582, 1652, 1667]
+    116782 : [1356, 1410, 1582, 1652, 1667],
+    116738: [173, 242, 295, 364]
 }
 class SessionMetadata(BaseModel):
     """

@@ -21,7 +21,6 @@ from datetime import datetime
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
-import database
 from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
@@ -48,7 +47,9 @@ from database.database import (get_db_connection,
                                get_chunks_by_question_ids,
                                insert_chunk_embeddings_batch_qdrant,
                                insert_chunks,
-                               VALID_TEXT_RESOURCE_ID, get_pdf_url_for_resource, get_pdf_name_from_resource_id)
+                               insert_session,
+                               VALID_TEXT_RESOURCE_ID, get_pdf_url_for_resource, get_pdf_name_from_resource_id,
+                               M3C_BASE_URL)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -73,6 +74,9 @@ from question_answer.router import router as question_answer_router
 
 # Import du router pour l'évaluation des messages
 from question_answer.message_evaluator_router import router as message_evaluator_router
+
+# Import du router Solr
+from solr.router import router as solr_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -154,8 +158,8 @@ class QuestionSessionResponse(BaseModel):
     is_finished: bool
 class HealthResponse(BaseModel):
     """ModÃ¨le de réponse pour le health check"""
-    status: str = Field(..., description="Ã‰tat du serveur")
-    rag_initialized: bool = Field(..., description="Le systÃ¨me RAG est-il initialisé")
+    status: str = Field(..., description="Etat du serveur")
+    rag_initialized: bool = Field(..., description="Le système RAG est-il initialisé")
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
@@ -206,6 +210,7 @@ app.include_router(indexing_router)
 app.include_router(embedders_router)
 app.include_router(question_answer_router)
 app.include_router(message_evaluator_router)
+app.include_router(solr_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -253,13 +258,8 @@ def initialize_evaluators(async_mode: bool = True):
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
-    """Endpoint racine - Redirige vers la documentation"""
-    return {
-        "message": "API Chatbot RAG v0.1 - M3C",
-        "documentation": "/docs",
-        "health_check": "/api/health",
-        "query_endpoint": "/api/query"
-    }
+    """Endpoint racine - Page d'accueil du portail LLMAgents"""
+    return FileResponse("app/static/index.html")
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
@@ -511,7 +511,7 @@ async def init_question_session(document_id: int,
         #       experts ou vérifiés.
         raise NotImplementedError
     async with await get_db_connection() as conn:
-        await database.insert_session(conn,
+        await insert_session(conn,
                                 session_id,
                                 None,
                                 document_id,
@@ -576,7 +576,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                                                                    ),
                                                                    method = "run")
     message_type = result.message_type
-    total_input_tokens += token_count_result.total
+    total_input_tokens += token_count_result
     total_output_tokens += output_tokens
     logging.info("Message type determined : {message_type}".format(message_type=message_type),)
     new_question = False
@@ -622,7 +622,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
             for result in eval_results:
                 evaluation, token_count_result, output_tokens = result
                 evaluations.append(evaluation)
-                total_input_tokens += token_count_result.total
+                total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
             if len(evaluations) > 1:
                 # /!\ contient un AgentEvaluationResult de answer_evaluation_agent.py.
@@ -634,7 +634,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                                                             ListAgentEvaluationResult(
                                                                 evaluations=evaluations),
                                                             "run")
-                total_input_tokens += token_count_result.total
+                total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
             else:
                 final_evaluation = evaluations[0]
@@ -834,7 +834,7 @@ async def _get_pdf_by_filename(filename: str):
     Helper qui requête le PDF sur le site officiel de la M3C.
     Retourne l'objet Response qui envoie le PDF
     """
-    url = database.M3C_BASE_URL+filename
+    url = M3C_BASE_URL+filename
     try:
         print("_get_pdf_by_filename")
         pdf_bytes = await download_pdf(url)
@@ -983,11 +983,9 @@ async def evaluate_answer(request: EvaluateRequestInput):
         
         # Utiliser le modèle spécifié ou le modèle par défaut
         provider, model = tuple(request.model.split("/")) if request.model else ("mistral", "mistral-small")
-        
         # Créer un agent avec le modèle spécifié
         evaluator = get_evaluator_agent(model, provider=provider, async_mode=True)
         evaluation = await evaluator.run_async(request)
-        
         print(f"[{datetime.now().isoformat()}] Évaluation terminée: score={evaluation.score}")
         return evaluation
     except Exception as e:

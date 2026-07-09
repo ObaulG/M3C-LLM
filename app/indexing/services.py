@@ -179,7 +179,7 @@ async def process_pdf_from_m3c(resource_id: int, chunk_size: int, overlap: int) 
                 }
             })
         
-        return result_chunks, None
+        return result_chunks, None, None
         
     except Exception as e:
         print(e)
@@ -620,7 +620,7 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
 
             # Générer les chunks (téléchargement PDF, découpage)
             try:
-                chunks_data, error = await process_pdf_from_m3c(resource_id, chunk_size, overlap)
+                chunks_data, full_text, error = await process_pdf_from_m3c(resource_id, chunk_size, overlap)
             except OSError as e:
                 print(f"La connexion à la DB MySQL a échoué - {e}")
                 errors.append(f"La connexion à la DB MySQL a échoué - {e}")

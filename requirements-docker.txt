@@ -16,16 +16,15 @@ langchain_text_splitters==1.1.2
 mistral_common==1.9.0
 mistralai==2.4.0
 numpy==2.4.4
-nvidia_ml_py==13.590.48
 ollama==0.6.1
 openai==2.32.0
 pandas==3.0.2
 pdfplumber==0.11.7
 protobuf==7.34.1
-pynvml
 pysolr
-psycopg==3.3.2
-psycopg2==2.9.11
+# Remplacer psycopg2 par psycopg2-binary pour Docker (pas besoin de pg_config)
+# psycopg==3.3.2
+psycopg2-binary==2.9.11
 pydantic==2.13.2
 python-dotenv==1.2.2
 pypdf
@@ -35,8 +34,8 @@ scikit_learn==1.8.0
 sentence_transformers==5.2.2
 starlette==1.0.0
 tiktoken==0.9.0
---extra-index-url https://download.pytorch.org/whl/cu130
-torch==2.9.1+cu130
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1+cpu
 transformers==5.1.0
 uvicorn==0.44.0
 

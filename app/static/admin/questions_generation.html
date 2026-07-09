@@ -35,6 +35,7 @@
         .input-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .input-group .input-wrapper { flex: 1; min-width: 150px; }
         .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+        #documentSelect { min-width: 300px; max-width: 500px; }
         .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
         .btn { padding: 12px 24px; background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
@@ -152,6 +153,14 @@
                         <div class="description">Modèle à utiliser pour la génération des questions</div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="documentSelect">Document spécifique (optionnel)</label>
+                        <select id="documentSelect">
+                            <option value="">Tous les documents validés</option>
+                        </select>
+                        <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
+                    </div>
+
                     <button class="btn" onclick="startQuestionGeneration()" id="generateBtn">
                         ✨ Générer des Questions
                     </button>
@@ -196,7 +205,15 @@
                 document.getElementById('validDocsCount').textContent = data.count;
                 
                 const docsList = document.getElementById('validDocumentsList');
-                docsList.innerHTML = data.valid_documents.map(id => `<span>• ID: ${id}</span>`).join('') || '<span>Aucun document validé</span>';
+                docsList.innerHTML = data.documents.map(doc => `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`).join('') || '<span>Aucun document validé</span>';
+                
+                // Remplir le sélecteur de documents avec les titres et document_id
+                const docSelect = document.getElementById('documentSelect');
+                let selectOptions = '<option value="">Tous les documents validés</option>';
+                data.documents.forEach(doc => {
+                    selectOptions += `<option value="${doc.document_id}">${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</option>`;
+                });
+                docSelect.innerHTML = selectOptions;
             } catch (error) {
                 console.error('Erreur lors du chargement des documents validés:', error);
             }
@@ -334,6 +351,7 @@
         async function startQuestionGeneration() {
             const numQuestions = parseInt(document.getElementById('numQuestions').value) || 3;
             const modelName = document.getElementById('modelSelect').value;
+            const documentId = document.getElementById('documentSelect').value;
             
             // Désactiver le bouton
             const generateBtn = document.getElementById('generateBtn');
@@ -348,16 +366,24 @@
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressText').textContent = '0%';
             
+            // Préparer la requête
+            const requestBody = {
+                num_questions_per_doc: numQuestions,
+                model_name: modelName
+            };
+            
+            // Ajouter document_id si un document spécifique est sélectionné
+            if (documentId) {
+                requestBody.document_id = parseInt(documentId);
+            }
+            
             try {
                 const response = await fetch(QUESTIONS_API + '/generate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        num_questions_per_doc: numQuestions,
-                        model_name: modelName
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!response.ok) {

@@ -1,23 +1,24 @@
 from typing import Optional, List, Dict, Any, Tuple
 import asyncio
 import json
+import os
 import aiomysql
 from qdrant_client import QdrantClient, models
 
-# Configuration de la base de données MySQL
+# Configuration de la base de données MySQL (via variables d'environnement)
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "db": "m3c_database",
-    "user": "OBL",
-    "password": "azerty",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "db": os.getenv("DB_NAME", "m3c_database"),
+    "user": os.getenv("DB_USER", "OBL"),
+    "password": os.getenv("DB_PASSWORD", "azerty"),
     "autocommit": True
 }
 
-# Configuration Qdrant
+# Configuration Qdrant (via variables d'environnement)
 QDRANT_CONFIG = {
-    "host": "localhost",
-    "port": 6333,
+    "host": os.getenv("QDRANT_HOST", "localhost"),
+    "port": int(os.getenv("QDRANT_PORT", "6333")),
 }
 
 # Client Qdrant (synchrone, compatible avec async via threads)
@@ -728,13 +729,14 @@ async def get_chunk_by_id(chunk_id: int, conn) -> dict:
                  "metadata": row[4]}
 
 
-async def get_all_text_chunks(conn):
+async def get_all_text_chunks(conn, document_id: Optional[int]) -> List[Dict]:
     async with conn.cursor() as cur:
         await cur.execute("""
         SELECT id, content, num_page, position_in_page, character_count, token_count, document_id
         FROM text_chunks
+        WHERE %s IS NULL OR document_id = %s
         ORDER BY `document_id` ASC, `num_page` ASC, `position_in_page` ASC;
-        """)
+        """, (document_id, document_id))
         rows = await cur.fetchall()
         return [{
             "id": row[0],
