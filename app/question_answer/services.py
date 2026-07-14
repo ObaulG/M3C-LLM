@@ -37,7 +37,8 @@ from app.jobs.manager import (
 def create_question_generation_job(
     num_questions_per_doc: int = 3,
     model_name: str = "mistral-small",
-    document_id: Optional[int] = None
+    document_id: Optional[int] = None,
+    num_answers_per_question: int = 10
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -46,6 +47,7 @@ def create_question_generation_job(
         num_questions_per_doc: Nombre de questions à générer par chunk
         model_name: Nom du modèle LLM à utiliser
         document_id: ID du document spécifique à traiter (optionnel). Si None, traite tous les documents validés.
+        num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
         
     Returns:
         job_id: L'ID unique du job créé
@@ -57,7 +59,8 @@ def create_question_generation_job(
         parameters={
             "num_questions_per_doc": num_questions_per_doc,
             "model_name": model_name,
-            "document_id": document_id
+            "document_id": document_id,
+            "num_answers_per_question": num_answers_per_question
         },
         total_documents=0  # sera mis à jour lors du traitement avec le nombre de chunks
     )
@@ -256,6 +259,7 @@ async def generate_questions_for_chunk(
     document_id: str,
     num_questions: int,
     model_name: str,
+    num_answers_per_question: int = 10,
     max_retries: int = 5
 ) -> Tuple[QuestionAnswerList, Optional[str]]:
     """
@@ -267,6 +271,7 @@ async def generate_questions_for_chunk(
         document_id: ID du document
         num_questions: Nombre de questions à générer
         model_name: Nom du modèle LLM
+        num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
         max_retries: Nombre maximal de tentatives
         
     Returns:
@@ -287,8 +292,10 @@ async def generate_questions_for_chunk(
             provider, model = tuple(model_name.split("/"))
             qa_agent = get_qa_agent(model=model, provider=provider, async_mode=False)
             input_schema = QuestionRequestInput(
-                message="",
-                document=chunk_content
+                message=f"",
+                document=chunk_content,
+                num_questions=num_questions,
+                num_answers_per_question=num_answers_per_question,
             )
             print("qa_agent: ", qa_agent)
             response = qa_agent.run(input_schema)
@@ -333,6 +340,7 @@ async def process_question_generation_job(job_id: str):
     # note: le provider est indiqué comme dans la syntaxe d'instructor
     model_name = parameters.get("model_name", "mistral/mistral-small")
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
+    num_answers = parameters.get("num_answers_per_question", 10)  # Nombre de réponses par question
     
     errors = []
     progress = job.get("progress", {})
@@ -414,7 +422,8 @@ async def process_question_generation_job(job_id: str):
                 chunk_id=chunk_id,
                 document_id=document_id,
                 num_questions=num_questions,
-                model_name=model_name
+                model_name=model_name,
+                num_answers_per_question=num_answers
             )
 
             # insertion dans MySQL
@@ -422,7 +431,7 @@ async def process_question_generation_job(job_id: str):
                 for qa in qa_list.questions_answers:
                     await save_question_to_db(
                         question=qa.question_text,
-                        answer=qa.answer_text,
+                        answers=qa.answers_text,
                         chunk_id=chunk_id,
                         conn=conn,
                         difficulty_level=3,
@@ -479,3 +488,67 @@ async def process_question_generation_job(job_id: str):
     )
     
     print(f"Job {job_id} terminé: {final_status} ({processed_chunks}/{total_chunks})")
+
+
+# ============================================================================
+# RECOMMANDATION DE QUESTIONS - NOUVELLE FONCTIONNALITÉ
+# ============================================================================
+
+
+async def recommend_questions_for_document(
+    user_prompt: str,
+    document_id: str,
+    k: int = 5,
+    rag_pipeline=None
+) -> List[Dict]:
+    """
+    Recommande les questions les plus pertinentes d'un document par rapport à un prompt utilisateur.
+    
+    Utilise un agent spécialisé qui récupère toutes les questions du document et les classe
+    par pertinence en utilisant les embeddings du RAG pipeline.
+    
+    Args:
+        user_prompt: Le texte de la requête utilisateur
+        document_id: L'ID du document (document_id, pas resource_id)
+        k: Nombre de questions à retourner (défaut: 5)
+        rag_pipeline: Instance de RAGPipeline à utiliser. Si None, en crée une nouvelle.
+                     Il est fortement recommandé de passer l'instance existante depuis api_server
+                     pour éviter de réinitialiser les modèles LLM et embedders.
+    
+    Returns:
+        Liste de dictionnaires représentant les questions recommandées, avec :
+        - question_id: ID de la question
+        - question_text: Texte de la question
+        - answers: Liste des réponses
+        - relevance_score: Score de pertinence (0-1)
+        - chunk_id: ID du chunk associé
+        - num_page: Numéro de page
+        
+    Raises:
+        ValueError: Si le document_id est invalide
+    """
+    from ..agents.question_recommender_agent import (
+        QuestionRecommenderAgent,
+        QuestionRecommendationInput
+    )
+    from ..rag_pipeline import RAGPipeline
+    
+    # Si aucun pipeline RAG n'est fourni, en créer un nouveau
+    # WARNING: Cela initialise tous les modèles LLM, ce qui est coûteux
+    if rag_pipeline is None:
+        print("WARNING: Creating new RAGPipeline instance. Consider passing an existing one.")
+        rag_pipeline = RAGPipeline(load_local=False, embedder_name="mistral-embed")
+    
+    # Créer et exécuter l'agent
+    recommender_agent = QuestionRecommenderAgent(rag_pipeline=rag_pipeline)
+    
+    input_data = QuestionRecommendationInput(
+        user_prompt=user_prompt,
+        document_id=document_id,
+        k=k
+    )
+    
+    result = await recommender_agent.run(input_data)
+    
+    # Convertir en liste de dict pour la compatibilité
+    return result.to_dict_list()
