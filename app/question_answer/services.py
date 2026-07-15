@@ -7,6 +7,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime
+from instructor import Mode
 
 import database
 from database.database import (
@@ -16,7 +17,8 @@ from database.database import (
     get_pdf_url_for_resource,
     get_chunk_embeddings_with_metadata_qdrant,
 )
-from agents.qa_agent import get_qa_agent, QuestionRequestInput, QuestionAnswerList
+import agents.qa_agent as qa_agent
+import agents.qa_single_agent as qa_single_agent
 from agents.mistral_client import check_api_limits
 from embedders import get_embedder_instance
 from app.jobs.manager import (
@@ -38,7 +40,7 @@ def create_question_generation_job(
     num_questions_per_doc: int = 3,
     model_name: str = "mistral-small",
     document_id: Optional[int] = None,
-    num_answers_per_question: int = 10
+    num_answers_per_question: int = 1
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -253,17 +255,16 @@ async def get_chunk_id_for_resource(resource_id: int) -> Optional[str]:
             await conn.close()
 
 
-async def generate_questions_for_chunk(
+async def generate_questions_single_answer_for_chunk(
     chunk_content: str,
     chunk_id: str,
     document_id: str,
     num_questions: int,
     model_name: str,
-    num_answers_per_question: int = 10,
-    max_retries: int = 5
-) -> Tuple[QuestionAnswerList, Optional[str]]:
+    max_retries: int = 2
+) -> Tuple[qa_single_agent.QuestionAnswerList, Optional[str]]:
     """
-    Génère des questions pour un chunk spécifique avec retry.
+    Génère des questions avec une réponse unique pour un chunk spécifique avec retry.
     
     Args:
         chunk_content: Contenu du chunk
@@ -271,7 +272,6 @@ async def generate_questions_for_chunk(
         document_id: ID du document
         num_questions: Nombre de questions à générer
         model_name: Nom du modèle LLM
-        num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
         max_retries: Nombre maximal de tentatives
         
     Returns:
@@ -290,16 +290,17 @@ async def generate_questions_for_chunk(
             print(f"Erreur vérification limites: {e}")
         try:
             provider, model = tuple(model_name.split("/"))
-            qa_agent = get_qa_agent(model=model, provider=provider, async_mode=False)
-            input_schema = QuestionRequestInput(
+            agent = qa_single_agent.get_qa_agent(model=model,
+                                    provider=provider,
+                                    async_mode=False)
+
+            input_schema = qa_single_agent.QuestionRequestInput(
                 message=f"",
                 document=chunk_content,
-                num_questions=num_questions,
-                num_answers_per_question=num_answers_per_question,
+                num_questions=num_questions
             )
-            print("qa_agent: ", qa_agent)
-            response = qa_agent.run(input_schema)
-            questions_generated = len(response.questions_answers) if response else 0
+            response = agent.run(input_schema)
+            questions_generated = len(response.QA_list) if response else 0
             print(questions_generated, "questions/réponses générées")
 
             return response, None
@@ -311,6 +312,7 @@ async def generate_questions_for_chunk(
                 await asyncio.sleep(wait_time)
                 continue
             else:
+                print("other error: ", error_msg)
                 return None, f"Erreur génération: {error_msg}"
     
     return 0, 0, f"Échec après {max_retries} tentatives"
@@ -340,27 +342,11 @@ async def process_question_generation_job(job_id: str):
     # note: le provider est indiqué comme dans la syntaxe d'instructor
     model_name = parameters.get("model_name", "mistral/mistral-small")
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
-    num_answers = parameters.get("num_answers_per_question", 10)  # Nombre de réponses par question
+    num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
     
     errors = []
     progress = job.get("progress", {})
     processed_chunks = 0
-
-
-    # Récupérer les id des documents validés
-    # (inutile car on peut juste travailler sur les chunks)
-    """
-    async with await get_db_connection() as conn:
-        text_documents = database.get_all_documents(conn)
-        if not text_documents:
-            update_question_generation_job(
-                job_id=job_id,
-                status="failed",
-                progress=progress,
-                processed_documents=processed_chunks,
-                errors=errors
-            )
-    """
 
     # Récupérer tous les chunks des documents validés
     async with await get_db_connection() as conn:
@@ -417,21 +403,21 @@ async def process_question_generation_job(job_id: str):
             print(f"Traitement chunk {chunk_id} (doc: {document_id})...")
 
             # génération des QA
-            qa_list, error = await generate_questions_for_chunk(
+            # attention : il y a deux agents séparés pour la génération de QA
+            qa_list, error = await generate_questions_single_answer_for_chunk(
                 chunk_content=chunk_content,
                 chunk_id=chunk_id,
                 document_id=document_id,
                 num_questions=num_questions,
-                model_name=model_name,
-                num_answers_per_question=num_answers
+                model_name=model_name
             )
 
             # insertion dans MySQL
             async with await get_db_connection() as conn:
-                for qa in qa_list.questions_answers:
+                for qa in qa_list.QA_list:
                     await save_question_to_db(
-                        question=qa.question_text,
-                        answers=qa.answers_text,
+                        question=qa.question,
+                        answers=[qa.answer],
                         chunk_id=chunk_id,
                         conn=conn,
                         difficulty_level=3,
@@ -441,7 +427,7 @@ async def process_question_generation_job(job_id: str):
             progress[chunk_id] = {
                 "chunk_id": chunk_id,
                 "document_id": document_id,
-                "questions_generated": len(qa_list.questions_answers),
+                "questions_generated": len(qa_list.QA_list),
                 "error": error,
                 "status": "completed" if not error else "failed"
             }

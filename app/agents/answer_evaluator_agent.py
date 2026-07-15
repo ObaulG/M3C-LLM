@@ -5,16 +5,17 @@ from typing import Optional, List
 from atomic_agents import BaseIOSchema, AtomicAgent, AgentConfig
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 from instructor import Mode
+import instructor
 
 from .instructor_factory import create_client
 
 class EvaluateRequestInput(BaseIOSchema):
     """
     Schema pour l'entrée de l'agent d'évaluation.
-    Contient la question, la réponse attendue et la réponse de l'utilisateur.
+    Contient la question, les réponses attendues et la réponse de l'utilisateur.
     """
     question: str
-    expected_answer: str
+    expected_answers: List[str]
     user_answer: str
     model: Optional[str] = None
 
@@ -35,11 +36,11 @@ class ListAgentEvaluationResult(BaseIOSchema):
 evaluation_system_prompt_generator = SystemPromptGenerator(
     background=[
         "Tu es un agent d’évaluation spécialisé dans l’analyse de réponses à des questions de compréhension.",
-        "Tu compares la réponse de l’utilisateur avec la réponse attendue."
+        "Tu compares la réponse de l’utilisateur avec LES REPONSES ATTENDUES."
     ],
     steps=[
         "Analyser précisément la question.",
-        "Identifier les éléments essentiels dans la réponse attendue.",
+        "Identifier les éléments essentiels dans LES REPONSES ATTENDUES.",
         "Comparer avec la réponse de l’utilisateur.",
         "Évaluer la pertinence et l’exactitude.",
         "Déterminer une note entière entre 1 et 10."
@@ -63,7 +64,7 @@ evaluation_system_prompt_generator_bis = SystemPromptGenerator(
     background=[
         "Tu es un agent d’évaluation spécialisé dans l’analyse de réponses à des questions de compréhension.",
         "Les questions sont basés sur des documents culturels liés à la Corse."
-        "Tu compares la réponse de l’utilisateur avec la réponse attendue et tu fais un retour."
+        "Tu compares la réponse de l’utilisateur avec LES REPONSES ATTENDUES et tu fais un retour."
         "Question: Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?",
         "Réponse référence : Le col de Teghime est symbolique pour les Bastiais car il leur permet de traverser d'est en ouest et offre une vue sur ce qu'ils appellent « les deux mers », une division imaginaire de la Méditerranée en deux parties, dont la Tyrrhénienne.",
         "Réponse utilisateur 1 : Teghime coupe symboliquement la Méditerranée en deux mers, et crée la Tyrrhénienne.",
@@ -75,9 +76,9 @@ evaluation_system_prompt_generator_bis = SystemPromptGenerator(
     ],
     steps=[
         "Analyser précisément la question.",
-        "Identifier les éléments essentiels dans la réponse attendue.",
+        "Identifier les éléments essentiels dans LES REPONSES ATTENDUES.",
         "Comparer avec la réponse de l’utilisateur.",
-        "Évaluer la pertinence de la réponse, en vérifiant que les éléments correspondent bien à ce qui est écrit dans la réponse de référence."
+        "Évaluer la pertinence de la réponse, en vérifiant que les éléments correspondent bien à ce qui est écrit dans les réponses de référence."
         "Attention, l'utilisateur a quand même le droit de reformuler les expressions et termes, tiens en compte."
         "Déterminer une note entière entre 1 et 10."
     ],
@@ -126,7 +127,7 @@ final_evaluation_system_prompt_generator = SystemPromptGenerator(
 def get_final_evaluator_agent(model: str = "mistral-medium",
                               provider: str = "mistral",
                               async_mode: bool = False):
-    client = create_client(provider, model, async_mode)
+    client = create_client(provider, model, async_mode, instructor_mode=instructor.Mode.JSON)
     final_evaluation_agent = AtomicAgent[ListAgentEvaluationResult, AgentEvaluationResult](
         config=AgentConfig(
             client=client,
@@ -146,7 +147,7 @@ def get_evaluator_agent(model: str = "mistral-medium",
         return get_evaluator_agent_local_bis(model=model, provider=provider, async_mode=async_mode)
     client = create_client(provider, model=model, async_mode=async_mode)
     # Les modèles gemma ne prennent pas la temperature (ou alors pas sous ce nom)
-    model_api_parameters = {"temperature": 0.05,} if provider != "google" else {}
+    model_api_parameters = {"temperature": 0.35,}
     evaluation_agent = AtomicAgent[EvaluateRequestInput, AgentEvaluationResult](
         config=AgentConfig(
             client=client,
@@ -177,12 +178,10 @@ def get_evaluator_agent_local(model: str = "ministral-3:3b",
     return evaluation_agent
 
 def get_evaluator_agent_local_bis(model: str = "ministral-3:3b", provider: str = "ollama", async_mode: bool = False):
-    import instructor
-
     # https://github.com/567-labs/instructor/issues/1111
     # il faudrait bien mettre mode=instructor.Mode.JSON directement dans le client
     client = create_client(provider, model, async_mode, instructor_mode=instructor.Mode.JSON)
-    parameters = {"temperature": 0.05, "max_tokens": 8192 if "qwen" in model else 2048, "reasoning_effort": "none"}
+    parameters = {"temperature": 0.35, "max_tokens": 8192 if "qwen" in model else 2048, "reasoning_effort": "none"}
     evaluation_agent = AtomicAgent[EvaluateRequestInput, AgentEvaluationResult](
         config=AgentConfig(
             client=client,

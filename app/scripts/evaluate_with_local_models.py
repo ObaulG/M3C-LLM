@@ -83,7 +83,7 @@ async def evaluate_row_with_model(row: dict, model: str) -> dict:
 
     input_data = EvaluateRequestInput(
         question=row['question_content'],
-        expected_answer=row['reference_answer'],
+        expected_answers=[row['reference_answer']],
         user_answer=row['evaluated_answer'],
         model=model
     )

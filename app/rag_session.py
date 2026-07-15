@@ -14,19 +14,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from rag_pipeline import RAGSource
 
-# Réutilisation du modèle RAGSource de rag_pipeline pour cohérence
-# (import dynamique pour éviter les dépendances circulaires)
-try:
-    from rag_pipeline import RAGSource
-except ImportError:
-    # Définition locale de fallback
-    class RAGSource(BaseModel):
-        """Modèle pour une source de document RAG"""
-        content: str = Field(..., description="Contenu du document")
-        score_cossim: Optional[float] = Field(None, description="Score de similarité cosinus")
-        score_bm25: Optional[float] = Field(None, description="Score BM25")
-        metadata: Dict = Field(default_factory=dict, description="Métadonnées du document")
 
 
 class RAGInteraction(BaseModel):

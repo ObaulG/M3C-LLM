@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, List
 from atomic_agents import BaseIOSchema, AtomicAgent, AgentConfig
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 from .mistral_client import get_mistral_client
@@ -7,10 +7,10 @@ from .prompt_loader import get_prompt
 class MessageTypeRequestInput(BaseIOSchema):
     """
     Schema pour l'entree de l'agent de classification de message.
-    Contient la question initiale, la reponse de reference, et la reponse de l'utilisateur.
+    Contient la question initiale, les reponses de reference, et la reponse de l'utilisateur.
     """
     current_question: str
-    reference_answer: str
+    reference_answers: List[str]
     user_message: str
 
 class MessageTypeResult(BaseIOSchema):
@@ -28,25 +28,25 @@ _FALLBACK_PROMPT = SystemPromptGenerator(
         "Cet agent est specialise dans la classification des messages utilisateurs en fonction de leur pertinence par rapport a une question initiale.",
         "Il doit determinant si le message est une reponse a la question ou hors sujet.",
         "La classification doit etre precise et justifiee.",
-        "L'agent recoit la question, la reponse de reference attendue, et le message de l'utilisateur.",
-        "reponse: repond a la question en cours, ou a un lien avec les elements presents dans la question ou la reponse de reference",
-        "hors-sujet: demande qui ne concerne pas de pres ou de loin la question ou sa reponse attendue",
+        "L'agent recoit la question, LES REPONSES DE REFERENCE attendues, et le message de l'utilisateur.",
+        "reponse: repond a la question en cours, ou contient suffisamment d'elements presents dans les reponses de reference",
+        "hors-sujet: demande qui ne concerne pas de pres ou de loin la question ou ses reponses attendues",
         "autre: tous les autres cas de figure"
     ],
     steps=[
-        "Lire la question initiale, la reponse de reference, et le message de l'utilisateur.",
-        "Determiner si le message est dans le même contexte que la question ou la reponse de reference. ",
-        "Comparer le message de l'utilisateur avec la reponse de reference pour detecter des similarites.",
+        "Lire la question initiale, LES REPONSES DE REFERENCE, et le message de l'utilisateur.",
+        "Determiner si le message est dans le même contexte que la question ou les reponses de reference. ",
+        "Comparer le message de l'utilisateur avec LES REPONSES DE REFERENCE pour detecter des elements communs.",
         "Attribuer un niveau de confiance a la classification (0.0 = incertain, 1.0 = certain).",
         "Fournir une explication claire et concise de la classification.",
     ],
     output_instructions=[
         "Le champ message_type doit etre l'une des valeurs suivantes : 'reponse', 'hors_sujet'.",
         "Une seule valeur a retourner.",
-        "Ne classe pas hors_sujet des messages qui ont un lien avec la question ou la reponse de reference",
-        "Exemple: si la question parle de transport ferroviaire, et que la réponse contient \"train\", alors il est très probable que la réponse soit bien dans le contexte"
+        "Ne classe pas hors_sujet des messages qui contiennent des elements communs avec les reponses de reference",
+        "Exemple: si la question parle de transport ferroviaire et que les reponses de reference mentionnent train et TGV, et que la réponse utilisateur contient train, alors il est très probable que la réponse soit bien dans le contexte"
         "Le champ confidence doit etre un float entre 0.0 et 1.0.",
-        "Le champ explanation doit expliquer brièvement la raison de la classification, en mentionnant si le message correspond a la reponse de reference.",
+        "Le champ explanation doit expliquer brièvement la raison de la classification, en mentionnant quels elements du message correspondent aux reponses de reference.",
         "La reponse doit etre redigee en francais et adaptee au contexte.",
     ],
 )

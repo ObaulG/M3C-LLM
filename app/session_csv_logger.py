@@ -26,7 +26,8 @@ CSV_HEADERS = [
     "score",
     "feedback",
     "model",
-    "message_type"
+    "message_type",
+    "evaluation_type"
 ]
 
 
@@ -42,7 +43,7 @@ def get_session_csv_path(session_id: str) -> str:
 
 def log_response_to_csv(session_id: str, user_response) -> None:
     """
-    Ajoute une ligne au CSV de la session.
+    Ajoute une ou plusieurs lignes au CSV de la session (une par évaluation).
     Crée le fichier avec les headers si c'est le premier appel pour cette session.
 
     Args:
@@ -60,15 +61,33 @@ def log_response_to_csv(session_id: str, user_response) -> None:
         if not file_exists:
             writer.writeheader()
 
-        row = {
+        # Base data common to all evaluations
+        base_row = {
             "timestamp": user_response.date_sent.isoformat(),
             "session_id": session_id,
             "question_id": user_response.question_id,
             "question_text": user_response.question_text,
             "user_answer": user_response.user_answer,
-            "score": user_response.evaluation.score if user_response.evaluation else "",
-            "feedback": user_response.evaluation.feedback if user_response.evaluation else "",
-            "model": user_response.evaluation.model if user_response.evaluation else "",
-            "message_type": user_response.message_type or ""
+            "message_type": user_response.message_type or "",
         }
-        writer.writerow(row)
+
+        # Write a row for each individual evaluation
+        if user_response.individual_evaluations:
+            for eval in user_response.individual_evaluations:
+                row = {**base_row,
+                       "score": eval.score,
+                       "feedback": eval.feedback,
+                       "model": eval.model,
+                       "evaluation_type": "individual"
+                      }
+                writer.writerow(row)
+
+        # Write a row for the final evaluation
+        if user_response.evaluation:
+            row = {**base_row,
+                   "score": user_response.evaluation.score,
+                   "feedback": user_response.evaluation.feedback,
+                   "model": user_response.evaluation.model,
+                   "evaluation_type": "final"
+                  }
+            writer.writerow(row)

@@ -14,6 +14,12 @@ class QuestionGenerationRequest(BaseModel):
         le=10,
         description="Nombre de questions à générer par document"
     )
+    num_answers_per_question: int = Field(
+        default=10,
+        ge=1,
+        le=20,
+        description="Nombre de réponses à générer par question"
+    )
     model_name: str = Field(
         default="mistral/mistral-medium",
         description="Nom du modèle LLM à utiliser pour la génération au format <provider>/<model_name>"

@@ -66,17 +66,18 @@ async def evaluate_message_type(request: EvaluateMessageTypeRequest):
         HTTPException: Si l'évaluation échoue
     """
     try:
-        # Récupérer la question depuis la BDD pour obtenir la réponse de référence
+        # Récupérer la question depuis la BDD pour obtenir les réponses de référence
         conn = await get_db_connection()
         question = await get_question_by_id(conn, request.question_id, include_answers=True)
         
-        # Extraire la réponse de référence de manière sécurisée
-        reference_answer = question.get("answers", [{}])[0].get("content", "") if question.get("answers") else ""
+        # Extraire TOUTES les réponses de référence de manière sécurisée
+        answers = question.get("answers", [])
+        reference_answers = [answer.get("content", "") for answer in answers if answer.get("content")]
         
         # Appeler l'agent message_evaluator_agent
         input_data = MessageTypeRequestInput(
             current_question=request.question_text,
-            reference_answer=reference_answer,
+            reference_answers=reference_answers,
             user_message=request.user_answer,
         )
         message_evaluator_agent = get_evaluator_agent()
@@ -96,11 +97,13 @@ async def evaluate_message_type(request: EvaluateMessageTypeRequest):
             )
 
         # Sauvegarder dans le CSV
+        # Concaténer les réponses de référence pour le CSV (séparées par |)
+        reference_answer_str = " | ".join(reference_answers) if reference_answers else ""
         csv_path = log_message_evaluator_result(
             document_id=request.document_id,
             question_id=request.question_id,
             question_text=request.question_text,
-            reference_answer=reference_answer,
+            reference_answer=reference_answer_str,
             user_answer=request.user_answer,
             agent_message_type=result.message_type,
             agent_confidence=result.confidence,

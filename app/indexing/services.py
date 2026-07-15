@@ -593,10 +593,28 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
         return {"success": False, "message": "Job annulé", "job_id": job_id, "processed_items": job["processed_items"], errors: errors}
 
     model_name = embedder.name
+    # retrouver le chunking_strategy_id
+    # Créer la stratégie de chunking
+    strategy_name = f"recursive_char_{chunk_size}_overlap_{overlap}"
+    async with await get_db_connection() as conn:
+        chunking_strategy_id = await get_or_create_chunking_strategy(
+            conn,
+            strategy_name,
+            "character",
+            chunk_size,
+            chunk_size,
+            overlap
+        )
+        if not chunking_strategy_id:
+            raise ValueError("erreur avec mysql : get_or_create_chunking_strategy a retourné None")
 
     for i, resource_id in enumerate(VALID_TEXT_RESOURCE_ID):
         resource_id_str = str(resource_id)
-        print(f"Document {i+1}/{len(VALID_TEXT_RESOURCE_ID)} - resource_id {resource_id_str}")
+        # Récupérer le document_id correspondant
+        async with await get_db_connection() as conn:
+            doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
+
+        print(f"Document {i+1}/{len(VALID_TEXT_RESOURCE_ID)} - resource_id {resource_id_str} - document_id {doc_id}")
 
         # Vérifier si déjà complété
         doc_progress = progress.get(resource_id_str, {})
@@ -612,13 +630,13 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
         }
         update_indexing_job(job_id, "running", progress=progress)
 
-        # Récupérer text_document_id si déjà créé
-        text_document_id = doc_progress.get("text_document_id")
-        
-        # Si les chunks n'existent pas, les créer
-        if not text_document_id:
+        # vérifier la présence des chunks dans mysql
+        async with await get_db_connection() as conn:
+            existing_chunks = await get_chunks_for_document(doc_id, conn, chunking_strategy_id)
+            print(f"{len(existing_chunks)} chunks trouvés")
 
-            # Générer les chunks (téléchargement PDF, découpage)
+        # Si les chunks n'existent pas, les créer
+        if not existing_chunks:
             try:
                 chunks_data, full_text, error = await process_pdf_from_m3c(resource_id, chunk_size, overlap)
             except OSError as e:
@@ -654,11 +672,11 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
             # Insérer le document texte
             conn = await get_db_connection()
             try:
-                text_document_id = await insert_text_document(
+                doc_id = await insert_text_document(
                     conn, "pdf", str(resource_id),
                     "".join([chunk["content"] for chunk in chunks_data])
                 )
-                if not text_document_id:
+                if not doc_id:
                     raise ValueError("insert_text_document a retourné None")
             except Exception as e:
                 errors.append(f"Resource {resource_id}: {e}")
@@ -668,20 +686,6 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
                     "processed_at": datetime.now().isoformat()
                 }
                 continue
-
-            # Créer la stratégie de chunking
-            strategy_name = f"recursive_char_{chunk_size}_overlap_{overlap}"
-            try:
-                chunking_strategy_id = await get_or_create_chunking_strategy(
-                    conn,
-                    strategy_name,
-                    "character",
-                    chunk_size,
-                    chunk_size,
-                    overlap
-                )
-                if not chunking_strategy_id:
-                    raise ValueError("get_or_create_chunking_strategy a retourné None")
             except Exception as e:
                 errors.append(f"Resource {resource_id}: {e}")
                 progress[resource_id_str] = {
@@ -698,7 +702,7 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
                     chunk_id = str(uuid.uuid4())
                     chunks_data_for_db.append((
                         chunk_id,
-                        text_document_id,
+                        doc_id,
                         chunking_strategy_id,
                         chunk_info["content"],
                         chunk_info["num_page"],
@@ -717,24 +721,23 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
                 }
                 continue
         else:
-            # Les chunks existent déjà
-            chunking_strategy_id = doc_progress.get("chunking_strategy_id")
             print(f"Chunking déjà terminé pour {resource_id_str} avec stratégie {chunking_strategy_id}")
 
+        print("Création des points dans Qdrant")
         # Dans TOUS les cas, récupérer les chunks depuis la BDD
         try:
-            conn = await get_db_connection()
-            existing_chunks = await get_chunks_for_document(text_document_id, conn)
-            await conn.close()
-            
             if not existing_chunks:
-                errors.append(f"Resource {resource_id}: Aucun chunk trouvé pour document_id {text_document_id}")
-                progress[resource_id_str] = {
-                    "status": "failed",
-                    "error": "Aucun chunk trouvé en BDD",
-                    "processed_at": datetime.now().isoformat()
-                }
-                continue
+                async with await get_db_connection() as conn:
+                    existing_chunks = await get_chunks_for_document(doc_id, conn, chunking_strategy_id)
+            
+                if not existing_chunks:
+                    errors.append(f"Resource {resource_id}: Aucun chunk trouvé pour document_id {doc_id}")
+                    progress[resource_id_str] = {
+                        "status": "failed",
+                        "error": "Aucun chunk trouvé en BDD",
+                        "processed_at": datetime.now().isoformat()
+                    }
+                    continue
             
             # Convertir les chunks au format attendu pour l'embedding
             chunks = []
@@ -789,7 +792,7 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
                 # Insérer dans Qdrant
                 result = await insert_chunk_embedding_qdrant(
                     chunk_id=chunk_id,
-                    document_id=text_document_id,
+                    document_id=doc_id,
                     model_name=model_name,
                     embedding=embedding,
                     content=chunk_info["content"],
@@ -813,7 +816,7 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
             "id_missing_embeddings": id_missing_embeddings,
             "chunking_completed": True,
             "chunking_strategy_id": chunking_strategy_id,
-            "text_document_id": text_document_id,
+            "text_document_id": doc_id,
             "processed_at": datetime.now().isoformat()
         }
         processed_count += 1

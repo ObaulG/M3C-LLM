@@ -14,9 +14,10 @@ PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
     "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56" : [9158, 9235, 9389, 10040, ]
 }
 """
+
+# NE PAS TOUCHER
 PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
-    116782 : [1356, 1410, 1582, 1652, 1667],
-    116738: [173, 242, 295, 364]
+    21: [418, 75]
 }
 class SessionMetadata(BaseModel):
     """
@@ -78,6 +79,7 @@ class UserResponse(BaseModel):
     user_answer: str
     date_sent: datetime
     evaluation: Optional[EvaluationResult]
+    individual_evaluations: Optional[List[EvaluationResult]] = None
     message_type: Optional[str] = None  # "réponse", "demande_renseignement", "hors_sujet", "autre"
 
 class SessionStatus(BaseModel):
@@ -127,6 +129,7 @@ def session_status_to_dict(session_status: SessionStatus) -> Dict[str, Any]:
             "user_answer": response.user_answer,
             "date_sent": response.date_sent.isoformat(),
             "evaluation": serialize_evaluation_result(response.evaluation),
+            "individual_evaluations": [serialize_evaluation_result(e) for e in response.individual_evaluations] if response.individual_evaluations else [],
             "message_type": response.message_type,
         }
 

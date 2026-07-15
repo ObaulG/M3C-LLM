@@ -37,7 +37,7 @@ async def generate_questions(request: QuestionGenerationRequest):
     """
     Lance la génération de questions pour un document spécifique ou tous les documents validés.
     
-    Si document_id est fourni, seule ce document sera traité.
+    Si document_id est fourni, seul ce document sera traité.
     Sinon, tous les documents définis dans VALID_TEXT_RESOURCE_ID seront traités:
     {VALID_TEXT_RESOURCE_ID}
     
@@ -50,6 +50,7 @@ async def generate_questions(request: QuestionGenerationRequest):
     # Créer le job
     job_id = create_question_generation_job(
         num_questions_per_doc=request.num_questions_per_doc,
+        num_answers_per_question=request.num_answers_per_question,
         model_name=request.model_name,
         document_id=request.document_id
     )

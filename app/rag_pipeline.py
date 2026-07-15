@@ -13,9 +13,9 @@ import rank_bm25
 import database
 import pynvml
 
-from api_visualization import set_rag_pipeline
 from app.embedders.BaseEmbedder import BaseEmbedder
-from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection
+from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection, \
+    get_resource_id_from_document_id
 from embedders import get_embedder_instance
 
 # Listes des modèles (déjà définies)
@@ -42,9 +42,9 @@ class RetrievalResult(BaseModel):
 class RAGSource(BaseModel):
     """Modèle pour une source de document"""
     content: str = Field(..., description="Contenu du document")
-    score_cossim: Optional[float] = Field(..., description="Score de similarité cosinus obtenu")
-    score_bm25: Optional[float] = Field(..., description="Score BM25 obtenu")
-    metadata: Dict = Field(..., description="Métadonnées du document (titre, source, etc.)")
+    score_cossim: Optional[float] = Field(default=None, description="Score de similarité cosinus obtenu")
+    score_bm25: Optional[float] = Field(default=None, description="Score BM25 obtenu")
+    metadata: dict = Field(..., description="Métadonnées du document (titre, source, etc.)")
 
 class RAGPipeline:
 
@@ -113,6 +113,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 - float: The estimated energy consumption of the LLM request (local only) in Wh.
         """
         # Si chat_history est fourni, construire la liste complète des messages
+
+        #print(prompt)
         if 'chat_history' in kwargs and kwargs['chat_history']:
             messages = kwargs.pop('chat_history')
             messages.append({"role": "user", "content": prompt})
@@ -130,7 +132,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                         final_prompt: Optional[str],
                         sources: Optional[List[RAGSource]],
                         k: int = 3,
-                        specified_document_id: Optional[str]=None,
+                        specified_document_id: Optional[int]=None,
                         **kwargs) -> tuple[BaseMessage, List[RAGSource], float]:
         """
         if preprocess_data does not contain the keys final_prompt and sources,
@@ -213,7 +215,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
     async def _retrieve_top_k_chunks_from_db(self,
                                        prompt_embeddings: List[float],
                                        k: int = 3,
-                                       specified_document_id: Optional[str] = None) -> List[RAGSource]:
+                                       specified_document_id: Optional[int] = None) -> List[RAGSource]:
         """
         Recherche les k chunks les plus pertinents dans la base de données Qdrant,
         en utilisant la similarité cosinus entre les embeddings.
@@ -225,17 +227,18 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             List[RAGSource]: Liste de tuples (chunk, score) triés par pertinence.
         """
-        print("retrieve_top_k_chunks_from_db")
+        print(f"retrieve_top_k_chunks_from_db on document {specified_document_id}")
 
         # voir app/indexing/services.py, fonction process_pdf_indexing_job etape 5
         # TODO: est-ce qu'on va utiliser plusieurs collections, ou une seule ?
         # pour l'instant on garde ce modèle de nom
         collection_name = f"LD-{self.embedder.name}-{self.embedder.dimension}"
-
+        print(collection_name)
         results = await database.get_top_k_similar_chunks_qdrant(embedding=prompt_embeddings,
                                                                  collection_name=collection_name,
                                                                  k=k,
                                                                  specified_document_id=specified_document_id)
+
         """
         [
         {
@@ -264,15 +267,15 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 "position_in_page": row["position_in_page"],
                 "token_count": row["token_count"],
             }
-            # contient position_in_page; resource_id
             if row["metadata"]:
                 metadata.update(row["metadata"])
-            print(metadata)
+
             # on va requêter MySQL pour récupérer le nom, l'auteur et la date
             # pour éviter un aller-retour supplémentaire avec l'utilisateur
             async with await get_db_connection() as conn:
-                document_data_dict = await get_resource_basic_metadata(conn, metadata["resource_id"])
-                print("adding metadata:", document_data_dict)
+                # il faut d'abord récupérer le resource id correspondant à ce document_id
+                resource_id = await get_resource_id_from_document_id(conn, metadata["document_id"])
+                document_data_dict = await get_resource_basic_metadata(conn, resource_id)
                 metadata.update(document_data_dict)
 
             rag_source = RAGSource(
@@ -333,9 +336,10 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         # Calculer les scores
         scores = model.get_scores(tokenized_query)
 
-        # Mettre à jour les scores des sources
+        # Mettre à jour les scores des sources.
+        # Note : score_bm25 reçoit ici un np.float64, qui doit être converti en float
         for i, source in enumerate(sources):
-            source.score_bm25 = scores[i]
+            source.score_bm25 = float(scores[i])
 
         # Trier par score décroissant
         sources.sort(key=lambda x: x.score_bm25, reverse=True)
@@ -346,7 +350,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                              prompt: str,
                              reranking: Optional[str],
                              k: int = 3,
-                             specified_document_id: Optional[str] = None) -> tuple[str, List[RAGSource]]:
+                             specified_document_id: Optional[int] = None) -> tuple[str, List[RAGSource]]:
         """
         Établit les étapes préliminaires du RAG :
         1. Transforme le prompt en embeddings.

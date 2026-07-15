@@ -59,7 +59,7 @@ function populateDocumentList(documents) {
             <h4>${doc.title}</h4>
             <p>Auteur(s): ${formatFileSize(doc.creator)}</p>
         `;
-        docItem.onclick = () => selectDocument(doc.document_id);
+        docItem.onclick = () => selectDocument(doc.document_id, doc.source_id);
         documentList.appendChild(docItem);
     });
 }
@@ -131,7 +131,7 @@ function saveSessionLocal(sessionStatus){
  *
  * @param {string}docId l'id du document.
  */
-async function selectDocument(docId) {
+async function selectDocument(docId, resId) {
     // Désélectionner tous les éléments
     const items = document.querySelectorAll('.document-item');
     items.forEach(item => item.classList.remove('active'));
@@ -142,7 +142,7 @@ async function selectDocument(docId) {
     currentDocument = docId;
 
     // Charger le PDF
-    const pdfUrl = `http://localhost:8000/get_pdf/by_id?resource_id=${docId}`;
+    const pdfUrl = `http://localhost:8000/get_pdf/by_id?resource_id=${resId}`;
     loadPDF(pdfUrl);
 
     // Masquer le sélecteur et afficher le visualiseur

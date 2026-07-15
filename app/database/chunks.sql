@@ -33,3 +33,11 @@ CREATE TABLE text_chunks (
     FOREIGN KEY (document_id) REFERENCES text_documents(id),
     FOREIGN KEY (strategy_id) REFERENCES text_chunking_strategies(id)
 );
+
+CREATE TABLE text_document_chunking_validation (
+    document_id INT NOT NULL,
+    strategy_id INT NOT NULL,
+    chunks_nb INT NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES text_documents(id),
+    FOREIGN KEY (strategy_id) REFERENCES text_chunking_strategies(id)
+)

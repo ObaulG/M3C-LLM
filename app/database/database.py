@@ -26,7 +26,7 @@ qdrant_client = QdrantClient(**QDRANT_CONFIG)
 
 # Contient les resource_id (table value) dont le champ extracted_text contient un texte valide et vérifié,
 # avec un nombre minimum d'artefacts
-VALID_TEXT_RESOURCE_ID = [116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
+VALID_TEXT_RESOURCE_ID = [317, 116723, 116789, 116805, 116729, 116806, 116781, 116737, 116732, 116719, 116721,
                           116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
 #VALID_TEXT_RESOURCE_ID = [116738, 116782]
 
@@ -156,7 +156,7 @@ async def get_top_k_similar_chunks_qdrant(
     embedding: list, 
     collection_name: str,
     k: int = 3, 
-    specified_document_id: str = None,
+    specified_document_id: int = None,
     with_payload: bool = True,
 ) -> list:
     """
@@ -665,16 +665,17 @@ async def get_questions_by_ids(
     if not question_ids:
         return []
 
-    placeholders = ", ".join(["%s"] * len(question_ids))
     query = f"""
         SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
         FROM text_questions q
-        WHERE q.question_id IN ({placeholders})
+        WHERE q.question_id = %s
     """
-
+    question_rows = []
     async with conn.cursor() as cur:
-        await cur.execute(query, tuple(question_ids))
-        question_rows = await cur.fetchall()
+        for question_id in question_ids:
+            await cur.execute(query, (question_id))
+            qst = await cur.fetchone()
+            question_rows.append(qst)
 
     questions = []
     for row in question_rows:
@@ -754,16 +755,14 @@ async def get_chunks_for_document(
     """Récupère tous les chunks d'un document depuis la base de données.
     Filtre par chunking_strategy_id si fourni.
     Valeurs correspondantes de chunking_strategy_id :
-    1 - découpage initial en chunks de 800 tokens et overlap de 100 tokens
-    7 - découpage en chunks de 2700 caractères et overlap de 400 caractères
+    1 - découpage en chunks de 2700 caractères et overlap de 400 caractères
     """
 
     async with conn.cursor() as cur:
         await cur.execute("""
-            SELECT id, content, num_page, position_in_page, character_count, token_count,
+            SELECT id, content, num_page, position_in_page, character_count, token_count
             FROM text_chunks
-            WHERE document_id = %s
-                AND strategy_id = %s
+            WHERE document_id = %s AND strategy_id = %s
         """, (document_id, chunking_strategy_id))
 
         rows = await cur.fetchall()
@@ -817,13 +816,12 @@ async def get_chunks_by_question_ids(
         FROM text_question_chunks qc
         JOIN text_chunks c ON c.id = qc.chunk_id
         WHERE qc.question_id IN ({placeholders})
-        ORDER BY qc.question_id
     """
 
     async with conn.cursor() as cur:
         await cur.execute(query, tuple(question_ids))
         rows = await cur.fetchall()
-
+    print(rows)
     # Regrouper les chunks par question_id
     chunks_by_question = {}
     for row in rows:
@@ -867,13 +865,13 @@ async def get_chunks_by_question_ids(
 
 async def save_question_to_db(
     question: str,
-    answer: str,
+    answers: List[str],
     chunk_id: str,
     conn,
     difficulty_level: int = 3,
     model: str = '',
 ) -> None:
-    """Enregistre une question, sa réponse et son lien au chunk dans la base de données."""
+    """Enregistre une question, ses réponses et son lien au chunk dans la base de données."""
     async with conn.cursor() as cur:
         # 1. Insérer la question
         await cur.execute("""
@@ -888,11 +886,12 @@ async def save_question_to_db(
             VALUES (%s, %s)
         """, (question_id, chunk_id))
 
-        # 3. Insérer la réponse
-        await cur.execute("""
-            INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
-            VALUES (%s, %s, %s, %s)
-        """, (question_id, answer, True, None))
+        # 3. Insérer TOUTES les réponses
+        for answer in answers:
+            await cur.execute("""
+                INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
+                VALUES (%s, %s, %s, %s)
+            """, (question_id, answer, True, None))
 
         await conn.commit()
 
@@ -922,22 +921,11 @@ async def get_questions_by_document_id(
     """
     questions = []
     cur = await conn.cursor()
-    
-    # 1. Trouver l'ID interne du document à partir du source_id
-    await cur.execute("""
-        SELECT id FROM text_documents WHERE source_id = %s
-    """, (document_id,))
-    doc_result = await cur.fetchone()
-    
-    if not doc_result:
-        return []
-    
-    internal_document_id = doc_result[0]
-    
-    # 2. Récupérer tous les chunk_ids pour ce document
+
+    # 1. Récupérer tous les chunk_ids pour ce document
     await cur.execute("""
         SELECT id FROM text_chunks WHERE document_id = %s
-    """, (internal_document_id,))
+    """, (document_id,))
     chunk_rows = await cur.fetchall()
     
     if not chunk_rows:
@@ -945,7 +933,7 @@ async def get_questions_by_document_id(
     
     chunk_ids = [row[0] for row in chunk_rows]
     
-    # 3. Récupérer les questions associées à ces chunks
+    # 2. Récupérer les questions associées à ces chunks
     params = chunk_ids
     placeholders = ",".join(["%s"] * len(chunk_ids))
     query = f"""
@@ -975,7 +963,7 @@ async def get_questions_by_document_id(
     await cur.execute(query, params)
     question_rows = await cur.fetchall()
 
-    # 4. Pour chaque question, récupérer les réponses si nécessaire
+    # 3. Pour chaque question, récupérer les réponses si nécessaire
     for row in question_rows:
         question_id, content, status, difficulty_level, created_by, validated_by, chunk_id, num_page = row
         question = {
@@ -1095,21 +1083,29 @@ async def get_all_documents(conn) -> List[Dict]:
     Returns:
         List[Dict]: Liste de tous les documents avec leurs métadonnées.
     """
-    print("retrieving documents...")
+
     async with conn.cursor() as cur:
         await cur.execute("""
             SELECT
-                td.source_id as document_id,
+                td.id as document_id,
+                td.source_id as resource_id,
                 CONCAT(m.storage_id, '.', m.extension) as file_name,
                 v_title.value as title,
-                v_creator.value as creator,
+                GROUP_CONCAT(DISTINCT v_creator.value SEPARATOR ', ') as creators,
                 td.created_at,
                 td.updated_at
-            FROM text_documents td
-            LEFT JOIN media m ON td.source_id = m.item_id AND m.extension = "pdf"
-            LEFT JOIN value v_title ON td.source_id = v_title.resource_id AND v_title.property_id = 1
-            LEFT JOIN value v_creator ON td.source_id = v_creator.resource_id AND v_creator.property_id = 2
-            ORDER BY td.created_at DESC
+            FROM
+                text_documents td
+            LEFT JOIN
+                media m ON td.source_id = m.item_id AND m.extension = "pdf"
+            LEFT JOIN
+                value v_title ON td.source_id = v_title.resource_id AND v_title.property_id = 1
+            LEFT JOIN
+                value v_creator ON td.source_id = v_creator.resource_id AND v_creator.property_id = 2
+            GROUP BY
+                td.id, td.source_id, m.storage_id, m.extension, v_title.value, td.created_at, td.updated_at
+            ORDER BY
+                td.created_at DESC;
         """)
 
         results = await cur.fetchall()
@@ -1118,79 +1114,27 @@ async def get_all_documents(conn) -> List[Dict]:
         for result in results:
             documents.append({
                 "document_id": result[0],
-                "file_name": result[1],
-                "title": result[2],
-                "creator": result[3],
-                "created_at": result[4],
-                "updated_at": result[5]
+                "resource_id": result[1],
+                "file_name": result[2],
+                "title": result[3],
+                "creator": result[4],
+                "created_at": result[5],
+                "updated_at": result[6]
             })
 
         return documents
 
-async def delete_questions_for_pages_1_to_12(
-    conn,
-    document_id: Optional[str] = None,
-    dry_run: bool = False
-) -> List[int]:
-    """
-    Supprime les questions associées aux pages 1 à 12 (sommaire) d'un document.
-    Si `document_id` est fourni, ne supprime que pour ce document.
-    Si `dry_run` est True, retourne uniquement les IDs des questions à supprimer sans les supprimer.
+async def get_document_id_from_resource_id(conn, resource_id: int):
+    async with await conn.cursor() as cur:
+        await cur.execute("SELECT id FROM text_documents WHERE source_id = %s", (resource_id,))
+        result = await cur.fetchone()
+        return result
 
-    Args:
-        conn (asyncpg.Connection): Connexion à la base de données.
-        document_id (Optional[str]): ID du document (optionnel, pour filtrer par document).
-        dry_run (bool): Si True, ne supprime pas, retourne juste les IDs des questions concernées.
-
-    Returns:
-        List[int]: Liste des IDs des questions supprimées (ou à supprimer en mode dry_run).
-    """
-    deleted_question_ids = []
-
-    async with conn.cursor() as cur:
-        # 1. Récupérer les chunk_id des pages 1 à 12
-        query = """
-            SELECT chunk_id
-            FROM chunks
-            WHERE num_page BETWEEN 1 AND 12
-        """
-        params = []
-        if document_id:
-            query += " AND document_id = %s"
-            params.append(document_id)
-
-        await cur.execute(query, params)
-        chunk_rows = await cur.fetchall()
-
-        if not chunk_rows:
-            return deleted_question_ids
-
-        chunk_ids = [row[0] for row in chunk_rows]
-
-        # 2. Récupérer les question_id associées à ces chunk_ids
-        await cur.execute("""
-            SELECT DISTINCT q.question_id
-            FROM question_chunks qc
-            JOIN questions q ON qc.question_id = q.question_id
-            WHERE qc.chunk_id = ANY(%s)
-        """, (chunk_ids,))
-
-        question_rows = await cur.fetchall()
-        question_ids_to_delete = [row[0] for row in question_rows]
-        print(question_ids_to_delete)
-        if dry_run:
-            return question_ids_to_delete
-
-        # 3. Supprimer les questions
-        for question_id in question_ids_to_delete:
-            await cur.execute("""
-                DELETE FROM questions
-                WHERE question_id = %s
-            """, (question_id,))
-            deleted_question_ids.append(question_id)
-            print(f"question {question_id} was deleted")
-    return deleted_question_ids
-
+async def get_resource_id_from_document_id(conn, document_id: int):
+    async with await conn.cursor() as cur:
+        await cur.execute("SELECT source_id FROM text_documents WHERE id = %s", (document_id,))
+        result = await cur.fetchone()
+        return result
 # NOTE: Fonction OBSOLÈTE - Utiliser get_chunk_embeddings_with_metadata_qdrant()
 # async def get_chunk_embeddings_with_metadata(
 #     conn,
