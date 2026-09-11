@@ -43,7 +43,11 @@ def create_client(
 
 
     if provider == "mistral":
-        return _create_mistral_client(async_mode)
+        if instructor_mode == instructor.Mode.TOOLS:
+            instructor_mode = instructor.Mode.MISTRAL_TOOLS
+        elif instructor_mode == instructor.Mode.JSON:
+            instructor_mode = instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS
+        return _create_mistral_client(async_mode, instructor_mode)
     elif provider == "ollama":
         return _create_ollama_client(async_mode, extra_body, instructor_mode)
     elif provider == "google":
@@ -68,7 +72,7 @@ def _create_gemma_client(model: str, async_mode: bool) -> Union[Instructor, Asyn
    #                                   mode=instructor.Mode.GENAI_TOOLS)
 
     return client
-def _create_mistral_client(async_mode: bool) -> Union[Instructor, AsyncInstructor]:
+def _create_mistral_client(async_mode: bool, instructor_mode) -> Union[Instructor, AsyncInstructor]:
     """Crée un client Mistral."""
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
     if not MISTRAL_API_KEY:
@@ -80,6 +84,7 @@ def _create_mistral_client(async_mode: bool) -> Union[Instructor, AsyncInstructo
     client = instructor.from_mistral(
         Mistral(api_key=MISTRAL_API_KEY),
         use_async=async_mode,
+        mode=instructor_mode,
     )
 
     return client

@@ -58,3 +58,7 @@ On suivra les étapes suivantes :
    * Tokeniser le chunk;
    * Appeler un embedder;
    * Stocker les métadonnées dans la BDD SQL, et les embeddings avec l'id dans la base de données Qdrant.
+
+# La gestion des documents et des questions 
+
+

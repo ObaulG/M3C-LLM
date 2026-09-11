@@ -68,7 +68,8 @@ def get_embedder_instance(name: str) -> BaseEmbedder:
     if embedder_type == "api" or name.startswith("mistral-"):
         from .api.MistralEmbedder import MistralEmbedder
         return MistralEmbedder(
-            api_key=os.getenv("MISTRAL_API_KEY", ""),
+            #api_key=os.getenv("MISTRAL_API_KEY", ""),
+            api_key="FnazLcbitTHAN4jSQt82sXusu2svW0hC",
             model=props.get("model", props.get("model_name", name)),
             dimension=props.get("dimension", 1024)
         )

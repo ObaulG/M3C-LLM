@@ -30,19 +30,21 @@ router = APIRouter(prefix="/api/admin/questions", tags=["Admin", "Questions"])
     response_model=QuestionGenerationResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Lance la génération de questions",
-    description="Crée un job de génération de questions pour un document spécifique ou tous les documents validés (VALID_TEXT_RESOURCE_ID). "
+    description="Crée un job de génération de questions pour un chunk spécifique, un document spécifique ou tous les documents validés (VALID_TEXT_RESOURCE_ID). "
                 "Le job est exécuté en arrière-plan et peut être suivi via les endpoints /jobs."
 )
 async def generate_questions(request: QuestionGenerationRequest):
     """
-    Lance la génération de questions pour un document spécifique ou tous les documents validés.
+    Lance la génération de questions pour un chunk spécifique, un document spécifique ou tous les documents validés.
     
-    Si document_id est fourni, seul ce document sera traité.
+    Priorité: chunk_id > document_id > tous les documents validés.
+    Si chunk_id est fourni, seul ce chunk sera traité.
+    Sinon si document_id est fourni, seul ce document sera traité.
     Sinon, tous les documents définis dans VALID_TEXT_RESOURCE_ID seront traités:
     {VALID_TEXT_RESOURCE_ID}
     
     Args:
-        request: QuestionGenerationRequest avec num_questions_per_doc, model_name et document_id (optionnel)
+        request: QuestionGenerationRequest avec num_questions_per_doc, model_name, document_id (optionnel) et chunk_id (optionnel)
         
     Returns:
         QuestionGenerationResponse avec job_id et détails du job créé
@@ -52,7 +54,8 @@ async def generate_questions(request: QuestionGenerationRequest):
         num_questions_per_doc=request.num_questions_per_doc,
         num_answers_per_question=request.num_answers_per_question,
         model_name=request.model_name,
-        document_id=request.document_id
+        document_id=request.document_id,
+        chunk_id=request.chunk_id
     )
     
     job = get_question_generation_job(job_id)
@@ -195,3 +198,117 @@ async def get_valid_documents():
             "description": "Documents avec extracted_text valide et vérifié"
         }
     )
+
+
+@router.get(
+    "/documents/{document_id}/chunks",
+    summary="Liste les chunks d'un document",
+    description="Retourne tous les chunks d'un document spécifique avec leur contenu pour permettre la sélection individuelle."
+)
+async def get_document_chunks(document_id: int):
+    """
+    Récupère tous les chunks d'un document avec leur contenu.
+    
+    Args:
+        document_id: L'ID du document (text_documents.id)
+        
+    Returns:
+        Liste des chunks avec id, content, num_page, position_in_page, etc.
+    
+    Raises:
+        HTTPException 404: Si le document n'a pas de chunks
+    """
+    from database.database import get_db_connection, get_all_text_chunks
+    
+    try:
+        async with await get_db_connection() as conn:
+            conn = await get_db_connection()
+            print("retrieving chunks")
+            chunks = await get_all_text_chunks(conn, document_id)
+            print("chunks received")
+        
+        if not chunks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Aucun chunk trouvé pour le document {document_id}"
+            )
+        
+        return JSONResponse(
+            content={
+                "document_id": document_id,
+                "chunks": chunks,
+                "count": len(chunks)
+            }
+        )
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des chunks: {str(e)}"
+        )
+
+
+@router.post(
+    "/save",
+    summary="Sauvegarde une question manuellement",
+    description="Sauvegarde une question avec ses réponses dans la base de données. "
+                "Utilisé pour valider les questions générées localement dans le navigateur."
+)
+async def save_question_manually(request: dict):
+    """
+    Sauvegarde une question avec ses réponses dans la base de données.
+    
+    Args:
+        request: Dictionnaire avec question, answers (liste), chunk_id, model, difficulty_level
+        
+    Returns:
+        JSONResponse avec succès/error et l'ID de la question sauvegardée
+    """
+    from database.database import save_question_to_db, get_db_connection
+    
+    try:
+        required_fields = ['question']
+        optional_fields = ['answers', 'chunk_id', 'model', 'difficulty_level']
+        
+        for field in required_fields:
+            if field not in request:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Champ manquant: {field}"
+                )
+        
+        # Valeurs par défaut
+        answers = request.get('answers', [])
+        chunk_id = request.get('chunk_id')
+        model = request.get('model', 'local-generation')
+        difficulty_level = request.get('difficulty_level', 3)
+        
+        # Convertir chunk_id en string si c'est un nombre
+        if chunk_id:
+            chunk_id = str(chunk_id)
+        
+        # Sauvegarder dans la base de données
+        async with await get_db_connection() as conn :
+            question_id = await save_question_to_db(
+                question=request['question'],
+                answers=answers,
+                chunk_id=chunk_id,
+                conn=conn,
+                model=model,
+                difficulty_level=difficulty_level
+            )
+        
+        return JSONResponse(
+            content={
+                "success": True,
+                "question_id": question_id,
+                "message": "Question sauvegardée avec succès"
+            }
+        )
+        
+    except Exception as e:
+        print(f"Erreur lors de la sauvegarde de la question: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la sauvegarde de la question: {str(e)}"
+        )

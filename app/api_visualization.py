@@ -109,6 +109,17 @@ class EmbeddingData(BaseModel):
     token_count: Optional[int] = Field(None, description="Number of tokens in the chunk")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
+    def to_dict(self):
+        return {
+            "chunk_id": self.chunk_id,
+            "document_id": self.document_id,
+            "content": self.content,
+            "embedding": self.embedding,
+            "num_page": self.num_page,
+            "position_in_page": self.position_in_page,
+            "token_count": self.token_count,
+            "metadata": self.metadata
+        }
 
 class EmbeddingsResponse(BaseModel):
     """Response containing embeddings data."""
@@ -119,6 +130,15 @@ class EmbeddingsResponse(BaseModel):
     count: int = Field(..., description="Total number of embeddings returned")
     timestamp: str = Field(..., description="Response timestamp")
 
+    def to_dict(self):
+        return {
+            "chunks": [chunk.to_dict() for chunk in self.chunks],
+            "queries": self.queries,
+            "document_id": self.document_id,
+            "model_name": self.model_name,
+            "count": self.count,
+            "timestamp": self.timestamp
+        }
 
 class TSNERequest(BaseModel):
     """Request to compute t-SNE projection."""
@@ -210,7 +230,7 @@ class ChunkSimilarity(BaseModel):
 class QueryDocumentComparisonRequest(BaseModel):
     """Request to compare a query with document chunks."""
     query: str = Field(..., description="Query text to compare")
-    document_id: str = Field(..., description="Document ID to compare against")
+    document_id: Optional[str] = Field(None, description="Document ID to compare against")
     k: int = Field(5, description="Number of top similar chunks to return", ge=1, le=50)
 
 
@@ -323,13 +343,11 @@ async def get_embeddings(
         model_name = EMBEDDING_MODEL_NAME
     
     try:
-        conn = await get_db_connection()
-        
-        chunks_data = await get_chunk_embeddings_with_metadata(
-            conn, document_id, limit, False, model_name
+        chunks_data = await get_chunk_embeddings_with_metadata_qdrant(
+            "LD-mistral-mistral-embed-1024", document_id, limit
         )
-        
-        await conn.close()
+        print("chunks retrieved")
+
         print(f"{len(chunks_data)} embeddings retrieved")
         
         chunks = []
@@ -633,8 +651,8 @@ async def compare_query_with_document(request: QueryDocumentComparisonRequest):
         query_embedding = await generate_embedding(request.query)
         
         conn = await get_db_connection()
-        chunks_data = await get_chunk_embeddings_with_metadata(
-            conn, request.document_id, None, False, EMBEDDING_MODEL_NAME
+        chunks_data = await get_chunk_embeddings_with_metadata_qdrant(
+            "LD-mistral-mistral-embed-1024", request.document_id
         )
         await conn.close()
         
@@ -675,7 +693,6 @@ async def compare_query_with_document(request: QueryDocumentComparisonRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error comparing query with document: {str(e)}"
         )
-
 
 @router.get("/sessions/{session_id}/queries", response_model=SessionQueriesResponse, tags=["Query Comparison"])
 async def get_session_queries(session_id: str):
@@ -761,8 +778,10 @@ async def compare_multiple_queries(request: MultipleQueriesComparisonRequest):
         document_similarities = None
         if request.document_id:
             conn = await get_db_connection()
-            chunks_data = await get_chunk_embeddings_with_metadata(
-                conn, request.document_id, None, False, EMBEDDING_MODEL_NAME
+            chunks_data = await get_chunk_embeddings_with_metadata_qdrant(
+                chunks_data=await get_chunk_embeddings_with_metadata_qdrant(
+                    "LD-mistral-mistral-embed-1024", request.document_id
+                )
             )
             await conn.close()
             
@@ -819,8 +838,8 @@ async def get_visualization_data(
 
     try:
         conn = await get_db_connection()
-        chunks_data = await get_chunk_embeddings_with_metadata(
-            conn, document_id, None, False, EMBEDDING_MODEL_NAME
+        chunks_data = await get_chunk_embeddings_with_metadata_qdrant(
+            "LD-mistral-mistral-embed-1024", document_id
         )
         await conn.close()
         

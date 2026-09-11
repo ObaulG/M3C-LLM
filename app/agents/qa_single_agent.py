@@ -4,7 +4,7 @@ from atomic_agents.context import SystemPromptGenerator, ChatHistory
 
 from .instructor_factory import create_client
 from .prompt_loader import get_prompt
-from instructor import Mode
+import instructor
 
 
 class QuestionRequestInput(BaseIOSchema):
@@ -32,8 +32,11 @@ class QuestionAnswerList(BaseIOSchema):
 
 system_prompt_generator = get_prompt("qa_single", "default")
 
-def get_qa_agent(model: str = "mistral-small", provider: str = "mistral", async_mode: bool = False):
-    client = create_client(provider, model, async_mode=async_mode, instructor_mode=Mode.JSON)
+def get_qa_agent(model: str = "mistral-small",
+                 provider: str = "mistral",
+                 async_mode: bool = False,
+                 instructor_mode: instructor.Mode = instructor.Mode.TOOLS):
+    client = create_client(provider, model, async_mode=async_mode, instructor_mode=instructor_mode)
     agent = AtomicAgent[QuestionRequestInput, QuestionAnswerList](
         config=AgentConfig(
             client=client,

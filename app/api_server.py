@@ -21,6 +21,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
+import database
 from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
@@ -60,6 +61,7 @@ if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
 import torch
 import uvicorn
 
+import api_visualization
 from api_visualization import router as viz_router, set_rag_pipeline, set_embedding_model
 from app.embedders import create_mistral_embedder, get_default_embedder
 from app.embedders.router import router as embedders_router
@@ -77,7 +79,7 @@ from question_answer.router import router as question_answer_router
 from question_answer.message_evaluator_router import router as message_evaluator_router
 
 # Import de la fonction de recommandation de questions
-from question_answer.services import recommend_questions_for_document
+from question_answer.services import recommend_questions_for_document, generate_questions_single_answer_for_chunk
 
 # Import du router Solr
 from solr.router import router as solr_router
@@ -89,11 +91,12 @@ class QueryRequest(BaseModel):
     """ModÃ¨le de requête pour poser une question"""
     question: str = Field(..., description="Question à poser au chatbot", min_length=1)
     models: List[str] = Field(..., description="ModÃ¨les utilisés pour la génération")
+    temperature: Optional[float] = Field(0.7, description="Température du modèle")
     k: int = Field(3, description="Nombre de documents à récupérer", ge=1, le=20)
     use_rag: bool = Field(False, description="Utiliser le RAG pour s'appuyer sur des ressources existantes")
     rag_monodocument_id: Optional[int]= Field(None, description="RAG sur un seul document dont on fournit l'identifiant")
     use_reranking: bool = Field(False, description="Utiliser le reranking pour améliorer les résultats")
-    include_quantitative: bool = Field(True, description="Inclure les données quantitatives")
+    include_quantitative: Optional[bool] = Field(True, description="Inclure les données quantitatives")
     session_id: Optional[str] = Field(None, description="ID de session pour récupérer l'historique des messages")
     model_config = ConfigDict(
         json_schema_extra={
@@ -116,6 +119,7 @@ class QueryResponse(BaseModel):
     total_time: float = Field(..., description="Temps total de la génération")
     metadata: Dict = Field(..., description="Métadonnées de la requête")
     timestamp: str = Field(..., description="Horodatage de la réponse")
+
 class QueryCompareResponse(BaseModel):
     responses: List[QueryResponse]
     total_time: float = Field(..., description="Temps total de la génération")
@@ -387,6 +391,71 @@ async def query_rag(request: QueryRequest):
     response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
     return response
 
+@app.post("/api/query/rag/tutorial",
+          response_model=QueryResponse,
+          tags=["Query"])
+async def query_rag_tutorial(request: QueryRequest):
+    """
+    Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
+    permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
+    de QueryResponse
+    """
+    # Vérifier que le RAG est initialisé
+    if rag_pipeline is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
+        )
+    try:
+        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
+
+        # On obtient ici un resource_id, on veut le document_id correspondant
+        doc_id = request.rag_monodocument_id
+        if request.rag_monodocument_id:
+            doc_id = get_document_id_from_resource_id(await get_db_connection(), request.rag_monodocument_id)
+
+        # On calcule normalement la réponse du RAG
+        # QueryResponse
+        response = await query_rag(request)
+
+        prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question)
+        best_50_chunks = await database.get_top_k_similar_chunks_qdrant(
+            prompt_embeddings,
+            "LD-mistral-mistral-embed-1024",
+            50,
+            doc_id,
+            True,
+            True
+        )
+        print(type(prompt_embeddings))
+        doc_embeddings = [chunk["embedding"] for chunk in best_50_chunks]
+        print("doc_embeddings", type(doc_embeddings), f"size: {len(doc_embeddings)}")
+        all_embedings = [prompt_embeddings] + doc_embeddings
+
+        umap_response = await api_visualization.compute_umap_projection(api_visualization.UMAPRequest(
+            embeddings=all_embedings,
+            random_state=42
+        ))
+
+        #projected_embeddings: List[List[float]] = Field(..., description="2D/3D projected coordinates")
+        # le premier contient la projection des embeddings du prompt
+        tutorial_metadata = {
+            "prompt_projection": umap_response.projected_embeddings[0],
+            "best_chunks": best_50_chunks,
+            "chunk_projections": umap_response.projected_embeddings[1:],
+
+        }
+        response.metadata["tutorial_metadata"] = tutorial_metadata
+        return response
+
+
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Erreur lors du traitement"
+        )
+
 
 @app.post("/api/questions/recommend",
           response_model=List[Dict],
@@ -575,6 +644,9 @@ async def query_single_doc_rag(request: QueryRequest):
                                         interaction=rag_interaction)
     response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
     return response
+
+
+
 @app.post("/api/sessions/questions/init/{document_id}",
           response_model=SessionStatus)
 async def init_question_session(document_id: int,
@@ -941,6 +1013,87 @@ async def get_documents_list():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la récupération des documents: {str(e)}"
         )
+
+
+# Modèle pour la génération de questions à partir d'un texte
+class QASingleRequest(BaseModel):
+    """Modèle de requête pour générer des questions à partir d'un texte"""
+    message: Optional[str] = Field(None, description="Message ou instruction optionnel")
+    document: str = Field(..., description="Texte du document/chunk sur lequel générer des questions", min_length=10)
+    num_questions: int = Field(3, description="Nombre de questions à générer", ge=1, le=10)
+    model: Optional[str] = Field("mistral-small", description="Modèle LLM à utiliser")
+
+
+class QASinglePair(BaseModel):
+    """Une paire question-réponse"""
+    question: str = Field(..., description="Question générée")
+    answer: str = Field(..., description="Réponse générée")
+
+
+class QASingleResponse(BaseModel):
+    """Réponse avec liste de questions générées"""
+    QA_list: List[QASinglePair] = Field(default_factory=list, description="Liste des paires question-réponse")
+    model_used: str = Field(..., description="Modèle LLM utilisé")
+    generation_time: float = Field(..., description="Temps de génération en secondes")
+
+
+@app.post("/api/qa-single", response_model=QASingleResponse, tags=["Query"])
+async def generate_qa_single(request: QASingleRequest):
+    """
+    Génère des questions avec réponses à partir d'un texte donné.
+    Utilise l'agent QA pour créer des questions basées sur le contenu.
+    
+    Args:
+        request: QASingleRequest avec document, num_questions et model
+        
+    Returns:
+        QASingleResponse avec la liste des questions générées
+    """
+    from agents.qa_single_agent import get_qa_agent
+    import time
+    
+    start_time = time.time()
+    
+    try:
+        # Extraire les informations de la requête
+        document_text = request.document
+        num_questions = request.num_questions
+        model_name = request.model or "mistral-small"
+        
+        # Définir provider et model
+        provider_model = model_name.split("/") if "/" in model_name else ["mistral", model_name]
+        provider = provider_model[0] if len(provider_model) > 0 else "mistral"
+        model = provider_model[1] if len(provider_model) > 1 else model_name
+
+        qa_list, error = await generate_questions_single_answer_for_chunk(
+            chunk_content=document_text,
+            chunk_id="",
+            document_id="",
+            num_questions=num_questions,
+            model_name=model_name
+        )
+        # Calculer le temps d'exécution
+        generation_time = time.time() - start_time
+
+        # Formater la réponse
+        qa_pairs = [
+            QASinglePair(question=qa.question, answer=qa.answer)
+            for qa in qa_list.QA_list
+        ]
+
+        return QASingleResponse(
+            QA_list=qa_pairs,
+            model_used=model_name,
+            generation_time=generation_time
+        )
+        
+    except Exception as e:
+        print(f"Erreur lors de la génération de questions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la génération de questions: {str(e)}"
+        )
+
 
 # Pydantic model for Question response
 class QuestionResponse(BaseModel):

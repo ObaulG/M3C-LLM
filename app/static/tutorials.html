@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLMAgents - Tutoriels</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="rag_visualization.css">
+    <script src="https://cdn.plot.ly/plotly-3.7.0.min.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Style CSS pour la zone de texte -->
+    <style>
+      .prompt-container {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .prompt-input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 16px;
+        resize: vertical;
+      }
+
+      .submit-button {
+        padding: 10px 15px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        align-self: flex-start;
+      }
+
+      .submit-button:hover {
+        background-color: #0056b3;
+      }
+
+      /* Style des tooltips */
+  .tooltip {
+    display: inline-block;
+    cursor: help;
+    position: relative;
+    color: #007BFF;
+    font-weight: bold;
+    margin-left: 5px;
+  }
+
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: #555;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Style des paramètres */
+  .settings {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .setting-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .setting-label {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  .setting-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  /* Style du sélecteur de modèle */
+  .model-selector {
+    margin-top: 15px;
+  }
+
+  .model-select {
+    width: 100%;
+    height: 120px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .selected-models {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .selected-model-badge {
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  /* Style du bouton et de la zone de texte */
+  .prompt-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .prompt-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 16px;
+    resize: vertical;
+  }
+
+  .submit-button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: flex-start;
+  }
+
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #007BFF;
+    animation: spin 1s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+    </style>
+    <script src="chatFunctions.js"></script>
+    <script src="rag_tutorial.js"></script>
+</head>
+<body>
+<div class="main_container">
+  <div class="container">
+      <!-- Header -->
+      <div class="header">
+          <div class="header-main">
+              <h1>🏠 LLMAgents - Tutoriels</h1>
+          </div>
+          <div class="nav-links">
+              <a href="index.html" class="nav-link">Index</a>
+              <a href="tutorials.html" class="nav-link active">Explications</a>
+              <a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
+              <a href="question_session.html" class="nav-link">Chatbot Inversé</a>
+              <a href="rag_visualization.html" class="nav-link">Visualisation RAG</a>
+              <a href="questions_management.html" class="nav-link">Gestion Q/R</a>
+          </div>
+      </div>
+
+      <div class="section" id="accueil">
+        <h2 class="section-title">📚 Le fondement des IA génératives</h2>
+        Les IA génératives sont les outils logiciels basés sur l'architecture Transformers (2017), un modèle de réseau de neurones très avancé,
+        avec une quantité colossale de paramètres de fonctionnement.
+        En effet, dès le début des années 2010, les réseaux de neurones se sont montrés plus performants que les modèles sémantiques classiques
+        (Mikolov, 2013).
+          <h3>Les tokens</h3>
+          a première étape à considérer dans l'utilisation d'un modèle de langage est celle du découpage du texte en morceaux, en
+        <i>tokens</i>. Le texte est découpé en mots, sous-mots voire caractères qu'on appelle
+        <b>tokens</b>, et chacun reçoit un identifiant numérique. Dans la figure <a href="#fig:tiktokenizer">1</a>, on remarque ainsi que plusieurs mots sont composés de plusieurs tokens, car ces derniers réapparaissent dans d'autres mots
+        <footnote>
+            <a href="https://github.com/openai/tiktoken">https://github.com/openai/tiktoken</a>
+        </footnote>.
+    </p>
+
+    <p>
+        Chaque token est représenté par un identifiant numérique unique. L'ensemble des tokens utilisé dans le corpus forme alors le « vocabulaire » du modèle de langage. À l'instar du <i>bit</i>, ces tokens sont les éléments atomiques des séquences de textes traités par l'ordinateur.
+    </p>
+
+    <figure id="fig:tiktokenizer">
+        <figcaption>Visualisation du découpage en <i>tokens</i>. Les nombres correspondent aux identifiants des tokens, dans l'ordre d'apparition.</figcaption>
+
+        <div style="margin-bottom: 20px;">
+            <img src="img/tiktokenizer-example-2.png" alt="Exemple de tokenization avec text-davinci-003">
+            <img src="img/tiktokenizer-example-text-da-vinci003-ids.png" alt="Identifiants des tokens pour text-davinci-003">
+            <figcaption>
+                <i>Tokenization</i> avec le <i>tokenizer</i> du modèle <code>text-davinci-003</code> (GPT-3.5).
+            </figcaption>
+        </div>
+
+        <div>
+            <img src="img/tiktokenizer-example-gpt4o.png" alt="Exemple de tokenization avec GPT4o">
+            <img src="img/tiktokenizer-example-gpt4o-ids.png" alt="Identifiants des tokens pour GPT4o">
+            <figcaption>
+                <i>Tokenization</i> avec le <i>tokenizer</i> de GPT4o.
+            </figcaption>
+        </div>
+    </figure>
+        <h3> Les bases du modèle de langage</h3>
+        <p>
+    Initialement, les modèles de langages étaient statistiques. Ils consistaient à établir les statistiques d'apparition des mots dans les documents étudiés, et de considérer que ce sont les probabilités d'apparition. Par exemple, si on souhaite estimer la probabilité d'apparition
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>P</mi><mo>(</mo><mi>S</mi><mo>)</mo>
+    </math>
+    de la phrase
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>S</mi>
+    </math>
+    « <i>Je veux manger</i> », on obtiendra la valeur suivante :
+</p>
+
+<p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mi>P</mi><mo>(</mo><mi>S</mi><mo>)</mo>
+        <mo>=</mo>
+        <mi>P</mi><mo>(</mo><mi>J</mi><mi>e</mi><mo>,</mo><mi>veux</mi><mo>,</mo><mi>manger</mi><mo>)</mo>
+        <mo>=</mo>
+        <mi>P</mi><mo>(</mo><mi>J</mi><mi>e</mi><mo>)</mo>
+        <mo>×</mo>
+        <mi>P</mi><mo>(</mo><mi>veux</mi><mo>)</mo>
+        <mo>×</mo>
+        <mi>P</mi><mo>(</mo><mi>manger</mi><mo>)</mo>
+    </math>
+</p>
+
+<p>
+    Ce modèle naïf est un modèle dit <i>unigram</i> : la probabilité d'apparition d'un mot ne dépend pas des autres mots présents. Pour ajouter du contexte, on peut plutôt étudier les bi-grammes, les suites de deux mots. Deux <i>tokens</i> <code>&lt;s&gt;</code> et <code>&lt;e&gt;</code> sont introduits, représentant respectivement le début et la fin d'une séquence. Les probabilités deviennent alors conditionnelles :
+</p>
+
+<p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mi>P</mi><mo>(</mo><mi>S</mi><mo>)</mo>
+        <mo>=</mo>
+        <mi>P</mi><mo>(</mo><mi>J</mi><mi>e</mi><mo>|</mo><mo>⟨</mo><mi>s</mi><mo>⟩</mo><mo>)</mo>
+        <mo>×</mo>
+        <mi>P</mi><mo>(</mo><mi>veux</mi><mo>|</mo><mi>J</mi><mi>e</mi><mo>)</mo>
+        <mo>×</mo>
+        <mi>P</mi><mo>(</mo><mi>manger</mi><mo>|</mo><mi>veux</mi><mo>)</mo>
+        <mo>×</mo>
+        <mi>P</mi><mo>(</mo><mo>⟨</mo><mi>e</mi><mo>⟩</mo><mo>|</mo><mi>manger</mi><mo>)</mo>
+    </math>
+</p>
+
+<p>
+    De manière générale, en notant
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>x</mi>
+    </math>
+    une séquence de <i>tokens</i>, où
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub><mi>x</mi><mi>t</mi></msub>
+    </math>
+    est le <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>t</mi>
+    </math>-ième <i>token</i> et
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub><mi>x</mi><mrow><mi>&#x3C;</mi><mi>t</mi></mrow></msub>
+    </math>
+    la séquence de <i>tokens</i> allant de
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub><mi>x</mi><mn>1</mn></msub>
+    </math>
+    à
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub><mi>x</mi><mrow><mi>t</mi><mo>-</mo><mn>1</mn></mrow></msub>
+    </math>, on peut modéliser l'approche autorégressive de la modélisation de langage, en calculant consécutivement les probabilités d'obtention du prochain token
+    <footnote>Claude Elwood Shannon. A mathematical theory of communication. The Bell system technical journal, 27(3), 1948.</footnote> :
+</p>
+
+<p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo>
+        <mo>=</mo>
+        <munderover>
+            <mo>∏</mo>
+            <mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow>
+            <mi>T</mi>
+        </munderover>
+        <mi>p</mi><mo>(</mo><msub><mi>x</mi><mi>t</mi></msub><mo>|</mo><msub><mi>x</mi><mrow><mi>&#x3C;</mi><mi>t</mi></mrow></msub><mo>)</mo>
+    </math>
+</p>
+
+<p>
+    L'ordinateur ne « comprend » pas la notion de lettre ou de mots, et encore moins le contexte dans lequel ces mots sont utilisés. Les seules entités qu'il peut manipuler aisément sont les nombres. Ainsi, le moyen naïf de représenter un <i>token</i> est le <i>one-hot encoding</i>. Le fonctionnement est le suivant : on dispose d'un vocabulaire de
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>n</mi>
+    </math>
+    tokens, numérotés de 1 à
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>n</mi>
+    </math>. Le token d'identifiant
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>i</mi>
+    </math>
+    sera alors représenté par un vecteur
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>V</mi>
+    </math>
+    de dimension
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>n</mi>
+    </math>, où toutes les valeurs seront 0, sauf
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub><mi>V</mi><mi>i</mi></msub>
+    </math>
+    qui sera 1.
+</p>
+
+<p>
+    Seulement, on se retrouve à la fin avec une matrice de taille
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msup><mi>n</mi><mn>2</mn></msup>
+    </math>, ce qui rend les opérations matricielles, dont la multiplication et l'inversion, très longues à réaliser. On souhaiterait donc pouvoir réduire le nombre de dimensions du vecteur de chaque token.
+</p>
+
+<figure>
+    <img src="img/one-hot-encoding.png" alt="Exemple de matrice one-hot" style="width: 100%;">
+    <figcaption>
+        Exemple de matrice <i>one-hot</i>, avec un vocabulaire de 15 mots différents. Les vecteurs sont représentés en colonnes. Dans le modèle <i>Bag-of-Words</i>, on compte donc les occurrences de chaque mot dans un seul vecteur.
+    </figcaption>
+</figure>
+      <h3> Les réseaux de neurones</h3>
+<p>
+    Un modèle populaire basé sur les réseaux de neurones a été proposé pour apprendre la représentation vectorielle des mots, inspirant de nombreux autres modèles. Ces réseaux se sont révélés plus efficaces que les méthodes traditionnelles pour capturer les régularités syntaxiques entre les mots. Pour éviter la malédiction de la dimensionnalité, chaque mot du vocabulaire est associé à un vecteur dans <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>ℝ</mi><mi>m</mi></msup></math>, et un réseau de neurones est utilisé pour prédire le mot suivant dans une séquence.
+</p>
+
+<p>
+    Les réseaux de neurones s'inspirent du fonctionnement du cerveau, en modélisant des neurones artificiels. Un neurone artificiel prend en entrée un vecteur de nombres <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>x</mi><mn>1</mn></msub>, <msub><mi>x</mi><mn>2</mn></msub>, ..., <msub><mi>x</mi><mi>n</mi></msub></math> et produit une sortie selon les étapes suivantes (voir figure ci-dessous) :
+</p>
+
+<ul>
+    <li>
+        <p>
+            Les entrées sont pondérées, combinées (généralement par une somme) et un biais <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>b</mi></math> est ajouté ;
+        </p>
+    </li>
+    <li>
+        <p>
+            Une fonction d'activation est appliquée. Parmi les plus courantes :
+        </p>
+        <ol>
+            <li>
+                <p>
+                    La fonction tangente hyperbolique :
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                        <mi>tanh</mi><mo>(</mo><mi>x</mi><mo>)</mo> <mo>=</mo> <mfrac><mn>2</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>-</mo><mn>2</mn><mi>x</mi></mrow></msup></mrow></mfrac> <mo>-</mo> <mn>1</mn>
+                    </math>
+                </p>
+            </li>
+            <li>
+                <p>
+                    La fonction ReLU (<i>Rectified Linear Unit</i>) :
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo> <mo>=</mo> <mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>x</mi><mo>)</mo>
+                    </math>
+                </p>
+            </li>
+        </ol>
+    </li>
+</ul>
+
+<figure>
+    <img src="img/neuralnet-example.png" alt="Schéma d'un neurone artificiel" style="width: 80%;">
+    <figcaption>Schéma des opérations réalisées par un neurone artificiel.</figcaption>
+</figure>
+
+<p>
+    Les réseaux de neurones peuvent comporter plusieurs couches, appelées couches cachées. Dans ce cas, la sortie d'une couche devient l'entrée de la couche suivante, chaque couche disposant de ses propres poids.
+</p>
+
+          <h3>A quoi ressemble alors le réseau d'un LLM</h3>
+
+          <p>
+              C'est un réseau de neurones gigantesque, avec un nombre de couches important. Dans le ChatGPT initial, la version GPT-3,
+              la couche Decoder, est répétée 96 fois. GPT-3 compte alors environ 175 milliards de paramètres
+          </p>
+          <figure>
+              <img src="img/architecture-gpt.png" alt="Architecture Transformer" style="width: 50%;">
+              <figcaption>Architecture GPT-1</figcaption>
+          </figure>
+      </div>
+      <div class="section">
+          <h2 class="section-title">📚 Concepts d'utilisation des IA génératives</h2>
+
+          <p>
+    Bien que les modèles de langage aient connu des avancées majeures grâce à l'architecture Transformer, il reste encore des marges de progression pour des tâches spécifiques. Collecter un grand nombre d'exemples pour chaque nouvelle tâche serait long et coûteux. Heureusement, les modèles de langage exploitent non seulement le <i>prompt</i> fourni, mais aussi les éléments précédents, appelés <i>contexte</i>. Cela permet un apprentissage directement dans le contexte, appelé <i>in-context learning</i>.
+</p>
+
+<p>
+    Selon le nombre d'exemples fournis dans le contexte, on distingue trois approches :
+</p>
+
+<ul>
+    <li><p><b>Zero-shot</b> : le modèle n'a aucun exemple pour réaliser la tâche. Ses paramètres ne sont pas modifiés.</p></li>
+    <li><p><b>One-shot</b> : le modèle reçoit un seul exemple, ce qui influence ses paramètres et donc la génération de texte.</p></li>
+    <li><p><b>Few-shot</b> : le modèle reçoit plusieurs exemples (généralement entre 10 et 100, selon les recommandations d'OpenAI et Mistral).</p></li>
+</ul>
+
+<p>
+    Une autre approche du <i>in-context learning</i> consiste à analyser les pertes à différents indices de <i>tokens</i> pour évaluer comment le modèle s'améliore à mesure qu'il reçoit plus de contexte. Les modèles récents sont capables de traiter des contextes très longs, ce qui est essentiel pour des tâches comme la recherche d'information, la génération de texte ou la compréhension de documents complexes.
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th><b>Modèle</b></th>
+            <th><b>Fenêtre</b></th>
+            <th><b>Modèle</b></th>
+            <th><b>Fenêtre</b></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>GPT-2 (2019)</td>
+            <td>1024</td>
+            <td>Mistral Small 25.01</td>
+            <td>32000</td>
+        </tr>
+        <tr>
+            <td>GPT-3 (2020)</td>
+            <td>2048</td>
+            <td>Mistral Large 24.02</td>
+            <td>32000</td>
+        </tr>
+        <tr>
+            <td>GPT-3.5-Turbo</td>
+            <td>16000</td>
+            <td>Mistral Large 24.07</td>
+            <td>131000</td>
+        </tr>
+        <tr>
+            <td>GPT-4</td>
+            <td>8192</td>
+            <td>Codestral-2405</td>
+            <td>32000</td>
+        </tr>
+        <tr>
+            <td>GPT-4-turbo</td>
+            <td>128000</td>
+            <td>Mistral 7B</td>
+            <td>32000</td>
+        </tr>
+        <tr>
+            <td>GPT-4o</td>
+            <td>128000</td>
+            <td>Mistral 8x7B</td>
+            <td>32000</td>
+        </tr>
+        <tr>
+            <td>o1</td>
+            <td>200000</td>
+            <td>Codestral 25.01</td>
+            <td>256000</td>
+        </tr>
+        <tr>
+            <td>o1-mini</td>
+            <td>128000</td>
+            <td>Mistral Large 24.11</td>
+            <td>131000</td>
+        </tr>
+        <tr>
+            <td>DeepSeek-R1</td>
+            <td>128000</td>
+            <td>T5 (2019)</td>
+            <td>512</td>
+        </tr>
+        <tr>
+            <td>LLaMa (2023)</td>
+            <td>2048</td>
+            <td>Llama 3.1</td>
+            <td>128000</td>
+        </tr>
+        <tr>
+            <td>Llama 2</td>
+            <td>4096</td>
+            <td>Llama 3.3</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Llama 3</td>
+            <td>8192</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+
+
+  </div>
+      <div class="section"><h2 class="section-title">📚 Le Retrieval-Augmented Generation</h2>
+          Le RAG consiste à partir d'un prompt utilisateur (en général une question) à consulter une base de documents
+          pour en rechercher les plus pertinents par rapport à la requête. On les ajoute ensuite au prompt.
+
+          <figure>
+              <img src="img/schema-rag-2.png" alt="Architecture Transformer" style="width: 80%;">
+              <figcaption>Schéma du pipeline du RAG dit "naïf".</figcaption>
+          </figure>
+
+          <ul>
+              <li>Le prompt est d'abord converti en embeddings.</li>
+              <li>Le vecteur obtenu est alors comparé avec la similarité cosinus avec les vecteurs correspondants de chaque document.
+                  On regarde ici l'angle formé par les deux vecteurs : plus les directions sont similaires, plus le score
+                  est élevé. On en garde un certain nombre</li>
+              <li>On concatène les documents au prompt de l'utilisateur: on dit qu'on l'augmente</li>
+              <li>On envoie le prompt augmenté et on retourne la réponse à l'utilisateur</li>
+          </ul>
+          <div class="prompt-container">
+            <label for="user-prompt">Entrez votre prompt :</label>
+            <textarea
+              id="user-prompt"
+              class="prompt-input"
+              placeholder="Exemple : Parle-moi du col de Teghime"
+              rows="3"
+            ></textarea>
+            <button id="submit-prompt" class="submit-button" onclick="launchRAGRequest()">Valider</button>
+          </div>
+
+          <!-- Paramètres RAG avec explications -->
+  <div class="settings">
+    <h3>⚙️ Paramètres de la requête</h3>
+    <div class="settings-grid">
+      <!-- RAG -->
+      <div class="setting-item">
+        <label class="setting-checkbox">
+          <input type="checkbox" id="useRAG" checked>
+          <span class="setting-label">
+            RAG
+            <span class="tooltip">?
+              <span class="tooltiptext">
+                Active/désactive le Retrieval-Augmented Generation.<br>
+                <strong>Si activé</strong> : Le système recherche des documents pertinents avant de générer une réponse.<br>
+                <strong>Si désactivé</strong> : Le modèle répond uniquement avec ses connaissances internes.
+              </span>
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Reranking -->
+      <div class="setting-item">
+        <label class="setting-checkbox">
+          <input type="checkbox" id="useReranking" checked>
+          <span class="setting-label">
+            Reranking
+            <span class="tooltip">?
+              <span class="tooltiptext">
+                Améliore la pertinence des documents récupérés.<br>
+                <strong>Si activé</strong> : Les documents sont reclassés par pertinence après la recherche initiale.
+              </span>
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Nombre de sources -->
+      <div class="setting-item">
+        <label class="setting-label">
+          Nb sources:
+          <input type="number" id="numSources" value="3" min="1" max="10" class="setting-input">
+          <span class="tooltip">?
+            <span class="tooltiptext">
+              Nombre de documents à récupérer et ajouter au prompt.<br>
+              <strong>Valeur recommandée</strong> : 3 à 5 pour un bon équilibre entre pertinence et coût.
+            </span>
+          </span>
+        </label>
+      </div>
+
+    </div>
+    <div class="model-selector">
+      <label for="model-select" class="model-selector-label">
+        Modèle(s) de langage
+        <span class="tooltip">?
+          <span class="tooltiptext">
+            Sélectionnez un ou plusieurs modèles pour générer la réponse.<br>
+            <strong>Conseil</strong> : Comparez les résultats entre modèles pour voir les différences !
+          </span>
+        </span>
+      </label>
+      <div class="model-select-container">
+        <select id="model-select" name="models" multiple class="model-select">
+          <optgroup label="Local">
+            <option value="ministral-3:3b">ministral-3b</option>
+            <option value="cas/ministral-8b-instruct-2410_q4km">ministral-8b-q4km</option>
+          </optgroup>
+          <optgroup label="Mistral">
+            <option value="ministral-3b-2410">ministral-3b-2410</option>
+            <option value="ministral-8b-2410">ministral-8b-2410</option>
+            <option value="open-mistral-7b">open-mistral-7b</option>
+            <option value="open-mistral-nemo">open-mistral-nemo</option>
+            <option value="mistral-tiny">mistral-tiny</option>
+            <option value="mistral-small">mistral-small</option>
+            <option value="mistral-medium">mistral-medium</option>
+            <option value="mistral-large-2411">mistral-large-2411</option>
+          </optgroup>
+          <optgroup label="Gemini">
+            <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+            <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+          </optgroup>
+          <optgroup label="Gemma">
+            <option value="gemma-3-1b-it">gemma-3-1b-it</option>
+            <option value="gemma-3-4b-it">gemma-3-4b-it</option>
+            <option value="gemma-3-12b-it">gemma-3-12b-it</option>
+            <option value="gemma-3-27b-it">gemma-3-27b-it</option>
+          </optgroup>
+        </select>
+        <div class="selected-models" id="selectedModels">
+          <span class="selected-model-badge">Aucun modèle sélectionné</span>
+        </div>
+      </div>
+    </div>
+  </div>
+          <div id="requestResponse">
+              <h2>Réponse donnée avec RAG</h2>
+
+              <div id="ragResponse">
+
+          </div>
+        <div id="plot-container">
+
+        </div>
+
+    </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -15,7 +15,7 @@ import pynvml
 
 from app.embedders.BaseEmbedder import BaseEmbedder
 from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection, \
-    get_resource_id_from_document_id
+    get_resource_id_from_document_id, get_chunk_embeddings_with_metadata_qdrant
 from embedders import get_embedder_instance
 
 # Listes des modèles (déjà définies)
@@ -133,7 +133,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                         sources: Optional[List[RAGSource]],
                         k: int = 3,
                         specified_document_id: Optional[int]=None,
-                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float]:
+                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float, Optional[float]]:
         """
         if preprocess_data does not contain the keys final_prompt and sources,
         then this function executes the preprocess.
@@ -150,8 +150,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
 
         return answer, sources, total_time, consumed_energy_Wh
 
+
     def _init_llm_instances(self, load_local:bool = False):
-        MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+        MISTRAL_API_KEY = "FnazLcbitTHAN4jSQt82sXusu2svW0hC"
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         for model_name in MISTRAL_MODELS:
             try:
@@ -382,6 +383,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             return augmented_prompt, top_k_chunks[:k]
         except Exception as e:
             raise ValueError(f"Erreur lors du prétraitement RAG : {e}")
+
 
     async def _invoke_llm(self, model: str, prompt) -> tuple[AIMessage, float]:
         """

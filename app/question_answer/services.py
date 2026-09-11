@@ -40,7 +40,8 @@ def create_question_generation_job(
     num_questions_per_doc: int = 3,
     model_name: str = "mistral-small",
     document_id: Optional[int] = None,
-    num_answers_per_question: int = 1
+    num_answers_per_question: int = 1,
+    chunk_id: Optional[int] = None
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -50,6 +51,7 @@ def create_question_generation_job(
         model_name: Nom du modèle LLM à utiliser
         document_id: ID du document spécifique à traiter (optionnel). Si None, traite tous les documents validés.
         num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
+        chunk_id: ID du chunk spécifique à traiter (optionnel). Prioritaire sur document_id.
         
     Returns:
         job_id: L'ID unique du job créé
@@ -62,7 +64,8 @@ def create_question_generation_job(
             "num_questions_per_doc": num_questions_per_doc,
             "model_name": model_name,
             "document_id": document_id,
-            "num_answers_per_question": num_answers_per_question
+            "num_answers_per_question": num_answers_per_question,
+            "chunk_id": chunk_id
         },
         total_documents=0  # sera mis à jour lors du traitement avec le nombre de chunks
     )
@@ -263,6 +266,7 @@ async def generate_questions_single_answer_for_chunk(
     model_name: str,
     max_retries: int = 2
 ) -> Tuple[qa_single_agent.QuestionAnswerList, Optional[str]]:
+    import instructor
     """
     Génère des questions avec une réponse unique pour un chunk spécifique avec retry.
     
@@ -292,7 +296,8 @@ async def generate_questions_single_answer_for_chunk(
             provider, model = tuple(model_name.split("/"))
             agent = qa_single_agent.get_qa_agent(model=model,
                                     provider=provider,
-                                    async_mode=False)
+                                    async_mode=False,
+                                    instructor_mode=instructor.Mode.JSON)
 
             input_schema = qa_single_agent.QuestionRequestInput(
                 message=f"",
@@ -302,10 +307,11 @@ async def generate_questions_single_answer_for_chunk(
             response = agent.run(input_schema)
             questions_generated = len(response.QA_list) if response else 0
             print(questions_generated, "questions/réponses générées")
-
+            print(type(response), response)
             return response, None
         except Exception as e:
             error_msg = str(e)
+            print(error_msg)
             if "rate limit" in error_msg.lower() or "429" in error_msg:
                 wait_time = min(2 ** attempt, 60)
                 print(f"Rate limit, attente {wait_time}s (tentative {attempt + 1}/{max_retries})")
@@ -321,7 +327,7 @@ async def generate_questions_single_answer_for_chunk(
 async def process_question_generation_job(job_id: str):
     """
     Traite un job de génération de questions en arrière-plan.
-    Génère des questions pour chaque chunk de chaque document validé, ou pour un document spécifique.
+    Génère des questions pour chaque chunk de chaque document validé, ou pour un document spécifique, ou pour un chunk spécifique.
     
     Args:
         job_id: L'ID du job à traiter
@@ -342,18 +348,42 @@ async def process_question_generation_job(job_id: str):
     # note: le provider est indiqué comme dans la syntaxe d'instructor
     model_name = parameters.get("model_name", "mistral/mistral-small")
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
+    chunk_id = parameters.get("chunk_id")  # ID du chunk spécifique (optionnel, prioritaire)
     num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
     
     errors = []
     progress = job.get("progress", {})
     processed_chunks = 0
 
-    # Récupérer tous les chunks des documents validés
-    async with await get_db_connection() as conn:
-        all_chunks = await database.get_all_text_chunks(conn, document_id)
-        total_chunks = len(all_chunks)
+    # Si un chunk_id spécifique est fourni, ne traiter que ce chunk
+    if chunk_id:
+        conn = await get_db_connection()
+        chunk = await database.get_chunk_by_id(conn, chunk_id)
+        await conn.close()
+        
+        if chunk:
+            all_chunks = [chunk]
+            total_chunks = 1
+        else:
+            # Chunk non trouvé, met à jour le job avec une erreur
+            errors.append(f"Chunk {chunk_id} introuvable")
+            update_question_generation_job(
+                job_id=job_id,
+                status="failed",
+                progress=progress,
+                processed_documents=0,
+                errors=errors,
+                error_message=f"Chunk {chunk_id} introuvable"
+            )
+            print(f"Chunk {chunk_id} introuvable, job {job_id} échoué")
+            return
+    else:
+        # Récupérer tous les chunks des documents validés ou d'un document spécifique
+        async with await get_db_connection() as conn:
+            all_chunks = await database.get_all_text_chunks(conn, document_id)
+            total_chunks = len(all_chunks)
     
-    print(f"{total_chunks} chunks à traiter..." + (f" (document {document_id})" if document_id else ""))
+    print(f"{total_chunks} chunks à traiter..." + (f" (chunk {chunk_id})" if chunk_id else (f" (document {document_id})" if document_id else "")))
     
     update_question_generation_job(
         job_id=job_id,

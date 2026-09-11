@@ -42968,5 +42968,56 @@
       "chunk 84606ee8-ce1d-495b-80c6-b4b2bc087956 (doc: 34): 'NoneType' object has no attribute 'QA_list'",
       "chunk 96187d66-c3fa-4903-9ec5-8152ee7df9bc (doc: 34): 'NoneType' object has no attribute 'QA_list'"
     ]
+  },
+  "39fa3d7b-2732-44aa-a5ea-25a0e64b9d4f": {
+    "job_id": "39fa3d7b-2732-44aa-a5ea-25a0e64b9d4f",
+    "job_type": "qa-generation",
+    "document_categories": [
+      "validated-documents"
+    ],
+    "status": "completed_with_errors",
+    "created_at": "2026-09-11T13:07:42.593877",
+    "updated_at": "2026-09-11T13:07:53.207219",
+    "parameters": {
+      "num_questions_per_doc": 2,
+      "model_name": "",
+      "document_id": 21,
+      "num_answers_per_question": 1,
+      "chunk_id": null
+    },
+    "progress": {
+      "1ee88a73-a6e9-47fc-83e4-41c8860a819d": {
+        "chunk_id": "1ee88a73-a6e9-47fc-83e4-41c8860a819d",
+        "document_id": "21",
+        "questions_generated": 0,
+        "questions_saved": 0,
+        "error": "'NoneType' object has no attribute 'QA_list'",
+        "status": "failed"
+      },
+      "a7d9f046-2a59-4a6f-8aa4-d47d3ca5bfd5": {
+        "chunk_id": "a7d9f046-2a59-4a6f-8aa4-d47d3ca5bfd5",
+        "document_id": "21",
+        "questions_generated": 0,
+        "questions_saved": 0,
+        "error": "'NoneType' object has no attribute 'QA_list'",
+        "status": "failed"
+      },
+      "bc945047-d070-4b72-b94d-9552313cadaf": {
+        "chunk_id": "bc945047-d070-4b72-b94d-9552313cadaf",
+        "document_id": "21",
+        "questions_generated": 0,
+        "questions_saved": 0,
+        "error": "'NoneType' object has no attribute 'QA_list'",
+        "status": "failed"
+      }
+    },
+    "error_message": null,
+    "total_documents": 0,
+    "processed_documents": 138,
+    "errors": [
+      "chunk 1ee88a73-a6e9-47fc-83e4-41c8860a819d (doc: 21): 'NoneType' object has no attribute 'QA_list'",
+      "chunk a7d9f046-2a59-4a6f-8aa4-d47d3ca5bfd5 (doc: 21): 'NoneType' object has no attribute 'QA_list'",
+      "chunk bc945047-d070-4b72-b94d-9552313cadaf (doc: 21): 'NoneType' object has no attribute 'QA_list'"
+    ]
   }
 }

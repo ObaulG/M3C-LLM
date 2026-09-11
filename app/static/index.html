@@ -458,16 +458,13 @@
                     <h1>🏠 LLMAgents - Portail M3C</h1>
                     <p class="subtitle">Système RAG pour l'analyse documentaire et la recherche intelligente</p>
                 </div>
-            </div>
-
-            <!-- Navigation -->
-            <div class="home-nav">
-                <ul>
-                    <li><a href="#accueil">🏠 Accueil</a></li>
-                    <li><a href="#interfaces">📱 Interfaces Utilisateur</a></li>
-                    <li><a href="#admin">⚙️ Administration</a></li>
-                    <li><a href="m3c-chatbot.html">💬 Chatbot</a></li>
-                </ul>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">Index</a>
+                    <a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
+                    <a href="question_session.html" class="nav-link">Chatbot Inversé</a>
+                    <a href="rag_visualization.html" class="nav-link">Visualisation RAG</a>
+                    <a href="questions_management.html" class="nav-link active">Gestion Q/R</a>
+                </div>
             </div>
 
             <!-- Description du projet -->
@@ -475,18 +472,11 @@
                 <h2 class="section-title">📚 À propos du projet LLMAgents</h2>
                 <div class="project-description">
                     <p>
-                        <strong>LLMAgents</strong> est une plateforme de recherche et d'analyse documentaire 
-                        utilisant la technologie <strong>RAG (Retrieval-Augmented Generation)</strong>. 
-                        Ce système combine la puissance des grands modèles de langage (LLM) avec une base de 
-                        connaissances structurée pour fournir des réponses précises et contextuelles.
-                    </p>
-                    <p>
-                        Développé dans le cadre des travaux de la <strong>M3C </strong>, ce projet permet d'interroger de manière intelligente un corpus de documents scientifiques,
-                        offrant ainsi un outil puissant pour la recherche académique et l'analyse de données.
+                        Bienvenue sur le site prototype de développement d'outils basés sur IA générative pour la M3C.
                     </p>
                     <p>
                         <strong>Objectif principal:</strong> Faciliter l'accès aux connaissances contenues dans les documents
-                        en permettant une recherche sémantique avancée et une interaction naturelle avec les données.
+                        en permettant une recherche sémantique et vectorielle avancée et une interaction naturelle avec les données.
                     </p>
                     <div class="technologies">
                         <span class="tech-tag">FastAPI</span>
@@ -494,8 +484,6 @@
                         <span class="tech-tag">ChromaDB</span>
                         <span class="tech-tag">Qdrant</span>
                         <span class="tech-tag">Solr</span>
-                        <span class="tech-tag">t-SNE</span>
-                        <span class="tech-tag">UMAP</span>
                         <span class="tech-tag">RAG</span>
                         <span class="tech-tag">LLM</span>
                     </div>
@@ -521,13 +509,6 @@
                             Interface principale de discussion avec le modèle LLM. Posez des questions en langage naturel 
                             et obtenez des réponses basées sur les documents indexés avec sources citées.
                         </p>
-                        <ul class="card-features">
-                            <li>Recherche sémantique avec RAG</li>
-                            <li>Reranking des résultats</li>
-                            <li>Multi-modèles LLM</li>
-                            <li>Visualisation des sources</li>
-                            <li>Historique de conversation</li>
-                        </ul>
                         <div class="card-actions">
                             <a href="m3c-chatbot.html" class="btn btn-primary">Accéder</a>
                             <button class="btn btn-secondary" onclick="showModal('chatbot-info')">En savoir +</button>
@@ -566,7 +547,7 @@
                             <h3>Recherche Solr</h3>
                         </div>
                         <p class="card-description">
-                            Interface de recherche sémantique avancée utilisant Apache Solr pour trouver 
+                            Interface de recherche sémantique avancée utilisant Apache Solr pour trouver
                             des informations précises dans le corpus documentaire.
                         </p>
                         <ul class="card-features">
@@ -630,135 +611,6 @@
                         </div>
                     </div>
 
-                    <!-- Historique Chatbot -->
-                    <div class="feature-card">
-                        <span class="category-badge category-user">Utilisateur</span>
-                        <div class="card-header">
-                            <div class="card-icon">📈</div>
-                            <h3>Historique Chatbot</h3>
-                        </div>
-                        <p class="card-description">
-                            Accédez à l'historique complet des sessions de chat. Consultez, recherchez et 
-                            analysez les conversations passées avec le chatbot.
-                        </p>
-                        <ul class="card-features">
-                            <li>Liste des sessions</li>
-                            <li>Recherche dans l'historique</li>
-                            <li>Export des conversations</li>
-                            <li>Filtrage par date</li>
-                            <li>Visualisation détaillée</li>
-                        </ul>
-                        <div class="card-actions">
-                            <a href="m3c-chatbot-history.html" class="btn btn-primary">Accéder</a>
-                            <button class="btn btn-secondary" onclick="showModal('history-info')">En savoir +</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Administration -->
-            <div class="section admin-section" id="admin">
-                <h2 class="section-title">
-                    ⚙️ Administration
-                    <span class="info-badge">4 interfaces d'administration</span>
-                </h2>
-                
-                <div class="cards-grid">
-                    <!-- Indexation -->
-                    <div class="feature-card">
-                        <span class="category-badge category-admin">Admin</span>
-                        <div class="card-header">
-                            <div class="card-icon">📚</div>
-                            <h3>Indexation</h3>
-                        </div>
-                        <p class="card-description">
-                            Gestion complète de l'indexation des documents. Ajoutez, supprimez et gérez 
-                            les documents à inclure dans la base de connaissances.
-                        </p>
-                        <ul class="card-features">
-                            <li>Ajout de documents</li>
-                            <li>Gestion des embeddings</li>
-                            <li>Suivi de l'indexation</li>
-                            <li>Statistiques détaillées</li>
-                            <li>Configuration avancée</li>
-                        </ul>
-                        <div class="card-actions">
-                            <a href="admin/indexation.html" class="btn btn-primary">Accéder</a>
-                            <button class="btn btn-secondary" onclick="showModal('indexation-info')">En savoir +</button>
-                        </div>
-                    </div>
-
-                    <!-- Administration Chatbot -->
-                    <div class="feature-card">
-                        <span class="category-badge category-admin">Admin</span>
-                        <div class="card-header">
-                            <div class="card-icon">🔧</div>
-                            <h3>Admin Chatbot</h3>
-                        </div>
-                        <p class="card-description">
-                            Configuration et gestion du chatbot. Paramétrez les modèles, les options 
-                            et les comportements du système.
-                        </p>
-                        <ul class="card-features">
-                            <li>Configuration des modèles</li>
-                            <li>Gestion des paramètres</li>
-                            <li>Suivi des performances</li>
-                            <li>Journalisation</li>
-                            <li>Tests de configuration</li>
-                        </ul>
-                        <div class="card-actions">
-                            <a href="admin/chatbot_admin.html" class="btn btn-primary">Accéder</a>
-                            <button class="btn btn-secondary" onclick="showModal('chatbot-admin-info')">En savoir +</button>
-                        </div>
-                    </div>
-
-                    <!-- Evaluation des messages -->
-                    <div class="feature-card">
-                        <span class="category-badge category-admin">Admin</span>
-                        <div class="card-header">
-                            <div class="card-icon">🎓</div>
-                            <h3>Évaluation Messages</h3>
-                        </div>
-                        <p class="card-description">
-                            Système d'évaluation des messages pour améliorer la qualité des réponses. 
-                            Analysez et notez les interactions pour optimiser le système.
-                        </p>
-                        <ul class="card-features">
-                            <li>Évaluation des réponses</li>
-                            <li>Analyse de qualité</li>
-                            <li>Feedback utilisateur</li>
-                            <li>Statistiques d'évaluation</li>
-                            <li>Amélioration continue</li>
-                        </ul>
-                        <div class="card-actions">
-                            <a href="admin/message_evaluator_admin.html" class="btn btn-primary">Accéder</a>
-                            <button class="btn btn-secondary" onclick="showModal('evaluation-info')">En savoir +</button>
-                        </div>
-                    </div>
-
-                    <!-- Generation de questions -->
-                    <div class="feature-card">
-                        <span class="category-badge category-admin">Admin</span>
-                        <div class="card-header">
-                            <div class="card-icon">✨</div>
-                            <h3>Génération Questions</h3>
-                        </div>
-                        <p class="card-description">
-                            Génération automatique de questions à partir des documents. Créez des 
-                            questionnaires et des évaluations basées sur le contenu indexé.
-                        </p>
-                        <ul class="card-features">
-                            <li>Génération automatique</li>
-                            <li>Création de quiz</li>
-                            <li>Personnalisation</li>
-                            <li>Export des questions</li>
-                            <li>Intégration RAG</li>
-                        </ul>
-                        <div class="card-actions">
-                            <a href="admin/questions_generation.html" class="btn btn-primary">Accéder</a>
-                            <button class="btn btn-secondary" onclick="showModal('questions-gen-info')">En savoir +</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -803,7 +655,19 @@
                     <li><strong>Visualisation:</strong> Affichage des sources citées avec leurs scores</li>
                 </ul>
             </div>
-            
+
+            <div class="modal-section">
+                <h3>⚙️ Fonctionnalités clés</h3>
+                <ul>
+                    <li><strong>RAG activable:</strong> Choisissez d'utiliser ou non la recherche de documents</li>
+                    <li><strong>Reranking:</strong> Améliore la pertinence des sources trouvées</li>
+                    <li><strong>Multi-modèles:</strong> Sélection de plusieurs modèles LLM (Mistral, etc.)</li>
+                    <li><strong>Nombre de sources:</strong> Contrôle du nombre de documents utilisés (1-20)</li>
+                    <li><strong>Historique:</strong> Accès à l'historique complet des échanges</li>
+                    <li><strong>Visualisation:</strong> Affichage des sources citées avec leurs scores</li>
+                </ul>
+            </div>
+
             <div class="modal-section">
                 <h3>🎯 Cas d'usage</h3>
                 <ul>
@@ -818,7 +682,6 @@
             <div class="modal-section">
                 <h3>🔗 Accès rapide</h3>
                 <p><a href="m3c-chatbot.html" class="btn btn-primary">Ouvrir l'interface</a></p>
-                <p><a href="m3c-chatbot-history.html">Voir l'historique des sessions</a></p>
             </div>
         </div>
     </div>

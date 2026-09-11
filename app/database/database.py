@@ -158,6 +158,7 @@ async def get_top_k_similar_chunks_qdrant(
     k: int = 3, 
     specified_document_id: int = None,
     with_payload: bool = True,
+    with_vectors: bool = False
 ) -> list:
     """
     Récupère les k chunks les plus similaires à un embedding donné.
@@ -194,6 +195,7 @@ async def get_top_k_similar_chunks_qdrant(
         limit=k,
         query_filter=query_filter,
         with_payload=with_payload,
+        with_vectors=with_vectors
     )
     results = results.points
 
@@ -207,7 +209,8 @@ async def get_top_k_similar_chunks_qdrant(
             "position_in_page": point.payload.get("position_in_page"),
             "token_count": point.payload.get("token_count"),
             "metadata": point.payload.get("metadata"),
-            "similarity": point.score
+            "similarity": point.score,
+            "embedding": point.vector
         }
         for point in results
     ]
@@ -747,6 +750,7 @@ async def get_all_text_chunks(conn, document_id: Optional[int]) -> List[Dict]:
             "character_count": row[4],
             "token_count": row[5],
             "document_id": row[6]} for row in rows]
+
 async def get_chunks_for_document(
     document_id: int,
     conn,
@@ -757,7 +761,7 @@ async def get_chunks_for_document(
     Valeurs correspondantes de chunking_strategy_id :
     1 - découpage en chunks de 2700 caractères et overlap de 400 caractères
     """
-
+    print("get_chunks")
     async with conn.cursor() as cur:
         await cur.execute("""
             SELECT id, content, num_page, position_in_page, character_count, token_count
@@ -773,6 +777,38 @@ async def get_chunks_for_document(
             "position_in_page": row[3],
             "character_count": row[4],
             "token_count": row[5]} for row in rows]
+
+async def get_chunk_by_id(conn, chunk_id: int) -> Optional[Dict]:
+    """
+    Récupère un chunk spécifique par son ID.
+    
+    Args:
+        conn: Connexion à la base de données
+        chunk_id: L'ID du chunk à récupérer
+        
+    Returns:
+        Dictionnaire avec les informations du chunk ou None si non trouvé
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT id, content, num_page, position_in_page, document_id, character_count, token_count
+            FROM text_chunks
+            WHERE id = %s
+            LIMIT 1
+        """, (chunk_id,))
+        row = await cur.fetchone()
+        if row:
+            return {
+                "id": row[0],
+                "content": row[1],
+                "num_page": row[2],
+                "position_in_page": row[3],
+                "document_id": row[4],
+                "character_count": row[5],
+                "token_count": row[6]
+            }
+        return None
+
 
 async def get_chunks_by_question_id(question_id: int, conn):
     """
@@ -1135,28 +1171,7 @@ async def get_resource_id_from_document_id(conn, document_id: int):
         await cur.execute("SELECT source_id FROM text_documents WHERE id = %s", (document_id,))
         result = await cur.fetchone()
         return result
-# NOTE: Fonction OBSOLÈTE - Utiliser get_chunk_embeddings_with_metadata_qdrant()
-# async def get_chunk_embeddings_with_metadata(
-#     conn,
-#     document_id: Optional[str] = None,
-#     limit: Optional[int] = None,
-#     with_text_content: Optional[bool] = False,
-#     model_name: str = "mistral-embed"
-# ) -> List[Dict[str, Any]]:
-    """
-    Récupère les chunks avec leurs embeddings et métadonnées.
 
-    Args:
-        conn: Connexion à la base de données PostgreSQL
-        document_id: Filtre optionnel par document ID
-        limit: Limite optionnelle du nombre de résultats
-        model_name: Nom du modèle d'embedding à utiliser
-
-    Returns:
-        Liste de dictionnaires contenant chunk_id, document_id, content, embedding,
-        num_page, position_in_page, token_count, metadata
-    """
-#     async with conn.cursor() as cur:
 
 
 # ============================================================================

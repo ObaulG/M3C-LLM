@@ -85,6 +85,128 @@
         .valid-documents-info h4 { color: #1976D2; margin-bottom: 10px; }
         .valid-documents-list { font-size: 13px; color: #555; line-height: 1.8; }
         .valid-documents-list span { display: inline-block; margin: 2px 0; }
+        .chunk-content-display {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .question-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .question-card .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .question-card .question-text {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .question-card .question-text editable {
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px dashed #ffc107;
+        }
+        .question-card .answer-text {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-top: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .question-card .answer-text editable {
+            background: #d1ecf1;
+            border: 1px dashed #17a2b8;
+        }
+        .question-card .validate-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        .question-card .validate-btn:hover {
+            opacity: 0.9;
+        }
+        .question-card .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: opacity 0.2s;
+            margin-left: 8px;
+        }
+        .question-card .delete-btn:hover {
+            opacity: 0.9;
+        }
+        .question-card .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .question-card textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        .question-card .editable-question {
+            min-height: 60px;
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        .question-card .editable-answer {
+            min-height: 100px;
+            background: #d1ecf1;
+            border-color: #17a2b8;
+        }
+        .question-meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+        }
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
     </style>
 </head>
@@ -147,10 +269,11 @@
                             <option value="">Modèle par défaut (mistral-small)</option>
                         <option value="mistral/mistral-tiny">Mistral Tiny</option>
                         <option value="mistral/mistral-small">Mistral Small</option>
-                        <option value="mistral/mistral-medium">Mistral Medium</option>
-                        <option value="mistral/mistral-large-2411">Mistral Large</option>
-                        <option value="mistral/ministral-3b-2410">MiniStral 3B</option>
-                        <option value="mistral/ministral-8b-2410">MiniStral 8B</option>
+                        <option value="mistral/mistral-medium-latest">Mistral Medium</option>
+                        <option value="mistral/mistral-large-2512">Mistral Large</option>
+                        <option value="mistral/ministral-3b-2512">MiniStral 3B</option>
+                        <option value="mistral/ministral-8b-2512">MiniStral 8B</option>
+                            <option value="mistral/ministral-14b-2512">MiniStral 14B</option>
                         <option value="mistral/open-mistral-7b">Open Mistral 7B</option>
                         <option value="mistral/open-mistral-nemo">Open Mistral Nemo</option>
                         <option value="ollama/gemma4:e2b">Gemma4 - E2B</option>
@@ -172,11 +295,39 @@
                         <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="chunkSelect">Chunk spécifique (optionnel)</label>
+                        <select id="chunkSelect" disabled>
+                            <option value="">Sélectionnez un document d'abord</option>
+                        </select>
+                        <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contenu du chunk sélectionné</label>
+                        <div id="chunkContentDisplay" class="chunk-content-display">
+                            Sélectionnez un chunk pour afficher son contenu...
+                        </div>
+                    </div>
+
                     <button class="btn" onclick="startQuestionGeneration()" id="generateBtn">
                         ✨ Générer des Questions
                     </button>
                     <button class="btn" onclick="refreshJobs()" id="refreshBtn" style="margin-left: 10px;">
                         🔄 Rafraîchir
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Questions Générées (En Attente de Validation)</h3>
+                    <div id="generatedQuestionsContainer">
+                        <p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>
+                    </div>
+                    <button class="btn" onclick="validateAllQuestions()" id="validateAllBtn" style="margin-top: 10px; display: none;">
+                        ✅ Valider Toutes les Questions
+                    </button>
+                    <button class="btn" onclick="exportActionsLogToCSV()" id="exportLogBtn" style="margin-top: 10px; display: none;">
+                        📥 Exporter le Journal CSV
                     </button>
                 </div>
 
@@ -207,27 +358,144 @@
         // Variables globales
         let currentJobId = null;
         let refreshInterval = null;
+        let currentDocumentId = null;
         
         // Fonction pour rafraîchir les statistiques
         async function refreshStats() {
             try {
                 const response = await fetch(QUESTIONS_API + '/valid-documents');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur API valid-documents:', response.status, errorText);
+                    alert('Erreur lors du chargement des documents. Voir la console pour plus de détails.');
+                    return;
+                }
+                
                 const data = await response.json();
+                
+                // Vérifier que nous avons des données
+                if (!data || !data.documents) {
+                    console.error('Aucune donnée de documents reçue:', data);
+                    alert('Aucun document validé trouvé.');
+                    return;
+                }
+                
                 document.getElementById('validDocsCount').textContent = data.count;
                 
                 const docsList = document.getElementById('validDocumentsList');
-                docsList.innerHTML = data.documents.map(doc => `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`).join('') || '<span>Aucun document validé</span>';
+                if (data.documents.length === 0) {
+                    docsList.innerHTML = '<span>Aucun document validé</span>';
+                } else {
+                    docsList.innerHTML = data.documents.map(doc => 
+                        `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`
+                    ).join('');
+                }
                 
                 // Remplir le sélecteur de documents avec les titres et document_id
                 const docSelect = document.getElementById('documentSelect');
                 let selectOptions = '<option value="">Tous les documents validés</option>';
+                
                 data.documents.forEach(doc => {
                     selectOptions += `<option value="${doc.document_id}">${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</option>`;
                 });
+                
                 docSelect.innerHTML = selectOptions;
+                
+                // Écouteur pour le changement de document
+                docSelect.onchange = async function() {
+                    const selectedValue = this.value;
+                    currentDocumentId = selectedValue ? parseInt(selectedValue) : null;
+                    await loadChunksForDocument(currentDocumentId);
+                };
+                
+                // Réinitialiser le sélecteur de chunks (le chargement se fera à la sélection d'un document)
+                resetChunkSelector();
+                
+                console.log('Documents chargés avec succès:', data.documents.length, 'documents');
             } catch (error) {
                 console.error('Erreur lors du chargement des documents validés:', error);
+                alert('Erreur lors du chargement des documents. Vérifiez la console pour plus de détails: ' + error.message);
             }
+        }
+        
+        // Fonction pour charger les chunks d'un document
+        async function loadChunksForDocument(documentId) {
+            const chunkSelect = document.getElementById('chunkSelect');
+            const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+            
+            if (!documentId) {
+                resetChunkSelector();
+                return;
+            }
+            
+            try {
+                chunkSelect.disabled = true;
+                chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
+                chunkContentDisplay.textContent = 'Chargement des chunks...';
+                
+                const response = await fetch(QUESTIONS_API + `/documents/${documentId}/chunks`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.chunks && data.chunks.length > 0) {
+                    let options = '<option value="">Tous les chunks du document</option>';
+                    
+                    data.chunks.forEach(chunk => {
+                        const preview = chunk.content.substring(0, 80).replace(/\s+/g, ' ');
+                        const displayText = `Chunk ${chunk.id} - Page ${chunk.num_page || 'N/A'} - ${preview}...`;
+                        
+                        // Encoder le contenu pour l'attribut data
+                        const encodedContent = encodeURIComponent(chunk.content);
+                        
+                        options += `<option value="${chunk.id}" data-content="${encodedContent}" data-preview="${displayText}">
+                            ${displayText}
+                        </option>`;
+                    });
+                    
+                    chunkSelect.innerHTML = options;
+                    chunkSelect.disabled = false;
+                    chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                    
+                    // Ajouter l'écouteur pour l'affichage du contenu
+                    chunkSelect.onchange = function() {
+                        const selectedOption = this.options[this.selectedIndex];
+                        const content = selectedOption.dataset.content;
+                        if (content) {
+                            chunkContentDisplay.textContent = decodeURIComponent(content);
+                        } else {
+                            chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                        }
+                    };
+                } else {
+                    chunkSelect.innerHTML = '<option value="">Aucun chunk disponible</option>';
+                    chunkSelect.disabled = true;
+                    chunkContentDisplay.textContent = 'Aucun chunk trouvé pour ce document.';
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des chunks:', error);
+                chunkSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                chunkSelect.disabled = true;
+                chunkContentDisplay.textContent = 'Erreur lors du chargement des chunks.';
+            }
+        }
+        
+        // Fonction pour réinitialiser le sélecteur de chunks
+        function resetChunkSelector() {
+            const chunkSelect = document.getElementById('chunkSelect');
+            const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+            
+            chunkSelect.innerHTML = '<option value="">Sélectionnez un document d\'abord</option>';
+            chunkSelect.disabled = true;
+            chunkContentDisplay.textContent = 'Sélectionnez un document puis un chunk...';
+            
+            // Retirer l'écouteur s'il existe
+            chunkSelect.onchange = null;
         }
         
         // Fonction pour rafraîchir la liste des jobs
@@ -358,11 +626,19 @@
             `;
         }
         
-        // Fonction pour lancer la génération de questions
+        // Fonction pour générer des questions et les stocker localement
         async function startQuestionGeneration() {
             const numQuestions = parseInt(document.getElementById('numQuestions').value) || 3;
             const modelName = document.getElementById('modelSelect').value;
             const documentId = document.getElementById('documentSelect').value;
+            const chunkId = document.getElementById('chunkSelect').value;
+            const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+            
+            // Vérifier qu'un chunk est sélectionné et que son contenu est disponible
+            if (!chunkId || chunkContent === 'Sélectionnez un chunk pour afficher son contenu...' || chunkContent === 'Sélectionnez un document puis un chunk...') {
+                alert('❌ Veuillez sélectionner un chunk avec du contenu valide.');
+                return;
+            }
             
             // Désactiver le bouton
             const generateBtn = document.getElementById('generateBtn');
@@ -377,19 +653,29 @@
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressText').textContent = '0%';
             
-            // Préparer la requête
-            const requestBody = {
-                num_questions_per_doc: numQuestions,
-                model_name: modelName
-            };
-            
-            // Ajouter document_id si un document spécifique est sélectionné
-            if (documentId) {
-                requestBody.document_id = parseInt(documentId);
+            try {
+                // Appeler l'API pour générer des questions sur ce chunk spécifique
+                // On utilise un endpoint direct pour générer des QA sur un document
+                const qa_agent_api = API_BASE + '/api/qa-single';
+                
+                // Confirmer avec l'utilisateur que nous allons générer des questions UNIQUEMENT pour ce chunk
+            const shouldProceed = confirm(`Vous allez générer ${numQuestions} question(s) UNIQUEMENT pour le chunk sélectionné.\n\nVoulez-vous continuer ?`);
+            if (!shouldProceed) {
+                generateBtn.disabled = false;
+                refreshBtn.disabled = false;
+                generateBtn.textContent = '✨ Générer des Questions';
+                loading.classList.remove('active');
+                return;
             }
             
-            try {
-                const response = await fetch(QUESTIONS_API + '/generate', {
+            const requestBody = {
+                message: `Génère exactement ${numQuestions} questions avec leurs réponses basées sur le texte suivant. ${chunkContent} Ne génère AUCUNE question en dehors de ce texte.`,
+                document: chunkContent,
+                num_questions: numQuestions,
+                model: modelName
+            };
+                
+                const response = await fetch(qa_agent_api, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -398,20 +684,48 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Erreur: ${response.status} - ${response.statusText}`);
+                    const errorText = await response.text();
+                    let errorMessage = `Erreur: ${response.status} - ${response.statusText}`;
+                    if (errorText) {
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            errorMessage = errorData.detail || errorMessage;
+                        } catch (e) {
+                            errorMessage = errorText || errorMessage;
+                        }
+                    }
+                    throw new Error(errorMessage);
                 }
                 
                 const data = await response.json();
-                currentJobId = data.job_id;
                 
-                // Message de succès
-                alert('✅ Génération lancée avec succès! Job ID: ' + data.job_id);
-                
-                // Démarrer le rafraîchissement automatique
-                startAutoRefresh();
+                // Vérifier que l'on a des questions
+                if (data && data.QA_list && data.QA_list.length > 0) {
+                    const newQuestions = data.QA_list.map((qa, index) => ({
+                        id: `local-${Date.now()}-${index}`,
+                        question: qa.question,
+                        answer: qa.answer,
+                        chunk_id: parseInt(chunkId),
+                        document_id: documentId ? parseInt(documentId) : null,
+                        model: modelName,
+                        created_at: new Date().toISOString(),
+                        validated: false,
+                        editable: true
+                    }));
+                    
+                    // Sauvegarder les questions en sessionStorage
+                    saveQuestionsToSession(newQuestions);
+                    
+                    // Afficher les questions générées
+                    renderGeneratedQuestions();
+                    
+                    alert(`✅ ${newQuestions.length} question(s) générée(s) et sauvegardée(s) localement!`);
+                } else {
+                    throw new Error('Aucune question générée par le modèle');
+                }
                 
             } catch (error) {
-                console.error('Erreur lors du lancement de la génération:', error);
+                console.error('Erreur lors de la génération:', error);
                 alert('❌ Erreur: ' + error.message);
             } finally {
                 generateBtn.disabled = false;
@@ -419,6 +733,275 @@
                 generateBtn.textContent = '✨ Générer des Questions';
                 loading.classList.remove('active');
             }
+        }
+        
+        // Fonction pour sauvegarder les questions dans le sessionStorage
+        function saveQuestionsToSession(newQuestions) {
+            let existingQuestions = JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+            existingQuestions = existingQuestions.concat(newQuestions);
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(existingQuestions));
+        }
+        
+        // Fonction pour récupérer les questions du sessionStorage
+        function getQuestionsFromSession() {
+            return JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+        }
+        
+        // Fonction pour supprimer une question du sessionStorage
+        function removeQuestionFromSession(questionId) {
+            let questions = getQuestionsFromSession();
+            questions = questions.filter(q => q.id !== questionId);
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(questions));
+        }
+        
+        // Fonction pour afficher les questions générées
+        function renderGeneratedQuestions() {
+            const container = document.getElementById('generatedQuestionsContainer');
+            const validateAllBtn = document.getElementById('validateAllBtn');
+            const exportLogBtn = document.getElementById('exportLogBtn');
+            const questions = getQuestionsFromSession();
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>';
+                validateAllBtn.style.display = 'none';
+                exportLogBtn.style.display = 'none';
+                return;
+            }
+            
+            validateAllBtn.style.display = 'inline-block';
+            
+            // Afficher le bouton d'export si des logs existent
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+            
+            let html = '<div class="questions-list">';
+            questions.forEach((q, index) => {
+                // Créer des IDs uniques pour les champs editables
+                const questionId = `edit-question-${q.id}`;
+                const answerId = `edit-answer-${q.id}`;
+                
+                html += `
+                    <div class="question-card" data-id="${q.id}" data-index="${index}">
+                        <div class="question-header">
+                            <strong>Question ${index + 1}</strong>
+                            <div>
+                                <button class="validate-btn" onclick="validateQuestion('${q.id}')">✅ Valider</button>
+                                <button class="delete-btn" onclick="deleteQuestion('${q.id}')">❌ Supprimer</button>
+                            </div>
+                        </div>
+                        <textarea id="${questionId}" class="editable-question" onchange="updateQuestionInSession('${q.id}', this.value, document.getElementById('${answerId}').value)">${escapeHtml(q.question)}</textarea>
+                        <textarea id="${answerId}" class="editable-answer" onchange="updateQuestionInSession('${q.id}', document.getElementById('${questionId}').value, this.value)">${escapeHtml(q.answer)}</textarea>
+                        ${q.chunk_id ? `<div class="question-meta">Chunk ID: ${q.chunk_id} | Document ID: ${q.document_id || 'N/A'} | Modèle: ${q.model || 'N/A'}</div>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Fonction pour mettre à jour une question dans le sessionStorage
+        function updateQuestionInSession(questionId, newQuestion, newAnswer) {
+            const questions = getQuestionsFromSession();
+            const updatedQuestions = questions.map(q => {
+                if (q.id === questionId) {
+                    return { ...q, question: newQuestion, answer: newAnswer };
+                }
+                return q;
+            });
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(updatedQuestions));
+        }
+        
+        // Fonction pour échapper le HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Fonction pour formater une ligne CSV
+        function formatCSVRow(data) {
+            return data.map(field => {
+                if (field === null || field === undefined) return '';
+                const stringField = String(field).replace(/"/g, '""');
+                if (stringField.includes(',') || stringField.includes('\n') || stringField.includes('"')) {
+                    return `"${stringField}"`;
+                }
+                return stringField;
+            }).join(',');
+        }
+        
+        // Fonction pour logger une action sur une question
+        function logQuestionAction(question, action) {
+            let logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            const logEntry = {
+                model: question.model || 'N/A',
+                document_id: question.document_id || 'N/A',
+                chunk_id: question.chunk_id || 'N/A',
+                question_text: question.question || '',
+                answer_text: question.answer || '',
+                action: action,
+                timestamp: new Date().toISOString()
+            };
+            logs.push(logEntry);
+            sessionStorage.setItem('question_actions_log', JSON.stringify(logs));
+            updateExportButtonVisibility();
+            return logEntry;
+        }
+        
+        // Fonction pour mettre à jour l'affichage du bouton d'export CSV
+        function updateExportButtonVisibility() {
+            const exportLogBtn = document.getElementById('exportLogBtn');
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            if (exportLogBtn) {
+                exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+            }
+        }
+        
+        // Fonction pour exporter le journal CSV
+        function exportActionsLogToCSV() {
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            if (logs.length === 0) {
+                alert('Aucune action à exporter.');
+                return;
+            }
+            const header = ['model', 'document_id', 'chunk_id', 'question_text', 'answer_text', 'action', 'timestamp'];
+            let csvContent = formatCSVRow(header) + '\n';
+            logs.forEach(log => {
+                const row = [
+                    log.model || '',
+                    log.document_id || '',
+                    log.chunk_id || '',
+                    log.question_text || '',
+                    log.answer_text || '',
+                    log.action || '',
+                    log.timestamp || ''
+                ];
+                csvContent += formatCSVRow(row) + '\n';
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `journal_actions_questions_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Fonction pour valider une question (la sauvegarder en BDD)
+        async function validateQuestion(questionId) {
+            if (!confirm('Valider cette question et la sauvegarder en base de données?')) {
+                return;
+            }
+            
+            const questions = getQuestionsFromSession();
+            const questionToSave = questions.find(q => q.id === questionId);
+            
+            if (!questionToSave) {
+                alert('Question introuvable');
+                return;
+            }
+            
+            try {
+                // Envoie la question à l'API pour la sauvegarder dans le backend
+                const response = await fetch(QUESTIONS_API + '/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: questionToSave.question,
+                        answers: [questionToSave.answer],
+                        chunk_id: questionToSave.chunk_id,
+                        model: questionToSave.model || 'local-generation',
+                        difficulty_level: 3
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur: ${response.status} - ${response.statusText}`);
+                }
+                
+                // Logger l'action de validation
+                logQuestionAction(questionToSave, 'VALIDATION');
+                
+                // Supprimer la question du localStorage
+                removeQuestionFromSession(questionId);
+                
+                // Rafraîchir l'affichage
+                renderGeneratedQuestions();
+                
+                alert('✅ Question validée et sauvegardée en base de données!');
+                
+            } catch (error) {
+                console.error('Erreur lors de la validation:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        // Fonction pour supprimer une question localement
+        function deleteQuestion(questionId) {
+            if (!confirm('Supprimer cette question de la file d\'attente?')) {
+                return;
+            }
+            
+            const questions = getQuestionsFromSession();
+            const questionToDelete = questions.find(q => q.id === questionId);
+            if (questionToDelete) {
+                logQuestionAction(questionToDelete, 'SUPPRESSION');
+            }
+            
+            removeQuestionFromSession(questionId);
+            renderGeneratedQuestions();
+        }
+        
+        // Fonction pour valider toutes les questions
+        async function validateAllQuestions() {
+            const questions = getQuestionsFromSession();
+            
+            if (questions.length === 0 || !confirm(`Valider TOUTES les ${questions.length} questions?`)) {
+                return;
+            }
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (const question of questions) {
+                try {
+                    const response = await fetch(QUESTIONS_API + '/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question: question.question,
+                            answers: [question.answer],
+                            chunk_id: question.chunk_id,
+                            model: question.model || 'local-generation',
+                            difficulty_level: 3
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                        logQuestionAction(question, 'VALIDATION');
+                    } else {
+                        errorCount++;
+                        console.error(`Erreur validation question ${question.id}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Erreur validation question ${question.id}:`, error);
+                }
+            }
+            
+            // Effacer toutes les questions du sessionStorage
+            sessionStorage.removeItem('unvalidated_questions');
+            renderGeneratedQuestions();
+            
+            alert(`✅ ${successCount} question(s) validées avec succès! ${errorCount > 0 ? `\n❌ ${errorCount} échec(s).` : ''}`);
         }
         
         // Fonction pour démarrer le rafraîchissement automatique
@@ -448,8 +1031,22 @@
         
         // Initialisation de la page
         document.addEventListener('DOMContentLoaded', () => {
-            refreshStats();
+            // Initialiser le sélecteur de documents
+            const docSelect = document.getElementById('documentSelect');
+            docSelect.innerHTML = '<option value="">Chargement des documents...</option>';
+            
+            // Charger les documents
+            refreshStats().then(() => {
+                console.log('Documents initialisés');
+            }).catch(error => {
+                console.error('Échec de l\'initialisation des documents:', error);
+                docSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+            
+            // Charger les jobs et les questions
             refreshJobs();
+            renderGeneratedQuestions();
+            updateExportButtonVisibility();
         });
         
         // Arrêter le rafraîchissement automatique lorsque la page est masquée

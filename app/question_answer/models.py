@@ -28,6 +28,10 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="ID du document spécifique à traiter. Si None, traite tous les documents validés (VALID_TEXT_RESOURCE_ID)."
     )
+    chunk_id: Optional[int] = Field(
+        default=None,
+        description="ID du chunk spécifique à traiter. Si fourni, prioritaire sur document_id."
+    )
 
 class QuestionGenerationResult(BaseModel):
     """Résultat de génération pour un document."""
