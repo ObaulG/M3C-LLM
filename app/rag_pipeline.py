@@ -152,7 +152,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
 
 
     def _init_llm_instances(self, load_local:bool = False):
-        MISTRAL_API_KEY = "FnazLcbitTHAN4jSQt82sXusu2svW0hC"
+        MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         for model_name in MISTRAL_MODELS:
             try:
