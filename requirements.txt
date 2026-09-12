@@ -1,4 +1,6 @@
 atomic_agents==2.7.5
+aiomysql
+qdrant_client
 faiss_cpu==1.10.0
 fastapi==0.136.0
 google-genai
@@ -20,10 +22,13 @@ openai==2.32.0
 pandas==3.0.2
 pdfplumber==0.11.7
 protobuf==7.34.1
+pynvml
+pysolr
 psycopg==3.3.2
 psycopg2==2.9.11
 pydantic==2.13.2
 python-dotenv==1.2.2
+pypdf
 rank_bm25==0.2.2
 Requests==2.33.1
 scikit_learn==1.8.0
@@ -36,3 +41,4 @@ transformers==5.1.0
 uvicorn==0.44.0
 
 opentsne
+jsonref

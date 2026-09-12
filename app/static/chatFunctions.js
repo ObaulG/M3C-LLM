@@ -87,16 +87,11 @@ function createResponseHeader(response) {
 function createSourceHeader(source, index) {
     const sourceHeader = createDivWithClass(`source-header`);
 
-    const docName = source.metadata.nom || source.metadata.source || 'N/A';
     const pageNumber = source.metadata.num_page || '?';
-
     // Extract document title from document_data if available
-    let documentTitle = 'N/A';
-    if (source.metadata.document_data && source.metadata.document_data.file_name) {
-        documentTitle = source.metadata.document_data.file_name;
-    }
-
-    sourceHeader.textContent = `${index + 1}. ${documentTitle} (page ${pageNumber}) (score: ${source.score_cossim.toFixed(3)})`;
+    let documentTitle = source.metadata.title ;
+    let documentAuthor = source.metadata.creator
+    sourceHeader.textContent = `${index + 1}. ${documentTitle} - ${documentAuthor} (page ${pageNumber}) (score: ${source.score_cossim.toFixed(3)})`;
 
     return sourceHeader;
 }
@@ -120,7 +115,7 @@ function createSourcesSection(response) {
 
 /**
  * Crée un bouton pour afficher le PDF d'une source
- * @param {Object} source - Source individuelle
+ * @param {Object} source - objet RagSource
  * @param {string} route - la route sur laquelle effectuer la requête
  * @returns {HTMLElement}
  */
@@ -129,37 +124,37 @@ function createShowPdfButton(source) {
     showPdfButton.textContent = 'Afficher le PDF';
 
     showPdfButton.onclick = () => {
-        // Try to get file name from document_data first, then fallback to existing metadata
-        const fileName = source.metadata.document_data?.file_name ||
-                        source.metadata.source || source.metadata.nom;
-        if (fileName) {
-            // Logique pour afficher le PDF (comme dans ton code original)
-            const divIframe = document.getElementById("pdf-display");
-            let pdfIframe = divIframe.querySelector('iframe');
-
-            if (!pdfIframe) {
-                pdfIframe = document.createElement('iframe');
-                divIframe.appendChild(pdfIframe);
-            }
-
-            const numPage = source.metadata.num_page;
-            const serverUrl = "http://localhost:8000";
-            let pdfUrl = `${serverUrl}/get_pdf?document_id=${encodeURIComponent(fileName)}`;
-
-            if (numPage !== undefined && numPage !== null) {
-                pdfUrl += `#page=${numPage}`;
-            }
-
-            pdfIframe.src = pdfUrl;
-            pdfIframe.width = '100%';
-            pdfIframe.height = '100%';
-            pdfIframe.style.border = 'none';
-            divIframe.style.display = "flex";
-        } else {
-            alert("Le nom du fichier source n'est pas disponible.");
+        // source.metadata contient resource_id, qui permet de récupérer le pdf.
+        const resource_id = source.metadata.resource_id
+        if (!resource_id) {
+            alert("L'identifiant permettant de récupérer le pdf est absent.");
         }
-    };
 
+        // Logique pour afficher le PDF
+        const divIframe = document.getElementById("pdf-display");
+        let pdfIframe = divIframe.querySelector('iframe');
+
+        if (!pdfIframe) {
+            pdfIframe = document.createElement('iframe');
+            divIframe.appendChild(pdfIframe);
+        }
+
+        const numPage = source.metadata.num_page;
+        const serverUrl = "http://localhost:8000";
+
+        // route vers la requête
+        let pdfUrl = `${serverUrl}/get_pdf/by_id?resource_id=${resource_id}`;
+
+        if (numPage !== undefined && numPage !== null) {
+            pdfUrl += `#page=${numPage}`;
+        }
+
+        pdfIframe.src = pdfUrl;
+        pdfIframe.width = '100%';
+        pdfIframe.height = '100%';
+        pdfIframe.style.border = 'none';
+        divIframe.style.display = "flex";
+    };
     return showPdfButton;
 }
 

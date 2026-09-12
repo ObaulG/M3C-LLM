@@ -35,6 +35,7 @@ def ensure_evaluation_csv():
     """Crée le fichier CSV avec les headers s'il n'existe pas, ou met à jour les headers si nécessaire."""
     file_path = Path(EVALUATION_CSV_PATH)
     if not file_path.exists():
+        print("evaluation file absent, creating it")
         with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=CSV_HEADERS)
             writer.writeheader()

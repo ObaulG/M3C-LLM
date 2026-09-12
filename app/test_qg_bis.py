@@ -111,7 +111,7 @@ if __name__ == '__main__':
             continue
 
         for question, answer in qas:
-            database.save_question_to_db(question, answer, chunk_id, conn)
+            database.save_question_to_db(question, [answer], chunk_id, conn)
             print(f"Question sauvegardée : {question[:50]}...")
 
     print("Génération et sauvegarde des questions terminées.")

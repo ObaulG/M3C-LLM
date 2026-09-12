@@ -13,7 +13,10 @@ import rank_bm25
 import database
 import pynvml
 
-from api_visualization import set_rag_pipeline
+from app.embedders.BaseEmbedder import BaseEmbedder
+from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection, \
+    get_resource_id_from_document_id, get_chunk_embeddings_with_metadata_qdrant
+from embedders import get_embedder_instance
 
 # Listes des modèles (déjà définies)
 MISTRAL_MODELS = [
@@ -39,9 +42,9 @@ class RetrievalResult(BaseModel):
 class RAGSource(BaseModel):
     """Modèle pour une source de document"""
     content: str = Field(..., description="Contenu du document")
-    score_cossim: Optional[float] = Field(..., description="Score de similarité cosinus obtenu")
-    score_bm25: Optional[float] = Field(..., description="Score BM25 obtenu")
-    metadata: Dict = Field(..., description="Métadonnées du document (titre, source, etc.)")
+    score_cossim: Optional[float] = Field(default=None, description="Score de similarité cosinus obtenu")
+    score_bm25: Optional[float] = Field(default=None, description="Score BM25 obtenu")
+    metadata: dict = Field(..., description="Métadonnées du document (titre, source, etc.)")
 
 class RAGPipeline:
 
@@ -65,18 +68,22 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
 """
 
     def __init__(self,
-                 load_local:bool = False):
+                 load_local:bool = False,
+                 embedder_name: Optional[str] = None):
         """
         Initialise le pipeline RAG v1
+        
+        Args:
+            load_local: Si True, charge les modèles locaux Ollama
+            embedder_name: le nom de l'embedder à utiliser. Si non fourni, charge l'embedder par défaut
         """
         print("\n" + "=" * 60)
         print("INITIALISATION RAG v1 (BASIQUE)")
         print("=" * 60)
         self.dict_llm: dict[str, BaseChatModel] = {}
         self._init_llm_instances(load_local=True)
-        self.embedder = MistralAIEmbeddings(model="mistral-embed")
-        self.embedder_name = "mistral-embed"
-        self.db_connection_factory = database.get_db_connection
+        
+        self.embedder = get_embedder_instance(embedder_name)
 
         # En effectuant le RAG avec k documents,
         # on multiplie le nombre de documents à collecter
@@ -106,6 +113,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 - float: The estimated energy consumption of the LLM request (local only) in Wh.
         """
         # Si chat_history est fourni, construire la liste complète des messages
+
+        #print(prompt)
         if 'chat_history' in kwargs and kwargs['chat_history']:
             messages = kwargs.pop('chat_history')
             messages.append({"role": "user", "content": prompt})
@@ -123,8 +132,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                         final_prompt: Optional[str],
                         sources: Optional[List[RAGSource]],
                         k: int = 3,
-                        specified_document_id: Optional[str]=None,
-                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float]:
+                        specified_document_id: Optional[int]=None,
+                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float, Optional[float]]:
         """
         if preprocess_data does not contain the keys final_prompt and sources,
         then this function executes the preprocess.
@@ -140,6 +149,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         answer, total_time, consumed_energy_Wh = await self.query_simple(final_prompt, model, **kwargs)
 
         return answer, sources, total_time, consumed_energy_Wh
+
 
     def _init_llm_instances(self, load_local:bool = False):
         MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -193,7 +203,12 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         """
         try:
             # Utilise le modèle d'embeddings déjà initialisé dans la classe
-            embeddings = self.embedder.embed_query(prompt)
+            # Si embedder est un BaseEmbedder, utiliser embed()
+            # Sinon, utiliser embed_query() pour compatibilité avec MistralAIEmbeddings
+            if hasattr(self.embedder, 'embed'):
+                embeddings = self.embedder.embed(prompt)
+            else:
+                embeddings = self.embedder.embed_query(prompt)
             return embeddings
         except Exception as e:
             raise ValueError(f"Erreur lors de la transformation du prompt en embeddings : {e}")
@@ -201,9 +216,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
     async def _retrieve_top_k_chunks_from_db(self,
                                        prompt_embeddings: List[float],
                                        k: int = 3,
-                                       specified_document_id: Optional[str] = None) -> List[RAGSource]:
+                                       specified_document_id: Optional[int] = None) -> List[RAGSource]:
         """
-        Recherche les k chunks les plus pertinents dans la base de données PostgreSQL,
+        Recherche les k chunks les plus pertinents dans la base de données Qdrant,
         en utilisant la similarité cosinus entre les embeddings.
 
         Args:
@@ -213,57 +228,65 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             List[RAGSource]: Liste de tuples (chunk, score) triés par pertinence.
         """
+        print(f"retrieve_top_k_chunks_from_db on document {specified_document_id}")
 
-        # c.chunk_id, \
-        #     c.document_id, \
-        #     c.content, \
-        #     c.num_page, \
-        #     c.position_in_page, \
-        #     c.token_count, \
-        #     c.metadata, \
-        #     1 - (ce.embedding <= > %s)
-        # AS
-        # similarity
-        print("retrieve_top_k_chunks_from_db")
-        aconn = await database.get_db_connection()
-        print(aconn)
-        try:
-            results = await database.get_top_k_similar_chunks_cossim(aconn,
-                                                                     embedding=prompt_embeddings,
-                                                                     model_name=self.embedder_name,
-                                                                     k=k,
-                                                                     specified_document_id=specified_document_id)
+        # voir app/indexing/services.py, fonction process_pdf_indexing_job etape 5
+        # TODO: est-ce qu'on va utiliser plusieurs collections, ou une seule ?
+        # pour l'instant on garde ce modèle de nom
+        collection_name = f"LD-{self.embedder.name}-{self.embedder.dimension}"
+        print(collection_name)
+        results = await database.get_top_k_similar_chunks_qdrant(embedding=prompt_embeddings,
+                                                                 collection_name=collection_name,
+                                                                 k=k,
+                                                                 specified_document_id=specified_document_id)
 
-            rag_sources = []
-            for row in results:
-                metadata = {
-                    "chunk_id": row["chunk_id"],
-                    "document_id": row["document_id"],
-                    "num_page": row["num_page"],
-                    "position_in_page": row["position_in_page"],
-                    "token_count": row["token_count"],
-                    # Ajouter d'autres métadonnées si nécessaire
-                }
-                # Fusionner les métadonnées existantes (JSON) avec les métadonnées extraites
-                if row["metadata"]:
-                    metadata.update(row["metadata"])
+        """
+        [
+        {
+            "chunk_id": point.payload.get("chunk_id"),
+            "document_id": point.payload.get("document_id"),
+            "content": point.payload.get("content"),
+            "num_page": point.payload.get("num_page"),
+            "position_in_page": point.payload.get("position_in_page"),
+            "token_count": point.payload.get("token_count"),
+            "metadata": point.payload.get("metadata"),
+            "similarity": point.score
+        }
+        for point in results
+    ]
+        """
 
-                # Ajouter les données du document aux métadonnées
-                document_data = await database.get_document_data_from_chunk_id(row["chunk_id"], aconn)
-                if document_data:
-                    metadata["document_data"] = document_data
+        # les données principales à transmettre sont toutes déjà présentes dans les points stockés dans la collection
+        # Qdrant. Dans le cas où on en voudrait plus, il faudra requêter la DB MySQL dans la table values.
 
-                rag_source = RAGSource(
-                    content=row["content"],
-                    score_cossim=row["similarity"],
-                    score_bm25=None,
-                    metadata=metadata
-                )
-                rag_sources.append(rag_source)
+        rag_sources = []
+        for row in results:
+            metadata = {
+                "chunk_id": row["chunk_id"],
+                "document_id": row["document_id"],
+                "num_page": row["num_page"],
+                "position_in_page": row["position_in_page"],
+                "token_count": row["token_count"],
+            }
+            if row["metadata"]:
+                metadata.update(row["metadata"])
 
-            return rag_sources
-        finally:
-            await aconn.close()
+            # on va requêter MySQL pour récupérer le nom, l'auteur et la date
+            # pour éviter un aller-retour supplémentaire avec l'utilisateur
+            async with await get_db_connection() as conn:
+                # il faut d'abord récupérer le resource id correspondant à ce document_id
+                resource_id = await get_resource_id_from_document_id(conn, metadata["document_id"])
+                document_data_dict = await get_resource_basic_metadata(conn, resource_id)
+                metadata.update(document_data_dict)
+
+            rag_source = RAGSource(
+                content=row["content"],
+                score_cossim=row["similarity"],
+                score_bm25=None,
+                metadata=metadata
+            )
+            rag_sources.append(rag_source)
+        return rag_sources
 
     def _build_augmented_prompt(self, initial_prompt: str, sources: List[RAGSource]) -> str:
         chunk_lines = [f"[Document {i}] : {sources[i].content}" for i in range(len(sources))]
@@ -314,9 +337,10 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         # Calculer les scores
         scores = model.get_scores(tokenized_query)
 
-        # Mettre à jour les scores des sources
+        # Mettre à jour les scores des sources.
+        # Note : score_bm25 reçoit ici un np.float64, qui doit être converti en float
         for i, source in enumerate(sources):
-            source.score_bm25 = scores[i]
+            source.score_bm25 = float(scores[i])
 
         # Trier par score décroissant
         sources.sort(key=lambda x: x.score_bm25, reverse=True)
@@ -327,7 +351,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                              prompt: str,
                              reranking: Optional[str],
                              k: int = 3,
-                             specified_document_id: Optional[str] = None) -> tuple[str, List[RAGSource]]:
+                             specified_document_id: Optional[int] = None) -> tuple[str, List[RAGSource]]:
         """
         Établit les étapes préliminaires du RAG :
         1. Transforme le prompt en embeddings.
@@ -359,6 +383,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             return augmented_prompt, top_k_chunks[:k]
         except Exception as e:
             raise ValueError(f"Erreur lors du prétraitement RAG : {e}")
+
 
     async def _invoke_llm(self, model: str, prompt) -> tuple[AIMessage, float]:
         """

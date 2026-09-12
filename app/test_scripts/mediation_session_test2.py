@@ -81,10 +81,10 @@ async def simulate_cultural_mediation_session(
             user_answer = input("Votre réponse: ").strip()
 
             # Évaluer la réponse
-            expected_answer = question['answers'][0]['content'] if question.get('answers') else "Réponse non disponible"
+            expected_answers = [answer['content'] for answer in question.get('answers', [])] or ["Réponse non disponible"]
             evaluation_input = EvaluateRequestInput(
                 question=question['content'],
-                expected_answer=expected_answer,
+                expected_answers=expected_answers,
                 user_answer=user_answer
             )
 

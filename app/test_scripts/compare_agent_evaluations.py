@@ -300,7 +300,7 @@ class AgentEvaluatorComparator:
         # Créer les tâches d'évaluation
         input_data = EvaluateRequestInput(
             question=question_text,
-            expected_answer=expected_answer,
+            expected_answers=[expected_answer],
             user_answer=user_answer
         )
 

@@ -223,7 +223,7 @@ class MediationSessionEvaluator:
             # Préparer l'évaluation
             evaluation_input = EvaluateRequestInput(
                 question=question['content'],
-                expected_answer=expected_answer,
+                expected_answers=[expected_answer],
                 user_answer=user_answer
             )
             

@@ -1,51 +1,61 @@
-from typing import Literal
+from typing import Literal, List
 from atomic_agents import BaseIOSchema, AtomicAgent, AgentConfig
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 from .mistral_client import get_mistral_client
+from .prompt_loader import get_prompt
 
 class MessageTypeRequestInput(BaseIOSchema):
     """
-    Schema pour l'entrée de l'agent de classification de message.
-    Contient la question initiale et la réponse de l'utilisateur.
+    Schema pour l'entree de l'agent de classification de message.
+    Contient la question initiale, les reponses de reference, et la reponse de l'utilisateur.
     """
     current_question: str
+    reference_answers: List[str]
     user_message: str
 
 class MessageTypeResult(BaseIOSchema):
     """
-    Résultat de la classification du message utilisateur.
+    Resultat de la classification du message utilisateur.
     """
-    message_type: Literal["réponse", "demande_renseignement", "hors_sujet", "autre"]  # Type de message
-    confidence: float  # Niveau de confiance (0.0 à 1.0)
-    explanation: str  # Explication de la classification
+    message_type: Literal["reponse", "demande_renseignement", "hors_sujet", "autre"]
+    confidence: float
+    explanation: str
 
-# provoque BEAUCOUP de catégorisation hors-sujet !
-message_type_system_prompt_generator = SystemPromptGenerator(
+
+# Fallback definition
+_FALLBACK_PROMPT = SystemPromptGenerator(
     background=[
-        "Cet agent est spécialisé dans la classification des messages utilisateurs en fonction de leur pertinence par rapport à une question initiale.",
-        "Il doit déterminer si le message est une réponse à la question ou hors sujet.",
-        "La classification doit être précise et justifiée.",
-        "réponse: répond à la question en cours, ou a un lien avec les éléments présents dans la question",
-        "hors-sujet: demande qui ne concerne pas de près ou de loin la question",
+        "Cet agent est specialise dans la classification des messages utilisateurs en fonction de leur pertinence par rapport a une question initiale.",
+        "Il doit determinant si le message est une reponse a la question ou hors sujet.",
+        "La classification doit etre precise et justifiee.",
+        "L'agent recoit la question, LES REPONSES DE REFERENCE attendues, et le message de l'utilisateur.",
+        "reponse: repond a la question en cours, ou contient suffisamment d'elements presents dans les reponses de reference",
+        "hors-sujet: demande qui ne concerne pas de pres ou de loin la question ou ses reponses attendues",
         "autre: tous les autres cas de figure"
     ],
     steps=[
-        "Lire la question initiale et le message de l'utilisateur.",
-        "Déterminer si le message est une réponse à la question (réponse) ou est hors_sujet.",
-        #"Déterminer si le message est une demande de précisions ou d'informations complémentaires (demande_renseignement).",
-        "Attribuer un niveau de confiance à la classification (0.0 = incertain, 1.0 = certain).",
+        "Lire la question initiale, LES REPONSES DE REFERENCE, et le message de l'utilisateur.",
+        "Determiner si le message est dans le même contexte que la question ou les reponses de reference. ",
+        "Comparer le message de l'utilisateur avec LES REPONSES DE REFERENCE pour detecter des elements communs.",
+        "Attribuer un niveau de confiance a la classification (0.0 = incertain, 1.0 = certain).",
         "Fournir une explication claire et concise de la classification.",
     ],
     output_instructions=[
-        #"Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'demande_renseignement', 'hors_sujet'.",
-"Le champ `message_type` doit être l'une des valeurs suivantes : 'réponse', 'hors_sujet'.",
-        "Une seule valeur à retourner.",
-        "Ne classe pas hors_sujet des messages qui ont un lien avec la question"
-        "Le champ `confidence` doit être un float entre 0.0 et 1.0.",
-        "Le champ `explanation` doit expliquer brièvement la raison de la classification.",
-        "La réponse doit être rédigée en français et adaptée au contexte.",
+        "Le champ message_type doit etre l'une des valeurs suivantes : 'reponse', 'hors_sujet'.",
+        "Une seule valeur a retourner.",
+        "Ne classe pas hors_sujet des messages qui contiennent des elements communs avec les reponses de reference",
+        "Exemple: si la question parle de transport ferroviaire et que les reponses de reference mentionnent train et TGV, et que la réponse utilisateur contient train, alors il est très probable que la réponse soit bien dans le contexte"
+        "Le champ confidence doit etre un float entre 0.0 et 1.0.",
+        "Le champ explanation doit expliquer brièvement la raison de la classification, en mentionnant quels elements du message correspondent aux reponses de reference.",
+        "La reponse doit etre redigee en francais et adaptee au contexte.",
     ],
 )
+
+# Charger depuis YAML
+message_type_system_prompt_generator = get_prompt("message_evaluator", "message_type")
+if message_type_system_prompt_generator is None:
+    message_type_system_prompt_generator = _FALLBACK_PROMPT
+
 
 def get_message_type_agent(model: str = "ministral-3b-2410"):
     client = get_mistral_client()

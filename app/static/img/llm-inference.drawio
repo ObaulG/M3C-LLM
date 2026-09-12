@@ -1,0 +1,22 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.2.2 Chrome/134.0.6998.178 Electron/35.1.2 Safari/537.36" version="26.2.2">
+  <diagram name="Page-1" id="7PTRSrUDzDidAeD8162B">
+    <mxGraphModel dx="1228" dy="736" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="NL3R5CO68_amTzldLOCc-1" value="&quot;Peux-tu faire mon devoir de programmation Java ?&quot;" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Fira Code;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="NL3R5CO68_amTzldLOCc-3" value="&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(102, 102, 255);&quot;&gt;&amp;lt;|im_start|&amp;gt;&lt;/font&gt;&lt;font style=&quot;background-color: rgb(255, 217, 102); color: rgb(0, 0, 0);&quot;&gt;user&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(215, 165, 85);&quot;&gt;&quot;&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(255, 173, 40);&quot;&gt;Pe&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(95, 243, 255);&quot;&gt;ux&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(145, 145, 145);&quot;&gt;-t&lt;/font&gt;&lt;font&gt;&lt;span style=&quot;background-color: rgb(131, 83, 114);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;u&lt;/font&gt;&lt;/span&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(147, 140, 255);&quot;&gt; faire&lt;/font&gt;&lt;font style=&quot;background-color: rgb(92, 166, 128); color: light-dark(rgb(0, 0, 0), rgb(62, 126, 93));&quot;&gt; mon&lt;/font&gt;&lt;font color=&quot;#ffd966&quot;&gt; &lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(255, 51, 153);&quot;&gt;de&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(185, 183, 255);&quot;&gt;voir&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(236, 255, 154);&quot;&gt; de&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(79, 182, 80);&quot;&gt; programm&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(141, 141, 141);&quot;&gt;ation&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(255, 102, 179);&quot;&gt; Java&lt;/font&gt;&lt;span style=&quot;background-color: rgb(223, 134, 178);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(223, 134, 178);&quot;&gt; ?&lt;/font&gt;&lt;font style=&quot;color: rgb(0, 0, 0); background-color: rgb(223, 134, 178);&quot;&gt;&quot;&lt;/font&gt;&lt;/span&gt;&lt;font&gt;&lt;span style=&quot;background-color: rgb(102, 255, 179);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;lt;|im_end|&amp;gt;&lt;/font&gt;&lt;/span&gt;&lt;font&gt;&lt;span style=&quot;background-color: rgb(236, 255, 154);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;lt;|im_start|&amp;gt;&lt;/font&gt;&lt;/span&gt;&lt;font style=&quot;background-color: rgb(51, 255, 153); color: rgb(0, 0, 0);&quot;&gt;assistant&lt;/font&gt;&lt;/font&gt;&lt;/font&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;" vertex="1" parent="1">
+          <mxGeometry x="243" y="80" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="NL3R5CO68_amTzldLOCc-5" value="100264, 882, 198, 1, 10407, 2249, 2442, 84, 20028, 1647, 409, 35573, 409, 56586, 367, 8102, 949, 1, 100265, 198, 100264, 78191, 198" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="243" y="170" width="167" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="NL3R5CO68_amTzldLOCc-6" value="&lt;font face=&quot;Fira Code&quot;&gt;Tokenizer GPT-3.5&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="240" y="230" width="170" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

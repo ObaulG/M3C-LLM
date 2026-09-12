@@ -1,0 +1,647 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="29.1.1">
+  <diagram name="Page-1" id="pvdxBTjRv-fuxWou70Ee">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="1" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-85" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000099;strokeWidth=2;dashed=1;dashPattern=1 2;connectable=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="205" width="690" x="-10" y="409.5" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-2" parent="1" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.user;strokeWidth=6;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="40" width="40" x="80" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-6" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="270.0000000000002" y="240" as="sourcePoint" />
+            <mxPoint x="130" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=3;dashed=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font style=&quot;font-size: 21px;&quot;&gt;LLM&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="180" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-68" parent="1" style="childLayout=tableLayout;recursiveResize=0;strokeColor=#7EA6E0;fillColor=light-dark(#7EA6E0,#405E00);shadow=1;fillStyle=auto;gradientColor=none;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="Assets" vertex="1">
+          <mxGeometry height="135" width="146" x="560" y="742.5" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-69" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="20" width="146" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-70" parent="9pfNNyVhi21YwPezqX8c-69" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;rowspan=1;colspan=3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i&gt;d1 Embeddings&lt;/i&gt;" vertex="1">
+          <mxGeometry height="20" width="146" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-71" parent="9pfNNyVhi21YwPezqX8c-69" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="20" width="50" x="48" as="geometry">
+            <mxRectangle height="20" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-72" parent="9pfNNyVhi21YwPezqX8c-69" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="20" width="48" x="98" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-73" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="146" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-74" parent="9pfNNyVhi21YwPezqX8c-73" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_1$$" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-75" parent="9pfNNyVhi21YwPezqX8c-73" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-76" parent="9pfNNyVhi21YwPezqX8c-73" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_n$$" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-77" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="146" y="39" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-78" parent="9pfNNyVhi21YwPezqX8c-77" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-3.5" vertex="1">
+          <mxGeometry height="20" width="48" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-79" parent="9pfNNyVhi21YwPezqX8c-77" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="50" x="48" as="geometry">
+            <mxRectangle height="20" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-80" parent="9pfNNyVhi21YwPezqX8c-77" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,1}$$" vertex="1">
+          <mxGeometry height="20" width="48" x="98" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-81" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="146" y="59" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-82" parent="9pfNNyVhi21YwPezqX8c-81" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="1.8" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-83" parent="9pfNNyVhi21YwPezqX8c-81" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-84" parent="9pfNNyVhi21YwPezqX8c-81" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,2}$$" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-85" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="146" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-86" parent="9pfNNyVhi21YwPezqX8c-85" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.24" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-87" parent="9pfNNyVhi21YwPezqX8c-85" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-88" parent="9pfNNyVhi21YwPezqX8c-85" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,3}$$" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-89" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="146" y="97" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-90" parent="9pfNNyVhi21YwPezqX8c-89" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-91" parent="9pfNNyVhi21YwPezqX8c-89" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-92" parent="9pfNNyVhi21YwPezqX8c-89" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="." vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-93" parent="9pfNNyVhi21YwPezqX8c-68" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="146" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-94" parent="9pfNNyVhi21YwPezqX8c-93" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.016" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-95" parent="9pfNNyVhi21YwPezqX8c-93" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-96" parent="9pfNNyVhi21YwPezqX8c-93" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,k}$$" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-99" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;fontSize=5;fontFamily=Fira Code;spacing=3;strokeColor=light-dark(#366881, #ededed);fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;h1 style=&quot;margin-top: 0px; line-height: 30%;&quot;&gt;&lt;p style=&quot;margin: 0px 0px 15px; padding: 0px; text-align: justify; font-weight: 400; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 5px; color: rgb(0, 0, 153);&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel ipsum at eros ornare fringilla pellentesque non nunc. Aenean pellentesque dictum arcu, ac congue ante interdum sit amet. Suspendisse sit amet metus et massa bibendum gravida at sit amet mi. Aliquam eget neque nec purus auctor gravida. Nullam tempus varius mi a dictum. Etiam in eleifend mauris, at condimentum mauris. Pellentesque rhoncus luctus lacus, sit amet accumsan sapien fringilla non. In interdum tristique neque, non suscipit enim venenatis id. Proin faucibus orci eu nunc laoreet molestie. Suspendisse lectus ante, porttitor et enim scelerisque, molestie vehicula magna. Praesent ornare tincidunt elit.&lt;/font&gt;&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 15px; padding: 0px; text-align: justify; font-weight: 400; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 5px; color: rgb(0, 0, 153);&quot;&gt;Praesent egestas accumsan erat vel elementum. Donec quis elementum ex. Cras tristique vestibulum felis ac fermentum. Aenean sit amet ligula dapibus, aliquam orci sit amet, lacinia magna. Vivamus ullamcorper convallis massa, a dictum ligula maximus vel. Nunc blandit ultrices mollis. Nam lacus lorem, egestas eget quam non, dapibus luctus augue. Pellentesque quis eleifend nunc, vel dignissim ante. Nullam mattis ex eu elementum efficitur. Nullam dictum lectus tellus, non porta erat pulvinar dapibus. Proin eget eros euismod metus sagittis tempor. Pellentesque at lectus pharetra, congue quam et, lobortis elit. Cras at gravida diam, nec pellentesque metus. Integer ac augue ac tellus aliquet porta. Morbi efficitur mauris lectus, sed pellentesque nisi semper vitae.&lt;/font&gt;&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 15px; padding: 0px; text-align: justify; font-weight: 400; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 5px; color: rgb(0, 0, 153);&quot;&gt;Phasellus neque diam, viverra quis nisi in, sodales sodales justo. Quisque pretium lorem ac dui lacinia, nec lobortis nunc fermentum. Morbi id est eros. Donec efficitur arcu est, ac dictum leo facilisis nec. Sed fringilla at lorem non pretium. Praesent et interdum augue. Phasellus non commodo dolor, vel pretium ligula. Integer luctus imperdiet tristique.&lt;/font&gt;&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 15px; padding: 0px; text-align: justify; font-weight: 400; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 5px; color: rgb(0, 0, 153);&quot;&gt;Sed finibus vehicula ante, id faucibus justo placerat id. Aliquam erat volutpat. Phasellus ultrices ex magna, sit amet euismod nisl malesuada id. Donec id elit mi. Nam ut augue ante. Sed ut euismod nisl. Nullam vitae sem ultrices, hendrerit metus egestas, sagittis est. Nunc mattis quam sit amet neque tristique dignissim. Duis sit amet arcu id augue sagittis malesuada ac vel orci. Sed vulputate pharetra elit, ut blandit velit vestibulum at. Nunc ipsum sem, suscipit eget diam a, vestibulum sagittis felis. Proin vel leo metus. Curabitur eget enim sagittis metus finibus tempus. Nam sodales sem ultrices erat malesuada aliquam.&lt;/font&gt;&lt;/p&gt;&lt;/h1&gt;" vertex="1">
+          <mxGeometry height="200" width="300" x="30" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-101" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000099;strokeWidth=2;dashed=1;dashPattern=1 2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="50" width="320" x="20" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-102" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000099;strokeWidth=2;dashed=1;dashPattern=1 2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="40" width="320" x="20" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-103" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000099;strokeWidth=2;dashed=1;dashPattern=1 2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="30" width="320" x="20" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-104" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000099;strokeWidth=2;dashed=1;dashPattern=1 2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="40" width="320" x="20" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-105" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;fontColor=#000099;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_1$$" vertex="1">
+          <mxGeometry height="30" width="20" x="340" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-108" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;fontColor=#000099;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_2$$" vertex="1">
+          <mxGeometry height="30" width="20" x="340" y="775" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-109" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;fontColor=#000099;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_3$$" vertex="1">
+          <mxGeometry height="30" width="20" x="340" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-110" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;fontColor=#000099;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$c_4$$" vertex="1">
+          <mxGeometry height="30" width="20" x="340" y="865" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-155" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i style=&quot;color: rgb(0, 0, 153);&quot;&gt;Document embedder&lt;/i&gt;&lt;div style=&quot;color: rgb(0, 0, 153);&quot;&gt;&lt;i&gt;(sBERT, BGE-M3...)&lt;/i&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="390" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-157" edge="1" parent="1" source="9pfNNyVhi21YwPezqX8c-105" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" target="9pfNNyVhi21YwPezqX8c-155" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="450" y="760" as="sourcePoint" />
+            <mxPoint x="500" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-158" edge="1" parent="1" source="9pfNNyVhi21YwPezqX8c-108" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=-0.01;entryY=0.384;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" target="9pfNNyVhi21YwPezqX8c-155" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="360" y="805" as="sourcePoint" />
+            <mxPoint x="400" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-159" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.667;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" target="9pfNNyVhi21YwPezqX8c-155" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="360" y="835" as="sourcePoint" />
+            <mxPoint x="389" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-161" edge="1" parent="1" source="9pfNNyVhi21YwPezqX8c-110" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;entryX=-0.015;entryY=0.867;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" target="9pfNNyVhi21YwPezqX8c-155" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="360" y="880" as="sourcePoint" />
+            <mxPoint x="390" y="865" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-162" edge="1" parent="1" source="9pfNNyVhi21YwPezqX8c-155" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" target="9pfNNyVhi21YwPezqX8c-81" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="550" y="805" as="sourcePoint" />
+            <mxPoint x="590" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-163" parent="1" style="childLayout=tableLayout;recursiveResize=0;strokeColor=#7EA6E0;fillColor=light-dark(#7EA6E0,#405E00);shadow=1;fillStyle=auto;gradientColor=none;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="Assets" vertex="1">
+          <mxGeometry height="136" width="146" x="387" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-164" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="20" width="146" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-165" parent="9pfNNyVhi21YwPezqX8c-164" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;rowspan=1;colspan=3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i&gt;Word embeddings&lt;/i&gt;" vertex="1">
+          <mxGeometry height="20" width="146" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-166" parent="9pfNNyVhi21YwPezqX8c-164" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="20" width="50" x="48" as="geometry">
+            <mxRectangle height="20" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-167" parent="9pfNNyVhi21YwPezqX8c-164" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="20" width="48" x="98" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-168" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="146" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-169" parent="9pfNNyVhi21YwPezqX8c-168" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;lorem&lt;/font&gt;" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-170" parent="9pfNNyVhi21YwPezqX8c-168" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-171" parent="9pfNNyVhi21YwPezqX8c-168" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;aliquam&lt;/font&gt;" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-172" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="146" y="39" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-173" parent="9pfNNyVhi21YwPezqX8c-172" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="1.5" vertex="1">
+          <mxGeometry height="20" width="48" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-174" parent="9pfNNyVhi21YwPezqX8c-172" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="50" x="48" as="geometry">
+            <mxRectangle height="20" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-175" parent="9pfNNyVhi21YwPezqX8c-172" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="2.4" vertex="1">
+          <mxGeometry height="20" width="48" x="98" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-176" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="146" y="59" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-177" parent="9pfNNyVhi21YwPezqX8c-176" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="3.8" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-178" parent="9pfNNyVhi21YwPezqX8c-176" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-179" parent="9pfNNyVhi21YwPezqX8c-176" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="1.7" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-180" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="146" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-181" parent="9pfNNyVhi21YwPezqX8c-180" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-2.7" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-182" parent="9pfNNyVhi21YwPezqX8c-180" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-183" parent="9pfNNyVhi21YwPezqX8c-180" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-0.16" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-184" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="146" y="97" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-185" parent="9pfNNyVhi21YwPezqX8c-184" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="48" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-186" parent="9pfNNyVhi21YwPezqX8c-184" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="50" x="48" as="geometry">
+            <mxRectangle height="20" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-187" parent="9pfNNyVhi21YwPezqX8c-184" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="." vertex="1">
+          <mxGeometry height="20" width="48" x="98" as="geometry">
+            <mxRectangle height="20" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-188" parent="9pfNNyVhi21YwPezqX8c-163" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="146" y="117" as="geometry" />
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-189" parent="9pfNNyVhi21YwPezqX8c-188" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.51" vertex="1">
+          <mxGeometry height="19" width="48" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-190" parent="9pfNNyVhi21YwPezqX8c-188" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="19" width="50" x="48" as="geometry">
+            <mxRectangle height="19" width="50" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-191" parent="9pfNNyVhi21YwPezqX8c-188" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="6.12" vertex="1">
+          <mxGeometry height="19" width="48" x="98" as="geometry">
+            <mxRectangle height="19" width="48" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9pfNNyVhi21YwPezqX8c-192" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;fillColor=#0050ef;strokeColor=#001DBC;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="460" y="912.5" as="sourcePoint" />
+            <mxPoint x="460" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-1" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="100" y="270" as="sourcePoint" />
+            <mxPoint x="100" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-2" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="358.89" y="400" as="sourcePoint" />
+            <mxPoint x="358.89" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-3" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Fira Code;fontColor=#000099;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_1$$" vertex="1">
+          <mxGeometry height="30" width="20" x="170" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-7" parent="1" style="text;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: justify; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Quelle est la couleur du cheval blanc d&#39;Henri IV ?&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="-60" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i style=&quot;color: rgb(0, 0, 153);&quot;&gt;Document embedder&lt;/i&gt;&lt;div style=&quot;color: rgb(0, 0, 153);&quot;&gt;&lt;i&gt;(sBERT, BGE-M3...)&lt;/i&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="30" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-13" parent="1" style="childLayout=tableLayout;recursiveResize=0;strokeColor=#7EA6E0;fillColor=light-dark(#7EA6E0,#405E00);shadow=1;fillStyle=auto;gradientColor=none;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="Assets" vertex="1">
+          <mxGeometry height="136" width="150" x="210" y="444.5" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-14" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="150" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-15" parent="teUMceuWlJ8hR5jWw1mt-14" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;rowspan=1;colspan=3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i&gt;Document Embeddings&lt;/i&gt;" vertex="1">
+          <mxGeometry height="19" width="150" as="geometry">
+            <mxRectangle height="19" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-16" parent="teUMceuWlJ8hR5jWw1mt-14" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="19" width="52" x="49" as="geometry">
+            <mxRectangle height="19" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-17" parent="teUMceuWlJ8hR5jWw1mt-14" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=#A7C942;align=center;fontStyle=1;fontColor=#FFFFFF;html=1;" vertex="1" visible="0">
+          <mxGeometry height="19" width="49" x="101" as="geometry">
+            <mxRectangle height="19" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-18" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="21" width="150" y="19" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-19" parent="teUMceuWlJ8hR5jWw1mt-18" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_1$$" vertex="1">
+          <mxGeometry height="21" width="49" as="geometry">
+            <mxRectangle height="21" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-20" parent="teUMceuWlJ8hR5jWw1mt-18" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="21" width="52" x="49" as="geometry">
+            <mxRectangle height="21" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-21" parent="teUMceuWlJ8hR5jWw1mt-18" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_n$$" vertex="1">
+          <mxGeometry height="21" width="49" x="101" as="geometry">
+            <mxRectangle height="21" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-22" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="18" width="150" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-23" parent="teUMceuWlJ8hR5jWw1mt-22" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.7" vertex="1">
+          <mxGeometry height="18" width="49" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-24" parent="teUMceuWlJ8hR5jWw1mt-22" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="18" width="52" x="49" as="geometry">
+            <mxRectangle height="18" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-25" parent="teUMceuWlJ8hR5jWw1mt-22" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,1}$$" vertex="1">
+          <mxGeometry height="18" width="49" x="101" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-26" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="22" width="150" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-27" parent="teUMceuWlJ8hR5jWw1mt-26" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-4.1" vertex="1">
+          <mxGeometry height="22" width="49" as="geometry">
+            <mxRectangle height="22" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-28" parent="teUMceuWlJ8hR5jWw1mt-26" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="22" width="52" x="49" as="geometry">
+            <mxRectangle height="22" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-29" parent="teUMceuWlJ8hR5jWw1mt-26" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,2}$$" vertex="1">
+          <mxGeometry height="22" width="49" x="101" as="geometry">
+            <mxRectangle height="22" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-30" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="18" width="150" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-31" parent="teUMceuWlJ8hR5jWw1mt-30" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="2.6" vertex="1">
+          <mxGeometry height="18" width="49" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-32" parent="teUMceuWlJ8hR5jWw1mt-30" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="18" width="52" x="49" as="geometry">
+            <mxRectangle height="18" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-33" parent="teUMceuWlJ8hR5jWw1mt-30" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,3}$$" vertex="1">
+          <mxGeometry height="18" width="49" x="101" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-34" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="150" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-35" parent="teUMceuWlJ8hR5jWw1mt-34" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="49" as="geometry">
+            <mxRectangle height="20" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-36" parent="teUMceuWlJ8hR5jWw1mt-34" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;flipH=1;flipV=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="52" x="49" as="geometry">
+            <mxRectangle height="20" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-37" parent="teUMceuWlJ8hR5jWw1mt-34" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="." vertex="1">
+          <mxGeometry height="20" width="49" x="101" as="geometry">
+            <mxRectangle height="20" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-38" parent="teUMceuWlJ8hR5jWw1mt-13" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="18" width="150" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-39" parent="teUMceuWlJ8hR5jWw1mt-38" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.01" vertex="1">
+          <mxGeometry height="18" width="49" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-40" parent="teUMceuWlJ8hR5jWw1mt-38" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="18" width="52" x="49" as="geometry">
+            <mxRectangle height="18" width="52" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-41" parent="teUMceuWlJ8hR5jWw1mt-38" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$x_{n,k}$$" vertex="1">
+          <mxGeometry height="18" width="49" x="101" as="geometry">
+            <mxRectangle height="18" width="49" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-55" parent="1" style="childLayout=tableLayout;recursiveResize=0;strokeColor=#7EA6E0;fillColor=light-dark(#7EA6E0,#405E00);shadow=1;fillStyle=auto;gradientColor=none;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="Assets" vertex="1">
+          <mxGeometry height="137" width="140" x="30" y="443.5" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-56" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="20" width="140" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-57" parent="teUMceuWlJ8hR5jWw1mt-56" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;rowspan=1;colspan=3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i&gt;request Embeddings&lt;/i&gt;" vertex="1">
+          <mxGeometry height="20" width="140" as="geometry">
+            <mxRectangle height="20" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-60" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="19" width="140" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-61" parent="teUMceuWlJ8hR5jWw1mt-60" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$r$$" vertex="1">
+          <mxGeometry height="19" width="140" as="geometry">
+            <mxRectangle height="19" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-64" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="140" y="39" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-65" parent="teUMceuWlJ8hR5jWw1mt-64" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-0.98" vertex="1">
+          <mxGeometry height="20" width="140" as="geometry">
+            <mxRectangle height="20" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-68" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="140" y="59" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-69" parent="teUMceuWlJ8hR5jWw1mt-68" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="-0.001" vertex="1">
+          <mxGeometry height="19" width="140" as="geometry">
+            <mxRectangle height="19" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-72" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="140" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-73" parent="teUMceuWlJ8hR5jWw1mt-72" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="0.025" vertex="1">
+          <mxGeometry height="19" width="140" as="geometry">
+            <mxRectangle height="19" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-76" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="140" y="97" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-77" parent="teUMceuWlJ8hR5jWw1mt-76" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="..." vertex="1">
+          <mxGeometry height="20" width="140" as="geometry">
+            <mxRectangle height="20" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-80" parent="teUMceuWlJ8hR5jWw1mt-55" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="20" width="140" y="117" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-81" parent="teUMceuWlJ8hR5jWw1mt-80" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="3.15" vertex="1">
+          <mxGeometry height="20" width="140" as="geometry">
+            <mxRectangle height="20" width="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-87" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="129.5" width="253" x="390" y="451" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-117" parent="1" style="childLayout=tableLayout;recursiveResize=0;strokeColor=#7EA6E0;fillColor=light-dark(#7EA6E0,#405E00);shadow=1;fillStyle=auto;gradientColor=none;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="Assets" vertex="1">
+          <mxGeometry height="78" width="117" x="367" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-118" parent="teUMceuWlJ8hR5jWw1mt-117" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" vertex="1">
+          <mxGeometry height="20" width="117" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-119" parent="teUMceuWlJ8hR5jWw1mt-118" style="connectable=0;recursiveResize=0;strokeColor=#001DBC;fillColor=#0050ef;align=center;fontStyle=1;fontColor=#ffffff;html=1;rowspan=1;colspan=3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;i&gt;best documents&lt;/i&gt;" vertex="1">
+          <mxGeometry height="20" width="117" as="geometry">
+            <mxRectangle height="20" width="117" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-122" parent="teUMceuWlJ8hR5jWw1mt-117" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="20" width="117" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-123" parent="teUMceuWlJ8hR5jWw1mt-122" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_{51}$$" vertex="1">
+          <mxGeometry height="20" width="117" as="geometry">
+            <mxRectangle height="20" width="117" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-124" parent="teUMceuWlJ8hR5jWw1mt-117" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=1;strokeColor=inherit;fillColor=#EAF2D3;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="117" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-125" parent="teUMceuWlJ8hR5jWw1mt-124" style="connectable=0;recursiveResize=0;strokeColor=#6c8ebf;fillColor=#dae8fc;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_3$$" vertex="1">
+          <mxGeometry height="19" width="117" as="geometry">
+            <mxRectangle height="19" width="117" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-126" parent="teUMceuWlJ8hR5jWw1mt-117" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;dropTarget=0;collapsible=0;recursiveResize=0;expand=0;fontStyle=0;strokeColor=inherit;fillColor=#ffffff;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="19" width="117" y="59" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-127" parent="teUMceuWlJ8hR5jWw1mt-126" style="connectable=0;recursiveResize=0;strokeColor=inherit;fillColor=inherit;fontStyle=0;align=center;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="$$d_{92}$$" vertex="1">
+          <mxGeometry height="19" width="117" as="geometry">
+            <mxRectangle height="19" width="117" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-132" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font&gt;&lt;b&gt;1&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="30" x="110" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-133" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font&gt;&lt;b&gt;2&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="30" x="110" y="379.5" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-134" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font&gt;&lt;b&gt;4&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="30" x="490" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-135" parent="1" style="text;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: justify; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;&lt;span&gt;Quelle est la couleur du cheval&lt;/span&gt; blanc d&#39;Henri IV ?&lt;/font&gt;&lt;/span&gt;&lt;div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 153), rgb(218, 218, 255)); font-size: 9px; background-color: transparent;&quot;&gt;Utilise ces documents :&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: justify; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;&lt;span&gt;d_51: &quot;Ce dernier lui aurait&lt;/span&gt; répondu qu&#39;il était blanc alors que bon, il était gris&quot;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: justify; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;&lt;span&gt;d_3: &quot;Le cheval blanc par contre&lt;/span&gt; semble se plier à la volonté de son maître.&quot;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: justify; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;d&lt;span&gt;_92: &quot;La raison de cette&lt;/span&gt; utilisation du Blanc de la robe des chevaux...&quot;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="190" width="200" x="460" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-137" parent="1" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/iconsweets2/40/winners.png;imageBackground=default;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="39" width="39" x="416" y="456" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-138" parent="1" style="text;whiteSpace=wrap;html=1;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;span style=&quot;color: rgb(0, 0, 153); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Ranking system&lt;/b&gt;&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="26" width="195" x="448" y="459.5" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-141" parent="1" style="text;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;div&gt;&lt;font color=&quot;#000099&quot;&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;cosine sim. : \(\frac{r \cdot d_k}{||r|| ||d_k||}\)&lt;/span&gt;&lt;/font&gt;&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); color: light-dark(rgb(0, 0, 153), rgb(218, 218, 255));&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); color: light-dark(rgb(0, 0, 153), rgb(218, 218, 255));&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="68" width="206" x="415" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-142" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font&gt;&lt;b&gt;3&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="30" x="503" y="414.5" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-144" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;font&gt;&lt;b&gt;5&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="30" x="190" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="teUMceuWlJ8hR5jWw1mt-145" parent="1" style="text;whiteSpace=wrap;html=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;font size=&quot;1&quot; color=&quot;#000099&quot;&gt;Le cheval d&#39;Henri IV était gris.&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot; size=&quot;1&quot; color=&quot;#000099&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;font size=&quot;1&quot; color=&quot;#000099&quot;&gt;Pour en savoir plus, consulter le&lt;/font&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot; size=&quot;1&quot; color=&quot;#000099&quot;&gt; &lt;/font&gt;&lt;font size=&quot;1&quot; color=&quot;#000099&quot;&gt;document 51&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="130" x="130" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FF3333;dashed=1;dashPattern=8 8;strokeWidth=2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="110" width="249.25" x="393.37" y="409.5" as="geometry" />
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FF3333;dashed=1;dashPattern=8 8;strokeWidth=2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="110" width="249.25" x="330" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FF3333;dashed=1;dashPattern=8 8;strokeWidth=2;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="110" width="249.25" x="-79.25" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=default;opacity=50;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="" vertex="1">
+          <mxGeometry height="60" width="144" x="180" y="289.5" as="geometry" />
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-4" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;strokeColor=#FF3333;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Fira Code;fontSize=12;fontColor=default;fillColor=none;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="235" y="319.13" as="sourcePoint" />
+            <mxPoint x="175" y="319.13" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sTMNqJUk5t9_O5SL88f5-5" parent="1" style="text;whiteSpace=wrap;html=1;align=center;fontColor=#FF3333;fontStyle=1;fontFamily=Fira Code;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DFira%2BCode;" value="&lt;div style=&quot;&quot;&gt;&lt;font size=&quot;1&quot;&gt;Optimisation possible&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="41" width="80" x="245" y="299" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

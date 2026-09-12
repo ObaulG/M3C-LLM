@@ -56,11 +56,10 @@ function populateDocumentList(documents) {
         const docItem = document.createElement('li');
         docItem.className = 'document-item';
         docItem.innerHTML = `
-            <h4>${doc.file_name}</h4>
-            <p>Taille: ${formatFileSize(doc.file_size)}</p>
-            <p>Créé: ${formatDate(doc.created_at)}</p>
+            <h4>${doc.title}</h4>
+            <p>Auteur(s): ${formatFileSize(doc.creator)}</p>
         `;
-        docItem.onclick = () => selectDocument(doc.document_id);
+        docItem.onclick = () => selectDocument(doc.document_id, doc.source_id);
         documentList.appendChild(docItem);
     });
 }
@@ -132,7 +131,7 @@ function saveSessionLocal(sessionStatus){
  *
  * @param {string}docId l'id du document.
  */
-async function selectDocument(docId) {
+async function selectDocument(docId, resId) {
     // Désélectionner tous les éléments
     const items = document.querySelectorAll('.document-item');
     items.forEach(item => item.classList.remove('active'));
@@ -143,7 +142,7 @@ async function selectDocument(docId) {
     currentDocument = docId;
 
     // Charger le PDF
-    const pdfUrl = `http://localhost:8000/get_pdf?document_id=${encodeURIComponent(docId)}`;
+    const pdfUrl = `http://localhost:8000/get_pdf/by_id?resource_id=${resId}`;
     loadPDF(pdfUrl);
 
     // Masquer le sélecteur et afficher le visualiseur
@@ -236,12 +235,14 @@ async function sendMessage() {
         console.error('Erreur:', error);
         addMessageToChat("Erreur lors de la communication avec le serveur.", 'erreur');
         sendButton.disabled = false;
+        loading.classList.remove('active');
     };
 
     if (!response.ok) {
         addMessageToChat("Erreur lors de la communication avec le serveur.", 'erreur');
         throw new Error(`HTTP error! status: ${response.status}`);
     }   sendButton.disabled = false;
+    loading.classList.remove('active');
 
     const sessionResponse = await response.json();
     console.log(sessionResponse);
@@ -263,6 +264,7 @@ async function sendMessage() {
     console.log(botResponseDiv);
     chatContainer.appendChild(botResponseDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+    loading.classList.remove('active');
 
     console.log("réponse du bot ajoutée dans le DOM");
 

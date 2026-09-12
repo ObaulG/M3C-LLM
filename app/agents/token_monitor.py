@@ -20,9 +20,40 @@ OutputSchema = TypeVar('OutputSchema', bound=BaseIOSchema)
 logger = logging.getLogger(__name__)
 
 
+def _count_user_input_tokens(agent: AtomicAgent[InputSchema, OutputSchema], 
+                             user_input: Optional[InputSchema]) -> int:
+    """
+    Compte les tokens du user_input.
+    
+    Args:
+        agent: L'agent AtomicAgent
+        user_input: L'entrée utilisateur à compter
+        
+    Returns:
+        Le nombre de tokens dans le user_input (0 si None)
+    """
+    if user_input is None:
+        return 0
+    
+    try:
+        counter = get_token_counter()
+        
+        # Convertir user_input en texte (comme dans _count_output_tokens)
+        if hasattr(user_input, 'model_dump'):
+            user_input_text = str(user_input.model_dump())
+        else:
+            user_input_text = str(user_input)
+            
+        return counter.count_text(agent.model, user_input_text)
+        
+    except Exception as e:
+        logger.warning(f"Impossible de compter les tokens du user_input: {e}")
+        return 0
+
+
 def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema], 
                      user_input: Optional[InputSchema] = None,
-                     method: str = "run") -> Tuple[OutputSchema, TokenCountResult, int]:
+                     method: str = "run") -> Tuple[OutputSchema, int, int]:
     """
     Enveloppe un appel SYNCHRONE à un agent AtomicAgent et retourne les informations de tokens.
     
@@ -34,7 +65,7 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
     Returns:
         Tuple contenant:
         - La réponse de l'agent (OutputSchema)
-        - Le résultat du comptage de tokens d'entrée (TokenCountResult)
+        - Le nombre total de tokens d'entrée (int)
         - Le nombre de tokens de sortie (int)
     
     Example:
@@ -48,13 +79,19 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
         # Utilisation avec la méthode run
         response, input_tokens, output_tokens = monitor_agent_call(qa_agent, user_input, "run")
         
-        print(f"Tokens d'entrée: {input_tokens.total}")
+        print(f"Tokens d'entrée: {input_tokens}")
         print(f"Tokens de sortie: {output_tokens}")
         print(f"Réponse: {response}")
         ```
     """
-    # Compter les tokens d'entrée avant l'appel
-    input_token_result = agent.get_context_token_count()
+    # Obtenir le contexte de base (system prompt + historique + outils)
+    base_context_result = agent.get_context_token_count()
+    
+    # Compter les tokens du user_input séparément
+    user_input_tokens = _count_user_input_tokens(agent, user_input)
+    
+    # Calculer le total des tokens d'entrée
+    input_tokens_total = base_context_result.total + user_input_tokens
     
     # Stocker la méthode originale
     original_method = getattr(agent, method)
@@ -68,12 +105,12 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
     # Compter les tokens de sortie
     output_tokens = _count_output_tokens(agent, response)
     
-    return response, input_token_result, output_tokens
+    return response, input_tokens_total, output_tokens
 
 
 async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema], 
                                 user_input: Optional[InputSchema] = None,
-                                method: str = "run_async") -> Tuple[OutputSchema, TokenCountResult, int]:
+                                method: str = "run_async") -> Tuple[OutputSchema, int, int]:
     """
     Enveloppe un appel ASYNCHRONE à un agent AtomicAgent et retourne les informations de tokens.
     
@@ -85,7 +122,7 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
     Returns:
         Tuple contenant:
         - La réponse de l'agent (OutputSchema)
-        - Le résultat du comptage de tokens d'entrée (TokenCountResult)
+        - Le nombre total de tokens d'entrée (int)
         - Le nombre de tokens de sortie (int)
     
     Example:
@@ -99,13 +136,19 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
         # Utilisation avec la méthode run_async
         response, input_tokens, output_tokens = await monitor_agent_call_async(qa_agent, user_input, "run_async")
         
-        print(f"Tokens d'entrée: {input_tokens.total}")
+        print(f"Tokens d'entrée: {input_tokens}")
         print(f"Tokens de sortie: {output_tokens}")
         print(f"Réponse: {response}")
         ```
     """
-    # Compter les tokens d'entrée avant l'appel
-    input_token_result = agent.get_context_token_count()
+    # Obtenir le contexte de base (system prompt + historique + outils)
+    base_context_result = agent.get_context_token_count()
+    
+    # Compter les tokens du user_input séparément
+    user_input_tokens = _count_user_input_tokens(agent, user_input)
+    
+    # Calculer le total des tokens d'entrée
+    input_tokens_total = base_context_result.total + user_input_tokens
     
     # Stocker la méthode originale
     original_method = getattr(agent, method)
@@ -119,7 +162,7 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
     # Compter les tokens de sortie
     output_tokens = _count_output_tokens(agent, response)
     
-    return response, input_token_result, output_tokens
+    return response, input_tokens_total, output_tokens
 
 
 def _count_output_tokens(agent: AtomicAgent[InputSchema, OutputSchema], 
@@ -193,21 +236,29 @@ def print_token_info(input_tokens: TokenCountResult, output_tokens: int,
     Affiche les informations de tokens de manière formatée.
     
     Args:
-        input_tokens: Résultat du comptage de tokens d'entrée
+        input_tokens: Résultat du comptage de tokens d'entrée (TokenCountResult ou int)
         output_tokens: Nombre de tokens de sortie
         method_name: Nom de la méthode appelée
     """
     print(f"\n{'='*60}")
     print(f"INFORMATIONS DE TOKENS - Méthode: {method_name}")
     print(f"{'='*60}")
-    print(f"Modèle: {input_tokens.model}")
-    print(f"Tokens d'entrée:")
-    print(f"  Total: {input_tokens.total}")
-    print(f"  Système: {input_tokens.system_prompt}")
-    print(f"  Historique: {input_tokens.history}")
-    print(f"  Outils: {input_tokens.tools}")
-    if input_tokens.max_tokens:
-        print(f"  Utilisation: {input_tokens.utilization:.1%} ({input_tokens.total}/{input_tokens.max_tokens})")
-    print(f"Tokens de sortie: {output_tokens}")
-    print(f"Total (entrée + sortie): {input_tokens.total + output_tokens}")
+    
+    # Si input_tokens est un int, afficher juste le total
+    if isinstance(input_tokens, int):
+        print(f"Tokens d'entrée: {input_tokens}")
+        print(f"Tokens de sortie: {output_tokens}")
+        print(f"Total (entrée + sortie): {input_tokens + output_tokens}")
+    else:
+        # Sinon, c'est un TokenCountResult, afficher toutes les informations
+        print(f"Modèle: {input_tokens.model}")
+        print(f"Tokens d'entrée:")
+        print(f"  Total: {input_tokens.total}")
+        print(f"  Système: {input_tokens.system_prompt}")
+        print(f"  Historique: {input_tokens.history}")
+        print(f"  Outils: {input_tokens.tools}")
+        if input_tokens.max_tokens:
+            print(f"  Utilisation: {input_tokens.utilization:.1%} ({input_tokens.total}/{input_tokens.max_tokens})")
+        print(f"Tokens de sortie: {output_tokens}")
+        print(f"Total (entrée + sortie): {input_tokens.total + output_tokens}")
     print(f"{'='*60}\n")

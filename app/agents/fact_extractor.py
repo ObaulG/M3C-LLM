@@ -2,6 +2,7 @@ from atomic_agents import AtomicAgent, AgentConfig, BaseIOSchema
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 
 from .mistral_client import get_mistral_client
+from .prompt_loader import get_prompt
 
 class FactExtractionInput(BaseIOSchema):
     """
@@ -17,7 +18,9 @@ class FactExtractionOutput(BaseIOSchema):
     """
     facts: list[str]
 
-system_prompt_generator = SystemPromptGenerator(
+
+# Fallback definition
+_FALLBACK_PROMPT = SystemPromptGenerator(
     background=[
         "This agent is specialized in extracting key facts from a given paragraph.",
     ],
@@ -34,6 +37,12 @@ system_prompt_generator = SystemPromptGenerator(
         "Write in French",
     ],
 )
+
+# Charger depuis YAML
+system_prompt_generator = get_prompt("fact_extractor", "default")
+if system_prompt_generator is None:
+    system_prompt_generator = _FALLBACK_PROMPT
+
 
 def get_fact_analyser_agent(model: str = "mistral-medium"):
     client = get_mistral_client()

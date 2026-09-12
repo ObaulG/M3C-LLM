@@ -83,7 +83,7 @@ async function loadDocuments() {
 
         const data = await response.json();
         allDocuments = data.documents;
-
+        console.log(allDocuments);
         if (allDocuments.length === 0) {
             documentListElement.innerHTML = '<li class="empty-state"><p>Aucun document disponible</p></li>';
             return;
@@ -95,9 +95,10 @@ async function loadDocuments() {
             li.className = 'document-item';
             li.dataset.documentId = doc.document_id;
             li.innerHTML = `
-                <h4>${doc.file_name}</h4>
+                <h4>${doc.title}</h4>
                 <p>Taille: ${formatFileSize(doc.file_size)}</p>
             `;
+            li.onclick = () => selectDocument(doc.document_id);
             documentListElement.appendChild(li);
         });
 
@@ -327,6 +328,7 @@ function displayQuestions(questions, count) {
         const chunkInfo = question.chunk_id ? `
             <div class="chunk-info">
                 Chunk ID: ${question.chunk_id}
+                ${question.num_page ? `<br>Page: ${question.num_page}` : ''}
             </div>
         ` : '';
 
@@ -385,27 +387,6 @@ function displayQuestions(questions, count) {
                         Vous pouvez quand même évaluer, mais vous devrez fournir une réponse de référence.
                     </p>
                 `}
-                <textarea 
-                    id="reference-answer-${question.question_id}" 
-                    class="evaluation-textarea" 
-                    placeholder="${hasReferenceAnswer ? 'Modifiez la réponse de référence si nécessaire...' : 'Saisissez une réponse de référence ici (optionnel)...'}"
-                    rows="2"
-                    style="margin-bottom: 10px; ${hasReferenceAnswer ? 'background: #e8f5e9;' : 'background: #fff3cd;'}"
-                >${hasReferenceAnswer ? escapeHtml(referenceAnswerText) : ''}</textarea>
-                
-                <!-- Sélecteur de source de réponse -->
-                <div class="evaluation-source-selector" style="margin: 10px 0;">
-                    <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                        <input type="radio" name="eval-source-${question.question_id}" value="llm" 
-                               checked onchange="switchEvaluationSource(${question.question_id}, 'llm')">
-                        <span>Évaluer la <strong>réponse LLM</strong></span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; margin-left: 20px;">
-                        <input type="radio" name="eval-source-${question.question_id}" value="user" 
-                               onchange="switchEvaluationSource(${question.question_id}, 'user')">
-                        <span>Évaluer une <strong>réponse utilisateur</strong></span>
-                    </label>
-                </div>
                 
                 <input type="hidden" id="eval-source-${question.question_id}" value="llm">
                 
@@ -423,7 +404,12 @@ function displayQuestions(questions, count) {
                     <button class="btn btn-save" onclick="saveEvaluation(${question.question_id})">
                         Sauvegarder l'évaluation
                     </button>
+                        <input type="radio" id="refAnswer" name="answer" value="refAnswer" />
+                    <label for="refAnswer">Réponse de référence</label>
+                    <input type="radio" id="allAnswers" name="answer" value="allAnswers" />
+                    <label for="allAnswers">Toutes les réponses</label>
                 </div>
+                
                 <div class="evaluation-result" id="eval-result-${question.question_id}" style="display: none;">
                     <p><strong>Score:</strong> <span id="score-${question.question_id}" class="score-display"></span>/10</p>
                     <p><strong>Feedback:</strong> <span id="feedback-${question.question_id}"></span></p>
@@ -529,6 +515,7 @@ function resetFilters() {
     document.getElementById('difficultyFilter').value = '';
     document.getElementById('limitFilter').value = '';
     document.getElementById('chunkFilter').value = '';
+    document.getElementById('modelFilter').value = '';
     
     if (currentDocumentId) {
         loadQuestions(currentDocumentId);
@@ -650,48 +637,6 @@ async function exportQuestions() {
 }
 
 /**
- * Bascule entre l'évaluation de la réponse LLM et une réponse utilisateur
- * @param {number} questionId - ID de la question
- * @param {string} source - Source de la réponse ('llm' ou 'user')
- */
-function switchEvaluationSource(questionId, source) {
-    const textarea = document.getElementById(`answer-to-evaluate-${questionId}`);
-    const llmAnswer = textarea.dataset.llmAnswer || '';
-    const hiddenInput = document.getElementById(`eval-source-${questionId}`);
-    const resultDiv = document.getElementById(`eval-result-${questionId}`);
-    const statusElement = document.getElementById(`eval-status-${questionId}`);
-    
-    if (source === 'llm') {
-        textarea.value = llmAnswer;
-        textarea.readOnly = true;
-        textarea.style.backgroundColor = '#f8f9fa';
-    } else {
-        textarea.value = '';
-        textarea.readOnly = false;
-        textarea.style.backgroundColor = '';
-    }
-    
-    if (hiddenInput) {
-        hiddenInput.value = source;
-    }
-    
-    // Effacer les résultats d'évaluation précédents quand on change de source
-    if (resultDiv) {
-        resultDiv.style.display = 'none';
-    }
-    if (statusElement) {
-        statusElement.innerHTML = '';
-    }
-    
-    // Réinitialiser les métadonnées d'évaluation
-    const scoreElement = document.getElementById(`score-${questionId}`);
-    if (scoreElement) {
-        scoreElement.dataset.evaluationType = '';
-        scoreElement.dataset.modelUsed = '';
-    }
-}
-
-/**
  * Sauvegarde un feedback humain sur une évaluation IA
  * @param {number} questionId - ID de la question
  */
@@ -793,6 +738,7 @@ async function saveMetaEvaluation(questionId) {
  * @param {number} questionId - ID de la question
  */
 async function evaluateAnswer(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
     const answerTextarea = document.getElementById(`answer-to-evaluate-${questionId}`);
     const userAnswer = answerTextarea.value.trim();
     
@@ -801,27 +747,33 @@ async function evaluateAnswer(questionId) {
         return;
     }
 
-    // Récupérer la réponse de référence
-    let expectedAnswer = '';
-    const hasReference = document.querySelector(`[data-question-id="${questionId}"]`)?.dataset.hasReference === 'true';
-    
-    if (hasReference && referenceAnswers[questionId]) {
-        expectedAnswer = referenceAnswers[questionId].response_answer;
-    } else {
-        // Essayer de récupérer depuis le champ de référence
-        const refAnswerTextarea = document.getElementById(`reference-answer-${questionId}`);
-        if (refAnswerTextarea) {
-            expectedAnswer = refAnswerTextarea.value.trim();
+    // Récupérer la réponse
+    const answerType = Array.from(document.querySelectorAll('input[name="answer"]'))
+  .find(radio => radio.checked)?.id;
+    let answerList = [];
+    let answerDivArray = questionCard.querySelectorAll('.answer-item');
+    console.log(answerType);
+    if (answerType == "refAnswer"){
+        const hasReference = document.querySelector(`[data-question-id="${questionId}"]`)?.dataset.hasReference === 'true';
+
+        if (hasReference && referenceAnswers[questionId]) {
+            answerList.push(referenceAnswers[questionId].response_answer);
+        } else {
+            answerList.push(answerDivArray[0].childNodes[1].textContent.trim());
         }
+    } else {
+        answerDivArray.forEach((answerDiv) => {
+            const responseText = answerDiv.childNodes[1].textContent.trim();
+            answerList.push(responseText);
+        });
     }
-    
-    if (!expectedAnswer) {
-        alert('Veuillez fournir une réponse de référence pour évaluer. Vous pouvez en saisir une dans le champ prévus à cet effet.');
+
+    if (answerList.length == 0) {
+        alert('Veuillez fournir une réponse de référence pour évaluer. Vous pouvez en saisir une dans le champ prévu à cet effet.');
         return;
     }
 
     // Récupérer la question depuis le DOM
-    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
     let questionText = '';
     if (questionCard) {
         const questionContent = questionCard.querySelector('.question-content');
@@ -844,7 +796,9 @@ async function evaluateAnswer(questionId) {
     }
 
     try {
-        console.log(`Évaluation: questionId=${questionId}, question="${questionText}", expected="${expectedAnswer.substring(0,50)}...", user="${userAnswer.substring(0,50)}..."`);
+        // Récupérer le modèle sélectionné
+        const modelSelect = document.getElementById('modelFilter');
+        const selectedModel = modelSelect ? modelSelect.value : '';
         const response = await fetch('/api/evaluate', {
             method: 'POST',
             headers: {
@@ -852,8 +806,9 @@ async function evaluateAnswer(questionId) {
             },
             body: JSON.stringify({
                 question: questionText,
-                expected_answer: expectedAnswer,
-                user_answer: userAnswer
+                expected_answers: answerList,
+                user_answer: userAnswer,
+                model: selectedModel
             })
         });
 
@@ -882,7 +837,7 @@ async function evaluateAnswer(questionId) {
         // Stocker les résultats pour la sauvegarde
         if (scoreElement) {
             scoreElement.dataset.evaluationType = 'auto';
-            scoreElement.dataset.modelUsed = 'mistral-small';
+            scoreElement.dataset.modelUsed = selectedModel || 'mistral-small';
         }
         
         // Afficher un message de succès

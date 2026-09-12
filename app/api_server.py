@@ -10,7 +10,7 @@ from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
 from unittest import case
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -37,6 +37,7 @@ from evaluation_feedback_logger import log_feedback_to_csv
 from agents.qa_agent import get_qa_agent
 from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent, \
     ListAgentEvaluationResult, AgentEvaluationResult
+from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
 from agents.message_evaluator_agent import get_message_type_agent, MessageTypeRequestInput
 from database.database import (get_db_connection,
                                get_all_documents,
@@ -44,7 +45,13 @@ from database.database import (get_db_connection,
                                get_question_by_id,
                                get_questions_by_ids,
                                get_chunks_by_question_id,
-                               get_chunks_by_question_ids)
+                               get_chunks_by_question_ids,
+                               insert_chunk_embeddings_batch_qdrant,
+                               insert_chunks,
+                               insert_session,
+                               VALID_TEXT_RESOURCE_ID, get_pdf_url_for_resource, get_pdf_name_from_resource_id,
+                               get_document_id_from_resource_id,
+                               M3C_BASE_URL)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -54,26 +61,42 @@ if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
 import torch
 import uvicorn
 
+import api_visualization
 from api_visualization import router as viz_router, set_rag_pipeline, set_embedding_model
+from app.embedders import create_mistral_embedder, get_default_embedder
+from app.embedders.router import router as embedders_router
 
 import json
 from datetime import datetime
-from pathlib import Path
 
-from api_visualization import router as viz_router
+# Import du router d'indexing
+from indexing.router import router as indexing_router
+
+# Import du router de génération de questions
+from question_answer.router import router as question_answer_router
+
+# Import du router pour l'évaluation des messages
+from question_answer.message_evaluator_router import router as message_evaluator_router
+
+# Import de la fonction de recommandation de questions
+from question_answer.services import recommend_questions_for_document, generate_questions_single_answer_for_chunk
+
+# Import du router Solr
+from solr.router import router as solr_router
 
 # Charger les variables d'environnement
 load_dotenv()
 # === MODELS PYDANTIC ===
 class QueryRequest(BaseModel):
     """ModÃ¨le de requête pour poser une question"""
-    question: str = Field(..., description="Question Ã  poser au chatbot", min_length=1)
+    question: str = Field(..., description="Question à poser au chatbot", min_length=1)
     models: List[str] = Field(..., description="ModÃ¨les utilisés pour la génération")
-    k: int = Field(3, description="Nombre de documents Ã  récupérer", ge=1, le=20)
+    temperature: Optional[float] = Field(0.7, description="Température du modèle")
+    k: int = Field(3, description="Nombre de documents à récupérer", ge=1, le=20)
     use_rag: bool = Field(False, description="Utiliser le RAG pour s'appuyer sur des ressources existantes")
-    rag_monodocument_id: Optional[str]= Field(None, description="RAG sur un seul document dont on fournit l'identifiant")
+    rag_monodocument_id: Optional[int]= Field(None, description="RAG sur un seul document dont on fournit l'identifiant")
     use_reranking: bool = Field(False, description="Utiliser le reranking pour améliorer les résultats")
-    include_quantitative: bool = Field(True, description="Inclure les données quantitatives")
+    include_quantitative: Optional[bool] = Field(True, description="Inclure les données quantitatives")
     session_id: Optional[str] = Field(None, description="ID de session pour récupérer l'historique des messages")
     model_config = ConfigDict(
         json_schema_extra={
@@ -87,7 +110,7 @@ class QueryRequest(BaseModel):
         }
     )
 class QueryResponse(BaseModel):
-    """ModÃ¨le de réponse Ã  une question"""
+    """ModÃ¨le de réponse à une question"""
     answer: str = Field(..., description="Réponse générée par le chatbot")
     sources: Optional[List[RAGSource]] = Field(
         None,
@@ -96,19 +119,22 @@ class QueryResponse(BaseModel):
     total_time: float = Field(..., description="Temps total de la génération")
     metadata: Dict = Field(..., description="Métadonnées de la requête")
     timestamp: str = Field(..., description="Horodatage de la réponse")
+
 class QueryCompareResponse(BaseModel):
     responses: List[QueryResponse]
     total_time: float = Field(..., description="Temps total de la génération")
     metadata: Dict = Field(..., description="Métadonnées de la requête")
     timestamp: str = Field(..., description="Horodatage de la réponse")
+
 class DocumentResponse(BaseModel):
-    """ModÃ¨le de réponse pour un document"""
-    document_id: str = Field(..., description="Identifiant du document")
+    """Modèle de réponse pour un document contenant les informations de base"""
+    document_id: int = Field(..., description="Identifiant du document (item, ou document_id")
+    source_id: Optional[int] = Field(..., description="Identifiant de la ressource pour requêter le pdf")
     file_name: str = Field(..., description="Nom du fichier")
-    file_path: str = Field(..., description="Chemin du fichier")
-    file_size: int = Field(..., description="Taille du fichier en octets")
+    title: str = Field(..., description="Titre du document")
+    author: str = Field(..., description="Auteur du document")
     created_at: str = Field(..., description="Date de création")
-    updated_at: str = Field(..., description="Date de mise Ã  jour")
+    updated_at: str = Field(..., description="Date de mise à jour")
 class DocumentsListResponse(BaseModel):
     """ModÃ¨le de réponse pour la liste des documents"""
     documents: List[DocumentResponse] = Field(..., description="Liste des documents")
@@ -141,8 +167,8 @@ class QuestionSessionResponse(BaseModel):
     is_finished: bool
 class HealthResponse(BaseModel):
     """ModÃ¨le de réponse pour le health check"""
-    status: str = Field(..., description="Ã‰tat du serveur")
-    rag_initialized: bool = Field(..., description="Le systÃ¨me RAG est-il initialisé")
+    status: str = Field(..., description="Etat du serveur")
+    rag_initialized: bool = Field(..., description="Le système RAG est-il initialisé")
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
@@ -170,14 +196,16 @@ class AuthResponse(BaseModel):
 
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
-final_evaluator = get_final_evaluator_agent("mistral-small")
+
 message_ev_agent = get_message_type_agent("ministral-3b-2410")
 question_session_manager = QuestionSessionManager()
 rag_session_manager = RAGSessionManager()
-models_evaluator = ["ministral-8b-latest"]
+# donne les modèles et providers pour pouvoir initialiser les agents évaluateurs
+models_evaluator = [("ministral-8b-latest", "mistral"), ("llama3.2:3b", "ollama"), ("gemma4:e2b", "ollama")]
 # Contient les instances d'agent effectuant les évaluations pour chaque modÃ¨le
 # dans models_evaluator
 evaluators = []
+final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
 # === GESTION DU CYCLE DE VIE ===
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -209,7 +237,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
+app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="admin")
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
+app.include_router(indexing_router)
+app.include_router(embedders_router)
+app.include_router(question_answer_router)
+app.include_router(message_evaluator_router)
+app.include_router(solr_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -232,28 +266,28 @@ def initialize_rag():
     """
     global rag_pipeline
     print("\n" + "=" * 60)
-    print("INITIALISATION DU SYSTÃˆME RAG v3")
+    print("Système RAG")
     print("=" * 60 + "\n")
     # Vérifier la présence de l'API Mistral AI
     mistral_api_key = os.getenv("MISTRAL_API_KEY")
-    if not mistral_api_key:
-        raise RuntimeError(
-            "MISTRAL_API_KEY non trouvée dans les variables d'environnement. "
-            "Veuillez créer un fichier .env avec votre clé API."
-        )
+    embedder_model_name = "mistral-embed"
     try:
-        # Initialiser le pipeline RAG v3
-        rag_pipeline = RAGPipeline(load_local=False)
+        # Initialiser le pipeline RAG v3 avec l'embedder
+        rag_pipeline = RAGPipeline(load_local=False, embedder_name=embedder_model_name)
         # for api_visualization
         set_rag_pipeline(rag_pipeline)
+        
+        # Mettre à jour le nom du modèle d'embedding pour api_visualization
+        set_embedding_model(embedder_model_name)
+        
         return True
     except Exception as e:
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
         raise
 def initialize_evaluators(async_mode: bool = True):
     evaluators.extend([get_evaluator_agent(model,
-                                           provider="mistral",
-                                           async_mode=async_mode) for model in models_evaluator])
+                                           provider=provider,
+                                           async_mode=async_mode) for model, provider in models_evaluator])
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
@@ -328,7 +362,7 @@ async def health_check():
 #
 # @app.post("/analyze_document", response_model=List[Question])
 # def analyze_document(request: DocumentRequest):
-#     """GénÃ¨re des questions Ã  partir d'un document."""
+#     """GénÃ¨re des questions à partir d'un document."""
 #     try:
 #         questions = document_analyzer(request.text)
 #         return questions
@@ -337,7 +371,7 @@ async def health_check():
 #
 # @app.post("/evaluate_response", response_model=Feedback)
 # def evaluate_response(request: UserResponseRequest):
-#     """Ã‰value la réponse de l'utilisateur Ã  la question en cours."""
+#     """Ã‰value la réponse de l'utilisateur à la question en cours."""
 #     try:
 #         feedback = tutor_evaluator(request.response)
 #         return feedback
@@ -392,7 +426,7 @@ async def query_simple(request: QueryRequest):
           tags=["Query"])
 async def query_rag(request: QueryRequest):
     """
-    Pose une question au systÃ¨me et retourne la réponse en fournissant les sources
+    Pose une question au système et retourne la réponse en fournissant les sources
     Args:
         request: QueryRequest contenant la question et les paramÃ¨tres
     Returns:
@@ -405,10 +439,15 @@ async def query_rag(request: QueryRequest):
     if rag_pipeline is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le systÃ¨me RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
+            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
         )
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
+
+        # On obtient ici un resource_id, on veut le document_id correspondant
+        doc_id = request.rag_monodocument_id
+        if request.rag_monodocument_id:
+            doc_id = get_document_id_from_resource_id(await get_db_connection(), request.rag_monodocument_id)
         answer, retrieval_results, total_time, consumed_energy_Wh = await rag_pipeline.query_rag(
             prompt=request.question,
             model=request.models[0],
@@ -416,7 +455,7 @@ async def query_rag(request: QueryRequest):
             reranking="bm25+" if request.use_reranking else None,
             final_prompt=None,
             sources=None,
-            specified_document_id=request.rag_monodocument_id,
+            specified_document_id=doc_id,
         )
     except Exception as e:
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
@@ -426,6 +465,142 @@ async def query_rag(request: QueryRequest):
         )
     response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
     return response
+
+@app.post("/api/query/rag/tutorial",
+          response_model=QueryResponse,
+          tags=["Query"])
+async def query_rag_tutorial(request: QueryRequest):
+    """
+    Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
+    permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
+    de QueryResponse
+    """
+    # Vérifier que le RAG est initialisé
+    if rag_pipeline is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
+        )
+    try:
+        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
+
+        # On obtient ici un resource_id, on veut le document_id correspondant
+        doc_id = request.rag_monodocument_id
+        if request.rag_monodocument_id:
+            doc_id = get_document_id_from_resource_id(await get_db_connection(), request.rag_monodocument_id)
+
+        # On calcule normalement la réponse du RAG
+        # QueryResponse
+        response = await query_rag(request)
+
+        prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question)
+        best_50_chunks = await database.get_top_k_similar_chunks_qdrant(
+            prompt_embeddings,
+            "LD-mistral-mistral-embed-1024",
+            50,
+            doc_id,
+            True,
+            True
+        )
+        print(type(prompt_embeddings))
+        doc_embeddings = [chunk["embedding"] for chunk in best_50_chunks]
+        print("doc_embeddings", type(doc_embeddings), f"size: {len(doc_embeddings)}")
+        all_embedings = [prompt_embeddings] + doc_embeddings
+
+        umap_response = await api_visualization.compute_umap_projection(api_visualization.UMAPRequest(
+            embeddings=all_embedings,
+            random_state=42
+        ))
+
+        #projected_embeddings: List[List[float]] = Field(..., description="2D/3D projected coordinates")
+        # le premier contient la projection des embeddings du prompt
+        tutorial_metadata = {
+            "prompt_projection": umap_response.projected_embeddings[0],
+            "best_chunks": best_50_chunks,
+            "chunk_projections": umap_response.projected_embeddings[1:],
+
+        }
+        response.metadata["tutorial_metadata"] = tutorial_metadata
+        return response
+
+
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Erreur lors du traitement"
+        )
+
+
+@app.post("/api/questions/recommend",
+          response_model=List[Dict],
+          tags=["Questions"])
+async def api_recommend_questions(
+    user_prompt: str,
+    document_id: str,
+    k: int = 5
+):
+    """
+    Recommande les questions les plus pertinentes d'un document par rapport à un prompt utilisateur.
+    
+    Utilise le RAG pipeline pour calculer la pertinence en utilisant les embeddings.
+    Les questions sont classées par similarité cosinus entre le prompt et le texte de la question.
+    
+    Args:
+        user_prompt: Le texte de la requête utilisateur
+        document_id: L'ID du document (document_id, pas resource_id)
+        k: Nombre de questions à retourner (défaut: 5)
+    
+    Returns:
+        Liste des questions recommandées avec leurs scores de pertinence, chaque question contient:
+        - question_id: ID de la question
+        - question_text: Texte de la question
+        - answers: Liste des réponses
+        - relevance_score: Score de pertinence (0-1)
+        - chunk_id: ID du chunk associé
+        - num_page: Numéro de page
+    
+    Raises:
+        HTTPException 503: Si le système RAG n'est pas initialisé
+        HTTPException 404: Si le document n'a aucune question
+        HTTPException 500: Si une erreur se produit lors du traitement
+    """
+    # Vérifier que le RAG est initialisé
+    if rag_pipeline is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
+        )
+    
+    try:
+        questions = await recommend_questions_for_document(
+            user_prompt=user_prompt,
+            document_id=document_id,
+            k=k,
+            rag_pipeline=rag_pipeline  # Passer l'instance globale pour éviter la duplication
+        )
+        
+        if not questions:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Aucune question trouvée pour le document {document_id}"
+            )
+        
+        return questions
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR dans recommend_questions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la recommandation de questions: {str(e)}"
+        )
+
+
 @app.post("/api/query/compare",
           response_model=QueryCompareResponse,
           tags=["Query"])
@@ -531,7 +706,6 @@ async def query_single_doc_rag(request: QueryRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
-    print("creating RAGInteraction")
     rag_interaction = RAGInteraction(
         question=request.question,
         answer=answer.content,
@@ -541,20 +715,22 @@ async def query_single_doc_rag(request: QueryRequest):
         use_reranking=request.use_reranking,
         total_time=total_time,
         consumed_energy_Wh=consumed_energy_Wh)
-    #print(rag_interaction)
     rag_session_manager.add_interaction(session_id=request.session_id,
                                         interaction=rag_interaction)
     response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
     return response
+
+
+
 @app.post("/api/sessions/questions/init/{document_id}",
           response_model=SessionStatus)
-async def init_question_session(document_id: str,
+async def init_question_session(document_id: int,
                                 premade_session: bool = True):
     """
     Initialise une nouvelle session de questions/réponses pour un document donné.
     Retourne l'ID de la session et les questions générées.
     """
-    
+    document_id = int(document_id)
     session_id = question_session_manager.create_session(document_id, premade_session)
     if not premade_session:
         # TODO: pour plus tard, en récupérant l'historique de l'utilisateur
@@ -562,23 +738,24 @@ async def init_question_session(document_id: str,
         #       par LLM, IA plus classique, ou bien créée et corrigée par des utilisateurs
         #       experts ou vérifiés.
         raise NotImplementedError
-    database.insert_session(get_db_connection(),
-                            session_id,
-                            None,
-                            document_id,
-                            datetime.now().isoformat())
+    async with await get_db_connection() as conn:
+        await insert_session(conn,
+                                session_id,
+                                None,
+                                document_id,
+                                datetime.now().isoformat())
     
     # on détermine les questions qui seront posées. La sélection est faite à l'avance.
-    questions_ids = PREMADE_QUESTIONS_BY_DOCUMENT_ID[document_id]
-    conn = await get_db_connection()
-    questions_tasks = [get_question_by_id(conn, question_id, include_answers=False) for question_id in questions_ids]
-    questions = await asyncio.gather(*questions_tasks)
+    questions_ids = PREMADE_QUESTIONS_BY_DOCUMENT_ID[int(document_id)]
+    async with await get_db_connection() as conn:
+        questions = await get_questions_by_ids(questions_ids, conn)
+
+        print(questions)
     # note: il y a une liste par question, car une question peut avoir plusieurs chunks
     # TODO: il faudra ajouter avec le document la méthode de chunking utilisée,
     #       car pour le même document, il peut être découpé de plusieurs maniÃ¨res, donc avoir
     #       plusieurs chunks pour la même question.
-    questions_chunks_tasks = [get_chunks_by_question_id(question_id, conn) for question_id in questions_ids]
-    questions_chunks = await asyncio.gather(*questions_chunks_tasks)
+        questions_chunks = await get_chunks_by_question_ids(questions_ids, conn)
     questions_texts = [question["content"] for question in questions]
     question_pages = [chunk[0]["num_page"] for chunk in questions_chunks]
 
@@ -613,19 +790,19 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     question = await get_question_by_id(await get_db_connection(),
                                         current_question_id,
                                         include_answers=True)
+    # vérifier que les réponses existent
+    reference_answers = [answer["content"] for answer in question["answers"]]
     # vérification du type de message.
-    # Initialement, traité avec un LLM mais depuis un changement de modèle,
-    # beaucoup de réponses sortent comme hors-sujet ??
-
-    # -> Tuple[OutputSchema, TokenCountResult, int]
+    # -> Tuple[OutputSchema, int, int]
     result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
                                                                    user_input=MessageTypeRequestInput(
                                                                               current_question=question["content"],
+                                                                              reference_answers=reference_answers,
                                                                               user_message=user_message
                                                                    ),
                                                                    method = "run")
     message_type = result.message_type
-    total_input_tokens += token_count_result.total
+    total_input_tokens += token_count_result
     total_output_tokens += output_tokens
     logging.info("Message type determined : {message_type}".format(message_type=message_type),)
     new_question = False
@@ -640,30 +817,20 @@ async def submit_question_session_message(request: QuestionSessionMessage):
         message_type=message_type
     )
     match message_type:
-        case "réponse":
+        case "reponse":
             if not question["answers"]:
                 raise HTTPException(status_code=500, detail="Pas de réponse prévue pour cette question...")
-            # il peut y avoir plusieurs réponses, on ne garde que la
-            # 1Ã¨re
-            expected_answer = question["answers"][0]["content"]
+            # Utiliser toutes les réponses disponibles pour l'évaluation
+            expected_answers = [answer["content"] for answer in question["answers"]]
             evaluation_input = EvaluateRequestInput(
                 question=question['content'],
-                expected_answer=expected_answer,
+                expected_answers=expected_answers,
                 user_answer=user_message
             )
             # note: les evaluators sont initialisés avec des clients async.
-            # pour pouvoir effectuer ces appels en parallÃ¨le.
+            # pour pouvoir effectuer ces appels en parallèle.
             evaluations = []
-            """
-            for evaluator in evaluators:
-                evaluation, token_count_result, output_tokens = await monitor_agent_call_async(evaluator,
-                                                                                         evaluation_input,
-                                                                                         "run_async")
-                total_input_tokens += token_count_result.total
-                total_output_tokens += output_tokens
-                evaluations.append(evaluation)
-            print(evaluations)
-            """
+
             coroutines = [
                 monitor_agent_call_async(evaluator, evaluation_input, "run_async")
                 for evaluator in evaluators
@@ -672,7 +839,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
             for result in eval_results:
                 evaluation, token_count_result, output_tokens = result
                 evaluations.append(evaluation)
-                total_input_tokens += token_count_result.total
+                total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
             if len(evaluations) > 1:
                 # /!\ contient un AgentEvaluationResult de answer_evaluation_agent.py.
@@ -684,24 +851,36 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                                                             ListAgentEvaluationResult(
                                                                 evaluations=evaluations),
                                                             "run")
-                total_input_tokens += token_count_result.total
+                total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
             else:
                 final_evaluation = evaluations[0]
+            
+            # Stocker les évaluations individuelles avec leurs modèles
+            individual_evaluations = []
+            for i, eval_result in enumerate(evaluations):
+                # Le modèle de chaque évaluateur correspond à models_evaluator[i][0]
+                eval_model = models_evaluator[i][0] if i < len(models_evaluator) else f"evaluator_{i}"
+                individual_eval = from_AgentEvaluationResult_to_EvaluationResult(
+                    eval_result, model=eval_model
+                )
+                individual_evaluations.append(individual_eval)
+            user_response.individual_evaluations = individual_evaluations
+            
             evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(final_evaluation)
             user_response.evaluation = evaluation_result
             if evaluation_result.score >= 7:
-                # Si le score est suffisant, passer Ã  la question suivante
-                # peut également marquer la fin de la session si c'était la derniÃ¨re qst
+                # Si le score est suffisant, passer à la question suivante
+                # peut également marquer la fin de la session si c'était la dernière qst
                 question_session_manager.increment_current_index(session_id)
                 is_finished = question_session_manager.is_finished(session_id)
                 if not is_finished:
                     new_question = True
-            # le client pourra détécter les changements par rapport Ã  l'ancienne version de
-            # sessionStatus : chgt de question, question Ã  refaire, ou fin de session
+            # le client pourra détécter les changements par rapport à l'ancienne version de
+            # sessionStatus : chgt de question, question à refaire, ou fin de session
             message = evaluation_result.feedback
         case "demande_renseignement":
-            # faire appel Ã  un LLM pour répondre Ã  la question
+            # faire appel à un LLM pour répondre à la question
             message = "Message de demande de renseignement détecté (pas implémenté pour l'instant)"
             pass
         case "hors_sujet":
@@ -719,33 +898,6 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     # Log la réponse dans le CSV pour évaluation humaine
     log_response_to_csv(session_id, user_response)
     # Sauvegarder dans la base SQL
-    try:
-        conn = await get_db_connection()
-        async with conn.cursor() as cursor:
-            # Insérer dans session_answers
-            await cursor.execute("""
-                INSERT INTO session_answers 
-                (session_id, question_id, question_text, answer_text, 
-                 llm_comment, llm_rating, llm_model, message_type, answered_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
-            """, (
-                session_id,
-                user_response.question_id,
-                user_response.question_text,
-                user_response.user_answer,
-                user_response.evaluation.feedback if user_response.evaluation else None,
-                user_response.evaluation.score if user_response.evaluation else None,
-                user_response.evaluation.model if user_response.evaluation else None,
-                user_response.message_type
-            ))
-            await conn.commit()
-    except Exception as e:
-        logging.error(f"Erreur lors de l'insertion dans session_answers: {e}")
-        # Ne pas bloquer l'exécution si l'insertion échoue
-        pass
-    finally:
-        await conn.close()
-
     session_response = QuestionSessionResponse(
         session_status=question_session_manager.get_session_status(session_id),
         computed_message_type=message_type,
@@ -764,7 +916,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
 @app.get("/api/sessions/rag/init/{document_id}")
 async def create_rag_session(document_id: str) -> dict:
     """
-    Créée un session_id de RAG retourné Ã  l'utilisateur
+    Créée un session_id de RAG retourné à l'utilisateur
     """
     session_id = rag_session_manager.create_session(document_id)
     print("session created : ", session_id)
@@ -856,15 +1008,50 @@ async def export_rag_session(session_id: str):
     if not success:
         raise HTTPException(status_code=500, detail="Erreur lors de la création du fichier CSV. Veuillez réessayer plus tard.")
     return FileResponse(file_path, media_type="text/csv", filename=file_path)
-@app.get("/get_pdf")
-async def get_pdf(document_id: str):
-    document_id = document_id.replace(".pdf", "")
-    # note: pour l'instant, l'id du document est également son nom dans le dossier
-    file_path = f"{DOCUMENTS_PATH}/{document_id}.pdf"
-    if not os.path.exists(file_path):
-        print("file not found...")
-        raise HTTPException(status_code=404, detail="Fichier non trouvé")
-    return FileResponse(file_path, media_type="application/pdf")
+
+@app.get("/get_pdf/by_filename")
+async def get_pdf_by_filename(file_name: str):
+    """
+    Effectue une requête sur le vrai site de la M3C à partir du file_name,
+    contenant l'extension
+    """
+    return await _get_pdf_by_filename(file_name)
+
+@app.get("/get_pdf/by_id")
+async def get_pdf_by_id(resource_id: int):
+    """
+    Requête la base MySQL avec le resource_id (table resource) présent dans text_chunks pour obtenir
+    le nom du PDF et le retourner
+    """
+    print("get_pdf_by_id")
+    async with await get_db_connection() as conn:
+        pdf_name = await get_pdf_name_from_resource_id(conn, resource_id)
+    if not pdf_name:
+        raise HTTPException(status_code=404, detail="Aucun PDF trouvé pour le resource_id {}".format(resource_id))
+    return await _get_pdf_by_filename(pdf_name)
+
+async def _get_pdf_by_filename(filename: str):
+    """
+    Helper qui requête le PDF sur le site officiel de la M3C.
+    Retourne l'objet Response qui envoie le PDF
+    """
+    url = M3C_BASE_URL+filename
+    try:
+        print("_get_pdf_by_filename")
+        pdf_bytes = await download_pdf(url)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="{filename}"'
+            }
+        )
+    except Exception as e:
+        print(f"Erreur lors du téléchargement de {filename}: {str(e)}")
+        return HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur - le PDF n'a pas pu être récupéré:")
+
 @app.get("/api/documents", response_model=DocumentsListResponse, tags=["Documents"])
 async def get_documents_list():
     """
@@ -873,20 +1060,20 @@ async def get_documents_list():
         DocumentsListResponse: Liste des documents avec leurs métadonnées
     """
     try:
-        # Connexion Ã  la base de données
-        conn = await get_db_connection()
-        # Récupérer tous les documents
-        documents = await get_all_documents(conn)
-        # Fermer la connexion
-        await conn.close()
+        # Connexion à la base de données
+        async with await get_db_connection() as conn:
+            documents = await get_all_documents(conn)
+
         # Construire la réponse
         document_responses = []
+        print("retrieved!")
         for doc in documents:
             document_responses.append(DocumentResponse(
                 document_id=doc["document_id"],
+                source_id=doc["resource_id"],
                 file_name=doc["file_name"],
-                file_path=doc["file_path"],
-                file_size=doc["file_size"],
+                title=doc["title"],
+                author=doc["creator"],
                 created_at=str(doc["created_at"]),
                 updated_at=str(doc["updated_at"])
             ))
@@ -902,6 +1089,87 @@ async def get_documents_list():
             detail=f"Erreur lors de la récupération des documents: {str(e)}"
         )
 
+
+# Modèle pour la génération de questions à partir d'un texte
+class QASingleRequest(BaseModel):
+    """Modèle de requête pour générer des questions à partir d'un texte"""
+    message: Optional[str] = Field(None, description="Message ou instruction optionnel")
+    document: str = Field(..., description="Texte du document/chunk sur lequel générer des questions", min_length=10)
+    num_questions: int = Field(3, description="Nombre de questions à générer", ge=1, le=10)
+    model: Optional[str] = Field("mistral-small", description="Modèle LLM à utiliser")
+
+
+class QASinglePair(BaseModel):
+    """Une paire question-réponse"""
+    question: str = Field(..., description="Question générée")
+    answer: str = Field(..., description="Réponse générée")
+
+
+class QASingleResponse(BaseModel):
+    """Réponse avec liste de questions générées"""
+    QA_list: List[QASinglePair] = Field(default_factory=list, description="Liste des paires question-réponse")
+    model_used: str = Field(..., description="Modèle LLM utilisé")
+    generation_time: float = Field(..., description="Temps de génération en secondes")
+
+
+@app.post("/api/qa-single", response_model=QASingleResponse, tags=["Query"])
+async def generate_qa_single(request: QASingleRequest):
+    """
+    Génère des questions avec réponses à partir d'un texte donné.
+    Utilise l'agent QA pour créer des questions basées sur le contenu.
+    
+    Args:
+        request: QASingleRequest avec document, num_questions et model
+        
+    Returns:
+        QASingleResponse avec la liste des questions générées
+    """
+    from agents.qa_single_agent import get_qa_agent
+    import time
+    
+    start_time = time.time()
+    
+    try:
+        # Extraire les informations de la requête
+        document_text = request.document
+        num_questions = request.num_questions
+        model_name = request.model or "mistral-small"
+        
+        # Définir provider et model
+        provider_model = model_name.split("/") if "/" in model_name else ["mistral", model_name]
+        provider = provider_model[0] if len(provider_model) > 0 else "mistral"
+        model = provider_model[1] if len(provider_model) > 1 else model_name
+
+        qa_list, error = await generate_questions_single_answer_for_chunk(
+            chunk_content=document_text,
+            chunk_id="",
+            document_id="",
+            num_questions=num_questions,
+            model_name=model_name
+        )
+        # Calculer le temps d'exécution
+        generation_time = time.time() - start_time
+
+        # Formater la réponse
+        qa_pairs = [
+            QASinglePair(question=qa.question, answer=qa.answer)
+            for qa in qa_list.QA_list
+        ]
+
+        return QASingleResponse(
+            QA_list=qa_pairs,
+            model_used=model_name,
+            generation_time=generation_time
+        )
+        
+    except Exception as e:
+        print(f"Erreur lors de la génération de questions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la génération de questions: {str(e)}"
+        )
+
+
 # Pydantic model for Question response
 class QuestionResponse(BaseModel):
     question_id: int = Field(..., description="Identifiant de la question")
@@ -911,6 +1179,7 @@ class QuestionResponse(BaseModel):
     created_by: Optional[str] = Field(None, description="Créé par")
     validated_by: Optional[str] = Field(None, description="Validé par")
     chunk_id: Optional[str] = Field(None, description="ID du chunk associé")
+    num_page: Optional[int] = Field(None, description="Numéro de page du chunk")
     answers: List[Dict] = Field(default_factory=list, description="Liste des réponses")
 
 class QuestionsListResponse(BaseModel):
@@ -941,16 +1210,15 @@ async def get_questions_for_document(
         QuestionsListResponse: Liste des questions avec leurs réponses
     """
     try:
-        conn = await get_db_connection()
-        questions = await get_questions_by_document_id(
-            document_id, conn,
-            include_answers=include_answers,
-            status_filter=status_filter,
-            difficulty_filter=difficulty_filter,
-            nb_limit=nb_limit
-        )
-        await conn.close()
-        
+        async with await get_db_connection() as conn:
+            questions = await get_questions_by_document_id(
+                document_id, conn,
+                include_answers=include_answers,
+                status_filter=status_filter,
+                difficulty_filter=difficulty_filter,
+                nb_limit=nb_limit
+            )
+
         # Convertir en QuestionResponse
         question_responses = []
         for q in questions:
@@ -962,6 +1230,7 @@ async def get_questions_for_document(
                 created_by=q["created_by"],
                 validated_by=q["validated_by"],
                 chunk_id=q.get("chunk_id"),
+                num_page=q.get("num_page"),
                 answers=q.get("answers", [])
             ))
         
@@ -982,18 +1251,24 @@ async def get_questions_for_document(
 @app.post("/api/evaluate", tags=["Evaluation"])
 async def evaluate_answer(request: EvaluateRequestInput):
     """
-    Évalue une réponse utilisateur par rapport à une réponse attendue.
-    Utilise l'agent évaluateur existant.
+    Évalue une réponse utilisateur par rapport à des réponses attendues.
+    Utilise l'agent évaluateur avec le modèle spécifié ou par défaut.
     
     Args:
-        request: EvaluateRequestInput avec question, expected_answer, user_answer
+        request: EvaluateRequestInput avec question, expected_answers, user_answer, model
+        model est au format <provider>/<model_name>
     
     Returns:
         AgentEvaluationResult avec score (1-10) et feedback
     """
     try:
-        print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée")
-        evaluation = await evaluation_agent.run_async(request)
+        print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée avec modèle: {request.model}")
+        
+        # Utiliser le modèle spécifié ou le modèle par défaut
+        provider, model = tuple(request.model.split("/")) if request.model else ("mistral", "mistral-small")
+        # Créer un agent avec le modèle spécifié
+        evaluator = get_evaluator_agent(model, provider=provider, async_mode=True)
+        evaluation = await evaluator.run_async(request)
         print(f"[{datetime.now().isoformat()}] Évaluation terminée: score={evaluation.score}")
         return evaluation
     except Exception as e:
@@ -1195,9 +1470,105 @@ def _build_query_rag_response(request: QueryRequest,
     print(f"[{datetime.now().isoformat()}] Réponse générée avec {len(response.sources)} sources")
     return response
 
+def split_text_into_chunks(text: str, chunk_size: int, overlap: int) -> List[str]:
+    """Découpe un texte en chunks avec recouvrement.
+    
+    Args:
+        text: Texte à découper
+        chunk_size: Taille maximale d'un chunk en caractères
+        overlap: Nombre de caractères de recouvrement entre les chunks
+        
+    Returns:
+        Liste des chunks
+    """
+    if not text or chunk_size <= 0:
+        return []
+    
+    chunks = []
+    start = 0
+    overlap = min(overlap, chunk_size)  # Assurer que overlap <= chunk_size
+    
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(text[start:end])
+        if end == len(text):
+            break
+        start = end - overlap
+    
+    return chunks
+
+
+# ============================================================================
+# MODÈLES PYDANTIC POUR L'ADMINISTRATION
+# ============================================================================
+
+class AdminStatsResponse(BaseModel):
+    """Réponse pour les statistiques d'indexation"""
+    documents_count: int = Field(..., description="Nombre total de documents indexés")
+    chunks_count: int = Field(..., description="Nombre total de chunks indexés")
+    embeddings_count: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Nombre d'embeddings par modèle"
+    )
+    documents_with_extracted_text_count: int = Field(
+        0,
+        description="Nombre de documents avec contenu extrait (extracted_text)"
+    )
+    timestamp: str = Field(..., description="Horodatage de la réponse")
+
+
+
+# ============================================================================
+# ENDPOINTS D'ADMINISTRATION
+# ============================================================================
+
+@app.get("/api/admin/documents", tags=["Admin"])
+async def get_admin_documents():
+    """
+    Récupère la liste des documents existants pour l'interface d'administration.
+    
+    Returns:
+        Liste des documents avec leurs métadonnées et indication de la présence de extracted_text.
+    """
+    try:
+        conn = await get_db_connection()
+        documents = await database.get_all_documents_with_details(conn)
+        await conn.close()
+        
+        return {
+            "documents": documents,
+            "count": len(documents),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        print(f"Erreur dans get_admin_documents: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des documents: {str(e)}"
+        )
+
+
+@app.get("/api/admin/stats", tags=["Admin"])
+async def get_admin_stats():
+    """
+    Récupère les statistiques d'indexation de l'application.
+    
+    Note: Non implémentée pour le moment
+    
+    Returns:
+        Erreur 501 Not Implemented
+    """
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="get_admin_stats n'est pas encore implémentée"
+    )
+
+
+
+
 def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessions_backup.json"):
     """
-    Ajoute une session Ã  un fichier JSON existant.
+    Ajoute une session à un fichier JSON existant.
     Crée le fichier s'il n'existe pas.
     """
     file = Path(file_path)
@@ -1214,11 +1585,12 @@ def append_session_to_json(session_dict: Dict[str, Any], file_path: str = "sessi
     # Réécrire le fichier
     with open(file, "w", encoding="utf-8") as f:
         json.dump(sessions_data, f, indent=2, ensure_ascii=False)
+
 if __name__ == "__main__":
     # Configuration du serveur
     host = os.getenv("API_HOST", "0.0.0.0")  # 0.0.0.0 pour accepter les connexions externes
     port = int(os.getenv("API_PORT", "8000"))
-    reload = True
+    reload = False
     print("\n" + "=" * 60)
     print("DÃ‰MARRAGE DU SERVEUR API")
     print("=" * 60)

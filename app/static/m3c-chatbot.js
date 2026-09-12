@@ -118,7 +118,6 @@ async function loadSessionForDocument(documentId) {
 			return true;
 		} else {
 			removeSessionFromLocalStorage(documentId);
-			populateDocumentSelector();
 		}
 	}
 
@@ -130,11 +129,9 @@ async function loadSessionForDocument(documentId) {
 		console.log(`Nouvelle session créée pour document ${documentId}: ${newSessionId}`);
 		// Reconstruire avec une session vide (pas d'interactions encore)
 		rebuildSessionInChat({ document_id: documentId, interactions: [] });
-		populateDocumentSelector();
 		return true;
 	} else {
 		sessions[documentId] = null;
-		populateDocumentSelector();
 		return false;
 	}
 }
@@ -164,6 +161,7 @@ function toggleDocumentSelector() {
 }
 
 // Fonction pour peupler le sélecteur
+// fonctionne à partir de documents (disponible globalement)
 function populateDocumentSelector() {
 	const selector = document.getElementById("selectedDocumentRAG");
 	const currentSelection = selector.value; // Sauvegarde la sélection actuelle
@@ -171,7 +169,7 @@ function populateDocumentSelector() {
 
 	// Ajoute une option par défaut
 	const defaultOption = document.createElement("option");
-	defaultOption.value = "";
+	defaultOption.value = null;
 	defaultOption.textContent = "Sélectionnez un document";
 	selector.appendChild(defaultOption);
 
@@ -182,7 +180,7 @@ function populateDocumentSelector() {
 
 		// Vérifier si une session existe pour ce document
 		const hasSession = sessions[doc.document_id] || localStorage.getItem(`rag_session_${doc.document_id}`);
-		option.textContent = doc.document_id + (hasSession ? " 💾" : "");
+		option.textContent = doc.title + (hasSession ? " 💾" : "");
 		selector.appendChild(option);
 	});
 
@@ -232,7 +230,7 @@ async function sendQuestion() {
 	loading.classList.add('active');
 
 	// Récupérer les paramètres
-	const rag_monodocument_id = selectedDocumentRAG.value;
+	const rag_monodocument_id = parseInt(selectedDocumentRAG.value);
 	const params = {
 		question: question,
 		models: selectedModels,
@@ -287,6 +285,8 @@ async function simpleQuery(params) {
 			populateDocumentSelector();
 		}
 
+		// Remarque: data.source contient un Array de RAGSource. Ces RAGSource ne contiennent pas
+		// les noms et auteurs, mais on peut les récupérer avec une autre requête
 		const botResponseDiv = createBotResponse(data);
 		console.log("botResponseDiv créé");
 		chatContainer.appendChild(botResponseDiv);

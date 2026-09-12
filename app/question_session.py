@@ -6,13 +6,19 @@ from pydantic import BaseModel
 
 from agents.answer_evaluator_agent import AgentEvaluationResult
 
-# Suite de questions prédéfinies pour des fins de démonstration
+"""
+#Suite de questions prédéfinies pour des fins de démonstration
 PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
     "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d" : [249, 370, 737, 786, 115],
     #"8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56" : [2021, 1224, 1506, 1525, 1757]
     "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56" : [9158, 9235, 9389, 10040, ]
 }
+"""
 
+# NE PAS TOUCHER
+PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
+    21: [418, 75]
+}
 class SessionMetadata(BaseModel):
     """
     Contient les données techniques décrivant une sesssion : la méthode d'évaluation,
@@ -73,6 +79,7 @@ class UserResponse(BaseModel):
     user_answer: str
     date_sent: datetime
     evaluation: Optional[EvaluationResult]
+    individual_evaluations: Optional[List[EvaluationResult]] = None
     message_type: Optional[str] = None  # "réponse", "demande_renseignement", "hors_sujet", "autre"
 
 class SessionStatus(BaseModel):
@@ -80,7 +87,7 @@ class SessionStatus(BaseModel):
     Représente l'état global d'une session d'un utilisateur.
     """
     session_id: str
-    document_id: str
+    document_id: int
     current_index: int
     completed: bool
     created_at: datetime
@@ -122,6 +129,7 @@ def session_status_to_dict(session_status: SessionStatus) -> Dict[str, Any]:
             "user_answer": response.user_answer,
             "date_sent": response.date_sent.isoformat(),
             "evaluation": serialize_evaluation_result(response.evaluation),
+            "individual_evaluations": [serialize_evaluation_result(e) for e in response.individual_evaluations] if response.individual_evaluations else [],
             "message_type": response.message_type,
         }
 
@@ -166,12 +174,13 @@ class QuestionSessionManager:
         self.sessions: Dict[str, Dict] = {}
 
     def create_session(self,
-                       document_id: str,
+                       document_id: int,
                        premade_session: bool = False) -> str:
         """
         Crée une nouvelle session utilisateur, en générant un session_id,
         qui sera retourné pour pouvoir l'utiliser (ajout direct de questions).
         """
+
 
         session_id = str(uuid.uuid4())
         self.sessions[session_id] = {
