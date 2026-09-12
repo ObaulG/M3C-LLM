@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription - M3C-LLM</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 35px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-header h1 {
+            font-size: 26px;
+            color: #b74420;
+            margin-bottom: 5px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .auth-tab:hover {
+            color: #b74420;
+        }
+
+        .auth-tab.active {
+            color: #b74420;
+            border-bottom-color: #b74420;
+        }
+
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .auth-form.active {
+            display: flex;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #b74420;
+            box-shadow: 0 0 0 3px rgba(183, 68, 32, 0.1);
+        }
+
+        .btn {
+            padding: 12px;
+            background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .auth-message.error {
+            display: block;
+            background: #fff0f0;
+            color: #b74420;
+            border: 1px solid #ffe0e0;
+        }
+
+        .auth-message.success {
+            display: block;
+            background: #f0fff4;
+            color: #28a745;
+            border: 1px solid #d4edda;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            font-size: 13px;
+        }
+
+        .nav-links a {
+            color: #b74420;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .logged-in {
+            display: none;
+            text-align: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .logged-in.active {
+            display: flex;
+        }
+
+        .logged-in h2 {
+            color: #b74420;
+            font-size: 22px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .user-info strong {
+            color: #b74420;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>M3C-LLM</h1>
+            <p>Connexion ou cr&eacute;ation de compte</p>
+        </div>
+
+        <div id="authView">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tabLogin" onclick="showTab('login')">Connexion</div>
+                <div class="auth-tab" id="tabRegister" onclick="showTab('register')">Inscription</div>
+            </div>
+
+            <form class="auth-form active" id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginUsername">Nom d'utilisateur ou email</label>
+                    <input type="text" id="loginUsername" name="username" required autocomplete="username" />
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password" />
+                </div>
+                <div class="auth-message" id="loginMessage"></div>
+                <button type="submit" class="btn" id="loginBtn">Se connecter</button>
+            </form>
+
+            <form class="auth-form" id="registerForm" onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label for="regUsername">Nom d'utilisateur</label>
+                    <input type="text" id="regUsername" name="username" required autocomplete="username" />
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" name="email" required autocomplete="email" />
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Mot de passe</label>
+                    <input type="password" id="regPassword" name="password" required minlength="6" autocomplete="new-password" />
+                </div>
+                <div class="form-group">
+                    <label for="regRole">R&ocirc;le</label>
+                    <select id="regRole" name="role">
+                        <option value="user" selected>Utilisateur</option>
+                        <option value="validator">Validateur</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+                <div class="auth-message" id="registerMessage"></div>
+                <button type="submit" class="btn" id="registerBtn">Cr&eacute;er le compte</button>
+            </form>
+        </div>
+
+        <div class="logged-in" id="loggedInView">
+            <h2>Vous &ecirc;tes connect&eacute;</h2>
+            <div class="user-info" id="userInfo"></div>
+            <button class="btn" onclick="handleLogout()">Se d&eacute;connecter</button>
+        </div>
+
+        <div class="nav-links">
+            <a href="m3c-chatbot.html">ChatBot RAG</a>
+            <a href="question_session.html">Chatbot Invers&eacute;</a>
+            <a href="questions_management.html">Gestion Q/R</a>
+            <a href="rag_visualization.html">Visualisation RAG</a>
+        </div>
+    </div>
+
+    <script>
+        function getApiKey() {
+            return localStorage.getItem('m3c_api_key');
+        }
+
+        function setApiKey(key) {
+            localStorage.setItem('m3c_api_key', key);
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('m3c_api_key');
+        }
+
+        function showTab(tab) {
+            document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+            document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+            document.getElementById('loginMessage').className = 'auth-message';
+            document.getElementById('registerMessage').className = 'auth-message';
+        }
+
+        function showMessage(elId, text, type) {
+            const el = document.getElementById(elId);
+            el.textContent = text;
+            el.className = 'auth-message ' + type;
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            showMessage('loginMessage', '', '');
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Connexion &eacute;chou&eacute;e');
+                }
+                setApiKey(data.api_key);
+                showLoggedIn(data.user);
+            } catch (err) {
+                showMessage('loginMessage', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+            return false;
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            showMessage('registerMessage', '', '');
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, email: email, password: password, role: role })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Inscription &eacute;chou&eacute;e');
+                }
+                setApiKey(data.api_key);
+                showLoggedIn(data.user);
+            } catch (err) {
+                showMessage('registerMessage', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+            return false;
+        }
+
+        function showLoggedIn(user) {
+            document.getElementById('authView').style.display = 'none';
+            const view = document.getElementById('loggedInView');
+            view.classList.add('active');
+            document.getElementById('userInfo').innerHTML =
+                '<strong>' + user.username + '</strong> (' + user.email + ')<br/>' +
+                'R&ocirc;le : ' + user.role;
+        }
+
+        function handleLogout() {
+            fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+                clearApiKey();
+                location.reload();
+            });
+        }
+
+        async function checkSession() {
+            const apiKey = getApiKey();
+            if (!apiKey) return;
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + apiKey }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    showLoggedIn(data.user);
+                } else {
+                    clearApiKey();
+                }
+            } catch (e) {
+                clearApiKey();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkSession);
+    </script>
+</body>
+</html>

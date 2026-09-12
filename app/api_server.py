@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
 import database
-from indexing.services import download_pdf
+import auth
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               QuestionSessionManager,
@@ -172,6 +172,28 @@ class HealthResponse(BaseModel):
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
+class AuthRegisterRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=255)
+    email: str = Field(...)
+    password: str = Field(..., min_length=6)
+    role: str = Field("user")
+
+class AuthLoginRequest(BaseModel):
+    username: str = Field(...)
+    password: str = Field(...)
+
+class AuthUserResponse(BaseModel):
+    user_id: int
+    username: str
+    email: str
+    role: str
+    is_active: bool
+    created_at: Optional[str] = None
+
+class AuthResponse(BaseModel):
+    user: AuthUserResponse
+    api_key: str
+
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
 
@@ -269,8 +291,61 @@ def initialize_evaluators(async_mode: bool = True):
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
-    """Endpoint racine - Page d'accueil du portail LLMAgents"""
-    return FileResponse("app/static/index.html")
+    """Endpoint racine - Redirige vers la documentation"""
+    return {
+        "message": "API Chatbot RAG v0.1 - M3C",
+        "documentation": "/docs",
+        "health_check": "/api/health",
+        "query_endpoint": "/api/query"
+    }
+
+# === ENDPOINTS D'AUTHENTIFICATION ===
+@app.post("/api/auth/register", response_model=AuthResponse, tags=["Auth"])
+async def register(request: AuthRegisterRequest):
+    """Crée un nouveau compte utilisateur dans la table `users`."""
+    try:
+        user, api_key = await auth.create_user(
+            username=request.username,
+            email=request.email,
+            password=request.password,
+            role=request.role,
+        )
+        return AuthResponse(user=AuthUserResponse(**user), api_key=api_key)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR inscription: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erreur lors de la création du compte.")
+
+@app.post("/api/auth/login", response_model=AuthResponse, tags=["Auth"])
+async def login(request: AuthLoginRequest):
+    """Connecte un utilisateur existant à partir de son nom d'utilisateur ou email."""
+    try:
+        user, api_key = await auth.authenticate_user(request.username, request.password)
+        return AuthResponse(user=AuthUserResponse(**user), api_key=api_key)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR connexion: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erreur lors de la connexion.")
+
+@app.get("/api/auth/me", tags=["Auth"])
+async def get_current_user(authorization: Optional[str] = None):
+    """Retourne l'utilisateur associé à la clé API (Bearer token) fournie."""
+    user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
+    user = await auth.get_user_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable.")
+    return {"user": AuthUserResponse(**user)}
+
+@app.post("/api/auth/logout", tags=["Auth"])
+async def logout(authorization: Optional[str] = None):
+    """Révoque la clé API courante (déconnexion)."""
+    auth.revoke_token(authorization)
+    return {"message": "Déconnecté."}
+
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
