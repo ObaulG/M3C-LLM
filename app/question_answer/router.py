@@ -200,54 +200,6 @@ async def get_valid_documents():
     )
 
 
-@router.get(
-    "/documents/{document_id}/chunks",
-    summary="Liste les chunks d'un document",
-    description="Retourne tous les chunks d'un document spécifique avec leur contenu pour permettre la sélection individuelle."
-)
-async def get_document_chunks(document_id: int):
-    """
-    Récupère tous les chunks d'un document avec leur contenu.
-    
-    Args:
-        document_id: L'ID du document (text_documents.id)
-        
-    Returns:
-        Liste des chunks avec id, content, num_page, position_in_page, etc.
-    
-    Raises:
-        HTTPException 404: Si le document n'a pas de chunks
-    """
-    from database.database import get_db_connection, get_all_text_chunks
-    
-    try:
-        async with await get_db_connection() as conn:
-            conn = await get_db_connection()
-            print("retrieving chunks")
-            chunks = await get_all_text_chunks(conn, document_id)
-            print("chunks received")
-        
-        if not chunks:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Aucun chunk trouvé pour le document {document_id}"
-            )
-        
-        return JSONResponse(
-            content={
-                "document_id": document_id,
-                "chunks": chunks,
-                "count": len(chunks)
-            }
-        )
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la récupération des chunks: {str(e)}"
-        )
-
-
 @router.post(
     "/save",
     summary="Sauvegarde une question manuellement",

@@ -354,6 +354,7 @@
         // Configuration de l'API
         const API_BASE = window.location.origin || window.location.protocol + '//' + window.location.host;
         const QUESTIONS_API = API_BASE + '/api/admin/questions';
+        const DOCUMENTS_API = API_BASE + '/api/documents';
         
         // Variables globales
         let currentJobId = null;
@@ -434,7 +435,7 @@
                 chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
                 chunkContentDisplay.textContent = 'Chargement des chunks...';
                 
-                const response = await fetch(QUESTIONS_API + `/documents/${documentId}/chunks`);
+                const response = await fetch(`${DOCUMENTS_API}/${documentId}/chunks`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
