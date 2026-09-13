@@ -1,0 +1,152 @@
+{# -*- jinja2 -*- Macros UI atomiques réutilisables (boutons, badges, spinner, source, etc.) #}
+
+{# Bouton. type: 'primary' | 'secondary' | 'tertiary' | 'evaluate' | 'save' | 'meta-save' #}
+{% macro btn(label, type='primary', id=None, onclick=None, href=None, extra_class=None) -%}
+{%- if href -%}
+<a href="{{ href }}" class="btn btn-{{ type }}{% if extra_class %} {{ extra_class }}{% endif %}"{% if id %} id="{{ id }}"{% endif %}>{{ label|safe }}</a>
+{%- else -%}
+<button type="button" class="btn btn-{{ type }}{% if extra_class %} {{ extra_class }}{% endif %}"{% if id %} id="{{ id }}"{% endif %}{% if onclick %} onclick="{{ onclick }}"{% endif %}>{{ label|safe }}</button>
+{%- endif -%}
+{%- endmacro %}
+
+{# Badge de statut. status: 'generated' | 'validated' | 'pending' #}
+{% macro status_badge(status) -%}
+{%- set cls = {'generated':'badge-generated','validated':'badge-validated','pending':'badge-pending'}.get(status, 'badge-pending') -%}
+<span class="badge {{ cls }}">{{ status }}</span>
+{%- endmacro %}
+
+{# Badge de catégorie (accueil). category: 'user' | 'admin' #}
+{% macro category_badge(category) -%}
+{%- set _labels = {'user': 'Utilisateur', 'admin': 'Administrateur'} -%}
+<span class="category-badge category-{{ category }}">{{ _labels.get(category, category|capitalize) }}</span>
+{%- endmacro %}
+
+{# Indicateur de chargement (spinner). id par défaut 'loading' #}
+{% macro loading(id='loading', label='Traitement en cours...') -%}
+<div class="loading" id="{{ id }}">
+    <div class="spinner"></div>
+    <p>{{ label }}</p>
+</div>
+{%- endmacro %}
+
+{# Spinner seul (inline, sans conteneur .loading) #}
+{% macro spinner(cls='spinner') -%}
+<div class="{{ cls }}"></div>
+{%- endmacro %}
+
+{# Lien de navigation. active: booléen marquant la page courante #}
+{% macro nav_link(href, label, active=false) -%}
+<a href="{{ href }}" class="nav-link{% if active %} active{% endif %}">{{ label }}</a>
+{%- endmacro %}
+
+{# Séparateur visuel entre liens de navigation #}
+{% macro nav_separator() -%}
+<span class="nav-separator">|</span>
+{%- endmacro %}
+
+{# Carte de fonctionnalité (page d'accueil). #}
+{# params: title, description, href, icon (emoji), category, features (liste), modal_id #}
+{% macro feature_card(title, description, href, icon='📦', category='user', features=None, modal_id=None, active_label='Accéder') -%}
+<div class="feature-card">
+    {{ category_badge(category) }}
+    <div class="card-header">
+        <div class="card-icon">{{ icon }}</div>
+        <h3>{{ title }}</h3>
+    </div>
+    <p class="card-description">{{ description }}</p>
+    {%- if features -%}
+    <ul class="card-features">
+        {%- for f in features -%}
+        <li>{{ f }}</li>
+        {%- endfor -%}
+    </ul>
+    {%- endif -%}
+    <div class="card-actions">
+        {{ btn(active_label, 'primary', href=href) }}
+        {%- if modal_id -%}
+        {{ btn('En savoir +', 'secondary', onclick="showModal('" ~ modal_id ~ "')") }}
+        {%- endif -%}
+    </div>
+</div>
+{%- endmacro %}
+
+{# Section conteneur blanche (page d'accueil/tutoriels). #}
+{% macro section(id=None, title=None, title_icon=None, extra=None) -%}
+<div class="section"{% if id %} id="{{ id }}"{% endif %}>
+    {%- if title -%}
+    <h2 class="section-title">
+        {%- if title_icon %}{{ title_icon }} {% endif -%}{{ title }}
+        {%- if extra %} {{ extra|safe }}{% endif -%}
+    </h2>
+    {%- endif -%}
+    {{ caller() }}
+</div>
+{%- endmacro %}
+
+{# Bloc message du chat. type: 'user' | 'bot' | 'info' | 'error' #}
+{# content: texte brut ou HTML (utiliser |safe pour HTML) #}
+{% macro message(type, content) -%}
+<div class="message {{ type }}">
+    <div class="message-content">{{ content|safe }}</div>
+</div>
+{%- endmacro %}
+
+{# En-tête de réponse LLM (modèle, temps, tokens, énergie). #}
+{# Métadonnées fournies sous forme de dict response_meta ou chaînes individuelles. #}
+{% macro bot_response_header(model=None, total_time=None, input_tokens=None, output_tokens=None, energy_wh=None) -%}
+<div class="bot-response-header">
+    {%- set parts = [] -%}
+    {%- if model %}{% set _ = parts.append('<strong>Modèle :</strong> ' ~ model) %}{%- endif -%}
+    {%- if total_time is not none %}{% set _ = parts.append('<strong>Temps :</strong> ' ~ ('%.2f'|format(total_time)) ~ ' sec') %}{%- endif -%}
+    {%- if input_tokens is not none and output_tokens is not none %}{% set _ = parts.append('<strong>Tokens :</strong> ' ~ input_tokens ~ ' (in) / ' ~ output_tokens ~ ' (out)') %}{%- endif -%}
+    {%- if energy_wh is not none and energy_wh > 0 %}{% set _ = parts.append('<strong>Énergie :</strong> ' ~ ('%.3f'|format(energy_wh)) ~ ' Wh') %}{%- endif -%}
+    {{ parts|join(' &nbsp;|&nbsp; ')|safe }}
+</div>
+{%- endmacro %}
+
+{# Conteneur de réponse bot complet (en-tête + contenu). content: HTML. #}
+{% macro bot_response(content, model=None, total_time=None, input_tokens=None, output_tokens=None, energy_wh=None) -%}
+<div class="bot-response-container">
+    {{ bot_response_header(model, total_time, input_tokens, output_tokens, energy_wh) }}
+    <div class="bot-response-content">{{ content|safe }}</div>
+</div>
+{%- endmacro %}
+
+{# Section sources d'une réponse. sources: liste de dicts {title, author, page, score} #}
+{% macro sources_section(sources) -%}
+<div class="sources">
+    <strong>📚 Sources ({{ sources|length }}) :</strong>
+    {%- for s in sources -%}
+    <div class="source-item">
+        <div class="source-header">{{ loop.index }}. {{ s.title }} - {{ s.author }} (page {{ s.page|default('?') }}) (score: {{ '%.3f'|format(s.score|default(0)) }})</div>
+        {%- if s.content -%}
+        <div class="source-content">{{ s.content }}</div>
+        {%- endif -%}
+    </div>
+    {%- endfor -%}
+</div>
+{%- endmacro %}
+
+{# Zone d'entrée de chat (input + bouton envoyer). #}
+{# input_id, send_id, send_fn: paramètres pour brancher le JS existant. #}
+{% macro message_input(input_id='questionInput', send_id='sendButton', send_fn='sendQuestion()', placeholder='Posez votre question ici...') -%}
+<div class="input-container">
+    <input type="text" id="{{ input_id }}" placeholder="{{ placeholder }}"
+           onkeypress="if(event.key==='Enter') {{ send_fn }}" />
+    <button id="{{ send_id }}" onclick="{{ send_fn }}">Envoyer</button>
+</div>
+{%- endmacro %}
+
+{# Zone de chat complète : conteneur + message d'accueil optionnel. #}
+{% macro chat_zone(container_id='chatContainer', welcome_type='bot', welcome=None) -%}
+<div class="chat-container" id="{{ container_id }}">
+    {%- if welcome -%}
+    {{ message(welcome_type, welcome) }}
+    {%- endif -%}
+</div>
+{%- endmacro %}
+
+{# Lien de retour à la liste (interfaces PDF). #}
+{% macro back_button(label='← Retour à la liste', id='backToList') -%}
+<button id="{{ id }}" class="back-button">{{ label }}</button>
+{%- endmacro %}

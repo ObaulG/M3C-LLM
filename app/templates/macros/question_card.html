@@ -1,0 +1,102 @@
+{# -*- jinja2 -*- Carte de question (questions_management). #}
+{# Représente la structure d'affichage d'une question et de ses réponses. #}
+{% from 'macros/ui.html' import status_badge, btn %}
+
+{# Étoiles de difficulté. level: 1..5 #}
+{% macro difficulty_stars(level=3) -%}
+<span class="difficulty">
+    <span class="difficulty-stars">{{ '★' * (level|default(0)|int) }}{{ '☆' * (5 - (level|default(0)|int)) }}</span>
+    <span>Niveau {{ level }}</span>
+</span>
+{%- endmacro %}
+
+{# Carte de question complète. #}
+{# question: dict {question_id, content, status, difficulty_level, chunk_id, page, created_by, answers} #}
+{# answers: liste de dicts {content, is_correct, answer_id} #}
+{% macro question_card(question) -%}
+<div class="question-card" data-question-id="{{ question.question_id }}"{% if question.chunk_id %} data-chunk-id="{{ question.chunk_id }}"{% endif %}>
+    <div class="question-header">
+        <div class="question-content">
+            <strong>Q:</strong> {{ question.content }}
+        </div>
+    </div>
+
+    <div class="question-meta">
+        {%- if question.status %}{{ status_badge(question.status) }}{% endif -%}
+        {%- if question.difficulty_level %}{{ difficulty_stars(question.difficulty_level) }}{% endif -%}
+        {%- if question.created_by %}<span style="font-size: 12px; color: #999;">Créé par: {{ question.created_by }}</span>{% endif -%}
+    </div>
+
+    <div class="question-info">
+        <span class="info-item" title="Identifiant de la question"><strong>ID:</strong> {{ question.question_id }}</span>
+        {%- if question.chunk_id %}<span class="info-item" title="Identifiant du chunk"><strong>Chunk:</strong> {{ question.chunk_id }}</span>{%- endif -%}
+        {%- if question.page %}<span class="info-item" title="Page du document"><strong>Page:</strong> {{ question.page }}</span>{%- endif -%}
+        {%- if question.page_number %}<span class="info-item" title="Page du document"><strong>Page:</strong> {{ question.page_number }}</span>{%- endif -%}
+        {%- if question.num_page %}<span class="info-item" title="Page du document"><strong>Page:</strong> {{ question.num_page }}</span>{%- endif -%}
+    </div>
+
+    {%- if question.answers and question.answers|length > 0 %}
+    <div class="answers-section">
+        <div class="answers-title">Réponses ({{ question.answers|length }})</div>
+        {%- for answer in question.answers %}
+        <div class="answer-item" data-answer-index="{{ loop.index0 }}" data-answer-id="{{ answer.answer_id|default(answer.id|default('')) }}">
+            <strong>Réponse {{ loop.index }}:</strong> {{ answer.content }}
+            {%- if answer.is_correct %}<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>{%- endif -%}
+            {%- if loop.index == 1 %}<span style="color: #007bff; margin-left: 10px;">[LLM]</span>{%- endif -%}
+        </div>
+        {%- endfor %}
+    </div>
+    {%- endif %}
+
+    {%- if question.chunk_id %}
+    <div class="chunk-info">
+        Chunk ID: {{ question.chunk_id }}
+        {%- if question.num_page %}<br>Page: {{ question.num_page }}{%- endif -%}
+    </div>
+    {%- endif %}
+
+    {%- if caller %}{{ caller() }}{% endif -%}
+</div>
+{%- endmacro %}
+
+{# Section d'évaluation (coquille). À compléter par le JS existant. #}
+{# question_id: identifiant de la question. has_reference: booléen. #}
+{% macro evaluation_section(question_id, has_reference=false, reference_text='') -%}
+<div class="evaluation-section" data-question-id="{{ question_id }}" data-has-reference="{{ has_reference|tojson }}">
+    <h4>📊 Évaluation de réponse</h4>
+    {%- if has_reference %}
+    <p style="font-size: 13px; color: #28a745; margin-bottom: 10px;">
+        <strong>✓ Réponse de référence actuelle:</strong> {{ reference_text }}
+    </p>
+    {%- else %}
+    <p style="font-size: 13px; color: #dc3545; margin-bottom: 10px;">
+        <strong>⚠️ Aucune réponse de référence trouvée.</strong>
+        Vous pouvez quand même évaluer, mais vous devrez fournir une réponse de référence.
+    </p>
+    {%- endif %}
+    <input type="hidden" id="eval-source-{{ question_id }}" value="llm">
+    <textarea id="answer-to-evaluate-{{ question_id }}" class="evaluation-textarea"
+              placeholder="Saisissez la réponse à évaluer..."></textarea>
+    <div class="evaluation-controls">
+        {{ btn('Évaluer avec l\'agent', 'evaluate', onclick="evaluateAnswer(" ~ question_id ~ ")") }}
+        {{ btn('Sauvegarder la référence', 'save', onclick="saveReferenceAnswer(" ~ question_id ~ ")") }}
+    </div>
+    <div class="evaluation-result" id="eval-result-{{ question_id }}"></div>
+    <div class="evaluation-status" id="eval-status-{{ question_id }}"></div>
+
+    <div class="manual-evaluation">
+        <label>Évaluation manuelle (note sur 10):</label>
+        <input type="number" id="manual-score-{{ question_id }}" min="0" max="10" step="0.5">
+        <label>Commentaire:</label>
+        <textarea id="manual-feedback-{{ question_id }}" placeholder="Commentaire manuel..."></textarea>
+    </div>
+</div>
+{%- endmacro %}
+
+{# État vide (aucun document / aucune question sélectionnée). #}
+{% macro empty_state(title='Aucun document sélectionné', hint='Sélectionnez un document dans la barre latérale pour afficher ses questions.') -%}
+<div class="empty-state">
+    <h3>{{ title }}</h3>
+    <p>{{ hint }}</p>
+</div>
+{%- endmacro %}
