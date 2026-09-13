@@ -537,7 +537,7 @@ async def demo_extraction():
         print(f"Entités: {[f'{e.name} ({e.type.value})' for e in candidate.entities]}")
         print(f"Thèmes: {[t.name for t in candidate.themes]}")
         print(f"Source: positions {candidate.source_reference.position_start}-{candidate.source_reference.position_end}")
-        print(f"Excerpt: "{candidate.source_reference.excerpt}"...")
+        print(f"Excerpt: {candidate.source_reference.excerpt}...")
 
 
 # ============================================================================

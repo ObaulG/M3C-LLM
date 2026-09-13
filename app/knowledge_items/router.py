@@ -15,7 +15,7 @@ import time
 from typing import Optional, List, Dict, Any
 
 import aiomysql
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -423,12 +423,11 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
 @router.get(
     "/items",
     summary="Liste les knowledge_items en base",
-    description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) avec "
-                "leurs entités et thèmes associés, filtrables par resource_id (knowledge_sources).",
+    description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) avec leurs entités et thèmes associés, filtrables par resource_id (knowledge_sources).",
 )
 async def list_knowledge_items(
     resource_id: Optional[int] = None,
-    limit: int = Field(default=100, ge=1, le=500),
+    limit: int = Query(default=100, ge=1, le=500),
 ):
     """Liste les knowledge_items existants en base."""
     try:
