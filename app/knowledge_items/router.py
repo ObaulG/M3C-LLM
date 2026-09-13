@@ -26,6 +26,7 @@ from database.database import (
     get_valid_documents_with_metadata,
     get_or_create_knowledge_resource,
     get_knowledge_items,
+    get_questions_by_chunk_id,
     DB_CONFIG,
     VALID_TEXT_RESOURCE_ID,
 )
@@ -220,6 +221,31 @@ async def get_chunk(chunk_id: int):
         )
 
     return JSONResponse(content={"chunk": chunk})
+
+
+@router.get(
+    "/chunks/{chunk_id}/questions",
+    summary="Questions et réponses associées à un chunk",
+    description="Retourne les questions (avec leurs réponses) associées à un chunk précis "
+                "(text_chunks.id) via la table question_chunks. Réutilise get_questions_by_chunk_id.",
+)
+async def get_chunk_questions(chunk_id: int):
+    """Récupère les questions et réponses associées à un chunk."""
+    try:
+        conn = await get_db_connection()
+        questions = await get_questions_by_chunk_id(str(chunk_id), conn, include_answers=True)
+        await conn.close()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des questions: {str(e)}",
+        )
+
+    return JSONResponse(content={
+        "chunk_id": chunk_id,
+        "questions": questions,
+        "count": len(questions),
+    })
 
 
 @router.post(

@@ -63,6 +63,23 @@
         .valid-documents-info { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3; }
         .valid-documents-info h4 { color: #1976D2; margin-bottom: 10px; }
         .valid-documents-list { font-size: 13px; color: #555; line-height: 1.8; }
+        /* Questions/Réponses associées (réutilise les styles de questions_management.html) */
+        .question-card { background: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .question-card .q-content { font-size: 15px; line-height: 1.6; color: #333; }
+        .question-card .q-meta { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+        .q-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .q-badge-validated { background: #e8f5e9; color: #388e3c; }
+        .q-badge-pending { background: #fff3e0; color: #f57c00; }
+        .q-badge-generated { background: #e3f2fd; color: #1976d2; }
+        .q-badge-other { background: #f0f0f0; color: #555; }
+        .q-difficulty { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #666; }
+        .q-difficulty-stars { color: #ffc107; font-size: 14px; }
+        .q-info { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; font-size: 12px; color: #666; }
+        .q-info-item { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #e0e0e0; }
+        .answers-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0; }
+        .answers-title { font-size: 13px; font-weight: bold; color: #666; margin-bottom: 8px; }
+        .answer-item { background: #f8f9fa; border-left: 3px solid #b74420; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; font-size: 14px; line-height: 1.5; }
+        .answer-item:last-child { margin-bottom: 0; }
         @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
     </style>
 </head>
@@ -129,6 +146,13 @@
                         <label>Contenu du chunk sélectionné</label>
                         <div id="chunkContentDisplay" class="chunk-content-display">
                             Sélectionnez un document puis un chunk pour afficher son contenu...
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Questions et réponses associées au chunk</label>
+                        <div id="chunkQuestionsContainer">
+                            <p style="color:#888; font-size:13px;">Sélectionnez un chunk pour afficher les questions/réponses associées...</p>
                         </div>
                     </div>
 
@@ -278,6 +302,7 @@
                             currentChunkContent = null;
                             chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
                         }
+                        loadChunkQuestions(currentChunkId);
                     };
                 } else {
                     chunkSelect.innerHTML = '<option value="">Aucun chunk disponible</option>';
@@ -301,6 +326,87 @@
             chunkSelect.onchange = null;
             currentChunkId = null;
             currentChunkContent = null;
+            resetChunkQuestions();
+        }
+
+        function resetChunkQuestions() {
+            document.getElementById('chunkQuestionsContainer').innerHTML =
+                '<p style="color:#888; font-size:13px;">Sélectionnez un chunk pour afficher les questions/réponses associées...</p>';
+        }
+
+        // === Questions/Réponses associées au chunk ===
+        async function loadChunkQuestions(chunkId) {
+            const container = document.getElementById('chunkQuestionsContainer');
+            if (!chunkId) {
+                resetChunkQuestions();
+                return;
+            }
+            container.innerHTML = '<p style="color:#888; font-size:13px;">Chargement des questions...</p>';
+            try {
+                const response = await fetch(`${KNOWLEDGE_API}/chunks/${chunkId}/questions`);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                renderChunkQuestions(data.questions || [], data.count || 0);
+            } catch (error) {
+                console.error('Erreur chargement questions du chunk:', error);
+                container.innerHTML = '<p style="color:#dc3545; font-size:13px;">Erreur lors du chargement des questions.</p>';
+            }
+        }
+
+        function renderChunkQuestions(questions, count) {
+            const container = document.getElementById('chunkQuestionsContainer');
+            if (!questions || questions.length === 0) {
+                container.innerHTML = '<p style="color:#888; font-size:13px;">Aucune question associée à ce chunk.</p>';
+                return;
+            }
+
+            let html = `<div style="font-size:13px; color:#666; margin-bottom:10px;">${count} question(s) associée(s) à ce chunk</div>`;
+            html += questions.map(question => {
+                let badgeClass = 'q-badge-other';
+                if (question.status === 'validated') badgeClass = 'q-badge-validated';
+                else if (question.status === 'pending') badgeClass = 'q-badge-pending';
+                else if (question.status === 'generated') badgeClass = 'q-badge-generated';
+
+                const stars = getDifficultyStars(question.difficulty_level);
+
+                const answersHtml = (question.answers && question.answers.length > 0) ? `
+                    <div class="answers-section">
+                        <div class="answers-title">Réponses (${question.answers.length})</div>
+                        ${question.answers.map((answer, index) => `
+                            <div class="answer-item">
+                                <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
+                                ${answer.is_correct ? '<span style="color:#28a745; margin-left:10px;">✓ Correcte</span>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<div class="answers-section"><div class="answers-title">Aucune réponse enregistrée</div></div>';
+
+                return `
+                    <div class="question-card">
+                        <div class="q-content"><strong>Q:</strong> ${escapeHtml(question.content)}</div>
+                        <div class="q-meta">
+                            <span class="q-badge ${badgeClass}">${escapeHtml(question.status || 'inconnu')}</span>
+                            <span class="q-difficulty">
+                                <span class="q-difficulty-stars">${stars}</span>
+                                <span>Niveau ${question.difficulty_level != null ? question.difficulty_level : '-'}</span>
+                            </span>
+                            ${question.created_by ? `<span style="font-size:12px; color:#999;">Créé par: ${escapeHtml(question.created_by)}</span>` : ''}
+                        </div>
+                        <div class="q-info">
+                            <span class="q-info-item"><strong>ID:</strong> ${question.question_id}</span>
+                        </div>
+                        ${answersHtml}
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        function getDifficultyStars(level) {
+            const fullStar = '★';
+            const emptyStar = '☆';
+            if (level === null || level === undefined) return fullStar.repeat(3);
+            return fullStar.repeat(level) + emptyStar.repeat(5 - level);
         }
 
         // === Génération via LLM ===
