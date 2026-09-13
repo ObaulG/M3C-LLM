@@ -21,7 +21,6 @@ from pydantic import Field
 
 from database.database import (
     get_db_connection,
-    get_all_text_chunks,
     get_chunk_by_id,
     get_valid_documents_with_metadata,
     get_or_create_knowledge_resource,
@@ -159,30 +158,6 @@ async def get_valid_documents():
         "documents": documents_info,
         "count": len(documents_info),
         "description": "Documents avec extracted_text valide et vérifié",
-    })
-
-
-@router.get(
-    "/documents/{document_id}/chunks",
-    summary="Liste les chunks d'un document",
-    description="Retourne tous les chunks d'un document avec leur contenu pour permettre "
-                "la sélection d'un chunk précis avant la génération de knowledge_items.",
-)
-async def get_document_chunks(document_id: int):
-    """Récupère tous les chunks d'un document avec leur contenu."""
-    async with await get_db_connection() as conn:
-        chunks = await get_all_text_chunks(conn, document_id)
-
-    if not chunks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Aucun chunk trouvé pour le document {document_id}",
-        )
-
-    return JSONResponse(content={
-        "document_id": document_id,
-        "chunks": chunks,
-        "count": len(chunks),
     })
 
 

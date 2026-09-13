@@ -40,7 +40,6 @@ from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestIn
 from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
 from agents.message_evaluator_agent import get_message_type_agent, MessageTypeRequestInput
 from database.database import (get_db_connection,
-                               get_all_documents,
                                get_questions_by_document_id,
                                get_question_by_id,
                                get_questions_by_ids,
@@ -87,6 +86,9 @@ from question_answer.services import recommend_questions_for_document, generate_
 # Import du router Solr
 from solr.router import router as solr_router
 
+# Import du router de consultation des documents et de leurs chunks
+from documents.router import router as documents_router
+
 # Charger les variables d'environnement
 load_dotenv()
 # === MODELS PYDANTIC ===
@@ -129,20 +131,6 @@ class QueryCompareResponse(BaseModel):
     metadata: Dict = Field(..., description="Métadonnées de la requête")
     timestamp: str = Field(..., description="Horodatage de la réponse")
 
-class DocumentResponse(BaseModel):
-    """Modèle de réponse pour un document contenant les informations de base"""
-    document_id: int = Field(..., description="Identifiant du document (item, ou document_id")
-    source_id: Optional[int] = Field(..., description="Identifiant de la ressource pour requêter le pdf")
-    file_name: str = Field(..., description="Nom du fichier")
-    title: str = Field(..., description="Titre du document")
-    author: str = Field(..., description="Auteur du document")
-    created_at: str = Field(..., description="Date de création")
-    updated_at: str = Field(..., description="Date de mise à jour")
-class DocumentsListResponse(BaseModel):
-    """ModÃ¨le de réponse pour la liste des documents"""
-    documents: List[DocumentResponse] = Field(..., description="Liste des documents")
-    count: int = Field(..., description="Nombre total de documents")
-    timestamp: str = Field(..., description="Horodatage de la réponse")
 class RAGParameters(BaseModel):
     nb_sources: int
     reranking: bool
@@ -248,6 +236,7 @@ app.include_router(question_answer_router)
 app.include_router(message_evaluator_router)
 app.include_router(knowledge_items_router)
 app.include_router(solr_router)
+app.include_router(documents_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -1056,45 +1045,6 @@ async def _get_pdf_by_filename(filename: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur - le PDF n'a pas pu être récupéré:")
 
-@app.get("/api/documents", response_model=DocumentsListResponse, tags=["Documents"])
-async def get_documents_list():
-    """
-    RécupÃ¨re la liste de tous les documents disponibles dans la base de données.
-    Returns:
-        DocumentsListResponse: Liste des documents avec leurs métadonnées
-    """
-    try:
-        # Connexion à la base de données
-        async with await get_db_connection() as conn:
-            documents = await get_all_documents(conn)
-
-        # Construire la réponse
-        document_responses = []
-        print("retrieved!")
-        for doc in documents:
-            document_responses.append(DocumentResponse(
-                document_id=doc["document_id"],
-                source_id=doc["resource_id"],
-                file_name=doc["file_name"],
-                title=doc["title"],
-                author=doc["creator"],
-                created_at=str(doc["created_at"]),
-                updated_at=str(doc["updated_at"])
-            ))
-        return DocumentsListResponse(
-            documents=document_responses,
-            count=len(document_responses),
-            timestamp=datetime.now().isoformat()
-        )
-    except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR lors de la récupération des documents: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la récupération des documents: {str(e)}"
-        )
-
-
-# Modèle pour la génération de questions à partir d'un texte
 class QASingleRequest(BaseModel):
     """Modèle de requête pour générer des questions à partir d'un texte"""
     message: Optional[str] = Field(None, description="Message ou instruction optionnel")

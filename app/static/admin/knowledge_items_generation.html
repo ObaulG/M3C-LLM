@@ -211,6 +211,7 @@
     <script>
         const API_BASE = window.location.origin;
         const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
+        const DOCUMENTS_API = API_BASE + '/api/documents';
 
         let currentDocumentId = null;
         let currentChunkId = null;
@@ -275,7 +276,7 @@
                 chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
                 chunkContentDisplay.textContent = 'Chargement des chunks...';
 
-                const response = await fetch(`${KNOWLEDGE_API}/documents/${documentId}/chunks`);
+                const response = await fetch(`${DOCUMENTS_API}/${documentId}/chunks`);
                 if (!response.ok) throw new Error('HTTP ' + response.status);
                 const data = await response.json();
 
