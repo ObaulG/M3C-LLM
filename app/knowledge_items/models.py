@@ -62,7 +62,7 @@ class KnowledgeItemModel(BaseModel):
 
 class KnowledgeGenerationRequest(BaseModel):
     """Requête pour générer des knowledge_items à partir d'un chunk."""
-    chunk_id: int = Field(..., description="ID du chunk (text_chunks.id) à analyser")
+    chunk_id: str = Field(..., description="ID du chunk (text_chunks.id) à analyser")
     document_id: Optional[int] = Field(
         default=None,
         description="ID du document (text_documents.id) auquel appartient le chunk"
@@ -75,7 +75,7 @@ class KnowledgeGenerationRequest(BaseModel):
 
 class KnowledgeGenerationResponse(BaseModel):
     """Réponse contenant les knowledge_items générés pour un chunk."""
-    chunk_id: int = Field(..., description="ID du chunk analysé")
+    chunk_id: str = Field(..., description="ID du chunk analysé")
     document_id: Optional[int] = Field(default=None, description="ID du document")
     model: str = Field(..., description="Modèle LLM utilisé")
     knowledge_items: List[KnowledgeItemModel] = Field(
@@ -90,7 +90,7 @@ class KnowledgeSaveRequest(BaseModel):
     knowledge_items: List[KnowledgeItemModel] = Field(
         ..., description="knowledge_items à sauvegarder"
     )
-    chunk_id: Optional[int] = Field(
+    chunk_id: Optional[str] = Field(
         default=None,
         description="ID du chunk source, pour constituer le titre de la ressource"
     )

@@ -503,43 +503,6 @@ async def extract_knowledge_fallback(text: str,
     
     return candidates
 
-
-# ============================================================================
-# EXEMPLES D'UTILISATION
-# ============================================================================
-
-async def demo_extraction():
-    """Démonstration de l'extraction de connaissances"""
-    
-    # Texte d'exemple
-    text = """
-    Léonard de Vinci, né le 15 avril 1452 à Vinci en Italie, était un peintre, architecte et inventeur renommé.
-    Il a peint la Joconde, actuellement exposée au Musée du Louvre à Paris.
-    Cette œuvre, opus 257, a été réalisée entre 1503 et 1519 et représente Mona Lisa.
-    Le tableau est célèbre pour son sourire énigmatique et son utilisation révolutionnaire de la technique du sfumato.
-    """
-    
-    print("Extraction de connaissances en cours...")
-    candidates = await extract_knowledge_elements(
-        text=text,
-        chunk_id="demo_chunk_1",
-        document_id="demo_doc_1",
-        page=1,
-        position_in_page=0
-    )
-    
-    print(f"Extraits {len(candidates)} éléments de connaissance:")
-    for i, candidate in enumerate(candidates):
-        print(f"\n--- Élément {i+1} ---")
-        print(f"Proposition: {candidate.proposition}")
-        print(f"Résumé: {candidate.summary}")
-        print(f"Confiance: {candidate.confidence}")
-        print(f"Entités: {[f'{e.name} ({e.type.value})' for e in candidate.entities]}")
-        print(f"Thèmes: {[t.name for t in candidate.themes]}")
-        print(f"Source: positions {candidate.source_reference.position_start}-{candidate.source_reference.position_end}")
-        print(f"Excerpt: {candidate.source_reference.excerpt}...")
-
-
 # ============================================================================
 # PERSISTANCE EN BASE DE DONNÉES MySQL
 # ============================================================================

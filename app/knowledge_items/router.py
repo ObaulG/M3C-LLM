@@ -150,11 +150,8 @@ def _model_to_candidate(item: KnowledgeItemModel) -> KnowledgeItemCandidate:
 )
 async def get_valid_documents():
     """Récupère la liste des documents validés (VALID_TEXT_RESOURCE_ID)."""
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn:
         documents_info = await get_valid_documents_with_metadata(conn)
-    finally:
-        await conn.close()
 
     return JSONResponse(content={
         "valid_documents": VALID_TEXT_RESOURCE_ID,
@@ -172,16 +169,8 @@ async def get_valid_documents():
 )
 async def get_document_chunks(document_id: int):
     """Récupère tous les chunks d'un document avec leur contenu."""
-    try:
-        conn = await get_db_connection()
+    async with await get_db_connection() as conn:
         chunks = await get_all_text_chunks(conn, document_id)
-        await conn.close()
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la récupération des chunks: {str(e)}",
-        )
 
     if not chunks:
         raise HTTPException(
@@ -204,9 +193,8 @@ async def get_document_chunks(document_id: int):
 async def get_chunk(chunk_id: int):
     """Récupère un chunk spécifique par son ID."""
     try:
-        conn = await get_db_connection()
-        chunk = await get_chunk_by_id(conn, chunk_id)
-        await conn.close()
+        async with await get_db_connection() as conn:
+            chunk = await get_chunk_by_id(conn, chunk_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -236,9 +224,8 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
 
     # 1. Récupérer le chunk
     try:
-        conn = await get_db_connection()
-        chunk = await get_chunk_by_id(conn, request.chunk_id)
-        await conn.close()
+        async with await get_db_connection() as conn:
+            chunk = await get_chunk_by_id(conn, request.chunk_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -403,29 +390,18 @@ async def list_knowledge_items(
     resource_id: Optional[int] = None,
     limit: int = Query(default=100, ge=1, le=500),
 ):
-    """Liste les knowledge_items existants en base."""
-    try:
-        conn = await get_db_connection()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur de connexion à la base: {str(e)}",
-        )
 
     try:
-        items = await get_knowledge_items(conn, resource_id=resource_id, limit=limit)
-        await conn.close()
-        return JSONResponse(content={
-            "knowledge_items": items,
-            "count": len(items),
-            "resource_id_filter": resource_id,
-        })
+        async with await get_db_connection() as conn:
+            items = await get_knowledge_items(conn, resource_id=resource_id, limit=limit)
+
+            return JSONResponse(content={
+                "knowledge_items": items,
+                "count": len(items),
+                "resource_id_filter": resource_id,
+            })
     except Exception as e:
         print(f"Erreur lors de la liste des knowledge_items: {e}")
-        try:
-            await conn.close()
-        except Exception:
-            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la récupération: {str(e)}",

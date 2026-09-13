@@ -298,7 +298,7 @@ CREATE TABLE IF NOT EXISTS user_model_history (
 -- ============================================================================
 
 -- 6.1 Vue: Modèle utilisateur complet
-DELIMITER //
+
 CREATE OR REPLACE VIEW user_complete_model AS
 SELECT 
     up.user_id,
@@ -359,8 +359,7 @@ SELECT
         WHERE uks.user_id = up.user_id
     ) AS knowledge_states
 FROM user_profiles up;
-//
-DELIMITER ;
+
 
 -- 6.2 Vue: Observations récentes par utilisateur
 CREATE OR REPLACE VIEW user_recent_observations AS
@@ -435,65 +434,3 @@ FROM knowledge_item_themes kit
 JOIN themes t ON kit.theme_id = t.id
 JOIN knowledge_items ki ON kit.knowledge_id = ki.id
 ORDER BY t.name, kit.relevance DESC, ki.id;
-
--- ============================================================================
--- SECTION 7: TRIGGERS
--- ============================================================================
-
--- 7.1 Trigger pour mettre à jour updated_at sur user_profiles
-DELIMITER //
-CREATE TRIGGER update_user_profile_timestamp
-BEFORE UPDATE ON user_profiles
-FOR EACH ROW
-BEGIN
-    SET NEW.updated_at = CURRENT_TIMESTAMP;
-END//
-DELIMITER ;
-
--- 7.2 Trigger pour mettre à jour updated_at sur knowledge_items
-DELIMITER //
-CREATE TRIGGER update_knowledge_item_timestamp
-BEFORE UPDATE ON knowledge_items
-FOR EACH ROW
-BEGIN
-    SET NEW.updated_at = CURRENT_TIMESTAMP;
-END//
-DELIMITER ;
-
--- 7.3 Trigger pour mettre à jour updated_at sur knowledge_resources
-DELIMITER //
-CREATE TRIGGER update_knowledge_resource_timestamp
-BEFORE UPDATE ON knowledge_resources
-FOR EACH ROW
-BEGIN
-    SET NEW.updated_at = CURRENT_TIMESTAMP;
-END//
-DELIMITER ;
-
--- ============================================================================
--- SECTION 8: COMMENTAIRES FINAUX ET RECOMMANDATIONS
--- ============================================================================
-
--- Ce schéma implémente complètement le modèle décrit dans:
--- modele-utilisateur-connaissances-observations.md
---
--- Points clés respectés:
--- ✅ Connaissances atomiques avec propositions, entités, thèmes, sources
--- ✅ Observations horodatées avec types (déclaratives, comportementales, évaluatives)
--- ✅ Journal d'observations immuable avec traçabilité complète
--- ✅ Modèle utilisateur dynamique avec profil, intérêts, états des connaissances
--- ✅ Traçabilité des preuves via la table model_evidences
--- ✅ Support des interprétations LLM avec contexte complet
--- ✅ Vues utiles pour la récupération des données
--- ✅ Index pour performances sur les champs fréquemment consultés
--- ✅ Triggers pour mise à jour automatique des timestamps
---
--- Recommandations pour la production:
--- 1. Considérer le partitionnement de la table observations par mois/année
--- 2. Ajouter des indexes supplémentaires selon les requêtes spécifiques
--- 3. Implémenter un système de cache pour les vues complexes
--- 4. Prévoir des sauvegardes régulières
--- 5. Monitorer la taille des tables JSON pour optimiser si nécessaire
-
--- Pour exécuter ce script:
--- mysql -u [username] -p [database_name] < user_knowledge_model.sql

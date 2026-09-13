@@ -225,7 +225,7 @@
                 });
                 docSelect.innerHTML = options;
                 docSelect.onchange = async function() {
-                    currentDocumentId = this.value ? parseInt(this.value) : null;
+                    currentDocumentId = this.value ? this.value : null;
                     await loadChunksForDocument(currentDocumentId);
                 };
                 resetChunkSelector();
@@ -268,10 +268,11 @@
                     chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
 
                     chunkSelect.onchange = function() {
+                        console.log("Chunk sélectionné:", chunkSelect.value);
                         const selectedOption = this.options[this.selectedIndex];
                         const content = selectedOption ? selectedOption.dataset.content : null;
-                        currentChunkId = this.value ? parseInt(this.value) : null;
-                        if (content) {
+                        currentChunkId = chunkSelect.value;
+                        if (currentChunkId) {
                             currentChunkContent = decodeURIComponent(content);
                             chunkContentDisplay.textContent = currentChunkContent;
                         } else {
@@ -319,6 +320,7 @@
             document.getElementById('resultsSection').style.display = 'none';
 
             try {
+                console.log('generate knowledge items');
                 const response = await fetch(KNOWLEDGE_API + '/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -333,7 +335,7 @@
                     const errText = await response.text();
                     throw new Error('HTTP ' + response.status + ' : ' + errText);
                 }
-
+                console.log(response.text);
                 const data = await response.json();
                 generatedItems = data.knowledge_items || [];
 
@@ -500,6 +502,7 @@
 
         // === Utilitaires ===
         function showAlert(message, type) {
+            console.log("Error:", message);
             const container = document.getElementById('alertContainer');
             const cls = type === 'success' ? 'alert-success' : 'alert-error';
             container.innerHTML = `<div class="alert ${cls}">${escapeHtml(message)}</div>`;
