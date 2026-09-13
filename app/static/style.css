@@ -385,3 +385,100 @@ figcaption {
 .tab-content.active {
     display: block;
 }
+
+/* ===== Zone profil (en-tête) ===== */
+.profile-widget {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.profile-login-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.profile-login-form input[type="text"],
+.profile-login-form input[type="password"] {
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    width: 150px;
+}
+
+.profile-login-form input:focus {
+    outline: none;
+    border-color: white;
+}
+
+.profile-login-form .btn {
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.profile-message {
+    font-size: 12px;
+    min-width: 80px;
+}
+
+.profile-register-link {
+    color: white;
+    opacity: 0.9;
+    text-decoration: underline;
+    font-size: 12px;
+}
+
+.profile-register-link:hover {
+    opacity: 1;
+}
+
+.profile-logged-in {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.profile-user-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.2s;
+}
+
+.profile-user-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+}
+
+.profile-avatar {
+    font-size: 18px;
+}
+
+.profile-username {
+    font-weight: 600;
+}
+
+.profile-logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}M3C-LLM{% endblock %}</title>
+    {# --- CSS de base (commun à toutes les pages) --- #}
+    {# static_prefix: préfixe relatif vers la racine static ('' ou '../'). #}
+    <link rel="stylesheet" href="{{ static_prefix }}style.css" />
+    {# --- CSS additionnels spécifiques à la page --- #}
+    {% block styles %}{% endblock %}
+    {# --- Bibliothèques externes (marked, plotly...) --- #}
+    {% block head_scripts %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+
+{# --- Scripts de page --- #}
+{% block scripts %}{% endblock %}
+
+{# --- Widget profil : bascule connexion/état connecté --- #}
+{# Inclure sur toutes les pages qui utilisent profile_widget. #}
+{% if include_profile_widget|default(false) %}
+<script src="{{ static_prefix }}auth_widget.js"></script>
+{% endif %}
+</body>
+</html>

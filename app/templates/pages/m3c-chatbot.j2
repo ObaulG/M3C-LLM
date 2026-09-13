@@ -1,39 +1,23 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot RAG v3 - Interface de test</title>
-    <link rel="stylesheet" href="style.css" />
+{% extends "base.html" %}
+{% block title %}Chatbot RAG v3 - Interface de test{% endblock %}
+
+{% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="chatFunctions.js"></script>
-<script src="m3c-chatbot.js"></script>
-</head>
-<body>
+<script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}m3c-chatbot.js"></script>
+{% endblock %}
+
+{% block body %}
 <div class="main_container">
     <div class="container">
-        <div class="header">
-    <div class="header-main">
-        <h1>🤖 Chatbot RAG M3C</h1><p class="subtitle">Système de Questions/Réponses sur documents</p></div>
-    <div class="header-nav"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link active">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a></div>    <div class="profile-widget" id="profileWidget">
-    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-               autocomplete="username" required />
-        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-               autocomplete="current-password" required />
-        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-        <span class="profile-message" id="profileMessage"></span>
-        <a href="auth.html" class="profile-register-link">S'inscrire</a>
-    </form>
-
-    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-        <a href="auth.html" class="profile-user-link" id="profileUserLink">
-            <span class="profile-avatar">👤</span>
-            <span class="profile-username" id="profileUsernameDisplay">—</span>
-        </a>
-        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
-    </div>
-</div></div>
+        {{ header(
+            title='Chatbot RAG M3C',
+            subtitle='Système de Questions/Réponses sur documents',
+            title_icon='🤖',
+            page='m3c-chatbot.html',
+            page_dir='root',
+            show_admin=false
+        ) }}
 
         <div class="settings">
             <div class="settings-grid">
@@ -106,28 +90,24 @@
             </div>
         </div>
 
-        <div class="chat-container" id="chatContainer"><div class="message bot">
-    <div class="message-content">👋 Bonjour ! Je suis votre assistant M3C. Veuillez écrire votre requête<br><br></div>
-</div></div>
+        {{ chat_zone(
+            container_id='chatContainer',
+            welcome_type='bot',
+            welcome='👋 Bonjour ! Je suis votre assistant M3C. Veuillez écrire votre requête<br><br>'
+        ) }}
 
-        <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <p>Recherche en cours...</p>
-</div>
+        {{ loading(label='Recherche en cours...') }}
 
-        <div class="input-container">
-    <input type="text" id="questionInput" placeholder="Posez votre question ici..."
-           onkeypress="if(event.key==='Enter') sendQuestion()" />
-    <button id="sendButton" onclick="sendQuestion()">Envoyer</button>
-</div>
+        {{ message_input(
+            input_id='questionInput',
+            send_id='sendButton',
+            send_fn='sendQuestion()',
+            placeholder='Posez votre question ici...'
+        ) }}
     </div>
 
     <div class="pdf-display" id="pdf-display">
         <iframe></iframe>
     </div>
 </div>
-
-
-<script src="auth_widget.js"></script>
-</body>
-</html>
+{% endblock %}

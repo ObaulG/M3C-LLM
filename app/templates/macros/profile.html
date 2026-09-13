@@ -1,0 +1,29 @@
+{# -*- jinja2 -*- Zone profil utilisateur dans l'en-tête. #}
+{# Bascule côté client (auth_widget.js) : mini-form de connexion si non connecté, #}
+{# sinon nom d'utilisateur + lien vers la page de profil (auth.html). #}
+
+{# page_dir: 'root' | 'admin' (pour ajuster le href relatif vers auth.html). #}
+{% macro profile_widget(page_dir='root') -%}
+{%- set auth_href = 'auth.html' if page_dir == 'root' else '../auth.html' -%}
+<div class="profile-widget" id="profileWidget">
+    {# État non connecté : mini-formulaire de connexion compact #}
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="{{ auth_href }}" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    {# État connecté : masqué par défaut, affiché par auth_widget.js #}
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="{{ auth_href }}" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
+    </div>
+</div>
+{%- endmacro %}
