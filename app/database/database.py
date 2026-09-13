@@ -1498,3 +1498,180 @@ async def get_all_indexing_jobs(conn, status_filter: str = None) -> list:
 #         # Build the query to fetch chunks with their embeddings
 #         query = f"""
 #             SELECT
+
+# ============================================================================
+# FONCTIONS POUR LES KNOWLEDGE_ITEMS (user_knowledge_model.sql)
+# ============================================================================
+
+async def get_valid_documents_with_metadata(conn) -> List[Dict]:
+    """
+    Récupère les documents validés (VALID_TEXT_RESOURCE_ID) avec leurs document_id
+    (text_documents.id), resource_id et titres.
+
+    Réutilise get_resource_basic_metadata pour le titre/auteur.
+
+    Args:
+        conn: Connexion à la base de données.
+
+    Returns:
+        Liste de dicts {document_id, resource_id, title}.
+    """
+    documents_info = []
+    for resource_id in VALID_TEXT_RESOURCE_ID:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT id FROM text_documents "
+                "WHERE source_type = 'pdf' AND source_id = %s LIMIT 1",
+                (str(resource_id),),
+            )
+            result = await cur.fetchone()
+            document_id = result[0] if result else None
+
+        if document_id:
+            metadata = await get_resource_basic_metadata(conn, resource_id)
+            title = metadata.get("title") or f"Document {resource_id}"
+            documents_info.append({
+                "document_id": document_id,
+                "resource_id": resource_id,
+                "title": title,
+            })
+    return documents_info
+
+
+async def get_or_create_knowledge_resource(
+    conn,
+    title: str,
+    uri: Optional[str] = None,
+    resource_type: str = "chunk",
+) -> int:
+    """
+    Récupère ou crée une ressource dans knowledge_resources.
+
+    Args:
+        conn: Connexion MySQL (de préférence avec DictCursor pour la cohérence,
+              mais fonctionne aussi avec un curseur tuple).
+        title: Titre de la ressource (knowledge_resources.title).
+        uri: URI optionnelle.
+        resource_type: Type de ressource (knowledge_resources.resource_type).
+
+    Returns:
+        L'ID de la ressource (knowledge_resources.id).
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(
+            "SELECT id FROM knowledge_resources WHERE title = %s ORDER BY id DESC LIMIT 1",
+            (title[:500],),
+        )
+        row = await cur.fetchone()
+        if row:
+            # row peut être un tuple (curseur tuple) ou un dict (DictCursor)
+            return row["id"] if isinstance(row, dict) else row[0]
+
+        await cur.execute(
+            "INSERT INTO knowledge_resources (title, uri, resource_type, created_at) "
+            "VALUES (%s, %s, %s, NOW())",
+            (
+                title[:500],
+                uri[:1000] if uri else None,
+                resource_type[:100],
+            ),
+        )
+        await conn.commit()
+        return cur.lastrowid
+
+
+async def get_knowledge_items(
+    conn,
+    resource_id: Optional[int] = None,
+    limit: int = 100,
+) -> List[Dict]:
+    """
+    Récupère les knowledge_items en base avec leurs entités et thèmes associés.
+
+    Filtrable par resource_id (knowledge_sources.resource_id).
+
+    Args:
+        conn: Connexion à la base de données.
+        resource_id: Si fourni, ne retourne que les knowledge_items liés à cette ressource.
+        limit: Nombre maximum de résultats.
+
+    Returns:
+        Liste de dicts {id, proposition, summary, is_verified, verification_notes,
+        created_at, updated_at, entities: [...], themes: [...]}.
+    """
+    async with conn.cursor() as cur:
+        if resource_id is not None:
+            await cur.execute(
+                """
+                SELECT DISTINCT ki.id, ki.proposition, ki.summary, ki.is_verified,
+                       ki.verification_notes, ki.created_at, ki.updated_at
+                FROM knowledge_items ki
+                LEFT JOIN knowledge_sources ks ON ks.knowledge_id = ki.id
+                WHERE ks.resource_id = %s
+                ORDER BY ki.created_at DESC
+                LIMIT %s
+                """,
+                (resource_id, limit),
+            )
+        else:
+            await cur.execute(
+                """
+                SELECT id, proposition, summary, is_verified, verification_notes,
+                       created_at, updated_at
+                FROM knowledge_items
+                ORDER BY created_at DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+        rows = await cur.fetchall()
+
+        items = []
+        for row in rows:
+            kid = row[0]
+            # Entités liées
+            await cur.execute(
+                """
+                SELECT e.name, e.type, kie.relevance
+                FROM knowledge_item_entities kie
+                JOIN entities e ON e.id = kie.entity_id
+                WHERE kie.knowledge_id = %s
+                """,
+                (kid,),
+            )
+            entity_rows = await cur.fetchall()
+            entities = [
+                {"name": er[0], "type": er[1],
+                 "relevance": float(er[2]) if er[2] is not None else 1.0}
+                for er in entity_rows
+            ]
+
+            # Thèmes liés
+            await cur.execute(
+                """
+                SELECT t.name, kit.relevance
+                FROM knowledge_item_themes kit
+                JOIN themes t ON t.id = kit.theme_id
+                WHERE kit.knowledge_id = %s
+                """,
+                (kid,),
+            )
+            theme_rows = await cur.fetchall()
+            themes = [
+                {"name": tr[0],
+                 "relevance": float(tr[1]) if tr[1] is not None else 1.0}
+                for tr in theme_rows
+            ]
+
+            items.append({
+                "id": kid,
+                "proposition": row[1],
+                "summary": row[2],
+                "is_verified": bool(row[3]) if row[3] is not None else False,
+                "verification_notes": row[4],
+                "created_at": row[5].isoformat() if row[5] else None,
+                "updated_at": row[6].isoformat() if row[6] else None,
+                "entities": entities,
+                "themes": themes,
+            })
+    return items
