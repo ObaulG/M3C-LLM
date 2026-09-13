@@ -78,6 +78,9 @@ from question_answer.router import router as question_answer_router
 # Import du router pour l'évaluation des messages
 from question_answer.message_evaluator_router import router as message_evaluator_router
 
+# Import du router de génération de knowledge_items
+from knowledge_items.router import router as knowledge_items_router
+
 # Import de la fonction de recommandation de questions
 from question_answer.services import recommend_questions_for_document, generate_questions_single_answer_for_chunk
 
@@ -243,6 +246,7 @@ app.include_router(indexing_router)
 app.include_router(embedders_router)
 app.include_router(question_answer_router)
 app.include_router(message_evaluator_router)
+app.include_router(knowledge_items_router)
 app.include_router(solr_router)
 
 # === CONFIGURATION CORS ===
