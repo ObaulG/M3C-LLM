@@ -3,7 +3,7 @@
 Ce router permet de :
 - lister les documents validés (VALID_TEXT_RESOURCE_ID) et leurs chunks,
 - générer des knowledge_items à partir d'un chunk précis via un appel LLM
-  (agents.knowledge_element_extractor.extract_knowledge_elements),
+  (agents.knowledge_item_agent.generate_knowledge_items_from_chunk),
 - sauvegarder les knowledge_items générés dans le schéma user_knowledge_model.sql
   (knowledge_items, knowledge_item_entities, knowledge_item_themes, knowledge_sources,
   et les tables de référence entities / themes / knowledge_resources).
@@ -37,13 +37,16 @@ async def _get_dict_cursor_connection():
     """
     return await aiomysql.connect(**DB_CONFIG, cursorclass=aiomysql.DictCursor)
 from agents.knowledge_element_extractor import (
-    extract_knowledge_elements,
     save_knowledge_candidates_to_db,
     KnowledgeItemCandidate,
     EntityCandidate,
     ThemeCandidate,
     SourceReference,
     EntityType,
+)
+from agents.knowledge_item_agent import (
+    generate_knowledge_items_from_chunk,
+    KnowledgeItemSchema,
 )
 
 from .models import (
@@ -66,41 +69,39 @@ router = APIRouter(prefix="/api/admin/knowledge-items", tags=["Admin", "Knowledg
 # Conversion entre modèles Pydantic et dataclasses de l'extracteur
 # ----------------------------------------------------------------------------
 
-def _to_source_reference_model(source_ref: SourceReference) -> SourceReferenceModel:
-    return SourceReferenceModel(
-        document_id=source_ref.document_id,
-        chunk_id=source_ref.chunk_id,
-        excerpt=source_ref.excerpt or "",
-        page=source_ref.page,
-        position_in_page=source_ref.position_in_page,
-        position_start=source_ref.position_start,
-        position_end=source_ref.position_end,
-        uri=source_ref.uri,
-    )
-
-
-def _candidate_to_model(candidate: KnowledgeItemCandidate) -> KnowledgeItemModel:
+def _schema_to_model(item: KnowledgeItemSchema) -> KnowledgeItemModel:
+    """Convertit un KnowledgeItemSchema (sortie de l'agent) en modèle Pydantic
+    de réponse API (KnowledgeItemModel). Les deux structures sont isomorphes."""
     return KnowledgeItemModel(
-        proposition=candidate.proposition,
-        summary=candidate.summary,
+        proposition=item.proposition,
+        summary=item.summary,
         entities=[
-            EntityCandidateModel(
-                name=e.name, type=e.type.value, confidence=e.confidence
-            )
-            for e in candidate.entities
+            EntityCandidateModel(name=e.name, type=e.type, confidence=e.confidence)
+            for e in item.entities
         ],
         themes=[
             ThemeCandidateModel(name=t.name, confidence=t.confidence)
-            for t in candidate.themes
+            for t in item.themes
         ],
-        source_reference=_to_source_reference_model(candidate.source_reference),
-        confidence=candidate.confidence,
-        is_verified=candidate.is_verified,
-        verification_notes=candidate.verification_notes,
+        source_reference=SourceReferenceModel(
+            document_id=item.source_reference.document_id,
+            chunk_id=item.source_reference.chunk_id,
+            excerpt=item.source_reference.excerpt or "",
+            page=item.source_reference.page,
+            position_in_page=item.source_reference.position_in_page,
+            position_start=item.source_reference.position_start,
+            position_end=item.source_reference.position_end,
+            uri=item.source_reference.uri,
+        ),
+        confidence=item.confidence,
+        is_verified=item.is_verified,
+        verification_notes=item.verification_notes,
     )
 
 
 def _model_to_candidate(item: KnowledgeItemModel) -> KnowledgeItemCandidate:
+    """Convertit un KnowledgeItemModel (API) en KnowledgeItemCandidate (dataclass)
+    attendu par save_knowledge_candidates_to_db pour la persistance."""
     valid_entity_types = {t.value for t in EntityType}
     entities = [
         EntityCandidate(
@@ -239,7 +240,7 @@ async def get_chunk(chunk_id: int):
     summary="Génère des knowledge_items pour un chunk",
     description="Extrait des knowledge_items (propositions vérifiables + entités + thèmes + "
                 "source) à partir du contenu d'un chunk précis via un appel LLM "
-                "(agents.knowledge_element_extractor.extract_knowledge_elements).",
+                "(agents.knowledge_item_agent.generate_knowledge_items_from_chunk).",
 )
 async def generate_knowledge_items(request: KnowledgeGenerationRequest):
     """Génère des knowledge_items à partir d'un chunk précis via un LLM."""
@@ -269,11 +270,11 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
             detail=f"Le chunk {request.chunk_id} ne contient pas de texte exploitable",
         )
 
-    # 2. Extraction via LLM
+    # 2. Extraction via LLM (AtomicAgent knowledge_item_agent)
     document_id_str = str(request.document_id) if request.document_id else str(chunk.get("document_id", ""))
 
     try:
-        candidates = await extract_knowledge_elements(
+        schemas = await generate_knowledge_items_from_chunk(
             text=text,
             chunk_id=str(request.chunk_id),
             document_id=document_id_str,
@@ -288,8 +289,8 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
             detail=f"Erreur lors de l'extraction: {str(e)}",
         )
 
-    # 3. Conversion en modèles Pydantic
-    knowledge_items = [_candidate_to_model(c) for c in candidates]
+    # 3. Conversion en modèles Pydantic de réponse
+    knowledge_items = [_schema_to_model(s) for s in schemas]
 
     generation_time = time.time() - start_time
 
