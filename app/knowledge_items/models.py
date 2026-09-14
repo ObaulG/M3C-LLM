@@ -60,6 +60,17 @@ class KnowledgeItemModel(BaseModel):
     verification_notes: Optional[str] = Field(default=None, description="Notes de vérification")
 
 
+class QAItemRequestModel(BaseModel):
+    """Une paire question/réponses fournie pour la génération de knowledge_items
+    à partir des questions (mode comparaison avec l'extraction depuis le chunk)."""
+    question_id: Optional[int] = Field(default=None, description="ID de la question")
+    question: str = Field(..., description="Contenu de la question")
+    answers: List[str] = Field(
+        default_factory=list,
+        description="Contenu des réponses associées à la question",
+    )
+
+
 class KnowledgeGenerationRequest(BaseModel):
     """Requête pour générer des knowledge_items à partir d'un chunk."""
     chunk_id: str = Field(..., description="ID du chunk (text_chunks.id) à analyser")
@@ -70,6 +81,27 @@ class KnowledgeGenerationRequest(BaseModel):
     model: str = Field(
         default="mistral-medium",
         description="Modèle LLM à utiliser pour l'extraction"
+    )
+
+
+class KnowledgeGenerationFromQuestionsRequest(BaseModel):
+    """Requête pour générer des knowledge_items à partir des questions/réponses
+    associées à un chunk (mode comparaison avec l'extraction depuis le chunk)."""
+    chunk_id: Optional[str] = Field(
+        default=None,
+        description="ID du chunk (text_chunks.id) auquel sont rattachées les questions",
+    )
+    document_id: Optional[int] = Field(
+        default=None,
+        description="ID du document (text_documents.id) auquel appartient le chunk"
+    )
+    qa_items: List[QAItemRequestModel] = Field(
+        ...,
+        description="Paires question/réponses à analyser",
+    )
+    model: str = Field(
+        default="mistral-medium",
+        description="Modèle LLM à utiliser pour l'extraction",
     )
 
 
