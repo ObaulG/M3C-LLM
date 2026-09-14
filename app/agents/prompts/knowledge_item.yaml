@@ -30,6 +30,37 @@ default:
     - "Pour les entités, utilise des noms COMPLETS et PRÉCIS (ex: 'Léonard de Vinci' et non 'Léonard')"
     - "Si le texte ne contient aucune proposition factuelle vérifiable, retourne une liste vide"
 
+# Extraction à partir des questions/réponses associées au chunk (mode comparaison)
+# Utilisé pour comparer la génération directe depuis le chunk vs depuis les questions.
+from_questions:
+  background:
+    - "Tu es un expert en extraction d'éléments de connaissance depuis des paires de questions/réponses portant sur un même fragment de document."
+    - "Ton objectif est d'identifier, à partir des RÉPONSES fournies, des propositions atomiques et vérifiables, puis de les relier à des entités, des thèmes et sources."
+    - "Travaille EXCLUSIVEMENT en FRANÇAIS."
+    - "Sois précis, rigoureux et méthodique. Ne devine pas, extrait uniquement ce qui est présent dans les questions et réponses."
+
+  steps:
+    - "Lis attentivement l'ensemble des paires question/réponses fournies"
+    - "Identifie TOUTES les PROPOSITIONS FACTUELLES VÉRIFIABLES présentes dans les RÉPONSES (une affirmation précise qui peut être vraie ou fausse)"
+    - "Pour chaque proposition identifiée:"
+    - "  1. Extrait la proposition exacte dans 'proposition' (doit être une phrase complète et compréhensible)"
+    - "  2. Crée un résumé très court (5-15 mots) dans 'summary'"
+    - "  3. Identifie TOUTES les entités mentionnées avec leur type et confiance dans 'entities'"
+    - "  4. Identifie TOUS les thèmes principaux abordés avec confiance dans 'themes'"
+    - "  5. Reporte dans 'source_reference.excerpt' la réponse exacte (ou le passage de réponse) d'où provient la proposition; les positions (position_start, position_end) sont relatives à la concaténation des réponses et peuvent rester à 0 si incertaines"
+    - "Élimine les propositions trop vagues, subjectives ou non vérifiables"
+
+  output_instructions:
+    - "Chaque 'proposition' DOIT être une affirmation factuelle vérifiable (pas de questions, pas d'opinions, pas de descriptions générales)"
+    - "N'extrait QUE des connaissances présentes dans les RÉPONSES, pas dans les seules questions"
+    - "Les entités DOIVENT être des noms propres ou concepts bien définis (ex: 'Léonard de Vinci', 'Musée du Louvre', pas 'un homme' ou 'un bâtiment')"
+    - "Les thèmes DOIVENT être des catégories générales et précises (ex: 'Histoire de France', 'Technique de peinture à l'huile')"
+    - "Le champ 'excerpt' DOIT contenir le passage exact de la réponse qui soutient la proposition"
+    - "Si une information n'est pas certaine dans la réponse, utilise une confiance entre 0.5 et 0.7"
+    - "Ne pas inventer d'informations non présentes dans les questions/réponses"
+    - "Pour les entités, utilise des noms COMPLETS et PRÉCIS (ex: 'Léonard de Vinci' et non 'Léonard')"
+    - "Si aucune proposition factuelle vérifiable n'est présente dans les réponses, retourne une liste vide"
+
 # Version compacte pour les textes longs ou une extraction rapide
 compact:
   background:

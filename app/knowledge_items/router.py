@@ -49,11 +49,14 @@ from agents.knowledge_element_extractor import (
 )
 from agents.knowledge_item_agent import (
     generate_knowledge_items_from_chunk,
+    generate_knowledge_items_from_questions,
     KnowledgeItemSchema,
+    QAItemSchema,
 )
 
 from .models import (
     KnowledgeGenerationRequest,
+    KnowledgeGenerationFromQuestionsRequest,
     KnowledgeGenerationResponse,
     KnowledgeSaveRequest,
     KnowledgeSaveResponse,
@@ -62,6 +65,7 @@ from .models import (
     EntityCandidateModel,
     ThemeCandidateModel,
     SourceReferenceModel,
+    QAItemRequestModel,
 )
 
 
@@ -272,6 +276,87 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
     return KnowledgeGenerationResponse(
         chunk_id=request.chunk_id,
         document_id=request.document_id if request.document_id is not None else chunk.get("document_id"),
+        model=request.model,
+        knowledge_items=knowledge_items,
+        count=len(knowledge_items),
+        generation_time=round(generation_time, 3),
+    )
+
+
+@router.post(
+    "/generate-from-questions",
+    response_model=KnowledgeGenerationResponse,
+    summary="Génère des knowledge_items à partir des questions/réponses d'un chunk",
+    description="Extrait des knowledge_items (propositions vérifiables + entités + thèmes + "
+                "source) à partir des questions/réponses associées à un chunk via un appel "
+                "LLM (agents.knowledge_item_agent.generate_knowledge_items_from_questions). "
+                "Permet de comparer cette extraction à celle réalisée directement depuis le "
+                "chunk (endpoint /generate).",
+)
+async def generate_knowledge_items_from_questions_endpoint(request: KnowledgeGenerationFromQuestionsRequest):
+    """Génère des knowledge_items à partir des questions/réponses d'un chunk via un LLM."""
+    start_time = time.time()
+
+    if not request.qa_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Aucune paire question/réponses fournie",
+        )
+
+    # Récupérer les métadonnées du chunk (page, position) si un chunk_id est fourni
+    page = None
+    position_in_page = None
+    chunk_document_id = request.document_id
+    if request.chunk_id:
+        try:
+            async with await get_db_connection() as conn:
+                chunk = await get_chunk_by_id(conn, request.chunk_id)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Erreur lors de la récupération du chunk: {str(e)}",
+            )
+        if chunk:
+            page = chunk.get("num_page")
+            position_in_page = chunk.get("position_in_page")
+            if chunk_document_id is None:
+                chunk_document_id = chunk.get("document_id")
+
+    document_id_str = str(chunk_document_id) if chunk_document_id is not None else None
+
+    # Convertir les modèles Pydantic en QAItemSchema attendus par l'agent
+    qa_items = [
+        QAItemSchema(
+            question_id=qa.question_id,
+            question=qa.question,
+            answers=list(qa.answers),
+        )
+        for qa in request.qa_items
+    ]
+
+    try:
+        schemas = await generate_knowledge_items_from_questions(
+            qa_items=qa_items,
+            chunk_id=str(request.chunk_id) if request.chunk_id is not None else None,
+            document_id=document_id_str,
+            page=page,
+            position_in_page=position_in_page,
+            model=request.model,
+        )
+    except Exception as e:
+        print(f"Erreur lors de l'extraction de knowledge_items depuis les questions: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'extraction: {str(e)}",
+        )
+
+    knowledge_items = [_schema_to_model(s) for s in schemas]
+
+    generation_time = time.time() - start_time
+
+    return KnowledgeGenerationResponse(
+        chunk_id=request.chunk_id,
+        document_id=chunk_document_id,
         model=request.model,
         knowledge_items=knowledge_items,
         count=len(knowledge_items),
