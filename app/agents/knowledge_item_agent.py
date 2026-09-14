@@ -124,6 +124,35 @@ class KnowledgeExtractionInput(BaseIOSchema):
     )
 
 
+class QAItemSchema(BaseIOSchema):
+    """Une paire question/réponses associée au chunk, fournie en entrée de
+    l'agent d'extraction depuis les questions (mode comparaison)."""
+    question_id: Optional[int] = Field(
+        default=None, description="Identifiant de la question"
+    )
+    question: str = Field(..., description="Contenu de la question")
+    answers: List[str] = Field(
+        default_factory=list,
+        description="Contenu des réponses associées à la question",
+    )
+
+
+class KnowledgeExtractionFromQuestionsInput(BaseIOSchema):
+    """Entrée de l'agent pour l'extraction de knowledge_items à partir des
+    questions/réponses associées à un chunk (mode comparaison avec
+    l'extraction directe depuis le chunk)."""
+    chunk_id: Optional[str] = Field(default=None, description="Identifiant du chunk")
+    document_id: Optional[str] = Field(default=None, description="Identifiant du document")
+    page: Optional[int] = Field(default=None, description="Numéro de page du chunk")
+    position_in_page: Optional[int] = Field(
+        default=None, description="Position du chunk dans la page"
+    )
+    qa_items: List[QAItemSchema] = Field(
+        ...,
+        description="Liste des paires question/réponses associées au chunk",
+    )
+
+
 class KnowledgeExtractionOutput(BaseIOSchema):
     """Sortie de l'agent : la liste des knowledge_items extraits."""
     knowledge_items: List[KnowledgeItemSchema] = Field(
@@ -191,6 +220,64 @@ def _load_system_prompt(prompt_name: str = "default") -> SystemPromptGenerator:
     return loaded if loaded is not None else _FALLBACK_PROMPT
 
 
+_FALLBACK_PROMPT_FROM_QUESTIONS = SystemPromptGenerator(
+    background=[
+        "Tu es un expert en extraction d'éléments de connaissance depuis des "
+        "paires de questions/réponses portant sur un même fragment de document.",
+        "Ton objectif est d'identifier, à partir des RÉPONSES fournies, des "
+        "propositions atomiques et vérifiables, puis de les relier à des "
+        "entités, des thèmes et sources.",
+        "Travaille EXCLUSIVEMENT en FRANÇAIS.",
+        "Sois précis, rigoureux et méthodique. Ne devine pas, extrait "
+        "uniquement ce qui est présent dans les questions et réponses.",
+    ],
+    steps=[
+        "Lis attentivement l'ensemble des paires question/réponses fournies",
+        "Identifie TOUTES les PROPOSITIONS FACTUELLES VÉRIFIABLES présentes dans "
+        "les RÉPONSES (une affirmation précise qui peut être vraie ou fausse)",
+        "Pour chaque proposition identifiée:",
+        "  1. Extrait la proposition exacte dans 'proposition' "
+        "(doit être une phrase complète et compréhensible)",
+        "  2. Crée un résumé très court (5-15 mots) dans 'summary'",
+        "  3. Identifie TOUTES les entités mentionnées avec leur type "
+        "et confiance dans 'entities'",
+        "  4. Identifie TOUS les thèmes principaux abordés avec "
+        "confiance dans 'themes'",
+        "  5. Reporte dans 'source_reference.excerpt' la réponse exacte "
+        "(ou le passage de réponse) d'où provient la proposition; les "
+        "positions (position_start, position_end) sont relatives à la "
+        "concaténation des réponses et peuvent rester à 0 si incertaines",
+        "Élimine les propositions trop vagues, subjectives ou non vérifiables",
+    ],
+    output_instructions=[
+        "Chaque 'proposition' DOIT être une affirmation factuelle vérifiable "
+        "(pas de questions, pas d'opinions, pas de descriptions générales)",
+        "N'extrait QUE des connaissances présentes dans les RÉPONSES, pas "
+        "dans les seules questions",
+        "Les entités DOIVENT être des noms propres ou concepts bien définis "
+        "(ex: 'Léonard de Vinci', 'Musée du Louvre', pas 'un homme')",
+        "Les thèmes DOIVENT être des catégories générales et précises "
+        "(ex: 'Histoire de France', 'Technique de peinture à l'huile')",
+        "Le champ 'excerpt' DOIT contenir le passage exact de la réponse "
+        "qui soutient la proposition",
+        "Si une information n'est pas certaine dans la réponse, "
+        "utilise une confiance entre 0.5 et 0.7",
+        "Ne pas inventer d'informations non présentes dans les questions/réponses",
+        "Pour les entités, utilise des noms COMPLETS et PRÉCIS "
+        "(ex: 'Léonard de Vinci' et non 'Léonard')",
+        "Si aucune proposition factuelle vérifiable n'est présente dans les "
+        "réponses, retourne une liste vide",
+    ],
+)
+
+
+def _load_system_prompt_from_questions(prompt_name: str = "from_questions") -> SystemPromptGenerator:
+    """Charge le prompt système pour l'extraction depuis les questions/réponses
+    depuis le YAML knowledge_item.yaml, avec le fallback sinon."""
+    loaded = get_prompt("knowledge_item", prompt_name)
+    return loaded if loaded is not None else _FALLBACK_PROMPT_FROM_QUESTIONS
+
+
 # ============================================================================
 # FACTORY
 # ============================================================================
@@ -216,6 +303,38 @@ def get_knowledge_item_agent(
     system_prompt_generator = _load_system_prompt(prompt_name)
 
     agent = AtomicAgent[KnowledgeExtractionInput, KnowledgeExtractionOutput](
+        config=AgentConfig(
+            client=client,
+            model=model,
+            history=ChatHistory(),
+            system_prompt_generator=system_prompt_generator,
+        )
+    )
+    return agent
+
+
+def get_knowledge_item_agent_from_questions(
+    model: str = "mistral-medium",
+    async_mode: bool = True,
+    prompt_name: str = "from_questions",
+) -> AtomicAgent:
+    """Crée et retourne un AtomicAgent d'extraction de knowledge_items à
+    partir des questions/réponses associées à un chunk.
+
+    Args:
+        model: Nom du modèle LLM à utiliser (par défaut: mistral-medium).
+        async_mode: Si True, le client Mistral est asynchrone (run_async).
+        prompt_name: Nom du prompt à charger depuis knowledge_item.yaml
+                     ("from_questions" par défaut).
+
+    Returns:
+        AtomicAgent[KnowledgeExtractionFromQuestionsInput, KnowledgeExtractionOutput]
+        configuré pour l'extraction depuis les questions/réponses.
+    """
+    client = get_mistral_client(async_mode=async_mode)
+    system_prompt_generator = _load_system_prompt_from_questions(prompt_name)
+
+    agent = AtomicAgent[KnowledgeExtractionFromQuestionsInput, KnowledgeExtractionOutput](
         config=AgentConfig(
             client=client,
             model=model,
@@ -264,6 +383,71 @@ async def generate_knowledge_items_from_chunk(
         document_id=document_id,
         page=page,
         position_in_page=position_in_page,
+    )
+
+    result = await agent.run_async(input_data)
+    return result.knowledge_items or []
+
+
+def _build_qa_text(qa_items: List[QAItemSchema]) -> str:
+    """Construit une représentation textuelle des paires question/réponses
+    pour l'inclusion éventuelle dans les source_references (extrait)."""
+    parts = []
+    for idx, qa in enumerate(qa_items, start=1):
+        parts.append(f"Q{idx}: {qa.question}")
+        if qa.answers:
+            parts.append("  Réponses: " + " | ".join(qa.answers))
+        else:
+            parts.append("  Réponses: (aucune)")
+    return "\n".join(parts)
+
+
+async def generate_knowledge_items_from_questions(
+    qa_items: List[QAItemSchema],
+    chunk_id: Optional[str] = None,
+    document_id: Optional[str] = None,
+    page: Optional[int] = None,
+    position_in_page: Optional[int] = None,
+    model: str = "mistral-medium",
+    prompt_name: str = "from_questions",
+) -> List[KnowledgeItemSchema]:
+    """Génère des knowledge_items à partir des questions/réponses associées
+    à un chunk via l'agent dédié (mode comparaison avec l'extraction directe
+    depuis le chunk).
+
+    Args:
+        qa_items: Liste des paires question/réponses (QAItemSchema).
+        chunk_id: Identifiant du chunk.
+        document_id: Identifiant du document.
+        page: Numéro de page du chunk.
+        position_in_page: Position du chunk dans la page.
+        model: Modèle LLM à utiliser.
+        prompt_name: Prompt à utiliser ("from_questions" par défaut).
+
+    Returns:
+        Liste de KnowledgeItemSchema extraits des réponses.
+    """
+    if not qa_items:
+        return []
+
+    # Ne conserver que les paires ayant au moins une réponse exploitable
+    usable = [
+        qa for qa in qa_items
+        if qa.answers and any(a and a.strip() for a in qa.answers)
+    ]
+    if not usable:
+        return []
+
+    agent = get_knowledge_item_agent_from_questions(
+        model=model, async_mode=True, prompt_name=prompt_name,
+    )
+
+    input_data = KnowledgeExtractionFromQuestionsInput(
+        chunk_id=chunk_id,
+        document_id=document_id,
+        page=page,
+        position_in_page=position_in_page,
+        qa_items=usable,
     )
 
     result = await agent.run_async(input_data)
