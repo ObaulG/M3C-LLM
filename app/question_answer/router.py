@@ -20,7 +20,7 @@ from .services import (
     process_question_generation_job,
     get_latest_question_generation_job
 )
-from database.database import VALID_TEXT_RESOURCE_ID
+from database.database import VALID_TEXT_RESOURCE_ID, get_db_connection, get_questions_by_chunk_id
 
 router = APIRouter(prefix="/api/admin/questions", tags=["Admin", "Questions"])
 
@@ -199,6 +199,29 @@ async def get_valid_documents():
         }
     )
 
+@router.get(
+    "/chunk/{chunk_id}",
+    summary="Questions et réponses associées à un chunk",
+    description="Retourne les questions (avec leurs réponses) associées à un chunk précis "
+                "(text_chunks.id) via la table question_chunks.",
+)
+async def get_chunk_questions(chunk_id: str):
+    """Récupère les questions et réponses associées à un chunk."""
+    try:
+        async with await get_db_connection() as conn:
+            questions = await get_questions_by_chunk_id(chunk_id, conn, include_answers=True)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des questions: {str(e)}",
+        )
+
+    return JSONResponse(content={
+        "chunk_id": chunk_id,
+        "questions": questions,
+        "count": len(questions),
+    })
 
 @router.post(
     "/save",

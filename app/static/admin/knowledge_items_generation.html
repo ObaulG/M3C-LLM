@@ -212,7 +212,7 @@
         const API_BASE = window.location.origin;
         const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
         const DOCUMENTS_API = API_BASE + '/api/documents';
-
+        const QUESTIONS_API = API_BASE + '/api/admin/questions';
         let currentDocumentId = null;
         let currentChunkId = null;
         let currentChunkContent = null;
@@ -345,7 +345,7 @@
             }
             container.innerHTML = '<p style="color:#888; font-size:13px;">Chargement des questions...</p>';
             try {
-                const response = await fetch(`${KNOWLEDGE_API}/chunks/${chunkId}/questions`);
+                const response = await fetch(`${QUESTIONS_API}/chunk/${chunkId}`);
                 if (!response.ok) throw new Error('HTTP ' + response.status);
                 const data = await response.json();
                 renderChunkQuestions(data.questions || [], data.count || 0);

@@ -1059,8 +1059,8 @@ async def get_questions_by_chunk_id(
         # 1. Récupérer les IDs des questions liées au chunk
         query = """
             SELECT q.question_id, q.content, q.status, q.difficulty_level, q.created_by, q.validated_by
-            FROM question_chunks qc
-            JOIN questions q ON qc.question_id = q.question_id
+            FROM text_questions q
+            JOIN text_question_chunks qc ON qc.question_id = q.question_id
             WHERE qc.chunk_id = %s
         """
         params = [chunk_id]
@@ -1089,7 +1089,7 @@ async def get_questions_by_chunk_id(
                 # Récupérer les réponses associées
                 await cur.execute("""
                     SELECT content, is_correct, created_by
-                    FROM question_answers
+                    FROM text_question_answers
                     WHERE question_id = %s
                 """, (question_id,))
                 answer_rows = await cur.fetchall()
