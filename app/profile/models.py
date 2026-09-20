@@ -23,6 +23,43 @@ class ObservationType(str, Enum):
 
 
 # ============================================================================
+# Modèles pour les observations
+# ============================================================================
+
+class ObservationTargetInfo(BaseModel):
+    """Cible d'une observation (connaissance, thème ou entité)."""
+    target_type: str = Field(..., description="Type de cible (knowledge, theme, entity)")
+    target_id: int = Field(..., description="ID de la cible")
+    target_label: Optional[str] = Field(default=None, description="Libellé lisible de la cible")
+    weight: float = Field(default=1.0, description="Poids de cette cible pour l'observation (0-1)")
+
+
+class ObservationRecord(BaseModel):
+    """Une observation horodatée liée à l'utilisateur.
+
+    Conforme au modèle décrit dans modele-utilisateur-connaissances-observations.md
+    (section 2) et au schéma user_knowledge_model.sql (section 3).
+    """
+    observation_id: int = Field(..., description="ID de l'observation")
+    observation_type: ObservationType = Field(..., description="Famille d'observation (declarative, behavioral, evaluative)")
+    specific_type: str = Field(..., description="Type spécifique (ex: resource_view, free_response, language)")
+    timestamp: datetime = Field(..., description="Date/heure exacte de l'observation")
+    confidence: float = Field(default=1.0, description="Fiabilité de l'interprétation (0-1)")
+    is_raw: bool = Field(default=True, description="L'observation est-elle une donnée brute ?")
+    context: Dict[str, Any] = Field(default_factory=dict, description="Contexte de l'observation (session, page, ressource, dispositif)")
+    context_display: Optional[str] = Field(default=None, description="Résumé lisible du contexte")
+    targets: List[ObservationTargetInfo] = Field(default_factory=list, description="Connaissances, thèmes ou entités concernés")
+    payload_preview: Optional[str] = Field(default=None, description="Aperçu des données brutes ou structurées")
+
+
+class ObservationTypeStats(BaseModel):
+    """Statistiques d'observations pour une famille donnée."""
+    observation_type: ObservationType = Field(..., description="Famille d'observation")
+    count: int = Field(default=0, description="Nombre d'observations de cette famille")
+    last_at: Optional[datetime] = Field(default=None, description="Date de la dernière observation de cette famille")
+
+
+# ============================================================================
 # Modèles pour les statistiques
 # ============================================================================
 
@@ -159,6 +196,14 @@ class UserProfileResponse(BaseModel):
     knowledge_by_theme: Dict[str, ThemeKnowledgeGroup] = Field(
         default_factory=dict,
         description="Éléments de connaissance groupés par thème (clé = theme_name)"
+    )
+    observation_type_stats: List[ObservationTypeStats] = Field(
+        default_factory=list,
+        description="Nombre d'observations par famille (déclarative, comportementale, évaluative)"
+    )
+    recent_observations: List[ObservationRecord] = Field(
+        default_factory=list,
+        description="Observations les plus récentes de l'utilisateur"
     )
 
 

@@ -20,6 +20,10 @@ from .models import (
     ThemeKnowledgeGroup,
     UserProfileResponse,
     KnowledgeStatus,
+    ObservationRecord,
+    ObservationTargetInfo,
+    ObservationTypeStats,
+    ObservationType,
 )
 
 
@@ -421,6 +425,175 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
 
 
 # ============================================================================
+# Fonctions pour récupérer les observations
+# ============================================================================
+
+async def get_observation_type_stats(user_id: str, conn) -> List[ObservationTypeStats]:
+    """
+    Récupère le nombre d'observations par famille (déclarative, comportementale, évaluative).
+    
+    Args:
+        user_id: Identifiant de l'utilisateur
+        conn: Connexion à la base de données
+        
+    Returns:
+        Liste de ObservationTypeStats (une entrée par famille, même à 0)
+    """
+    query = """
+        SELECT 
+            observation_type,
+            COUNT(*) AS count,
+            MAX(timestamp) AS last_at
+        FROM observations 
+        WHERE user_id = %s 
+        GROUP BY observation_type
+    """
+    
+    async with conn.cursor(aiomysql.DictCursor) as cursor:
+        await cursor.execute(query, (user_id,))
+        results = await cursor.fetchall()
+    
+    stats_by_type = {row["observation_type"]: row for row in results}
+    
+    type_stats = []
+    for obs_type in ObservationType:
+        row = stats_by_type.get(obs_type.value)
+        type_stats.append(ObservationTypeStats(
+            observation_type=obs_type,
+            count=row["count"] if row else 0,
+            last_at=row["last_at"] if row else None,
+        ))
+    
+    return type_stats
+
+
+async def get_recent_observations(user_id: str, conn, limit: int = 50) -> List[ObservationRecord]:
+    """
+    Récupère les observations les plus récentes d'un utilisateur.
+    
+    Args:
+        user_id: Identifiant de l'utilisateur
+        conn: Connexion à la base de données
+        limit: Nombre maximum d'observations à retourner
+        
+    Returns:
+        Liste de ObservationRecord, triée de la plus récente à la plus ancienne
+    """
+    query = """
+        SELECT 
+            o.id AS observation_id,
+            o.observation_type,
+            o.specific_type,
+            o.timestamp,
+            o.confidence,
+            o.is_raw,
+            o.context,
+            (
+                SELECT GROUP_CONCAT(
+                    CONCAT(ot.target_type, ':', ot.target_id, ':', ot.weight)
+                    SEPARATOR ','
+                )
+                FROM observation_targets ot 
+                WHERE ot.observation_id = o.id
+            ) AS targets_str
+        FROM observations o
+        WHERE o.user_id = %s
+        ORDER BY o.timestamp DESC, o.id DESC
+        LIMIT %s
+    """
+    
+    async with conn.cursor(aiomysql.DictCursor) as cursor:
+        await cursor.execute(query, (user_id, limit))
+        results = await cursor.fetchall()
+    
+    if not results:
+        return []
+    
+    # Récupérer les libellés des cibles en une seule requête par type
+    target_ids_by_type: Dict[str, set] = {"knowledge": set(), "theme": set(), "entity": set()}
+    parsed_targets: List[List[Dict[str, Any]]] = []
+    
+    for row in results:
+        targets = []
+        if row["targets_str"]:
+            for part in row["targets_str"].split(","):
+                pieces = part.split(":")
+                if len(pieces) < 2:
+                    continue
+                target_type, target_id_str = pieces[0], pieces[1]
+                try:
+                    target_id = int(target_id_str)
+                except ValueError:
+                    continue
+                try:
+                    weight = float(pieces[2]) if len(pieces) > 2 else 1.0
+                except ValueError:
+                    weight = 1.0
+                targets.append({"target_type": target_type, "target_id": target_id, "weight": weight})
+                if target_type in target_ids_by_type:
+                    target_ids_by_type[target_type].add(target_id)
+        parsed_targets.append(targets)
+    
+    labels_by_type: Dict[str, Dict[int, str]] = {}
+    label_queries = {
+        "knowledge": ("SELECT id, proposition FROM knowledge_items WHERE id IN (%s)", "proposition"),
+        "theme": ("SELECT id, name FROM themes WHERE id IN (%s)", "name"),
+        "entity": ("SELECT id, name FROM entities WHERE id IN (%s)", "name"),
+    }
+    
+    async with conn.cursor(aiomysql.DictCursor) as cursor:
+        for target_type, ids in target_ids_by_type.items():
+            if not ids or target_type not in label_queries:
+                continue
+            query_tpl, label_col = label_queries[target_type]
+            placeholders = ", ".join(["%s"] * len(ids))
+            await cursor.execute(query_tpl % placeholders, tuple(ids))
+            label_rows = await cursor.fetchall()
+            labels_by_type[target_type] = {r["id"]: r[label_col] for r in label_rows}
+    
+    observations = []
+    for row, targets in zip(results, parsed_targets):
+        target_infos = []
+        for t in targets:
+            label = labels_by_type.get(t["target_type"], {}).get(t["target_id"])
+            target_infos.append(ObservationTargetInfo(
+                target_type=t["target_type"],
+                target_id=t["target_id"],
+                weight=t["weight"],
+                target_label=label,
+            ))
+        
+        context = {}
+        if row["context"]:
+            try:
+                context = json.loads(row["context"])
+            except (TypeError, ValueError):
+                context = {"raw": str(row["context"])}
+        
+        # Construire un résumé lisible du contexte
+        context_parts = []
+        for key in ("page", "session_id", "resource_id", "device"):
+            if context.get(key) is not None:
+                context_parts.append(f"{key}: {context[key]}")
+        context_display = " | ".join(context_parts) if context_parts else None
+        
+        observations.append(ObservationRecord(
+            observation_id=row["observation_id"],
+            observation_type=ObservationType(row["observation_type"]),
+            specific_type=row["specific_type"],
+            timestamp=row["timestamp"],
+            confidence=round(float(row["confidence"] or 1.0), 2),
+            is_raw=bool(row["is_raw"]) if row["is_raw"] is not None else True,
+            context=context,
+            context_display=context_display,
+            targets=target_infos,
+            payload_preview=None,
+        ))
+    
+    return observations
+
+
+# ============================================================================
 # Fonction principale pour récupérer toutes les données du profil
 # ============================================================================
 
@@ -452,6 +625,10 @@ async def get_user_profile_data(user_id: str, conn) -> UserProfileResponse:
     # Récupérer les éléments de connaissance par thème
     knowledge_by_theme = await get_knowledge_by_theme(user_id, conn)
     
+    # Récupérer l'état des observations (types et historique récent)
+    observation_type_stats = await get_observation_type_stats(user_id, conn)
+    recent_observations = await get_recent_observations(user_id, conn)
+    
     return UserProfileResponse(
         user_id=user_id,
         profile=profile,
@@ -459,6 +636,8 @@ async def get_user_profile_data(user_id: str, conn) -> UserProfileResponse:
         visited_resources=visited_resources,
         theme_stats=theme_stats,
         knowledge_by_theme=knowledge_by_theme,
+        observation_type_stats=observation_type_stats,
+        recent_observations=recent_observations,
     )
 
 

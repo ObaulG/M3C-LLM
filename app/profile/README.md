@@ -32,7 +32,8 @@ app/templates/
 - **Ressources consultées** : Liste des documents/livres consultés avec métadonnées (titre, auteur, date, nombre de consultations)
 - **Thèmes explorés** : Cartes avec statistiques par thème (poids d'intérêt, confiance, nombre d'observations, connaissances associées)
 - **Éléments de connaissance** : Liste complète des connaissances groupées par thème, avec statut et score
-- **Export CSV** : Option pour exporter toutes les données du profil
+- **Observations** : État des observations conformément au modèle `modele-utilisateur-connaissances-observations.md` — compteurs par famille (déclarative, comportementale, évaluative) et historique des observations récentes avec type spécifique, cibles (connaissances, thèmes, entités), contexte et confiance
+- **Export CSV** : Option pour exporter toutes les données du profil (inclut les observations)
 
 ### Endpoints API
 
@@ -44,6 +45,7 @@ app/templates/
 | `/profile/api/{user_id}/resources` | GET | Retourne la liste des ressources consultées |
 | `/profile/api/{user_id}/themes` | GET | Retourne les statistiques par thème |
 | `/profile/api/{user_id}/knowledge` | GET | Retourne les éléments de connaissance groupés par thème |
+| `/profile/api/{user_id}/observations` | GET | Retourne l'état des observations : compteurs par famille et observations récentes |
 | `/profile/api/{user_id}/export/csv` | GET | Télécharge les données du profil en CSV |
 | `/profile/api/me` | GET | Retourne les données du profil de l'utilisateur connecté |
 
@@ -58,6 +60,9 @@ Les modèles Pydantic définis dans `models.py` :
 - **`KnowledgeItem`** : Un élément de connaissance avec métadonnées (proposition, résumé, statut, score, confiance, entités, sources)
 - **`EntityInfo`** : Information sur une entité liée à une connaissance
 - **`SourceInfo`** : Information sur une source d'une connaissance
+- **`ObservationRecord`** : Une observation horodatée (famille, type spécifique, contexte, confiance, cibles)
+- **`ObservationTargetInfo`** : Une cible d'observation (connaissance, thème ou entité) avec libellé et poids
+- **`ObservationTypeStats`** : Nombre d'observations et dernière date par famille (déclarative, comportementale, évaluative)
 - **`ThemeKnowledgeGroup`** : Groupe de connaissances pour un thème
 - **`UserProfileResponse`** : Réponse complète avec toutes les données du profil
 

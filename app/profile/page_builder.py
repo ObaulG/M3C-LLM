@@ -93,6 +93,28 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
         if score is None:
             return "0%"
         return f"{round(score * 100)}%"
+
+    def format_observation_type(obs_type: Any) -> str:
+        """Formate une famille d'observation pour l'affichage."""
+        type_map = {
+            "declarative": "Déclarative",
+            "behavioral": "Comportementale",
+            "evaluative": "Évaluative",
+        }
+        value = obs_type.value if hasattr(obs_type, "value") else obs_type
+        return type_map.get(value, str(value))
+
+    def format_observation_target(target: Any) -> str:
+        """Formate la cible d'une observation pour l'affichage."""
+        type_map = {
+            "knowledge": "Connaissance",
+            "theme": "Thème",
+            "entity": "Entité",
+        }
+        label = target.target_label or f"#{target.target_id}"
+        if target.target_label and len(str(target.target_label)) > 60:
+            label = str(target.target_label)[:60] + "…"
+        return f"{type_map.get(target.target_type, target.target_type)}: {label}"
     
     # Préparer le contexte pour Jinja2
     context: Dict[str, Any] = {
@@ -103,6 +125,8 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
         "visited_resources": profile_data.visited_resources,
         "theme_stats": profile_data.theme_stats,
         "knowledge_by_theme": profile_data.knowledge_by_theme,
+        "observation_type_stats": profile_data.observation_type_stats,
+        "recent_observations": profile_data.recent_observations,
         "static_prefix": static_prefix,
         "page": "profile.j2",
         "page_title": f"Profil de {user_id} - M3C",
@@ -111,6 +135,8 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
         "format_date": format_date,
         "format_status": format_status,
         "format_score": format_score,
+        "format_observation_type": format_observation_type,
+        "format_observation_target": format_observation_target,
         # Calcul de pourcentages pour les stats de connaissance
         "knowledge_stats": {
             "total": profile_data.stats.total_knowledge_items_encountered,
@@ -247,6 +273,34 @@ async def generate_profile_csv(user_id: str) -> str:
         ])
     writer.writerow([])
     
+    # Observations
+    writer.writerow(["OBSERVATIONS"])
+    writer.writerow(["Famille", "Nombre", "Dernière observation"])
+    for type_stat in profile_data.observation_type_stats:
+        last_at = type_stat.last_at.strftime('%d/%m/%Y %H:%M') if type_stat.last_at else 'N/A'
+        writer.writerow([
+            type_stat.observation_type.value,
+            type_stat.count,
+            last_at
+        ])
+    writer.writerow([])
+
+    writer.writerow(["OBSERVATIONS RÉCENTES"])
+    writer.writerow(["ID", "Date", "Famille", "Type spécifique", "Confiance", "Cibles"])
+    for obs in profile_data.recent_observations:
+        targets_str = " | ".join(
+            f"{t.target_type}: {t.target_label or t.target_id}" for t in obs.targets
+        )
+        writer.writerow([
+            obs.observation_id,
+            obs.timestamp.strftime('%d/%m/%Y %H:%M'),
+            obs.observation_type.value,
+            obs.specific_type,
+            round(obs.confidence * 100, 1),
+            targets_str
+        ])
+    writer.writerow([])
+
     # Éléments de connaissance
     writer.writerow(["ÉLÉMENTS DE CONNAISSANCE"])
     writer.writerow(["Thème", "Proposition", "Statut", "Score", "Confiance"])

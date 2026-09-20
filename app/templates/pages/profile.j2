@@ -160,6 +160,133 @@
         text-align: right;
     }
     
+    /* Observations */
+    .observation-type-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .observation-type-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-left: 4px solid #b74420;
+        border-radius: 8px;
+        padding: 15px 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .observation-type-card .type-name {
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .observation-type-card .type-count {
+        font-size: 26px;
+        font-weight: 700;
+        color: #b74420;
+        margin: 5px 0;
+    }
+
+    .observation-type-card .type-desc {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .observation-type-card .type-last {
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+    }
+
+    .observations-table-wrapper {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow-x: auto;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .observations-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .observations-table th {
+        background: #b74420;
+        color: white;
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .observations-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: top;
+    }
+
+    .observations-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .observations-table tr:hover td {
+        background: #fdf6f4;
+    }
+
+    .observation-type-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .observation-type-badge.type-declarative { background: #e7f3ff; color: #004085; }
+    .observation-type-badge.type-behavioral { background: #fff3cd; color: #856404; }
+    .observation-type-badge.type-evaluative { background: #d4edda; color: #155724; }
+
+    .observation-specific-type {
+        font-family: monospace;
+        font-size: 12px;
+        color: #555;
+    }
+
+    .observation-targets {
+        margin-top: 4px;
+    }
+
+    .observation-target-tag {
+        display: inline-block;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        color: #333;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin: 2px 4px 2px 0;
+        font-size: 11px;
+    }
+
+    .observation-context {
+        color: #666;
+        font-size: 12px;
+    }
+
+    .observation-confidence {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+    }
+
     /* Sections avec titre */
     .section {
         margin-bottom: 40px;
@@ -488,6 +615,100 @@
                         </div>
                         <span class="stat-count">{{ stats.total_knowledge_unknown }} éléments</span>
                     </div>
+                </div>
+                {% endif %}
+            </section>
+
+            {# ================================================================
+               OBSERVATIONS
+               ================================================================ #}
+            <section class="section">
+                <div class="section-header">
+                    <span class="icon">👁️</span>
+                    <h2>Observations</h2>
+                    <span class="count">{{ stats.total_observations }}</span>
+                </div>
+
+                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                    Chaque interaction est enregistrée comme une observation horodatée
+                    (déclarative, comportementale ou évaluative), avec son contexte et sa confiance.
+                </p>
+
+                {# Compteurs par famille d'observation #}
+                <div class="observation-type-cards">
+                    {% set type_descriptions = {
+                        'declarative': 'Langue, objectif de visite, préférences',
+                        'behavioral': 'Consultations, recherches, clics',
+                        'evaluative': 'Réponses, scores, évaluations'
+                    } %}
+                    {% for type_stat in observation_type_stats %}
+                    <div class="observation-type-card">
+                        <span class="type-name">{{ format_observation_type(type_stat.observation_type) }}</span>
+                        <span class="type-count">{{ type_stat.count }}</span>
+                        <span class="type-desc">{{ type_descriptions[type_stat.observation_type.value] }}</span>
+                        {% if type_stat.last_at %}
+                        <span class="type-last">Dernière : {{ format_date(type_stat.last_at) }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {# Historique récent des observations #}
+                {% if recent_observations %}
+                <div class="observations-table-wrapper">
+                    <table class="observations-table">
+                        <thead>
+                            <tr>
+                                <th>Date / Heure</th>
+                                <th>Type</th>
+                                <th>Détail</th>
+                                <th>Cibles</th>
+                                <th>Contexte</th>
+                                <th>Confiance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for obs in recent_observations %}
+                            <tr>
+                                <td style="white-space: nowrap;">{{ format_date(obs.timestamp) }}</td>
+                                <td>
+                                    <span class="observation-type-badge type-{{ obs.observation_type.value }}">
+                                        {{ format_observation_type(obs.observation_type) }}
+                                    </span>
+                                    <br>
+                                    <span class="observation-specific-type">{{ obs.specific_type }}</span>
+                                </td>
+                                <td>#{{ obs.observation_id }}</td>
+                                <td>
+                                    {% if obs.targets %}
+                                    <div class="observation-targets">
+                                        {% for target in obs.targets %}
+                                        <span class="observation-target-tag" title="{{ format_observation_target(target) }}">
+                                            {{ format_observation_target(target) }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <span style="color: #999;">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="observation-context">{{ obs.context_display or '—' }}</td>
+                                <td class="observation-confidence">{{ format_score(obs.confidence) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p style="color: #888; font-size: 12px; margin-top: 8px;">
+                    {{ recent_observations|length }} observations les plus récentes affichées sur {{ stats.total_observations }} au total.
+                </p>
+                {% else %}
+                <div class="empty-state">
+                    <i>👁️</i>
+                    <p>Aucune observation enregistrée pour le moment.</p>
+                    <p style="font-size: 14px; margin-top: 10px; color: #888;">
+                        Naviguez sur le portail, consultez des ressources et répondez à des évaluations pour générer des observations.
+                    </p>
                 </div>
                 {% endif %}
             </section>

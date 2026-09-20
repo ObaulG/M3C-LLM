@@ -224,6 +224,45 @@ async def get_profile_knowledge(user_id: str, limit_per_theme: int = 20):
 # ============================================================================
 
 @router.get(
+    "/api/{user_id}/observations",
+    summary="Récupère l'état des observations",
+    description="Retourne le nombre d'observations par famille (déclarative, comportementale, évaluative) "
+                "et les observations les plus récentes, conformément au modèle "
+                "modele-utilisateur-connaissances-observations.md.",
+)
+async def get_profile_observations(user_id: str, limit: int = 50):
+    """
+    Récupère l'état des observations pour un utilisateur.
+
+    Args:
+        user_id: Identifiant de l'utilisateur
+        limit: Nombre maximum d'observations récentes à retourner
+
+    Returns:
+        JSON avec les statistiques par type d'observation et l'historique récent
+    """
+    from .services import get_observation_type_stats, get_recent_observations
+
+    async with await get_db_connection() as conn:
+        exists = await user_exists(user_id, conn)
+        if not exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Utilisateur {user_id} introuvable"
+            )
+
+        type_stats = await get_observation_type_stats(user_id, conn)
+        recent_observations = await get_recent_observations(user_id, conn, limit)
+
+    return JSONResponse(content={
+        "user_id": user_id,
+        "type_stats": [t.model_dump(mode="json") for t in type_stats],
+        "recent_observations": [o.model_dump(mode="json") for o in recent_observations],
+        "count": len(recent_observations),
+    })
+
+
+@router.get(
     "/api/{user_id}/export/csv",
     summary="Exporte le profil en CSV",
     description="Génère et télécharge un fichier CSV avec toutes les données du profil.",
