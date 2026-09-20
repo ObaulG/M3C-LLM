@@ -249,18 +249,6 @@
     </div>
 
     <script>
-        function getApiKey() {
-            return localStorage.getItem('m3c_api_key');
-        }
-
-        function setApiKey(key) {
-            localStorage.setItem('m3c_api_key', key);
-        }
-
-        function clearApiKey() {
-            localStorage.removeItem('m3c_api_key');
-        }
-
         function showTab(tab) {
             document.getElementById('loginForm').classList.toggle('active', tab === 'login');
             document.getElementById('registerForm').classList.toggle('active', tab === 'register');
@@ -293,7 +281,6 @@
                 if (!response.ok) {
                     throw new Error(data.detail || 'Connexion &eacute;chou&eacute;e');
                 }
-                setApiKey(data.api_key);
                 showLoggedIn(data.user);
             } catch (err) {
                 showMessage('loginMessage', err.message, 'error');
@@ -321,7 +308,6 @@
                 if (!response.ok) {
                     throw new Error(data.detail || 'Inscription &eacute;chou&eacute;e');
                 }
-                setApiKey(data.api_key);
                 showLoggedIn(data.user);
             } catch (err) {
                 showMessage('registerMessage', err.message, 'error');
@@ -341,30 +327,19 @@
         }
 
         function handleLogout() {
-            const apiKey = getApiKey();
-            const headers = apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {};
-            fetch('/api/auth/logout', { method: 'POST', headers: headers }).finally(() => {
-                clearApiKey();
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => {
                 location.reload();
             });
         }
 
         async function checkSession() {
-            const apiKey = getApiKey();
-            if (!apiKey) return;
             try {
-                const response = await fetch('/api/auth/me', {
-                    headers: { 'Authorization': 'Bearer ' + apiKey }
-                });
+                const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
                 if (response.ok) {
                     const data = await response.json();
                     showLoggedIn(data.user);
-                } else {
-                    clearApiKey();
                 }
-            } catch (e) {
-                clearApiKey();
-            }
+            } catch (e) { /* pas de session */ }
         }
 
         document.addEventListener('DOMContentLoaded', checkSession);

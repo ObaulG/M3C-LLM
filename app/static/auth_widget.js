@@ -5,18 +5,12 @@
  *  - un mini-formulaire de connexion (non connecté) ;
  *  - le nom d'utilisateur + lien vers la page de profil (connecté).
  *
- * Réutilise le même stockage de token (localStorage 'm3c_api_key') et les
- * mêmes endpoints (/api/auth/login, /api/auth/me, /api/auth/logout) que auth.html,
- * de façon à garder une seule session cohérente sur tout le portail.
+ * La session est portée par le cookie httpOnly 'm3c_api_key', posé par
+ * /api/auth/login (et /api/auth/register) et lu par /api/auth/me à chaque
+ * chargement de page. Le token n'est plus stocké côté client.
  */
 (function () {
     'use strict';
-
-    var TOKEN_KEY = 'm3c_api_key';
-
-    function getApiKey() { return localStorage.getItem(TOKEN_KEY); }
-    function setApiKey(key) { localStorage.setItem(TOKEN_KEY, key); }
-    function clearApiKey() { localStorage.removeItem(TOKEN_KEY); }
 
     function ready(fn) {
         if (document.readyState === 'loading') {
@@ -48,6 +42,7 @@
     }
 
     // Connexion depuis le mini-formulaire de l'en-tête.
+    // Le serveur pose le cookie de session httpOnly en réponse.
     window.profileWidgetLogin = function (event) {
         event.preventDefault();
         var username = (document.getElementById('profileUsername') || {}).value;
@@ -58,11 +53,11 @@
         fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
             body: JSON.stringify({ username: (username || '').trim(), password: password || '' })
         }).then(function (resp) {
             return resp.json().then(function (data) {
                 if (!resp.ok) throw new Error(data.detail || 'Connexion échouée');
-                setApiKey(data.api_key);
                 showLoggedIn(data.user);
                 setMessage('Connecté', false);
             });
@@ -74,29 +69,24 @@
         return false;
     };
 
-    // Déconnexion depuis l'en-tête. Le token est envoyé pour être révoqué côté serveur.
+    // Déconnexion depuis l'en-tête : le serveur révoque le token et efface le cookie.
     window.profileWidgetLogout = function () {
-        var apiKey = getApiKey();
-        var headers = apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {};
-        fetch('/api/auth/logout', { method: 'POST', headers: headers }).finally(function () {
-            clearApiKey();
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(function () {
             showLoginForm();
             setMessage('', false);
         });
     };
 
-    // Au chargement : vérifie la session existante via /api/auth/me.
+    // Au chargement : le cookie de session est envoyé automatiquement avec la requête.
     ready(function () {
         var widget = document.getElementById('profileWidget');
         if (!widget) return; // page sans zone profil
-        var apiKey = getApiKey();
-        if (!apiKey) { showLoginForm(); return; }
-        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + apiKey } })
+        fetch('/api/auth/me', { credentials: 'same-origin' })
             .then(function (resp) {
                 if (!resp.ok) throw new Error('session invalide');
                 return resp.json();
             })
             .then(function (data) { showLoggedIn(data.user); })
-            .catch(function () { clearApiKey(); showLoginForm(); });
+            .catch(function () { showLoginForm(); });
     });
 })();

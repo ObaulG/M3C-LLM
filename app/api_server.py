@@ -12,7 +12,7 @@ from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
 from unittest import case
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, status, Response, Cookie
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -185,7 +185,6 @@ class AuthUserResponse(BaseModel):
 
 class AuthResponse(BaseModel):
     user: AuthUserResponse
-    api_key: str
 
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
@@ -299,17 +298,33 @@ async def root():
         "query_endpoint": "/api/query"
     }
 
-# === ENDPOINTS D'AUTHENTIFICATION ===
+AUTH_COOKIE_NAME = "m3c_api_key"
+
+def _set_auth_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        AUTH_COOKIE_NAME,
+        token,
+        max_age=auth._TOKEN_TTL_SECONDS,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+
+def _clear_auth_cookie(response: Response) -> None:
+    response.delete_cookie(AUTH_COOKIE_NAME, path="/")
+
 @app.post("/api/auth/register", response_model=AuthResponse, tags=["Auth"])
 async def register(request: AuthRegisterRequest):
     """Crée un nouveau compte utilisateur dans la table `users`."""
     try:
-        user, api_key = await auth.create_user(
+        user, token = await auth.create_user(
             username=request.username,
             email=request.email,
             password=request.password,
         )
-        return AuthResponse(user=AuthUserResponse(**user), api_key=api_key)
+        response = JSONResponse(content=AuthResponse(user=AuthUserResponse(**user)).model_dump(mode="json"))
+        _set_auth_cookie(response, token)
+        return response
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -320,8 +335,10 @@ async def register(request: AuthRegisterRequest):
 async def login(request: AuthLoginRequest):
     """Connecte un utilisateur existant à partir de son nom d'utilisateur ou email."""
     try:
-        user, api_key = await auth.authenticate_user(request.username, request.password)
-        return AuthResponse(user=AuthUserResponse(**user), api_key=api_key)
+        user, token = await auth.authenticate_user(request.username, request.password)
+        response = JSONResponse(content=AuthResponse(user=AuthUserResponse(**user)).model_dump(mode="json"))
+        _set_auth_cookie(response, token)
+        return response
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except Exception as e:
@@ -329,9 +346,14 @@ async def login(request: AuthLoginRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erreur lors de la connexion.")
 
 @app.get("/api/auth/me", tags=["Auth"])
-async def get_current_user(authorization: Optional[str] = None):
-    """Retourne l'utilisateur associé à la clé API (Bearer token) fournie."""
-    user_id = auth.user_id_from_authorization(authorization)
+async def get_current_user(
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Retourne l'utilisateur associé au cookie de session (ou Bearer token)."""
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
     user = await auth.get_user_by_id(user_id)
@@ -340,9 +362,16 @@ async def get_current_user(authorization: Optional[str] = None):
     return {"user": AuthUserResponse(**user)}
 
 @app.post("/api/auth/logout", tags=["Auth"])
-async def logout(authorization: Optional[str] = None):
-    """Révoque la clé API courante (déconnexion)."""
-    auth.revoke_token(authorization)
+async def logout(
+    response: Response,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Révoque le token de session (cookie ou Bearer) et efface le cookie."""
+    token = m3c_api_key or auth._token_from_authorization(authorization)
+    if token:
+        auth.revoke_token("Bearer " + token)
+    _clear_auth_cookie(response)
     return {"message": "Déconnecté."}
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])

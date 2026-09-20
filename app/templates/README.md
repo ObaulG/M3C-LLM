@@ -57,10 +57,10 @@ Pour les pages au layout centré (admin, question_session) :
 - **connecté** : le nom de l'utilisateur + lien vers la page de profil
   (`auth.html`) + bouton Déconnexion.
 
-La bascule est gérée côté client par `app/static/auth_widget.js`, qui réutilise
-le token stocké dans `localStorage('m3c_api_key')` et les endpoints existants
-(`/api/auth/login`, `/api/auth/me`, `/api/auth/logout`). La session reste ainsi
-cohérente avec `auth.html`.
+La bascule est gérée côté client par `app/static/auth_widget.js`, qui s'appuie
+sur le cookie de session `m3c_api_key` (httpOnly, posé par `/api/auth/login` et
+`/api/auth/register`, lu par `/api/auth/me` à chaque chargement de page). La
+session reste ainsi cohérente avec `auth.html`.
 
 Pour inclure le widget sur une page, rien à faire : `header()` l'ajoute.
 Pour l'exclure : `include_profile=false`.
