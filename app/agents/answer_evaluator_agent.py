@@ -145,9 +145,13 @@ def get_evaluator_agent(model: str = "mistral-medium",
 
     if provider == "ollama":
         return get_evaluator_agent_local_bis(model=model, provider=provider, async_mode=async_mode)
-    client = create_client(provider, model=model, async_mode=async_mode)
+
+    # mode json obligatoire pour l'api gemma... ?
+    client = create_client(provider, model=model,
+                           async_mode=async_mode,
+                           instructor_mode=instructor.Mode.JSON)
     # Les modèles gemma ne prennent pas la temperature (ou alors pas sous ce nom)
-    model_api_parameters = {"temperature": 0.35,}
+    model_api_parameters = {"temperature": 0.35,} if provider not in ["gemini", "google"] else {}
     evaluation_agent = AtomicAgent[EvaluateRequestInput, AgentEvaluationResult](
         config=AgentConfig(
             client=client,
@@ -157,6 +161,7 @@ def get_evaluator_agent(model: str = "mistral-medium",
             tools=[],
             system_prompt_generator=evaluation_system_prompt_generator_bis,
             model_api_parameters=model_api_parameters,
+            assistant_role = "model" if provider in ["gemini", "google"] else "assistant",
         )
     )
     return evaluation_agent

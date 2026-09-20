@@ -190,7 +190,7 @@ async def evaluate_answer(
     evaluator_models: list[str],
     evaluator_final: Optional[str],
     csv_logging: bool = True,
-    num_reference_answers: Optional[int] = None
+    num_reference_answers: Optional[list[int]] = None
 ) -> UserEvaluationResponse:
 
     #1. récupérer la question et les réponses
@@ -199,10 +199,8 @@ async def evaluate_answer(
                                         include_answers=True)
     # vérifier que les réponses existent
     all_reference_answers = [answer["content"] for answer in question["answers"]]
-    
-    # Appliquer la stratégie de sélection du nombre de réponses de référence
+
     if num_reference_answers is None:
-        # Utiliser toutes les réponses (comportement par défaut)
         reference_answers = all_reference_answers
     elif num_reference_answers >= 1:
         # Utiliser un nombre spécifique de réponses (les n premières)

@@ -1,0 +1,800 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "parce que chacun va dire la sienne",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 3,
+        "feedback": "Il est vrai que chacun apporte sa touche personnelle a la facon de parler. Toutefois, comment cela s'explique-t-il par rapport a la volonte des groupes humains de se distinguer et d'affirmer leur identite culturelle ?",
+        "execution_time": 4.395
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 3,
+        "feedback": "Cette explication est un peu courte. Pourriez-vous préciser pourquoi ces distinctions linguistiques sont importantes pour les habitants d'une même région et ce qu'elles traduisent en termes d'identité ou d'appartenance à un groupe ?",
+        "execution_time": 9.215
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          3,
+          3
+        ]
+      }
+    ],
+    "total_execution_time": 10.869
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "Les habitants d’une région veulent pouvoir se distinguer des autres",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "Tout a fait, la volonte des habitants de se distinguer les uns des autres explique parfaitement cette diversite linguistique et culturelle regionale !",
+        "execution_time": 1.045
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 9,
+        "feedback": "C'est une excellente analyse. Vous avez bien identifié que ces variations linguistiques servent de marqueur pour affirmer une distinction entre les différentes communautés insulaires, ce qui est au cœur de l'identité régionale en Corse.",
+        "execution_time": 1.741
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          9
+        ]
+      }
+    ],
+    "total_execution_time": 1.765
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "les variations existent pour que les différents groupes puissent se distinguer",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "Exactement, la possibilite pour chaque groupe de se distinguer des autres est bien la raison principale de ces belles variations linguistiques regionnales.",
+        "execution_time": 0.9
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "Votre réponse est parfaitement exacte. Vous avez bien saisi que la langue agit comme un marqueur de distinction essentiel permettant aux différents groupes de souligner leur identité propre au sein de la diversité insulaire.",
+        "execution_time": 4.637
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      }
+    ],
+    "total_execution_time": 4.661
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » c’est le verbe « esse »",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 4,
+        "feedback": "Vous avez bien identifie que la forme s'hè fait intervenir le verbe esse. Toutefois, pouvez-vous preciser ce que recouvre la deuxieme forme s'et ainsi que la distinction precise entre les deux ?",
+        "execution_time": 1.024
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 4,
+        "feedback": "C'est une ébauche intéressante car vous avez identifié l'un des composants de s'hè. Cependant, pourriez-vous préciser la nature de l'autre élément présent dans cette contraction et expliquer la différence avec la forme s'è ?",
+        "execution_time": 3.812
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          4
+        ]
+      }
+    ],
+    "total_execution_time": 3.862
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » est la forme réfléchie de « esse », et « s’è » est la contraction de « si », et « è »",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 8,
+        "feedback": "Vous y etes presque ! Vous avez bien saisi les elements de base de ces deux formes. Pour aller plus loin, s'hè associe le pronom reflechi et le verbe esse, tandis que s'è combine la conjonction si et l'expletif è.",
+        "execution_time": 1.229
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 6,
+        "feedback": "Vous avez identifié correctement la fonction de la première forme. Toutefois, pour la seconde, s'agit-il vraiment du pronom réfléchi ? Je vous invite à vérifier la nature du mot si dans la structure s'è, qui est en réalité une conjonction de subordination.",
+        "execution_time": 3.153
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          8,
+          6
+        ]
+      }
+    ],
+    "total_execution_time": 3.199
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "si quelqu un mange corse, alors il est corse",
+    "expected_score": 3,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 4,
+        "feedback": "Vous avez en effet souleve l'idee de la gastronomie a travers l'alimentation. Cependant, quels autres exemples concrets de consommation culturelle cites dans le texte permettent egalement de s'identifier a la Corse en dehors de la langue ?",
+        "execution_time": 1.049
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 4,
+        "feedback": "C'est une piste intéressante, mais incomplète. La gastronomie n'est qu'un des exemples mentionnés dans le texte. Pourriez-vous compléter votre réponse en citant les autres domaines, comme le sport ou la mode, qui contribuent également à cette nouvelle manière d'affirmer son identité insulaire en complément ou en remplacement de la langue ?",
+        "execution_time": 2.377
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          4
+        ]
+      }
+    ],
+    "total_execution_time": 2.412
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "C'est une excellente reponse. Vous avez parfaitement liste les differents elements concrets comme l'alimentation, la mode et le football avec le Sporting pour illustrer l'identite corse au-dela de la langue.",
+        "execution_time": 1.264
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 9,
+        "feedback": "Votre réponse est excellente et synthétise bien les exemples cités. Vous avez identifié la gastronomie, la mode et le football comme des piliers de cette identité de consommation. Pour être totalement complet, vous auriez pu ajouter les cosmétiques, mais votre analyse est très pertinente.",
+        "execution_time": 2.375
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          9
+        ]
+      }
+    ],
+    "total_execution_time": 2.4
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue.",
+    "expected_score": 9,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "C est une reponse complete et parfaitement exacte qui reprend l ensemble des exemples cites dans le texte.",
+        "execution_time": 0.923
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "Votre réponse est parfaite. Vous avez su identifier l'ensemble des exemples mentionnés dans le texte et expliquer clairement comment cette consommation culturelle se substitue à la maîtrise linguistique pour affirmer une appartenance à l'île.",
+        "execution_time": 2.9
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      }
+    ],
+    "total_execution_time": 2.928
+  },
+  {
+    "question_id": "2535",
+    "question_text": "Pourquoi le football est-il considéré comme un vecteur puissant d'identification en Corse, selon le texte ?",
+    "human_answer": "Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région, et encore plus pour les clubs locaux, comme celui du Sporting",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "C'est une excellente réponse. Vous avez parfaitement compris pourquoi le football, et en particulier le club local du Sporting, constitue un vecteur d'identification aussi fort pour la région.",
+        "execution_time": 0.992
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 9,
+        "feedback": "C'est une excellente réponse. Vous avez bien compris que le football, et en particulier les clubs locaux comme le Sporting, joue un rôle clé dans l'affirmation identitaire. Pourriez-vous préciser davantage la place du club dans l'imaginaire corse, en faisant éventuellement le lien avec la célèbre citation mentionnée dans le texte ?",
+        "execution_time": 2.448
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          9
+        ]
+      }
+    ],
+    "total_execution_time": 2.472
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 6,
+        "feedback": "Vous mentionnez bien le rôle symbolique de Teghime qui sépare la Méditerranée en deux, ce qui est très bien. Toutefois, le texte de référence ne mentionne pas la question de l'écologie ou de la décharge publique de Bastia. Pourriez-vous vous concentrer sur la vue magnifique des deux mers qui caractérise ce lieu pour les Bastiais ?",
+        "execution_time": 1.127
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 6,
+        "feedback": "Votre réponse est intéressante car vous soulignez l aspect symbolique du col en tant que passage est-ouest. Toutefois, la question initiale portait sur la vision particulière des deux mers qui divise la Méditerranée en deux. Pourriez-vous préciser ce point et nous dire si le lien avec la gestion des déchets à Bastia est un aspect central du symbole traditionnel associé à ce lieu ?",
+        "execution_time": 2.549
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          6,
+          6
+        ]
+      }
+    ],
+    "total_execution_time": 2.564
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "C'est une excellente réponse. Vous avez parfaitement saisi la vue imprenable sur les deux mers et la division symbolique de la Méditerranée, qui caractérisent si bien ce lieu pour les Bastiais.",
+        "execution_time": 1.018
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 10,
+        "feedback": "Votre réponse est excellente. Vous avez parfaitement saisi le lien entre la traversée du col et cette vision symbolique de la séparation de la mer en deux entités distinctes, incluant la Tyrrhénienne.",
+        "execution_time": 2.113
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      }
+    ],
+    "total_execution_time": 2.147
+  },
+  {
+    "question_id": "471",
+    "question_text": "Comment se distingue la partition linguistique de la Corse par rapport à la partition géographique et historique (Cismonte et Pumonte) ?",
+    "human_answer": "Teghime coupe symboliquement la mer Méditérranée en deux",
+    "expected_score": 5,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 1,
+        "feedback": "Votre reponse concerne un autre sujet, a savoir le col de Teghime et la mer Mediterranee. Pourriez-vous reprendre la question sur la partition linguistique de la Corse et expliquer en quoi elle differe de la partition geographique et historique entre Cismonte et Pumonte ?",
+        "execution_time": 1.071
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 1,
+        "feedback": "Votre réponse ne répond pas du tout à la question posée, qui concerne la répartition linguistique en Corse par rapport à sa division géographique. Pourriez-vous nous expliquer pourquoi la frontière linguistique entre le nord et le centre de l'île ne suit pas exactement la séparation traditionnelle entre le Cismonte et le Pumonte ?",
+        "execution_time": 3.104
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 3.15
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "L’indépendance de la Corse",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 3,
+        "feedback": "Vous avez bien identifié le lien avec l'indépendance de la Corse. Toutefois, pourriez-vous préciser quel événement marquant ou quel rôle politique précis le couvent d'Alisgiani a joué lors de la Révolution corse ?",
+        "execution_time": 1.043
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 4,
+        "feedback": "C'est un début, mais il manque des précisions importantes. Pourriez-vous nous expliquer quel événement politique majeur s'est déroulé dans ce couvent en 1735 concernant la structuration de cette indépendance ?",
+        "execution_time": 2.67
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ]
+      }
+    ],
+    "total_execution_time": 2.704
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "C’est un symbole de liberté pendant la Révolution corse",
+    "expected_score": 6,
+    "individual_evaluations": [
+      {
+        "model": "gemini-3.5-flash-lite",
+        "provider": "google",
+        "score": 6,
+        "feedback": "Vous avez raison de souligner que ce couvent est un symbole de liberte durant cette periode. Pourriez-vous preciser quel evenement politique majeur ou quel texte fondamental y a ete redige ?",
+        "execution_time": 1.192
+      },
+      {
+        "model": "gemini-3.1-flash-lite",
+        "provider": "google",
+        "score": 6,
+        "feedback": "C'est exact, ce lieu est bien un symbole fort de la liberté. Pourriez-vous préciser quel événement politique majeur et fondateur pour l'indépendance de l'île s'y est déroulé en 1735 lors de la consulta d'Orezza ?",
+        "execution_time": 2.704
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "google:gemini-3.5-flash-lite",
+          "google:gemini-3.1-flash-lite"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          6,
+          6
+        ]
+      }
+    ],
+    "total_execution_time": 2.729
+  }
+]

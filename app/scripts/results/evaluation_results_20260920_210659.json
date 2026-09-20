@@ -1,0 +1,128 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "",
+    "human_answer": "parce que chacun va dire la sienne",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "452",
+    "question_text": "",
+    "human_answer": "Les habitants d’une région veulent pouvoir se distinguer des autres",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "452",
+    "question_text": "",
+    "human_answer": "les variations existent pour que les différents groupes puissent se distinguer",
+    "expected_score": 8,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "675",
+    "question_text": "",
+    "human_answer": "« s’hè » c’est le verbe « esse »",
+    "expected_score": 4,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "675",
+    "question_text": "",
+    "human_answer": "« s’hè » est la forme réfléchie de « esse », et « s’è » est la contraction de « si », et « è »",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "2534",
+    "question_text": "",
+    "human_answer": "si quelqu un mange corse, alors il est corse",
+    "expected_score": 3,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "2534",
+    "question_text": "",
+    "human_answer": "Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "2534",
+    "question_text": "",
+    "human_answer": "La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue.",
+    "expected_score": 9,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "2535",
+    "question_text": "",
+    "human_answer": "Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région, et encore plus pour les clubs locaux, comme celui du Sporting",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "417",
+    "question_text": "",
+    "human_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+    "expected_score": 7,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "417",
+    "question_text": "",
+    "human_answer": "Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne",
+    "expected_score": 8,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "471",
+    "question_text": "",
+    "human_answer": "Teghime coupe symboliquement la mer Méditérranée en deux",
+    "expected_score": 5,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "129",
+    "question_text": "",
+    "human_answer": "L’indépendance de la Corse",
+    "expected_score": 4,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  },
+  {
+    "question_id": "129",
+    "question_text": "",
+    "human_answer": "C’est un symbole de liberté pendant la Révolution corse",
+    "expected_score": 6,
+    "individual_evaluations": [],
+    "combination_results": [],
+    "total_execution_time": 0
+  }
+]

@@ -145,8 +145,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
 
 
 async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn :
         async with conn.cursor() as cur:
             await cur.execute(
                 """
@@ -167,8 +166,7 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             "is_active": bool(row[4]),
             "created_at": row[5].isoformat() if row[5] else None,
         }
-    finally:
-        await conn.close()
+
 
 
 def _token_from_authorization(authorization: Optional[str]) -> Optional[str]:

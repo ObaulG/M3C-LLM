@@ -194,7 +194,6 @@ class QuestionAnswerEvaluator:
         "ministral-8b-2512",
         "ministral-14b-2512",
         "mistral-small-2603",
-        "mistral-medium-latest"
     ]
 
     #MISTRAL_MODELS = []
@@ -207,7 +206,13 @@ class QuestionAnswerEvaluator:
         "qwen3.5:4b"
     ]
 
-    OLLAMA_MODELS = []
+    #OLLAMA_MODELS = []
+
+    GEMINI_MODELS = [
+        "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"
+        #"gemma-4-26b-a4b-it",
+        #"gemma-4-31b-it"
+    ]
     def __init__(
         self,
         csv_path: str,
@@ -317,7 +322,9 @@ class QuestionAnswerEvaluator:
         if self.use_remote:
             models.extend([(m, "mistral") for m in self.MISTRAL_MODELS])
             logger.info(f"Ajout de {len(self.MISTRAL_MODELS)} modèles distants (Mistral)")
-        
+
+            models.extend([(m, "google") for m in self.GEMINI_MODELS])
+            logger.info(f"Ajout de {len(self.MISTRAL_MODELS)} modèles distants (Gemini)")
         if self.use_local:
             models.extend([(m, "ollama") for m in self.OLLAMA_MODELS])
             logger.info(f"Ajout de {len(self.OLLAMA_MODELS)} modèles locaux (Ollama)")
@@ -486,7 +493,7 @@ class QuestionAnswerEvaluator:
         
         logger.info(f"Terminé: {len(individual_evaluations)} évaluations individuelles")
         return individual_evaluations
-    
+
     def _calculate_all_combinations(
         self, 
         evaluations: List[IndividualEvaluation]

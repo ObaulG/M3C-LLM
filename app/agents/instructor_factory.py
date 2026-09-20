@@ -12,7 +12,7 @@ MISTRAL_MODELS = [
     "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
     "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
 ]
-GOOGLE_MODELS = ["gemma-4-26b-a4b-it", "gemma-4-31b-it"]
+GOOGLE_MODELS = ["gemini-3.5-flash-lite"]
 OLLAMA_MODELS = ["ministral-3:3b", "mistral:7b",
                  "gouranshitera/bloom-1b1", "gouranshitera/bloomz-1b7",
                  "gemma4:e2b",
@@ -50,28 +50,36 @@ def create_client(
         return _create_mistral_client(async_mode, instructor_mode)
     elif provider == "ollama":
         return _create_ollama_client(async_mode, extra_body, instructor_mode)
-    elif provider == "google":
-        return _create_gemma_client(model, async_mode)
+    elif provider == "google" or provider == "gemini":
+        if instructor_mode == instructor.Mode.JSON:
+            instructor_mode = instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+        return _create_gemma_client(async_mode, instructor_mode)
     else:
         raise HTTPException(
             status_code=400,
             detail=f"Fournisseur inconnu: {provider}. Utilisez 'mistral' ou 'ollama'."
         )
 
-def _create_gemma_client(model: str, async_mode: bool) -> Union[Instructor, AsyncInstructor]:
-    GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
-    if not GOOGLE_API_KEY:
+def _create_gemma_client(
+    async_mode: bool,
+    instructor_mode: instructor.Mode = instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+) -> Union[Instructor, AsyncInstructor]:
+    google_api_key = os.environ.get("GEMINI_API_KEY")
+
+    if not google_api_key:
         raise HTTPException(
             status_code=500,
-            detail="La clé API Google n'est pas définie. Veuillez configurer la variable d'environnement GEMINI_API_KEY."
+            detail="La clé API Google n'est pas définie.",
         )
 
-    client = instructor.from_provider(f"google/{model}",
-                                      api_key=GOOGLE_API_KEY,
-                                      async_client=async_mode)
-   #                                   mode=instructor.Mode.GENAI_TOOLS)
+    client = genai.Client(api_key=google_api_key)
 
-    return client
+    return instructor.from_genai(
+        client=client,
+        mode=instructor_mode,
+        use_async=async_mode,
+    )
+
 def _create_mistral_client(async_mode: bool, instructor_mode) -> Union[Instructor, AsyncInstructor]:
     """Crée un client Mistral."""
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
