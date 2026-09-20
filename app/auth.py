@@ -9,7 +9,7 @@ from psycopg.errors import UniqueViolation
 from database.database import DB_CONFIG, get_db_connection
 
 
-_ACTIVE_TOKENS: Dict[str, int] = {}
+_ACTIVE_TOKENS: Dict[str, Tuple[int, float]] = {}
 _TOKEN_TTL_SECONDS = 60 * 60 * 24
 
 
@@ -29,7 +29,7 @@ def _verify_password(password: str, password_hash: str) -> bool:
 
 def _issue_token(user_id: int) -> str:
     token = secrets.token_urlsafe(32)
-    _ACTIVE_TOKENS[token] = user_id
+    _ACTIVE_TOKENS[token] = (user_id, time.time())
     return token
 
 
@@ -40,12 +40,19 @@ def _revoke_token(token: str) -> None:
 def _user_id_from_token(token: Optional[str]) -> Optional[int]:
     if not token:
         return None
-    return _ACTIVE_TOKENS.get(token)
+    entry = _ACTIVE_TOKENS.get(token)
+    if entry is None:
+        return None
+    user_id, issued_at = entry
+    if time.time() - issued_at > _TOKEN_TTL_SECONDS:
+        _ACTIVE_TOKENS.pop(token, None)
+        return None
+    return user_id
 
 
 def _purge_expired_tokens() -> None:
     now = time.time()
-    expired = [t for t, ts in _ACTIVE_TOKENS.items() if now - ts > _TOKEN_TTL_SECONDS]
+    expired = [t for t, (_, ts) in _ACTIVE_TOKENS.items() if now - ts > _TOKEN_TTL_SECONDS]
     for t in expired:
         _ACTIVE_TOKENS.pop(t, None)
 
@@ -164,13 +171,20 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         await conn.close()
 
 
-def user_id_from_authorization(authorization: Optional[str]) -> Optional[int]:
-    _purge_expired_tokens()
+def _token_from_authorization(authorization: Optional[str]) -> Optional[str]:
     if not authorization:
         return None
     parts = authorization.split(" ", 1)
-    token = parts[1] if len(parts) == 2 and parts[0].lower() == "bearer" else parts[0]
+    return parts[1] if len(parts) == 2 and parts[0].lower() == "bearer" else parts[0]
+
+
+def user_id_from_token(token: Optional[str]) -> Optional[int]:
+    _purge_expired_tokens()
     return _user_id_from_token(token)
+
+
+def user_id_from_authorization(authorization: Optional[str]) -> Optional[int]:
+    return user_id_from_token(_token_from_authorization(authorization))
 
 
 def revoke_token(authorization: Optional[str]) -> None:
