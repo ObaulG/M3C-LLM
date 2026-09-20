@@ -341,7 +341,9 @@
         }
 
         function handleLogout() {
-            fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+            const apiKey = getApiKey();
+            const headers = apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {};
+            fetch('/api/auth/logout', { method: 'POST', headers: headers }).finally(() => {
                 clearApiKey();
                 location.reload();
             });

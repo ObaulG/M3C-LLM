@@ -74,9 +74,11 @@
         return false;
     };
 
-    // Déconnexion depuis l'en-tête.
+    // Déconnexion depuis l'en-tête. Le token est envoyé pour être révoqué côté serveur.
     window.profileWidgetLogout = function () {
-        fetch('/api/auth/logout', { method: 'POST' }).finally(function () {
+        var apiKey = getApiKey();
+        var headers = apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {};
+        fetch('/api/auth/logout', { method: 'POST', headers: headers }).finally(function () {
             clearApiKey();
             showLoginForm();
             setMessage('', false);
