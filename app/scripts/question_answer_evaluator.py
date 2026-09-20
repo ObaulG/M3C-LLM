@@ -4,10 +4,12 @@ Script d'évaluation de réponses à des questions avec combinatoire de modèles
 
 Ce script:
 1. Lit un CSV avec les colonnes: question_id, réponse humaine, note sur 10 attendue
-2. Pour chaque réponse, évalue avec TOUS les modèles disponibles (distants + locaux)
-3. Stocke séparément les résultats de chaque modèle
+2. Pour chaque réponse, teste plusieurs nombres de réponses de référence dans le prompt
+   (1, 2, ..., jusqu'à 5 réponses de référence) avec TOUS les modèles disponibles
+3. Stocke séparément les résultats de chaque modèle pour chaque nombre de réponses
 4. Calcule les moyennes de chaque combinaison de 1, 2, 3, 4 modèles
-5. Génère un rapport détaillé avec toutes les évaluations
+5. Compare les notes selon le nombre de réponses de référence fournies
+6. Génère un rapport détaillé avec toutes les évaluations
 
 Modèles utilisés:
 - Distants (Mistral): mistral-small-latest, ministral-3b-latest, ministral-8b-latest, mistral-medium
@@ -75,13 +77,15 @@ class IndividualEvaluation:
         provider: str,
         score: int,
         feedback: str,
-        execution_time: float
+        execution_time: float,
+        num_reference_answers: int = 1
     ):
         self.model = model
         self.provider = provider
         self.score = score
         self.feedback = feedback
         self.execution_time = execution_time
+        self.num_reference_answers = num_reference_answers
     
     def to_dict(self) -> Dict[str, Any]:
         """Convertit en dictionnaire pour export JSON."""
@@ -90,11 +94,12 @@ class IndividualEvaluation:
             "provider": self.provider,
             "score": self.score,
             "feedback": self.feedback,
-            "execution_time": round(self.execution_time, 3)
+            "execution_time": round(self.execution_time, 3),
+            "num_reference_answers": self.num_reference_answers
         }
     
     def __repr__(self) -> str:
-        return f"IndividualEvaluation({self.model}, score={self.score})"
+        return f"IndividualEvaluation({self.model}, score={self.score}, num_ref={self.num_reference_answers})"
 
 
 class CombinationResult:
@@ -104,11 +109,13 @@ class CombinationResult:
         self,
         models: List[str],
         average_score: float,
-        individual_scores: List[int]
+        individual_scores: List[int],
+        num_reference_answers: int = 1
     ):
         self.models = models
         self.average_score = average_score
         self.individual_scores = individual_scores
+        self.num_reference_answers = num_reference_answers
         self.size = len(models)
     
     def to_dict(self) -> Dict[str, Any]:
@@ -117,12 +124,13 @@ class CombinationResult:
             "models": self.models,
             "size": self.size,
             "average_score": round(self.average_score, 2),
-            "individual_scores": self.individual_scores
+            "individual_scores": self.individual_scores,
+            "num_reference_answers": self.num_reference_answers
         }
     
     def get_key(self) -> str:
         """Retourne une clé unique pour cette combinaison."""
-        return ",".join(sorted(self.models))
+        return f"{','.join(sorted(self.models))}@{self.num_reference_answers}"
     
     def __repr__(self) -> str:
         return f"CombinationResult({self.size} models, avg={self.average_score:.2f})"
@@ -218,7 +226,8 @@ class QuestionAnswerEvaluator:
         csv_path: str,
         output_dir: str = "results",
         use_local: bool = True,
-        use_remote: bool = True
+        use_remote: bool = True,
+        max_reference_answers: int = 5
     ):
         """
         Initialise l'évaluateur.
@@ -228,11 +237,13 @@ class QuestionAnswerEvaluator:
             output_dir: Dossier de sortie pour les résultats
             use_local: Utiliser les modèles locaux (Ollama)
             use_remote: Utiliser les modèles distants (Mistral)
+            max_reference_answers: Nombre maximal de réponses de référence à tester dans le prompt
         """
         self.csv_path = csv_path
         self.output_dir = output_dir
         self.use_local = use_local
         self.use_remote = use_remote
+        self.max_reference_answers = max(1, max_reference_answers)
         
         # Cache pour les agents évaluateurs
         self._agent_cache: Dict[Tuple[str, str], Any] = {}
@@ -245,6 +256,7 @@ class QuestionAnswerEvaluator:
         
         logger.info(f"Évaluateur initialisé avec {len(self.questions_data)} questions")
         logger.info(f"Modèles distants: {self.use_remote}, Modèles locaux: {self.use_local}")
+        logger.info(f"Nombre de réponses de référence testées: 1 à {self.max_reference_answers}")
     
     def _load_questions_from_csv(self) -> List[Dict[str, Any]]:
         """
@@ -417,18 +429,23 @@ class QuestionAnswerEvaluator:
     async def _evaluate_with_all_models(
         self, 
         question_data: Dict[str, Any]
-    ) -> List[IndividualEvaluation]:
+    ) -> Tuple[List[IndividualEvaluation], str, List[str]]:
         """
-        Évalue une question avec TOUS les modèles disponibles.
+        Évalue une question avec TOUS les modèles disponibles, en variant le
+        nombre de réponses de référence incluses dans le prompt.
+
+        Pour chaque nombre n de 1 à max_reference_answers (limité au nombre de
+        réponses de référence réellement disponibles), la question est évaluée
+        avec les n premières réponses de référence. Cela permet de comparer
+        les notes données selon que le modèle voie 1, 2, ..., 5 réponses.
         
         Args:
             question_data: Dictionnaire avec question_id, human_answer, expected_score
             
         Returns:
-            Liste de toutes les évaluations individuelles
+            Tuple (individual_evaluations, question_text, expected_answers)
         """
         all_models = self._get_all_models()
-        individual_evaluations = []
         
         # Récupérer les détails de la question
         question_text, expected_answers = await self._get_question_details(
@@ -438,68 +455,88 @@ class QuestionAnswerEvaluator:
         if not expected_answers:
             expected_answers = [""]  # Au moins une réponse vide
         
-        # Créer l'entrée d'évaluation
-        evaluation_input = EvaluateRequestInput(
-            question=question_text,
-            expected_answers=expected_answers,
-            user_answer=question_data["human_answer"]
+        # Nombre de variantes de prompt à tester: 1 réponse, 2 réponses, ... jusqu'à max_reference_answers
+        # (limité au nombre de réponses de référence réellement disponibles)
+        num_sizes = min(self.max_reference_answers, len(expected_answers))
+        
+        logger.info(
+            f"Évaluation de la question {question_data['question_id']} avec {len(all_models)} modèles "
+            f"et {num_sizes} variante(s) de prompt (1 à {num_sizes} réponse(s) de référence)..."
         )
         
-        logger.info(f"Évaluation de la question {question_data['question_id']} avec {len(all_models)} modèles...")
-        
-        # Préparer les coroutines pour chaque modèle
+        # Préparer les coroutines pour chaque couple (modèle, nombre de réponses de référence)
         coroutines = []
-        for model_name, provider in all_models:
-            evaluator = self._get_cached_evaluator(model_name, provider)
-            start_time = time.time()
+        for num_ref in range(1, num_sizes + 1):
+            # Sous-ensemble des n premières réponses de référence
+            reference_subset = expected_answers[:num_ref]
             
-            async def _evaluate_model(
-                evaluator, 
-                model_name: str, 
-                provider: str, 
-                start_time: float
-            ) -> IndividualEvaluation:
-                """Évalue avec un seul modèle."""
-                try:
-                    result = await monitor_agent_call_async(
-                        evaluator, 
-                        evaluation_input, 
-                        "run_async"
-                    )
-                    eval_result, token_count, output_tokens = result
-                    exec_time = time.time() - start_time
-                    
-                    return IndividualEvaluation(
-                        model=model_name,
-                        provider=provider,
-                        score=eval_result.score,
-                        feedback=eval_result.feedback,
-                        execution_time=exec_time
-                    )
-                except Exception as e:
-                    logger.error(f"Erreur avec {model_name} ({provider}): {str(e)}")
-                    return IndividualEvaluation(
-                        model=model_name,
-                        provider=provider,
-                        score=0,
-                        feedback=f"Erreur: {str(e)}",
-                        execution_time=0
-                    )
+            # Créer l'entrée d'évaluation pour ce nombre de réponses
+            evaluation_input = EvaluateRequestInput(
+                question=question_text,
+                expected_answers=reference_subset,
+                user_answer=question_data["human_answer"]
+            )
             
-            coroutines.append(_evaluate_model(evaluator, model_name, provider, start_time))
+            for model_name, provider in all_models:
+                evaluator = self._get_cached_evaluator(model_name, provider)
+                start_time = time.time()
+                
+                async def _evaluate_model(
+                    evaluator, 
+                    model_name: str, 
+                    provider: str, 
+                    start_time: float,
+                    evaluation_input: EvaluateRequestInput,
+                    num_ref: int
+                ) -> IndividualEvaluation:
+                    """
+                    Évalue avec un seul modèle et un nombre donné de réponses de référence.
+                    """
+                    try:
+                        result = await monitor_agent_call_async(
+                            evaluator, 
+                            evaluation_input, 
+                            "run_async"
+                        )
+                        eval_result, token_count, output_tokens = result
+                        exec_time = time.time() - start_time
+                        
+                        return IndividualEvaluation(
+                            model=model_name,
+                            provider=provider,
+                            score=eval_result.score,
+                            feedback=eval_result.feedback,
+                            execution_time=exec_time,
+                            num_reference_answers=num_ref
+                        )
+                    except Exception as e:
+                        logger.error(f"Erreur avec {model_name} ({provider}, {num_ref} réf.): {str(e)}")
+                        return IndividualEvaluation(
+                            model=model_name,
+                            provider=provider,
+                            score=0,
+                            feedback=f"Erreur: {str(e)}",
+                            execution_time=0,
+                            num_reference_answers=num_ref
+                        )
+                
+                coroutines.append(_evaluate_model(
+                    evaluator, model_name, provider, start_time, evaluation_input, num_ref
+                ))
         
         # Exécuter toutes les évaluations en parallèle
-        individual_evaluations = await asyncio.gather(*coroutines)
+        individual_evaluations = list(await asyncio.gather(*coroutines))
         
         logger.info(f"Terminé: {len(individual_evaluations)} évaluations individuelles")
-        return individual_evaluations
+        return individual_evaluations, question_text, expected_answers
 
     def _calculate_all_combinations(
         self, 
         evaluations: List[IndividualEvaluation]
     ) -> List[CombinationResult]:
         """
-        Calcule les moyennes pour toutes les combinaisons de 1 à 4 modèles.
+        Calcule les moyennes pour toutes les combinaisons de 1 à 4 modèles,
+        séparément pour chaque nombre de réponses de référence.
         
         Args:
             evaluations: Liste des évaluations individuelles
@@ -510,33 +547,36 @@ class QuestionAnswerEvaluator:
         if not evaluations:
             return []
         
-        # Créer un dictionnaire pour accéder rapidement aux scores
-        # Utiliser (provider, model) comme clé
-        eval_dict = {}
+        # Regrouper les évaluations par nombre de réponses de référence
+        # puis créer un dictionnaire (provider, model) -> évaluation
+        groups_by_num_ref = {}
         for eval in evaluations:
-            key = f"{eval.provider}:{eval.model}"
-            eval_dict[key] = eval
-        
-        # Obtenir la liste de tous les modèles disponibles
-        all_model_keys = list(eval_dict.keys())
+            groups_by_num_ref.setdefault(eval.num_reference_answers, {})[
+                f"{eval.provider}:{eval.model}"
+            ] = eval
         
         combination_results = []
         
-        # Générer toutes les combinaisons de 1 à 4 modèles
-        max_size = min(4, len(all_model_keys))
-        for r in range(1, max_size + 1):
-            for combo_keys in itertools.combinations(all_model_keys, r):
-                # Extraire les scores de cette combinaison
-                scores = [eval_dict[key].score for key in combo_keys]
-                avg_score = sum(scores) / len(scores)
-                
-                # Créer un CombinationResult
-                combo_result = CombinationResult(
-                    models=list(combo_keys),
-                    average_score=avg_score,
-                    individual_scores=scores
-                )
-                combination_results.append(combo_result)
+        for num_ref, eval_dict in sorted(groups_by_num_ref.items()):
+            # Obtenir la liste de tous les modèles disponibles pour ce nombre de réponses
+            all_model_keys = list(eval_dict.keys())
+            
+            # Générer toutes les combinaisons de 1 à 4 modèles
+            max_size = min(4, len(all_model_keys))
+            for r in range(1, max_size + 1):
+                for combo_keys in itertools.combinations(all_model_keys, r):
+                    # Extraire les scores de cette combinaison
+                    scores = [eval_dict[key].score for key in combo_keys]
+                    avg_score = sum(scores) / len(scores)
+                    
+                    # Créer un CombinationResult
+                    combo_result = CombinationResult(
+                        models=list(combo_keys),
+                        average_score=avg_score,
+                        individual_scores=scores,
+                        num_reference_answers=num_ref
+                    )
+                    combination_results.append(combo_result)
         
         logger.info(f"Calculé {len(combination_results)} combinaisons")
         return combination_results
@@ -558,14 +598,13 @@ class QuestionAnswerEvaluator:
         """
         start_time = time.time()
         
-        # Étape 1: Évaluer avec tous les modèles
-        individual_evaluations = await self._evaluate_with_all_models(question_data)
+        # Étape 1: Évaluer avec tous les modèles et toutes les variantes de réponses de référence
+        individual_evaluations, question_text, expected_answers = (
+            await self._evaluate_with_all_models(question_data)
+        )
         
-        # Étape 2: Calculer toutes les combinaisons
+        # Étape 2: Calculer toutes les combinaisons (pour chaque nombre de réponses de référence)
         combination_results = self._calculate_all_combinations(individual_evaluations)
-        
-        # Récupérer le texte de la question
-        question_text, _ = await self._get_question_details(question_data["question_id"])
         
         total_time = time.time() - start_time
         
@@ -678,6 +717,7 @@ class QuestionAnswerEvaluator:
                     "expected_score": expected_score,
                     "type": "individual",
                     "model": f"{ie.provider}:{ie.model}",
+                    "num_reference_answers": ie.num_reference_answers,
                     "score": ie.score,
                     "feedback": ie.feedback,
                     "execution_time": round(ie.execution_time, 3)
@@ -692,6 +732,7 @@ class QuestionAnswerEvaluator:
                     "expected_score": expected_score,
                     "type": "combination",
                     "model": ",".join(combo.models),
+                    "num_reference_answers": combo.num_reference_answers,
                     "score": round(combo.average_score, 2),
                     "feedback": "",
                     "combination_size": combo.size,
@@ -774,6 +815,28 @@ class QuestionAnswerEvaluator:
             report += f"| {model} | {model_avg_scores[model]:.2f} | {model_counts[model]} |\n"
         report += "\n"
         
+        # ===== SCORES MOYENS PAR NOMBRE DE RÉPONSES DE RÉFÉRENCE =====
+        report += "## 📏 Scores moyens par nombre de réponses de référence\n\n"
+        
+        ref_scores = {}
+        ref_counts = {}
+        for qr in results:
+            for ie in qr.individual_evaluations:
+                num_ref = ie.num_reference_answers
+                if num_ref not in ref_scores:
+                    ref_scores[num_ref] = 0
+                    ref_counts[num_ref] = 0
+                ref_scores[num_ref] += ie.score
+                ref_counts[num_ref] += 1
+        
+        report += "| Nb réponses de référence | Score moyen | Nb évaluations |\n"
+        report += "|--------------------------|-------------|----------------|\n"
+        for num_ref in sorted(ref_scores.keys()):
+            count = ref_counts[num_ref]
+            avg = ref_scores[num_ref] / count if count else 0
+            report += f"| {num_ref} | {avg:.2f} | {count} |\n"
+        report += "\n"
+        
         # ===== DÉTAILS PAR QUESTION =====
         for idx, qr in enumerate(results, 1):
             report += f"## Question {idx}: {qr.question_id}\n\n"
@@ -784,10 +847,28 @@ class QuestionAnswerEvaluator:
             
             # Évaluations individuelles
             report += "### 🔍 Évaluations individuelles\n\n"
-            report += "| Modèle | Score | Feedback | Temps (s) |\n"
-            report += "|--------|-------|---------|-----------|\n"
-            for ie in sorted(qr.individual_evaluations, key=lambda x: x.score, reverse=True):
-                report += f"| {ie.provider}:{ie.model} | {ie.score}/10 | {ie.feedback[:50]}... | {ie.execution_time:.3f} |\n"
+            report += "| Modèle | Nb réponses réf. | Score | Feedback | Temps (s) |\n"
+            report += "|--------|-----------------|-------|---------|-----------|\n"
+            for ie in sorted(
+                qr.individual_evaluations, 
+                key=lambda x: (x.num_reference_answers, -x.score)
+            ):
+                report += f"| {ie.provider}:{ie.model} | {ie.num_reference_answers} | {ie.score}/10 | {ie.feedback[:50]}... | {ie.execution_time:.3f} |\n"
+            report += "\n"
+            
+            # Évolution des notes selon le nombre de réponses de référence
+            report += "### 📏 Impact du nombre de réponses de référence\n\n"
+            by_num_ref = {}
+            for ie in qr.individual_evaluations:
+                by_num_ref.setdefault(ie.num_reference_answers, []).append(ie)
+            
+            report += "| Nb réponses réf. | Score moyen (tous modèles) | Écart avec note attendue |\n"
+            report += "|-----------------|-----------------------------|--------------------------|\n"
+            for num_ref in sorted(by_num_ref.keys()):
+                evals = by_num_ref[num_ref]
+                avg = sum(e.score for e in evals) / len(evals)
+                diff = abs(avg - qr.expected_score)
+                report += f"| {num_ref} | {avg:.2f}/10 | {diff:.2f} |\n"
             report += "\n"
             
             # Meilleure combinaison
@@ -803,16 +884,14 @@ class QuestionAnswerEvaluator:
             report += "### 📊 Moyennes par taille de combinaison\n\n"
             combo_by_size = {}
             for combo in qr.combination_results:
-                if combo.size not in combo_by_size:
-                    combo_by_size[combo.size] = []
-                combo_by_size[combo.size].append(combo.average_score)
+                combo_by_size.setdefault(combo.size, []).append(combo.average_score)
             
             for size in sorted(combo_by_size.keys()):
                 scores = combo_by_size[size]
                 avg = sum(scores) / len(scores)
                 min_score = min(scores)
                 max_score = max(scores)
-                report += f"- **{size} modèle(s)**: moyenne={avg:.2f}, min={min_score:.2f}, max={max_score:.2f}\n"
+                report += f"- **{size} modèle(s)**: moyenne={avg:.2f}, min={min_score:.2f}, max={max_score:.2f} (toutes tailles de prompt confondues)\n"
             report += "\n"
         
         # ===== ANALYSE FINALE =====
@@ -877,6 +956,12 @@ async def main():
         default=None, 
         help="Limiter le nombre de questions à traiter (pour tests rapides)"
     )
+    parser.add_argument(
+        "--max-ref-answers", 
+        type=int, 
+        default=5, 
+        help="Nombre maximal de réponses de référence à tester dans le prompt (1, 2, ..., N) (défaut: 5)"
+    )
     
     args = parser.parse_args()
     
@@ -894,7 +979,8 @@ async def main():
             csv_path=args.csv,
             output_dir=args.output,
             use_local=not args.no_local,
-            use_remote=not args.no_remote
+            use_remote=not args.no_remote,
+            max_reference_answers=args.max_ref_answers
         )
         
         # Limiter les questions si demandé
