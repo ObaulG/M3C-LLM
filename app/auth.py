@@ -58,7 +58,7 @@ async def create_user(username: str, email: str, password: str, role: str = "use
         raise ValueError(f"Rôle invalide : {role}")
     if len(password) < 6:
         raise ValueError("Le mot de passe doit faire au moins 6 caractères.")
-    password_hash = _hash_password(password, secrets.token_bytes(16))
+    password_hash = _hash_password(password)
     async with await get_db_connection() as conn :
         try:
             async with conn.cursor() as cur:

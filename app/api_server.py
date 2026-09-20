@@ -170,7 +170,6 @@ class AuthRegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=255)
     email: str = Field(...)
     password: str = Field(..., min_length=6)
-    role: str = Field("user")
 
 class AuthLoginRequest(BaseModel):
     username: str = Field(...)
@@ -309,7 +308,6 @@ async def register(request: AuthRegisterRequest):
             username=request.username,
             email=request.email,
             password=request.password,
-            role=request.role,
         )
         return AuthResponse(user=AuthUserResponse(**user), api_key=api_key)
     except ValueError as e:
