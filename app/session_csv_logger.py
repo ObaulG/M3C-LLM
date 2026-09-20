@@ -15,6 +15,8 @@ import csv
 import os
 from pathlib import Path
 
+from question_session import UserEvaluationResponse
+
 CSV_DIR = "session_evaluations"
 
 CSV_HEADERS = [
@@ -41,14 +43,14 @@ def get_session_csv_path(session_id: str) -> str:
     return os.path.join(CSV_DIR, f"session_{session_id}.csv")
 
 
-def log_response_to_csv(session_id: str, user_response) -> None:
+def log_response_to_csv(session_id: str, user_response: UserEvaluationResponse) -> None:
     """
     Ajoute une ou plusieurs lignes au CSV de la session (une par évaluation).
     Crée le fichier avec les headers si c'est le premier appel pour cette session.
 
     Args:
         session_id: ID de la session
-        user_response: Objet UserResponse contenant les données à logger
+        user_response: Objet UserEvaluationResponse contenant les données à logger
     """
     ensure_csv_dir()
     filepath = get_session_csv_path(session_id)

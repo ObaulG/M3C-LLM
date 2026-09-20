@@ -463,6 +463,20 @@ function displayQuestions(questions, count) {
                 
                 ${answersHtml}
                 ${chunkInfo}
+                
+                <!-- Boutons d'édition -->
+                <div class="edit-actions">
+                    <button class="btn btn-edit-question" onclick="enableQuestionEditing(${question.question_id})">
+                        ⚙️ Modifier
+                    </button>
+                    <button class="btn btn-save-changes" onclick="saveQuestionChanges(${question.question_id})" style="display: none;">
+                        ✓ Sauvegarder les modifications
+                    </button>
+                    <button class="btn btn-secondary btn-cancel-edit" onclick="cancelQuestionEditing(${question.question_id})" style="display: none;">
+                        × Annuler
+                    </button>
+                </div>
+                
                 ${evaluationSection}
                 
                 <!-- Section de méta-évaluation (critique de l'évaluation IA) -->
@@ -1004,5 +1018,438 @@ async function saveEvaluation(questionId) {
             saveButton.innerHTML = originalButtonText;
             saveButton.disabled = false;
         }
+    }
+}
+
+
+/**
+ * Active le mode d'édition pour une question
+ * @param {number} questionId - ID de la question à modifier
+ */
+function enableQuestionEditing(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    
+    // Ajouter la classe edit-mode
+    questionCard.classList.add('edit-mode');
+    
+    // Rendre le contenu de la question éditable
+    const questionContentDiv = questionCard.querySelector('.question-content');
+    const originalQuestionContent = questionContentDiv.textContent.replace('Q:', '').trim();
+    
+    const questionTextarea = document.createElement('textarea');
+    questionTextarea.className = 'editable-question-text';
+    questionTextarea.value = originalQuestionContent;
+    questionTextarea.dataset.originalContent = originalQuestionContent;
+    
+    // Remplacer le contenu
+    questionContentDiv.innerHTML = '';
+    questionContentDiv.appendChild(questionTextarea);
+    
+    // Rendre toutes les réponses existantes éditables
+    const answerItems = questionCard.querySelectorAll('.answer-item');
+    answerItems.forEach((answerItem, index) => {
+        // Ne pas modifier les réponses qui sont déjà en mode édition
+        if (answerItem.classList.contains('editing')) {
+            return;
+        }
+        
+        const answerText = answerItem.textContent
+            .replace(/Réponse \d+: /, '')
+            .replace(/\s*\[LLM\]/, '')
+            .replace(/\s*✓ Correcte/, '')
+            .trim();
+        
+        const answerTextarea = document.createElement('textarea');
+        answerTextarea.className = 'editable-answer-text';
+        answerTextarea.value = answerText;
+        answerTextarea.dataset.answerIndex = index;
+        
+        // Conserver l'answer_id pour la mise à jour
+        const answerId = answerItem.dataset.answerId || '';
+        
+        // Créer un conteneur pour la réponse
+        const answerContainer = document.createElement('div');
+        answerContainer.className = 'answer-item editing';
+        if (answerId) {
+            answerTextarea.dataset.answerId = answerId;
+            answerContainer.dataset.answerId = answerId;
+        }
+        
+        // Ajouter un bouton de suppression
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-secondary btn-delete-answer';
+        deleteButton.textContent = '×';
+        deleteButton.title = 'Supprimer cette réponse';
+        deleteButton.onclick = () => deleteAnswerField(questionId, answerContainer);
+        deleteButton.style.marginLeft = '10px';
+        deleteButton.style.padding = '2px 8px';
+        deleteButton.style.fontSize = '12px';
+        
+        answerContainer.appendChild(answerTextarea);
+        answerContainer.appendChild(deleteButton);
+        
+        // Remplacer l'ancien élément de réponse
+        answerItem.parentNode.replaceChild(answerContainer, answerItem);
+    });
+    
+    // Ajouter un bouton "Ajouter une réponse"
+    let answersSection = questionCard.querySelector('.answers-section');
+    if (!answersSection) {
+        // Si answers-section n'existe pas (cas où il n'y a pas de réponses), le créer
+        const evaluationSection = questionCard.querySelector('.evaluation-section');
+        if (evaluationSection) {
+            answersSection = document.createElement('div');
+            answersSection.className = 'answers-section';
+            questionCard.insertBefore(answersSection, evaluationSection);
+        }
+    }
+    
+    if (answersSection) {
+        // Vérifier si le bouton "Ajouter une réponse" existe déjà
+        if (!answersSection.querySelector('.btn-add-answer')) {
+            const addAnswerButton = document.createElement('button');
+            addAnswerButton.className = 'btn btn-secondary btn-add-answer';
+            addAnswerButton.textContent = 'Ajouter une réponse';
+            addAnswerButton.onclick = () => addNewAnswerField(questionId);
+            addAnswerButton.style.marginTop = '10px';
+            answersSection.appendChild(addAnswerButton);
+        }
+    }
+    
+    // Masquer/Afficher les boutons
+    const editButton = questionCard.querySelector('.btn-edit-question');
+    const saveButton = questionCard.querySelector('.btn-save-changes');
+    const cancelButton = questionCard.querySelector('.btn-cancel-edit');
+    
+    if (editButton) editButton.style.display = 'none';
+    if (saveButton) saveButton.style.display = 'inline-block';
+    if (cancelButton) cancelButton.style.display = 'inline-block';
+}
+
+/**
+ * Ajoute un nouveau champ pour une réponse
+ * @param {number} questionId - ID de la question
+ */
+function addNewAnswerField(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    const answersSection = questionCard.querySelector('.answers-section');
+    const addAnswerButton = answersSection.querySelector('.btn-add-answer');
+    
+    const newAnswerDiv = document.createElement('div');
+    newAnswerDiv.className = 'answer-item editing new-answer-item';
+    
+    const answerTextarea = document.createElement('textarea');
+    answerTextarea.className = 'editable-answer-text';
+    answerTextarea.placeholder = 'Nouvelle réponse';
+    answerTextarea.dataset.isNew = 'true';
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn btn-secondary btn-delete-answer';
+    deleteButton.textContent = '×';
+    deleteButton.title = 'Supprimer cette réponse';
+    deleteButton.onclick = () => deleteAnswerField(questionId, newAnswerDiv);
+    deleteButton.style.marginLeft = '10px';
+    deleteButton.style.padding = '2px 8px';
+    deleteButton.style.fontSize = '12px';
+    
+    newAnswerDiv.appendChild(answerTextarea);
+    newAnswerDiv.appendChild(deleteButton);
+    
+    answersSection.insertBefore(newAnswerDiv, addAnswerButton);
+}
+
+/**
+ * Supprime un champ de réponse
+ * @param {number} questionId - ID de la question
+ * @param {HTMLElement} answerElement - Élément DOM de la réponse à supprimer
+ */
+function deleteAnswerField(questionId, answerElement) {
+    // Ne supprimer que les nouveaux champs (pas encore sauvegardés)
+    if (answerElement.classList.contains('new-answer-item')) {
+        answerElement.remove();
+    } else {
+        // Pour les réponses existantes, marquer pour suppression
+        answerElement.style.display = 'none';
+        answerElement.dataset.markedForDeletion = 'true';
+    }
+}
+
+/**
+ * Annule l'édition d'une question
+ * @param {number} questionId - ID de la question
+ */
+function cancelQuestionEditing(questionId) {
+    // Recharger la question depuis le serveur
+    if (currentDocumentId) {
+        loadQuestions(currentDocumentId);
+    }
+}
+
+
+/**
+ * Active le mode d'édition pour une question
+ * @param {number} questionId - ID de la question à modifier
+ */
+function enableQuestionEditing(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    
+    // Ajouter la classe edit-mode
+    questionCard.classList.add('edit-mode');
+    
+    // Rendre le contenu de la question éditable
+    const questionContentDiv = questionCard.querySelector('.question-content');
+    const originalQuestionContent = questionContentDiv.textContent.replace('Q:', '').trim();
+    
+    const questionTextarea = document.createElement('textarea');
+    questionTextarea.className = 'editable-question-text';
+    questionTextarea.value = originalQuestionContent;
+    questionTextarea.dataset.originalContent = originalQuestionContent;
+    
+    // Remplacer le contenu
+    questionContentDiv.innerHTML = '';
+    questionContentDiv.appendChild(questionTextarea);
+    
+    // Rendre toutes les réponses existantes éditables
+    const answerItems = questionCard.querySelectorAll('.answer-item');
+    answerItems.forEach((answerItem, index) => {
+        // Ne pas modifier les réponses qui sont déjà en mode édition
+        if (answerItem.classList.contains('editing')) {
+            return;
+        }
+        
+        const answerText = answerItem.textContent
+            .replace(/Réponse \d+: /, '')
+            .replace(/\s*\[LLM\]/, '')
+            .replace(/\s*✓ Correcte/, '')
+            .trim();
+        
+        const answerTextarea = document.createElement('textarea');
+        answerTextarea.className = 'editable-answer-text';
+        answerTextarea.value = answerText;
+        answerTextarea.dataset.answerIndex = index;
+        
+        // Conserver l'answer_id pour la mise à jour
+        const answerId = answerItem.dataset.answerId || '';
+        
+        // Créer un conteneur pour la réponse
+        const answerContainer = document.createElement('div');
+        answerContainer.className = 'answer-item editing';
+        if (answerId) {
+            answerTextarea.dataset.answerId = answerId;
+            answerContainer.dataset.answerId = answerId;
+        }
+        
+        // Ajouter un bouton de suppression
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-secondary btn-delete-answer';
+        deleteButton.textContent = '×';
+        deleteButton.title = 'Supprimer cette réponse';
+        deleteButton.onclick = () => deleteAnswerField(questionId, answerContainer);
+        deleteButton.style.marginLeft = '10px';
+        deleteButton.style.padding = '2px 8px';
+        deleteButton.style.fontSize = '12px';
+        
+        answerContainer.appendChild(answerTextarea);
+        answerContainer.appendChild(deleteButton);
+        
+        // Remplacer l'ancien élément de réponse
+        answerItem.parentNode.replaceChild(answerContainer, answerItem);
+    });
+    
+    // Ajouter un bouton "Ajouter une réponse"
+    let answersSection = questionCard.querySelector('.answers-section');
+    if (!answersSection) {
+        // Si answers-section n'existe pas, le créer
+        const evaluationSection = questionCard.querySelector('.evaluation-section');
+        if (evaluationSection) {
+            answersSection = document.createElement('div');
+            answersSection.className = 'answers-section';
+            questionCard.insertBefore(answersSection, evaluationSection);
+        }
+    }
+    
+    if (answersSection) {
+        // Vérifier si le bouton existe déjà
+        if (!answersSection.querySelector('.btn-add-answer')) {
+            const addAnswerButton = document.createElement('button');
+            addAnswerButton.className = 'btn btn-secondary btn-add-answer';
+            addAnswerButton.textContent = 'Ajouter une réponse';
+            addAnswerButton.onclick = () => addNewAnswerField(questionId);
+            addAnswerButton.style.marginTop = '10px';
+            answersSection.appendChild(addAnswerButton);
+        }
+    }
+    
+    // Masquer/Afficher les boutons
+    const editButton = questionCard.querySelector('.btn-edit-question');
+    const saveButton = questionCard.querySelector('.btn-save-changes');
+    const cancelButton = questionCard.querySelector('.btn-cancel-edit');
+    
+    if (editButton) editButton.style.display = 'none';
+    if (saveButton) saveButton.style.display = 'inline-block';
+    if (cancelButton) cancelButton.style.display = 'inline-block';
+}
+
+/**
+ * Ajoute un nouveau champ pour une réponse
+ * @param {number} questionId - ID de la question
+ */
+function addNewAnswerField(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    const answersSection = questionCard.querySelector('.answers-section');
+    const addAnswerButton = answersSection.querySelector('.btn-add-answer');
+    
+    const newAnswerDiv = document.createElement('div');
+    newAnswerDiv.className = 'answer-item editing new-answer-item';
+    
+    const answerTextarea = document.createElement('textarea');
+    answerTextarea.className = 'editable-answer-text';
+    answerTextarea.placeholder = 'Nouvelle réponse';
+    answerTextarea.dataset.isNew = 'true';
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn btn-secondary btn-delete-answer';
+    deleteButton.textContent = '×';
+    deleteButton.title = 'Supprimer cette réponse';
+    deleteButton.onclick = () => deleteAnswerField(questionId, newAnswerDiv);
+    deleteButton.style.marginLeft = '10px';
+    deleteButton.style.padding = '2px 8px';
+    deleteButton.style.fontSize = '12px';
+    
+    newAnswerDiv.appendChild(answerTextarea);
+    newAnswerDiv.appendChild(deleteButton);
+    
+    answersSection.insertBefore(newAnswerDiv, addAnswerButton);
+}
+
+/**
+ * Supprime un champ de réponse
+ * @param {number} questionId - ID de la question
+ * @param {HTMLElement} answerElement - Élément DOM de la réponse
+ */
+function deleteAnswerField(questionId, answerElement) {
+    // Ne supprimer que les nouveaux champs
+    if (answerElement.classList.contains('new-answer-item')) {
+        answerElement.remove();
+    } else {
+        // Pour les réponses existantes, marquer pour suppression
+        answerElement.style.display = 'none';
+        answerElement.dataset.markedForDeletion = 'true';
+    }
+}
+
+/**
+ * Annule l'édition d'une question
+ * @param {number} questionId - ID de la question
+ */
+function cancelQuestionEditing(questionId) {
+    // Recharger depuis le serveur
+    if (currentDocumentId) {
+        loadQuestions(currentDocumentId);
+    }
+}
+
+/**
+ * Sauvegarde les modifications d'une question et de ses réponses
+ * @param {number} questionId - ID de la question
+ */
+async function saveQuestionChanges(questionId) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    const questionTextarea = questionCard.querySelector('.editable-question-text');
+    const answerTextareas = questionCard.querySelectorAll('.editable-answer-text');
+    
+    const requestData = {
+        question_content: questionTextarea ? questionTextarea.value : undefined,
+        answers: [],
+        deleted_answer_ids: []
+    };
+    
+    // Collecter les IDs des réponses marquées pour suppression
+    const allAnswerItems = questionCard.querySelectorAll('.answer-item');
+    allAnswerItems.forEach((answerItem) => {
+        if (answerItem.dataset.markedForDeletion === 'true') {
+            const answerId = parseInt(answerItem.dataset.answerId);
+            if (answerId) {
+                requestData.deleted_answer_ids.push(answerId);
+            }
+        }
+    });
+    
+    // Collecter toutes les réponses (hors celles marquées pour suppression)
+    answerTextareas.forEach((textarea) => {
+        const answerContainer = textarea.closest('.answer-item');
+        
+        // Ignorer les réponses marquées pour suppression
+        if (answerContainer.dataset.markedForDeletion === 'true') {
+            return;
+        }
+        
+        const answerData = {
+            content: textarea.value,
+            is_correct: false
+        };
+        
+        // Si answer_id existe, c'est une mise à jour
+        if (textarea.dataset.answerId) {
+            answerData.answer_id = parseInt(textarea.dataset.answerId);
+        } else if (answerContainer.dataset.answerId) {
+            answerData.answer_id = parseInt(answerContainer.dataset.answerId);
+        }
+        
+        // Ne pas ajouter les réponses vides
+        if (answerData.content.trim() === '' && !answerData.answer_id) {
+            return;
+        }
+        
+        requestData.answers.push(answerData);
+    });
+    
+    // Afficher le chargement
+    const saveButton = questionCard.querySelector('.btn-save-changes');
+    const originalButtonText = saveButton.innerHTML;
+    saveButton.innerHTML = 'Sauvegarde en cours...';
+    saveButton.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/questions/${questionId}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Erreur HTTP: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Afficher un message de succès
+            const editStatus = document.createElement('div');
+            editStatus.className = 'edit-status';
+            editStatus.style.color = '#28a745';
+            editStatus.style.marginTop = '10px';
+            editStatus.style.fontWeight = 'bold';
+            editStatus.textContent = 'Modifications sauvegardées avec succès !';
+            questionCard.appendChild(editStatus);
+            
+            // Recharger après un court délai
+            setTimeout(() => {
+                if (currentDocumentId) {
+                    loadQuestions(currentDocumentId);
+                }
+            }, 1000);
+        } else {
+            alert(`Erreur: ${result.message || 'Échec de la sauvegarde'}`);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error);
+        alert('Une erreur est survenue: ' + error.message);
+    } finally {
+        saveButton.innerHTML = originalButtonText;
+        saveButton.disabled = false;
     }
 }

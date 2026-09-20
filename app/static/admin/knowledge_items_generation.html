@@ -169,7 +169,7 @@
                         <select id="modelSelect">
                             <option value="mistral-medium">Mistral Medium (défaut)</option>
                             <option value="mistral-small">Mistral Small</option>
-                            <option value="mistral-small-latest">Mistral Small Latest</option>
+                            <option value="mistral-small-2603">Mistral Small Latest</option>
                             <option value="mistral-large-latest">Mistral Large</option>
                             <option value="ministral-8b-latest">MiniStral 8B</option>
                             <option value="ministral-3b-2410">MiniStral 3B</option>
@@ -289,7 +289,7 @@
                 });
                 docSelect.innerHTML = options;
                 docSelect.onchange = async function() {
-                    currentDocumentId = this.value ? this.value : null;
+                    currentDocumentId = this.value ? parseInt(this.value) : null;
                     await loadChunksForDocument(currentDocumentId);
                 };
                 resetChunkSelector();

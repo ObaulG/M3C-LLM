@@ -633,15 +633,16 @@ async def get_question_by_id(
         if include_answers:
             async with conn.cursor() as cur:
                 await cur.execute("""
-                    SELECT content, is_correct, created_by
+                    SELECT answer_id, content, is_correct, created_by
                     FROM text_question_answers
                     WHERE question_id = %s
                 """, (question_id,))
             answer_rows = await cur.fetchall()
 
             for answer_row in answer_rows:
-                answer_content, is_correct, answer_created_by = answer_row
+                answer_id, answer_content, is_correct, answer_created_by = answer_row
                 question["answers"].append({
+                    "answer_id": answer_id,
                     "content": answer_content,
                     "is_correct": is_correct,
                     "created_by": answer_created_by
@@ -696,15 +697,16 @@ async def get_questions_by_ids(
         if include_answers:
             async with conn.cursor() as cur:
                 await cur.execute("""
-                    SELECT content, is_correct, created_by
+                    SELECT answer_id, content, is_correct, created_by
                     FROM text_question_answers
                     WHERE question_id = %s
                 """, (question_id,))
             answer_rows = await cur.fetchall()
 
             for answer_row in answer_rows:
-                answer_content, is_correct, answer_created_by = answer_row
+                answer_id, answer_content, is_correct, answer_created_by = answer_row
                 question["answers"].append({
+                    "answer_id": answer_id,
                     "content": answer_content,
                     "is_correct": is_correct,
                     "created_by": answer_created_by
@@ -1017,15 +1019,16 @@ async def get_questions_by_document_id(
         if include_answers:
             # Récupérer les réponses associées
             await cur.execute("""
-                SELECT content, is_correct, created_by
+                SELECT answer_id, content, is_correct, created_by
                 FROM text_question_answers
                 WHERE question_id = %s
             """, (question_id,))
             answer_rows = await cur.fetchall()
 
             for answer_row in answer_rows:
-                answer_content, is_correct, answer_created_by = answer_row
+                answer_id, answer_content, is_correct, answer_created_by = answer_row
                 question["answers"].append({
+                    "answer_id": answer_id,
                     "content": answer_content,
                     "is_correct": is_correct,
                     "created_by": answer_created_by
@@ -1675,3 +1678,82 @@ async def get_knowledge_items(
                 "themes": themes,
             })
     return items
+
+
+# ============================================================================
+# FONCTIONS DE MISE À JOUR DES QUESTIONS ET RÉPONSES
+# ============================================================================
+
+async def update_question_and_answers(
+    conn,
+    question_id: int,
+    question_content: Optional[str] = None,
+    answers: Optional[List[Dict]] = None,
+    deleted_answer_ids: Optional[List[int]] = None
+) -> Optional[Dict]:
+    """
+    Met à jour une question et ses réponses en base de données.
+    
+    Args:
+        conn: Connexion à la base de données asyncpg
+        question_id: ID de la question à mettre à jour
+        question_content: Nouveau contenu de la question (optionnel)
+        answers: Liste de réponses à mettre à jour ou créer
+               Chaque réponse doit avoir : content, is_correct (optionnel), answer_id (optionnel)
+        deleted_answer_ids: Liste des IDs des réponses à supprimer
+    
+    Returns:
+        Optional[Dict]: Question mise à jour avec ses réponses, ou None si non trouvée
+    """
+    async with conn.cursor() as cur:
+        # 1. Vérifier que la question existe
+        await cur.execute("""
+            SELECT question_id FROM text_questions WHERE question_id = %s
+        """, (question_id,))
+        question_exists = await cur.fetchone()
+        
+        if not question_exists:
+            return None
+        
+        # 2. Mettre à jour le contenu de la question si fourni
+        if question_content is not None:
+            await cur.execute("""
+                UPDATE text_questions 
+                SET content = %s
+                WHERE question_id = %s
+            """, (question_content, question_id))
+        
+        # 3. Supprimer les réponses marquées pour suppression
+        if deleted_answer_ids:
+            for answer_id in deleted_answer_ids:
+                await cur.execute("""
+                    DELETE FROM text_question_answers 
+                    WHERE answer_id = %s
+                """, (answer_id,))
+        
+        # 4. Traiter chaque réponse (mise à jour ou insertion)
+        if answers:
+            for answer in answers:
+                answer_id = answer.get("answer_id")
+                content = answer.get("content")
+                is_correct = answer.get("is_correct", False)
+                
+                if answer_id:
+                    # Mettre à jour la réponse existante
+                    await cur.execute("""
+                        UPDATE text_question_answers 
+                        SET content = %s, is_correct = %s
+                        WHERE answer_id = %s
+                    """, (content, is_correct, answer_id))
+                else:
+                    # Insérer une nouvelle réponse
+                    await cur.execute("""
+                        INSERT INTO text_question_answers 
+                        (question_id, content, is_correct, created_by)
+                        VALUES (%s, %s, %s, %s)
+                    """, (question_id, content, is_correct, 1))
+        
+        # 5. Récupérer la question mise à jour avec ses réponses
+        updated_question = await get_question_by_id(conn, question_id, include_answers=True)
+        
+        return updated_question

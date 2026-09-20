@@ -264,9 +264,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
+                        <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
+                        <div class="description">Nombre de réponses à générer pour chaque question</div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="modelSelect">Modèle LLM</label>
                         <select id="modelSelect">
-                            <option value="">Modèle par défaut (mistral-small)</option>
                         <option value="mistral/mistral-tiny">Mistral Tiny</option>
                         <option value="mistral/mistral-small">Mistral Small</option>
                         <option value="mistral/mistral-medium-latest">Mistral Medium</option>
@@ -307,6 +312,13 @@
                         <label>Contenu du chunk sélectionné</label>
                         <div id="chunkContentDisplay" class="chunk-content-display">
                             Sélectionnez un chunk pour afficher son contenu...
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3 class="section-title">Questions Existantes pour ce Chunk</h3>
+                        <div id="existingQuestionsContainer">
+                            <p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>
                         </div>
                     </div>
 
@@ -462,14 +474,24 @@
                     chunkSelect.disabled = false;
                     chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
                     
-                    // Ajouter l'écouteur pour l'affichage du contenu
-                    chunkSelect.onchange = function() {
+                    // Ajouter l'écouteur pour l'affichage du contenu et le chargement des questions existantes
+                    chunkSelect.onchange = async function() {
                         const selectedOption = this.options[this.selectedIndex];
                         const content = selectedOption.dataset.content;
+                        const chunkId = this.value;
+                        
                         if (content) {
                             chunkContentDisplay.textContent = decodeURIComponent(content);
                         } else {
                             chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                        }
+                        
+                        // Charger les questions existantes pour ce chunk
+                        if (chunkId) {
+                            await loadExistingQuestionsForChunk(chunkId);
+                        } else {
+                            document.getElementById('existingQuestionsContainer').innerHTML = 
+                                '<p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>';
                         }
                     };
                 } else {
@@ -669,10 +691,12 @@
                 return;
             }
             
+            const numAnswersPerQuestion = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
             const requestBody = {
                 message: `Génère exactement ${numQuestions} questions avec leurs réponses basées sur le texte suivant. ${chunkContent} Ne génère AUCUNE question en dehors de ce texte.`,
                 document: chunkContent,
                 num_questions: numQuestions,
+                num_answers: numAnswersPerQuestion,
                 model: modelName
             };
                 
@@ -706,7 +730,7 @@
                         id: `local-${Date.now()}-${index}`,
                         question: qa.question,
                         answer: qa.answer,
-                        chunk_id: parseInt(chunkId),
+                        chunk_id: chunkId,
                         document_id: documentId ? parseInt(documentId) : null,
                         model: modelName,
                         created_at: new Date().toISOString(),
@@ -1003,6 +1027,210 @@
             renderGeneratedQuestions();
             
             alert(`✅ ${successCount} question(s) validées avec succès! ${errorCount > 0 ? `\n❌ ${errorCount} échec(s).` : ''}`);
+        }
+        
+        // Fonction pour obtenir la classe CSS du statut de question
+        function getQuestionStatusClass(status) {
+            const classMap = {
+                'generated': 'status-running',
+                'validated': 'status-completed',
+                'pending': 'status-pending',
+                'rejected': 'status-failed'
+            };
+            return classMap[status] || 'status-pending';
+        }
+        
+        // Fonction pour charger les questions existantes d'un chunk
+        async function loadExistingQuestionsForChunk(chunkId) {
+            const container = document.getElementById('existingQuestionsContainer');
+            
+            try {
+                const response = await fetch(API_BASE + '/api/admin/questions/chunk/' + chunkId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.questions && data.questions.length > 0) {
+                    renderExistingQuestions(data.questions, chunkId);
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question existante pour ce chunk.</p>';
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des questions existantes:', error);
+                container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Erreur lors du chargement des questions existantes.</p>';
+            }
+        }
+        
+        // Fonction pour afficher les questions existantes
+        function renderExistingQuestions(questions, chunkId) {
+            const container = document.getElementById('existingQuestionsContainer');
+            
+            let html = '<div class="questions-list">';
+            
+            questions.forEach((q, index) => {
+                const questionId = q.question_id;
+                const questionContent = escapeHtml(q.content);
+                const status = q.status || 'generated';
+                const statusClass = getQuestionStatusClass(status);
+                
+                // Formatage des réponses existantes
+                let answersHtml = '<div class="existing-answers">';
+                if (q.answers && q.answers.length > 0) {
+                    q.answers.forEach((answer, idx) => {
+                        const answerContent = escapeHtml(answer.content);
+                        const isCorrect = answer.is_correct ? '✓' : '✗';
+                        answersHtml += `
+                            <div class="answer-item" style="margin: 5px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
+                                <strong>${isCorrect} Réponse ${idx + 1}:</strong> ${answerContent}
+                            </div>
+                        `;
+                    });
+                } else {
+                    answersHtml += '<p style="color: #666; font-style: italic;">Aucune réponse associée</p>';
+                }
+                answersHtml += '</div>';
+                
+                // Bouton pour générer de nouvelles réponses
+                const generateAnswersBtn = '<button class="btn" onclick="handleGenerateAnswers(this)" ' +
+                            'data-question-id="' + questionId + '" ' +
+                            'data-chunk-id="' + chunkId + '" ' +
+                            'style="margin-top: 10px; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">' +
+                            '🔄 Générer de nouvelles réponses</button>';
+                
+                html += `
+                    <div class="question-card existing-question" data-id="${questionId}" data-chunk-id="${chunkId}">
+                        <div class="question-header">
+                            <strong>Question ${index + 1}</strong>
+                            <span class="status-badge ${statusClass}">${status.toUpperCase()}</span>
+                        </div>
+                        <div class="question-text" style="margin: 10px 0;">${questionContent}</div>
+                        <div style="margin-top: 10px;">
+                            <strong>Réponses existantes :</strong>
+                            ${answersHtml}
+                        </div>
+                        <div class="actions" style="margin-top: 15px;">
+                            ${generateAnswersBtn}
+                        </div>
+                        <div class="question-meta">Question ID: ${q.question_id} | Chunk ID: ${q.chunk_id || chunkId}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Fonction pour générer de nouvelles réponses à une question
+        async function handleGenerateAnswers(button) {
+            console.log('handleGenerateAnswers called');
+            const questionId = button.dataset.questionId;
+            const chunkId = button.dataset.chunkId;
+            
+            console.log('Question ID:', questionId, 'Chunk ID:', chunkId);
+            
+            const numNewAnswers = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+            const modelName = document.getElementById('modelSelect').value;
+            const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+            
+            if (!chunkContent || chunkContent.includes('Sélectionnez un chunk')) {
+                alert('❌ Veuillez sélectionner un chunk valide.');
+                return;
+            }
+            
+            const shouldProceed = confirm(`Vous allez générer ${numNewAnswers} nouvelle(s) réponse(s) pour cette question.\n\nVoulez-vous continuer ?`);
+            if (!shouldProceed) {
+                return;
+            }
+            
+            // Obtenir la question pour la passer au modèle
+            const questionCard = button.closest('.question-card');
+            const questionElement = questionCard ? questionCard.querySelector('.question-text') : null;
+            const questionText = questionElement ? questionElement.textContent : '';
+            
+            if (!questionText) {
+                alert('❌ Impossible de récupérer le texte de la question.');
+                return;
+            }
+            
+            try {
+                // Appeler l'API pour générer de nouvelles réponses
+                const apiUrl = API_BASE + '/api/admin/questions/generate-answers';
+                const requestBody = {
+                    question_text: questionText,
+                    document_context: chunkContent,
+                    num_answers: numNewAnswers,
+                    model_name: modelName
+                };
+                
+                console.log('Calling API:', apiUrl, 'with body:', requestBody);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('API response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API error:', errorText);
+                    throw new Error(`Erreur API: ${response.status} - ${response.statusText} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API response data:', data);
+                
+                if (data && data.answers && data.answers.length > 0) {
+                    // Sauvegarder les nouvelles réponses pour cette question
+                    await saveNewAnswersForQuestion(questionId, chunkId, data.answers, modelName);
+                    
+                    // Recharger les questions pour mettre à jour l'affichage
+                    await loadExistingQuestionsForChunk(chunkId);
+                    
+                    alert(`✅ ${data.answers.length} nouvelle(s) réponse(s) générée(s) et ajoutée(s) à la question!`);
+                } else {
+                    throw new Error('Aucune réponse générée par le modèle');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération des réponses:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        // Fonction pour sauvegarder de nouvelles réponses à une question existante
+        async function saveNewAnswersForQuestion(questionId, chunkId, answers, modelName) {
+            try {
+                // Sauvegarder chaque nouvelle réponse
+                for (const answer of answers) {
+                    const response = await fetch(API_BASE + `/api/admin/questions/${questionId}/add-answer`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            answer_text: answer,
+                            is_correct: true,
+                            model_name: modelName
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.warn(`Erreur lors de la sauvegarde d'une réponse: ${response.status} - ${errorText}`);
+                        // Ne pas bloquer le processus si une sauvegarde échoue
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde des réponses:', error);
+                throw error;
+            }
         }
         
         // Fonction pour démarrer le rafraîchissement automatique

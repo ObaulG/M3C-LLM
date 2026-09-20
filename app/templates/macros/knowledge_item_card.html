@@ -1,0 +1,234 @@
+{# -*- jinja2 -*- Macro pour afficher une carte d'élément de connaissance -*- #}
+
+{% macro knowledge_item_card(knowledge_item, show_details=true, show_sources=false) -%}
+<div class="knowledge-item-card" data-knowledge-id="{{ knowledge_item.knowledge_id }}">
+    <div class="knowledge-item-header">
+        <h4 class="knowledge-item-title">{{ knowledge_item.proposition[:100] }}{% if knowledge_item.proposition|length > 100 %}...{% endif %}</h4>
+        {%- if knowledge_item.summary %}
+        <p class="knowledge-item-summary">{{ knowledge_item.summary }}</p>
+        {%- endif %}
+    </div>
+    
+    <div class="knowledge-item-meta">
+        {# Statut avec badge coloré #}
+        <span class="status-badge status-{{ knowledge_item.status.value if hasattr(knowledge_item.status, 'value') else knowledge_item.status }}">
+            {{ format_status(knowledge_item.status) }}
+        </span>
+        
+        {# Score et confiance #}
+        <div class="knowledge-item-scores">
+            <span class="score-item">
+                <strong>Maîtrise:</strong> {{ format_score(knowledge_item.score) }}
+            </span>
+            <span class="score-item">
+                <strong>Confiance:</strong> {{ format_score(knowledge_item.confidence) }}
+            </span>
+        </div>
+    </div>
+    
+    {%- if show_details %}
+    <div class="knowledge-item-details">
+        {# Entités liées #}
+        {%- if knowledge_item.entities %}
+        <div class="knowledge-item-entities">
+            <strong>Entités:</strong>
+            {% for entity in knowledge_item.entities %}
+            <span class="entity-tag" title="{{ entity.entity_name }} ({{ entity.entity_type }}) - Pertinence: {{ entity.relevance }}">
+                {{ entity.entity_name }}
+            </span>
+            {% endfor %}
+        </div>
+        {%- endif %}
+        
+        {# Date de dernière interaction #}
+        {%- if knowledge_item.last_interaction_at %}
+        <div class="knowledge-item-date">
+            <strong>Dernière interaction:</strong> {{ format_date(knowledge_item.last_interaction_at) }}
+        </div>
+        {%- endif %}
+    </div>
+    {%- endif %}
+    
+    {%- if show_sources and knowledge_item.sources %}
+    <div class="knowledge-item-sources">
+        <details>
+            <summary><strong>Sources ({% if knowledge_item.sources %}{{ knowledge_item.sources|length }}{% else %}0{% endif %})</strong></summary>
+            <ul class="source-list">
+                {% for source in knowledge_item.sources %}
+                <li class="source-item">
+                    {%- if source.excerpt %}
+                    <blockquote class="source-excerpt">{{ source.excerpt[:200] }}{% if source.excerpt|length > 200 %}...{% endif %}</blockquote>
+                    {%- endif %}
+                    {%- if source.page %}<span class="source-page">Page: {{ source.page }}</span>{% endif %}
+                    <span class="source-confidence">Confiance: {{ source.confidence|round(2) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </details>
+    </div>
+    {%- endif %}
+</div>
+
+{# CSS intégré pour la carte #}
+{% if include_css|default(true) %}
+<style>
+.knowledge-item-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.knowledge-item-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.knowledge-item-header {
+    margin-bottom: 10px;
+}
+
+.knowledge-item-title {
+    color: #333;
+    font-size: 15px;
+    margin: 0 0 5px 0;
+    line-height: 1.4;
+}
+
+.knowledge-item-summary {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+    font-style: italic;
+}
+
+.knowledge-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+
+.status-badge.status-unknown {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.status-badge.status-encountered {
+    background: #e7f3ff;
+    color: #004085;
+}
+
+.status-badge.status-developing {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-demonstrated {
+    background: #d4edda;
+    color: #155724;
+}
+
+.knowledge-item-scores {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.score-item {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.knowledge-item-details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.knowledge-item-entities {
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.entity-tag {
+    display: inline-block;
+    background: #e7f3ff;
+    color: #004085;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    cursor: help;
+}
+
+.knowledge-item-date {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.knowledge-item-sources {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
+}
+
+.knowledge-item-sources summary {
+    cursor: pointer;
+    color: #0066cc;
+    font-size: 13px;
+}
+
+.source-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.source-item {
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.source-excerpt {
+    font-style: italic;
+    color: #555;
+    border-left: 3px solid #0066cc;
+    padding-left: 10px;
+    margin: 5px 0;
+}
+
+.source-page {
+    color: #666;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+}
+
+.source-confidence {
+    color: #666;
+    font-size: 12px;
+    margin-left: 10px;
+}
+</style>
+{% endif %}
+{%- endmacro %}

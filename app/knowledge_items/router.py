@@ -288,6 +288,7 @@ async def generate_knowledge_items_from_questions_endpoint(request: KnowledgeGen
             async with await get_db_connection() as conn:
                 chunk = await get_chunk_by_id(conn, request.chunk_id)
         except Exception as e:
+            print(e)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Erreur lors de la récupération du chunk: {str(e)}",
@@ -370,55 +371,48 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
     candidates = [_model_to_candidate(item) for item in request.knowledge_items]
 
     # Forcer le document_id des source_references pour la cohérence
-    doc_id_for_source = str(request.document_id) if request.document_id is not None else None
+    doc_id_for_source = int(request.document_id) if request.document_id is not None else None
     for c in candidates:
         if not c.source_reference.document_id:
             c.source_reference.document_id = doc_id_for_source
         if not c.source_reference.chunk_id and request.chunk_id is not None:
             c.source_reference.chunk_id = str(request.chunk_id)
 
-    # Connexion et sauvegarde (DictCursor requis par save_knowledge_candidates_to_db)
-    try:
-        conn = await _get_dict_cursor_connection()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur de connexion à la base: {str(e)}",
-        )
+
 
     try:
-        # 1. Créer / récupérer la ressource knowledge_resources
-        resource_id = await get_or_create_knowledge_resource(
-            conn,
-            title=resource_title,
-            uri=request.resource_uri,
-            resource_type=request.resource_type,
-        )
+        async with await get_db_connection() as conn :
+            # 1. Créer / récupérer la ressource knowledge_resources
+            resource_id = await get_or_create_knowledge_resource(
+                conn,
+                title=resource_title,
+                uri=request.resource_uri,
+                resource_type=request.resource_type,
+            )
+            print("a")
 
-        # 2. Sauvegarder les candidats (knowledge_items + relations)
-        saved_ids = await save_knowledge_candidates_to_db(
-            candidates,
-            conn,
-            resource_id=resource_id,
-            document_id=doc_id_for_source,
-        )
-
-        # 3. Récupérer le détail par knowledge_item (entités/thèmes/sources liées)
-        results: List[KnowledgeSaveResult] = []
-        for kid, candidate in zip(saved_ids, candidates):
-            entities_count = len(candidate.entities)
-            themes_count = len(candidate.themes)
-            source_saved = bool(candidate.source_reference and candidate.source_reference.excerpt)
-            results.append(KnowledgeSaveResult(
-                knowledge_id=kid,
-                proposition=candidate.proposition,
-                entities_count=entities_count,
-                themes_count=themes_count,
-                source_saved=source_saved,
-            ))
-
-        await conn.close()
-
+            # 2. Sauvegarder les candidats (knowledge_items + relations)
+            saved_ids = await save_knowledge_candidates_to_db(
+                candidates,
+                conn,
+                resource_id=resource_id,
+                document_id=doc_id_for_source,
+            )
+            print("a")
+            # 3. Récupérer le détail par knowledge_item (entités/thèmes/sources liées)
+            results: List[KnowledgeSaveResult] = []
+            for kid, candidate in zip(saved_ids, candidates):
+                entities_count = len(candidate.entities)
+                themes_count = len(candidate.themes)
+                source_saved = bool(candidate.source_reference and candidate.source_reference.excerpt)
+                results.append(KnowledgeSaveResult(
+                    knowledge_id=kid,
+                    proposition=candidate.proposition,
+                    entities_count=entities_count,
+                    themes_count=themes_count,
+                    source_saved=source_saved,
+                ))
+            print("a")
         return KnowledgeSaveResponse(
             success=True,
             resource_id=resource_id,
@@ -428,14 +422,16 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
             message=f"{len(saved_ids)} knowledge_items sauvegardés pour la ressource "
                     f"'{resource_title}' (resource_id={resource_id})",
         )
-    except HTTPException:
-        raise
+    except HTTPException as e:
+        print(f"Erreur lors de la sauvegarde des knowledge_items: {e}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la sauvegarde: {str(e)}",
+        )
     except Exception as e:
         print(f"Erreur lors de la sauvegarde des knowledge_items: {e}")
-        try:
-            await conn.close()
-        except Exception:
-            pass
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la sauvegarde: {str(e)}",

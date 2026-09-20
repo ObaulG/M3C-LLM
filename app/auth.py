@@ -1,8 +1,8 @@
-import hashlib
 import secrets
 import time
 from typing import Optional, Tuple, Dict, Any
 
+import bcrypt
 from psycopg import AsyncConnection
 from psycopg.errors import UniqueViolation
 
@@ -13,20 +13,18 @@ _ACTIVE_TOKENS: Dict[str, int] = {}
 _TOKEN_TTL_SECONDS = 60 * 60 * 24
 
 
-def _hash_password(password: str, salt: bytes) -> str:
-    h = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 200_000)
-    return salt.hex() + ":" + h.hex()
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt(rounds=10),
+    ).decode("utf-8")
 
 
-def _verify_password(password: str, stored: str) -> bool:
-    try:
-        salt_hex, expected_hash_hex = stored.split(":", 1)
-        salt = bytes.fromhex(salt_hex)
-        expected = bytes.fromhex(expected_hash_hex)
-    except (ValueError, AttributeError):
-        return False
-    h = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 200_000)
-    return secrets.compare_digest(h, expected)
+def _verify_password(password: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(
+        password.encode("utf-8"),
+        password_hash.encode("utf-8"),
+    )
 
 
 def _issue_token(user_id: int) -> str:
@@ -61,76 +59,82 @@ async def create_user(username: str, email: str, password: str, role: str = "use
     if len(password) < 6:
         raise ValueError("Le mot de passe doit faire au moins 6 caractères.")
     password_hash = _hash_password(password, secrets.token_bytes(16))
-    conn = await get_db_connection()
-    try:
-        async with conn.cursor() as cur:
-            await cur.execute(
-                """
-                INSERT INTO users (username, email, password_hash, role, is_active)
-                VALUES (%s, %s, %s, %s, TRUE)
-                RETURNING user_id, username, email, role, is_active, created_at;
-                """,
-                (username, email, password_hash, role),
-            )
-            row = await cur.fetchone()
-            await conn.commit()
-        user = {
-            "user_id": row[0],
-            "username": row[1],
-            "email": row[2],
-            "role": row[3],
-            "is_active": bool(row[4]),
-            "created_at": row[5].isoformat() if row[5] else None,
-        }
-        token = _issue_token(user["user_id"])
-        return user, token
-    except UniqueViolation as e:
-        await conn.rollback()
-        constraint = getattr(e.diag, "constraint_name", "") or ""
-        if "username" in constraint:
-            raise ValueError("Ce nom d'utilisateur est déjà utilisé.")
-        if "email" in constraint:
-            raise ValueError("Cet email est déjà utilisé.")
-        raise ValueError("Utilisateur déjà existant.")
-    except Exception:
-        await conn.rollback()
-        raise
-    finally:
-        await conn.close()
+    async with await get_db_connection() as conn :
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    INSERT INTO user (name, email, password_hash, role, is_active)
+                    VALUES (%s, %s, %s, %s, TRUE)
+                    """,
+                    (username, email, password_hash, role),
+                )
+
+                user_id = cur.lastrowid
+
+                await cur.execute(
+                    """
+                    SELECT id, name, email, role, is_active, created
+                    FROM user
+                    WHERE id = %s
+                    """,
+                    (user_id,),
+                )
+
+                user = await cur.fetchone()
+            user = {
+                "user_id": user[0],
+                "username": user[1],
+                "email": user[2],
+                "role": user[3],
+                "is_active": bool(user[4]),
+                "created_at": user[5].isoformat() if user[5] else None,
+            }
+            token = _issue_token(user["user_id"])
+            return user, token
+        except UniqueViolation as e:
+            await conn.rollback()
+            constraint = getattr(e.diag, "constraint_name", "") or ""
+            if "name" in constraint:
+                raise ValueError("Ce nom d'utilisateur est déjà utilisé.")
+            if "email" in constraint:
+                raise ValueError("Cet email est déjà utilisé.")
+            raise ValueError("Utilisateur déjà existant.")
+        except Exception as e:
+            print(e)
+            await conn.rollback()
+
 
 
 async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, Any], str]:
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn :
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT user_id, username, email, password_hash, role, is_active, created_at
-                FROM users
-                WHERE username = %s OR email = %s;
+                SELECT id, name, email, password_hash, role, is_active, created
+                FROM user
+                WHERE name = %s OR email = %s;
                 """,
                 (identifier, identifier),
             )
             row = await cur.fetchone()
         if row is None:
             raise ValueError("Identifiants incorrects.")
-        user_id, username, email, password_hash, role, is_active, created_at = row
+        user_id, name, email, password_hash, role, is_active, created = row
         if not is_active:
             raise ValueError("Ce compte est désactivé.")
         if not _verify_password(password, password_hash):
             raise ValueError("Identifiants incorrects.")
         user = {
             "user_id": user_id,
-            "username": username,
+            "username": name,
             "email": email,
             "role": role,
             "is_active": bool(is_active),
-            "created_at": created_at.isoformat() if created_at else None,
+            "created_at": created.isoformat() if created else None,
         }
         token = _issue_token(user_id)
         return user, token
-    finally:
-        await conn.close()
 
 
 async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
@@ -139,9 +143,9 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT user_id, username, email, role, is_active, created_at
-                FROM users
-                WHERE user_id = %s;
+                SELECT id, name, email, role, is_active, created
+                FROM user
+                WHERE id = %s;
                 """,
                 (user_id,),
             )

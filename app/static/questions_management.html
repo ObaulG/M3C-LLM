@@ -182,6 +182,67 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Styles pour l'édition des questions */
+        .editable-question-text,
+        .editable-answer-text {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            margin: 5px 0;
+        }
+
+        .editable-question-text:focus,
+        .editable-answer-text:focus {
+            border-color: #b74420;
+            outline: none;
+        }
+
+        .answer-item.editing {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .answer-item.editing.new-answer-item {
+            border: 1px dashed #ccc;
+        }
+
+        .btn-edit-question {
+            background: #007bff;
+            margin-right: 10px;
+        }
+
+        .btn-save-changes {
+            background: #28a745;
+        }
+
+        .btn-cancel-edit {
+            background: #6c757d;
+        }
+
+        .btn-delete-answer {
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        .edit-mode {
+            border-left: 4px solid #b74420;
+            background-color: #fff8f8;
+        }
+
+        .edit-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
     </style>
 </head>
@@ -252,6 +313,9 @@
                         <option value="ollama/llama3.2:1b">Llama3.2 - 1B</option>
                         <option value="ollama/llama3.2:3b">Llama3.2 - 3B</option>
                         <option value="ollama/ministral-3:3b">Ministral 3 - 3B</option>
+                        <option value="ollama/qwen3.5:4b">Qwen 3.5 - 4B</option>
+                        <option value="ollama/qwen3.5:2b">Qwen 3.5 - 2B</option>
+                        <option value="ollama/qwen3.5:0.8b">Qwen 3.5 - 0.8B</option>
                     </select>
                 </div>
 

@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from agents.answer_evaluator_agent import AgentEvaluationResult
+from question_answer.answer_evaluation import UserEvaluationResponse, EvaluationResult
 
 """
 #Suite de questions prédéfinies pour des fins de démonstration
@@ -17,7 +18,10 @@ PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
 
 # NE PAS TOUCHER
 PREMADE_QUESTIONS_BY_DOCUMENT_ID = {
-    21: [418, 75]
+    21: [418, 75, 129],
+    34: [1251, 1373],
+    64: [675, 452],
+    35: [2534, 2535]
 }
 class SessionMetadata(BaseModel):
     """
@@ -30,57 +34,7 @@ class SessionMetadata(BaseModel):
     llm_final_model: Optional[str]
 
 
-class QuestionAnswer(BaseModel):
-    """Représente une paire question-réponse.
 
-    Cette classe modélise une question et sa réponse associée.
-
-    Attributes:
-        question_text (str): Le texte de la question posée.
-        answer_text (str): Le texte de la réponse correspondante.
-    """
-    question_text: str
-    answer_text: str
-
-class QuestionAnswerList(BaseModel):
-    questions_answers: List[QuestionAnswer]
-
-class EvaluateRequest(BaseModel):
-    """
-    Représente une requête d'évaluation contenant une question, la réponse attendue et la réponse de l'utilisateur.
-
-    Attributes:
-        question (str): Le texte de la question posée.
-        expected_answer (str): La réponse attendue.
-        user_answer (str): La réponse fournie par l'utilisateur à évaluer.
-    """
-    question: str
-    expected_answer: str
-    user_answer: str
-
-class EvaluationResult(BaseModel):
-    """
-    Représente le résultat de l'évaluation d'une réponse par un modèle de langage.
-    Utilisé dans UserResponse qui référence l'id de la question et son texte.
-    Attention, différent du EvaluationResult de answer_evaluator_agent.py,
-    qui hérite de BaseIOModel, prévu pour fonctionner avec AtomicAgents;
-    """
-    score: int
-    feedback: str
-    model: Optional[str]
-
-class UserResponse(BaseModel):
-    """
-    Représente les données d'une réponse donnée à une question par un utilisateur.
-    Si l'évaluation n'a pas été faite, alors elle n'est pas renseignée.
-    """
-    question_id: int
-    question_text: str
-    user_answer: str
-    date_sent: datetime
-    evaluation: Optional[EvaluationResult]
-    individual_evaluations: Optional[List[EvaluationResult]] = None
-    message_type: Optional[str] = None  # "réponse", "demande_renseignement", "hors_sujet", "autre"
 
 class SessionStatus(BaseModel):
     """
@@ -92,18 +46,10 @@ class SessionStatus(BaseModel):
     completed: bool
     created_at: datetime
     time_elapsed_secs: int
-    responses: List[UserResponse]
+    responses: List[UserEvaluationResponse]
     questions_ids: List[int]
     questions_text: List[str]
     pages: List[int]
-
-def from_AgentEvaluationResult_to_EvaluationResult(evaluation: AgentEvaluationResult,
-                                                   model: Optional[str] = None) -> EvaluationResult:
-    return EvaluationResult(
-        score= evaluation.score,
-        feedback=evaluation.feedback,
-        model=model,
-    )
 
 import json
 from datetime import datetime
@@ -122,7 +68,7 @@ def session_status_to_dict(session_status: SessionStatus) -> Dict[str, Any]:
             "model": evaluation.model,
         }
 
-    def serialize_user_response(response: UserResponse) -> Dict[str, Any]:
+    def serialize_user_response(response: UserEvaluationResponse) -> Dict[str, Any]:
         return {
             "question_id": response.question_id,
             "question_text": response.question_text,
@@ -210,7 +156,7 @@ class QuestionSessionManager:
             self.sessions[session_id]["questions_text"].extend(questions_texts)
             self.sessions[session_id]["pages"].extend(questions_pages)
 
-    def add_response(self, session_id: str, response: UserResponse):
+    def add_response(self, session_id: str, response: UserEvaluationResponse):
         """Ajoute une réponse utilisateur à une session."""
         if session_id in self.sessions:
             self.sessions[session_id]["responses"].append(response)

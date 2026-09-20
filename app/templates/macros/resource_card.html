@@ -1,0 +1,165 @@
+{# -*- jinja2 -*- Macro pour afficher une carte de ressource consultée -*- #}
+
+{% macro resource_card(resource, index=None) -%}
+<div class="resource-card" data-resource-id="{{ resource.resource_id }}" {% if index is not none %}data-index="{{ index }}"{% endif %}>
+    <div class="resource-card-header">
+        <h4 class="resource-title">
+            {% if index is not none %}<span class="resource-number">#{{ index + 1 }}</span>{% endif %}
+            {{ resource.resource_title or 'Ressource sans titre' }}
+        </h4>
+        {%- if resource.resource_type %}
+        <span class="resource-type-badge">{{ resource.resource_type }}</span>
+        {%- endif %}
+    </div>
+    
+    <div class="resource-card-body">
+        {%- if resource.author %}
+        <div class="resource-author">
+            <strong>Auteur:</strong> {{ resource.author }}
+        </div>
+        {%- endif %}
+        
+        {%- if resource.publication_date %}
+        <div class="resource-date">
+            <strong>Date:</strong> {{ resource.publication_date }}
+        </div>
+        {%- endif %}
+        
+        {%- if resource.resource_uri %}
+        <div class="resource-uri">
+            <a href="{{ resource.resource_uri }}" target="_blank" rel="noopener noreferrer">
+                {{ resource.resource_uri }}
+            </a>
+        </div>
+        {%- endif %}
+    </div>
+    
+    <div class="resource-card-footer">
+        <div class="resource-stats">
+            <span class="stat-item">
+                <strong>Consultations:</strong> {{ resource.view_count }}
+            </span>
+            {%- if resource.last_viewed_at %}
+            <span class="stat-item">
+                <strong>Dernière visite:</strong> {{ format_date(resource.last_viewed_at) }}
+            </span>
+            {%- endif %}
+            {%- if resource.first_viewed_at %}
+            <span class="stat-item">
+                <strong>Première visite:</strong> {{ format_date(resource.first_viewed_at) }}
+            </span>
+            {%- endif %}
+        </div>
+        
+        {%- if resource.avg_confidence > 0 %}
+        <div class="resource-confidence">
+            <strong>Confiance moyenne:</strong> {{ resource.avg_confidence|round(2) }}
+        </div>
+        {%- endif %}
+    </div>
+</div>
+
+{# CSS intégré pour la carte #}
+{% if include_css|default(true) %}
+<style>
+.resource-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.resource-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.resource-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.resource-title {
+    color: #333;
+    font-size: 16px;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+}
+
+.resource-number {
+    background: #b74420;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.resource-type-badge {
+    background: #e7f3ff;
+    color: #004085;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.resource-card-body {
+    margin-bottom: 10px;
+}
+
+.resource-author,
+.resource-date,
+.resource-uri {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.resource-uri a {
+    color: #0066cc;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.resource-uri a:hover {
+    text-decoration: underline;
+}
+
+.resource-card-footer {
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.resource-stats {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.stat-item strong {
+    color: #333;
+}
+
+.resource-confidence {
+    color: #666;
+    font-size: 13px;
+}
+</style>
+{% endif %}
+{%- endmacro %}

@@ -13,7 +13,7 @@ from .models import (
     QuestionGenerationJob,
     QuestionGenerationJobListResponse
 )
-from .services import (
+from .generation_services import (
     create_question_generation_job,
     get_question_generation_job,
     get_all_question_generation_jobs,
@@ -286,4 +286,155 @@ async def save_question_manually(request: dict):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la sauvegarde de la question: {str(e)}"
+        )
+
+
+# ============================================================================
+# NOUVEAUX ENDPOINTS POUR LA GÉNÉRATION DE RÉPONSES
+# ============================================================================
+
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import json
+import re
+
+
+class GenerateAnswersRequest(BaseModel):
+    """Requête pour générer des réponses à une question"""
+    question_text: str = Field(..., description="Texte de la question")
+    document_context: str = Field(..., description="Contexte du document")
+    num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
+    model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
+
+
+class GenerateAnswersResponse(BaseModel):
+    """Réponse avec les réponses générées"""
+    question: str
+    answers: List[str]
+    model_used: str
+
+
+@router.post(
+    "/generate-answers",
+    response_model=GenerateAnswersResponse,
+    summary="Génère des réponses à une question",
+    description="Génère plusieurs réponses pour une question donnée, en utilisant le contexte du document."
+)
+async def generate_answers(request: GenerateAnswersRequest):
+    """
+    Génère des réponses multiples pour une question.
+    Utilise un prompt direct au modèle LLM.
+    """
+    from agents.mistral_client import get_client
+    
+    # Définir provider et model
+    provider_model = request.model_name.split("/") if "/" in request.model_name else ["mistral", request.model_name]
+    provider = provider_model[0] if len(provider_model) > 0 else "mistral"
+    model = provider_model[1] if len(provider_model) > 1 else request.model_name
+    
+    client = get_client(request.model_name)
+    
+    prompt = f"""Tu es un assistant expert. Génère exactement {request.num_answers} réponses différentes, précises et complètes à la question suivante.
+
+Question: {request.question_text}
+
+Contexte: {request.document_context[:2000]}
+
+Règles:
+- Génère UNIQUEMENT des réponses, pas de questions
+- Chaque réponse doit être différente des autres
+- Les réponses doivent être basées sur le contexte fourni
+- Ne génère AUCUN commentaire ou explication supplémentaire
+- Retourne les réponses sous forme de liste JSON avec exactement {request.num_answers} éléments: {{"answers": ["réponse 1", "réponse 2", ...]}}
+"""
+    
+    response_text = await client.chat(prompt)
+    
+    # Parser la réponse JSON
+    answers = []
+    try:
+        # Essayer de parser le JSON directement
+        data = json.loads(response_text)
+        answers = data.get("answers", [])
+    except (json.JSONDecodeError, AttributeError):
+        # Si ça échoue, essayer d'extraire la liste manuellement
+        # Chercher entre crochets
+        match = re.search(r'\[(.*?)\]', response_text, re.DOTALL)
+        if match:
+            try:
+                answers = json.loads('[' + match.group(1) + ']')
+            except:
+                # Si ça échoue encore, prendre la réponse brute
+                answers = [response_text.strip()]
+        else:
+            answers = [response_text.strip()]
+    
+    # Limiter au nombre demandé
+    answers = answers[:request.num_answers]
+    
+    return GenerateAnswersResponse(
+        question=request.question_text,
+        answers=answers,
+        model_used=request.model_name
+    )
+
+
+class AddAnswerRequest(BaseModel):
+    """Requête pour ajouter une réponse à une question existante"""
+    answer_text: str = Field(..., description="Texte de la réponse à ajouter")
+    is_correct: bool = Field(default=True, description="Si la réponse est correcte")
+    model_name: str = Field(default="", description="Modèle utilisé pour générer cette réponse")
+
+
+class AddAnswerResponse(BaseModel):
+    """Réponse après ajout d'une réponse"""
+    success: bool
+    answer_id: Optional[int] = None
+    message: str
+
+
+@router.post(
+    "/{question_id}/add-answer",
+    response_model=AddAnswerResponse,
+    summary="Ajoute une réponse à une question existante",
+    description="Ajoute une nouvelle réponse à une question existante dans la base de données."
+)
+async def add_answer_to_question(question_id: int, request: AddAnswerRequest):
+    """
+    Ajoute une réponse à une question existante.
+    """
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                # Vérifier que la question existe
+                await cur.execute("""
+                    SELECT question_id FROM text_questions WHERE question_id = %s
+                """, (question_id,))
+                result = await cur.fetchone()
+                
+                if not result:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Question {question_id} introuvable"
+                    )
+                
+                # Insérer la nouvelle réponse
+                await cur.execute("""
+                    INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
+                    VALUES (%s, %s, %s, %s)
+                """, (question_id, request.answer_text, request.is_correct, None))
+                
+                answer_id = cur.lastrowid
+                await conn.commit()
+                
+                return AddAnswerResponse(
+                    success=True,
+                    answer_id=answer_id,
+                    message=f"Réponse ajoutée avec succès (ID: {answer_id})"
+                )
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'ajout de la réponse: {str(e)}"
         )

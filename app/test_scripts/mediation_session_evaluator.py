@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 from question_session import (
     PREMADE_QUESTIONS_BY_DOCUMENT_ID,
     QuestionSessionManager,
-    UserResponse,
+    UserEvaluationResponse,
     SessionStatus,
     EvaluationResult,
     from_AgentEvaluationResult_to_EvaluationResult
@@ -61,7 +61,7 @@ class SessionEvaluationConfig:
                  evaluator_models: List[str], 
                  nb_evaluators: int = 3,
                  with_final_evaluator: bool = True,
-                 final_evaluator_model: str = "mistral-large-latest"):
+                 final_evaluator_model: str = ""):
         self.evaluator_models = evaluator_models
         self.nb_evaluators = nb_evaluators
         self.with_final_evaluator = with_final_evaluator
@@ -109,7 +109,7 @@ class SessionEvaluationResult:
             "timestamp": self.timestamp
         }
         
-    def _serialize_response(self, response: UserResponse) -> Dict:
+    def _serialize_response(self, response: UserEvaluationResponse) -> Dict:
         """Sérialise une réponse utilisateur."""
         eval_data = None
         if response.evaluation:
@@ -302,7 +302,7 @@ class MediationSessionEvaluator:
                 )
             
             # Créer la réponse utilisateur
-            user_response = UserResponse(
+            user_response = UserEvaluationResponse(
                 question_id=question_id,
                 question_text=question['content'],
                 user_answer=user_answer,

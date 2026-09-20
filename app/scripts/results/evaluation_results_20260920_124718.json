@@ -1,0 +1,6106 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "parce que chacun va dire la sienne",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 1,
+        "feedback": "La réponse de l'utilisateur est très succincte et manque de précision sur les causes profondes des variations linguistiques en Corse. Les attentes incluent une explication liée aux mécanismes culturels, historiques et sociaux qui expliquent ces différences. Pour approfondir, il serait utile de mentionner des éléments comme l'identité régionale, les particularités historiques ou les adaptations locales. Voulez-vous préciser comment ces variations sont liées à des facteurs comme la géographie, l'histoire ou les dynamiques sociales en Corse ?",
+        "execution_time": 3.793
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Ta réponse touche au fait que la langue corse varie selon les individus ou les groupes, ce qui est partiellement juste. Cependant, pour mieux comprendre pourquoi ces variations existent, pourrais-tu préciser comment ces différences reflètent une identité ou une distinction culturelle spécifique à certaines régions de Corse ? Par exemple, est-ce lié à une volonté de se démarquer ou à des particularités culturelles locales ?",
+        "execution_time": 3.945
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Votre réponse souligne bien l'idée d'une diversité linguistique liée à une expression personnelle ou régionale, ce qui est effectivement une partie de la réalité. Cependant, pour approfondir, il serait intéressant d'explorer comment cette diversité s'inscrit dans un contexte culturel plus large. Par exemple, comment ces variations reflètent-elles une identité ou une appartenance à une région spécifique ? Pourriez-vous préciser si ces différences sont aussi liées à une volonté de distinction entre les communautés ou à des particularités géographiques et culturelles locales ?",
+        "execution_time": 4.284
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "La réponse évoque l'idée que chacun parle à sa manière, ce qui est une amorce intéressante. Cependant, elle ne précise pas que ces variations linguistiques sont liées à des distinctions culturelles ou régionales, ni à l'identité locale. Peux-tu préciser en quoi ces différences reflètent des particularités culturelles ou géographiques ?",
+        "execution_time": 3.066
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Ta réponse évoque une forme d'expression personnelle, mais comment cette diversité s'inscrit-elle dans un contexte culturel ou identitaire plus large en Corse ?",
+        "execution_time": 3.613
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          1,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          1,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          3,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 1.67,
+        "individual_scores": [
+          1,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.33,
+        "individual_scores": [
+          1,
+          3,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 2.33,
+        "individual_scores": [
+          2,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          2,
+          3,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.33,
+        "individual_scores": [
+          2,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          3,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          2,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 2.25,
+        "individual_scores": [
+          1,
+          2,
+          3,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 2.0,
+        "individual_scores": [
+          1,
+          2,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 2.25,
+        "individual_scores": [
+          1,
+          3,
+          2,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 2.5,
+        "individual_scores": [
+          2,
+          3,
+          2,
+          3
+        ]
+      }
+    ],
+    "total_execution_time": 5.339
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "Les habitants d’une région veulent pouvoir se distinguer des autres",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 7,
+        "feedback": "Ta réponse aborde l’essentiel en évoquant la volonté des habitants de créer des distinctions régionales, ce qui correspond directement aux attentes des réponses attendues. Tu captures bien l’idée que les variations linguistiques en Corse sont un mécanisme de différenciation culturelle et identitaire entre les groupes locaux. La formulation est claire et pertinente, même si elle reste concise. Pour aller plus loin, tu pourrais préciser que ces distinctions reflètent aussi des dynamiques historiques ou des adaptations aux spécificités géographiques et sociales de chaque territoire.",
+        "execution_time": 0.744
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Ta réponse capture bien l’idée centrale que les variations linguistiques en Corse servent à distinguer les groupes humains. Cependant, pour approfondir, pourrais-tu expliquer comment cette distinction se manifeste concrètement dans la langue corse ? Par exemple, est-ce à travers des mots spécifiques, des accents ou des expressions propres à chaque région ? Ces éléments renforcent l’idée d’une identité culturelle locale bien marquée.",
+        "execution_time": 1.308
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Votre réponse met en lumière un aspect essentiel : la volonté de distinction entre les groupes humains. Cela correspond bien à l’idée que les variations linguistiques peuvent refléter une identité régionale ou une appartenance culturelle. Pour aller plus loin, pourriez-vous préciser comment cette distinction se manifeste concrètement dans la langue corse ? Par exemple, est-ce lié à des particularités culturelles, géographiques ou encore à une histoire spécifique à chaque région ? Cela enrichirait votre réponse et montrerait comment cette volonté de distinction s’exprime dans le quotidien linguistique des Corses.",
+        "execution_time": 2.201
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    \n</exception>\n<completion>\n    None\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='e4b8c0d1ece24641bf68f4d8c730a29e' object='chat.completion' model='mistral-small-2603' usage=UsageInfo(prompt_tokens=1467, completion_tokens=253, total_tokens=1720, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 1440}, service_tier='standard') created=1789900927 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":8,\"feedback\":\"Ta réponse met bien en lumière l\\'idée que les variations linguistiques servent à distinguer les groupes humains entre eux. C\\'est une excellente piste ! Pour aller plus loin, tu pourrais préciser que ces distinctions sont souvent liées à des identités culturelles ou régionales, ce qui renforce encore le lien entre langue et identité locale.\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"question\": \"Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?\", \"expected_answers\": [\"Le col de Teghime est symbolique pour les Bastiais car il leur permet de traverser d\\'est en ouest et offre une vue sur ce qu\\'ils appellent « les deux mers », une division imaginaire de la Méditerranée en deux parties, dont la Tyrrhénienne.\"], \"user_answer\": \"On a la vue des deux côtés\"}', arguments='{\"score\":4,\"feedback\": \"Ta réponse évoque effectivement la vue panoramique depuis le col, ce qui est un bon point de départ. Cependant, le symbole des Bastiais est lié à une perception particulière de la mer, divisée en deux parties imaginaires. Peux-tu préciser comment cette vue est perçue symboliquement par les Bastiais ?\"}'), id='5DusBZUwe', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='31809bba283446e4906df24230d5f2b4' object='chat.completion' model='mistral-small-2603' usage=UsageInfo(prompt_tokens=1467, completion_tokens=438, total_tokens=1905, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 1440}, service_tier='standard') created=1789900929 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":8,\"feedback\":\"Ta réponse est très proche des éléments attendus ! Elle met bien en avant l\\'idée que les variations linguistiques servent à distinguer les groupes humains entre eux. Tu pourrais préciser que ces distinctions sont souvent liées à des identités culturelles ou régionales pour enrichir encore ta réponse.\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"question\":\"Pourquoi la langue corse présente-t-elle des variations selon les régions ?\", \"expected_answers\": [\"La langue corse varie selon les régions en raison de la volonté naturelle des groupes humains de se distinguer les uns des autres.\", \"Les différences régionales dans la langue corse sont une conséquence de la différenciation culturelle entre les groupes.\", \"La langue corse évolue différemment selon les régions car elle sert de support efficace pour marquer les distinctions entre les communautés.\", \"Les variations linguistiques en Corse sont le résultat de la volonté des locuteurs à s\\'identifier à leur région ou micro-région.\", \"La diversité linguistique en Corse est une manifestation de l\\'identité culturelle locale, qui se traduit par des particularités régionales.\", \"Les différences dans la langue corse sont liées à la nécessité pour les groupes humains de se différencier, ce qui se reflète dans leur parler.\", \"La langue corse varie selon les régions car elle est un outil de distinction sociale et culturelle entre les communautés.\", \"Les variations linguistiques en Corse sont le fruit d\\'une organisation naturelle visant à créer des identités régionales distinctes.\", \"La langue corse n\\'est pas uniforme car elle s\\'adapte aux particularités culturelles et géographiques de chaque région.\", \"Les différences dans la langue corse sont le résultat d\\'une évolution naturelle où chaque région développe ses propres traits distinctifs.\"], \"user_answer\":\"Les Corses veulent se différencier entre eux.\", \"model\": null}', arguments='{\"score\":7,\"feedback\":\"Ta réponse est pertinente car elle évoque clairement l\\'idée de différenciation entre les groupes. Cependant, il serait intéressant de préciser que ces différences sont souvent liées à des identités culturelles ou régionales, ou encore à des particularités locales pour coller encore plus aux attentes.\"}'), id='tawi8Y18X', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    Tool name does not match\n</last_exception>",
+        "execution_time": 0
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse met en avant l’idée de distinction entre les groupes, ce qui est pertinent. Peut-on préciser comment cette volonté de distinction se manifeste concrètement dans la langue ?",
+        "execution_time": 1.032
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          7,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          7,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          7,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          6,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          7,
+          6,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          7,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          7,
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          7,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          7,
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          7,
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          6,
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          6,
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          6,
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          7,
+          6,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          7,
+          6,
+          6,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          7,
+          6,
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          7,
+          6,
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.0,
+        "individual_scores": [
+          6,
+          6,
+          0,
+          8
+        ]
+      }
+    ],
+    "total_execution_time": 35.54
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "les variations existent pour que les différents groupes puissent se distinguer",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse est très proche des attentes et couvre l’essentiel des explications attendues. Elle résume parfaitement l’idée que les variations linguistiques en Corse sont une conséquence directe de la volonté des groupes de s’identifier et de se différencier entre eux. La formulation est claire et évite les redondances, tout en restant fidèle aux concepts clés comme la différenciation culturelle et l’identité régionale. C’est une réponse solide et pertinente pour répondre à la question.",
+        "execution_time": 1.39
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Ta réponse résume bien l'idée que les variations linguistiques en Corse servent à créer des distinctions entre les groupes. Pour enrichir ta réponse, pourrais-tu évoquer comment cette distinction se traduit concrètement dans le langage quotidien ou les expressions locales ? Par exemple, as-tu remarqué des mots, des tournures ou des accents spécifiques à certaines régions qui renforcent cette identité ?",
+        "execution_time": 1.842
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 7,
+        "feedback": "Votre réponse capture parfaitement l’idée centrale des variations linguistiques en Corse : celle d’un outil permettant aux groupes de se distinguer. Cela reflète bien la dimension identitaire et culturelle que l’on retrouve dans les réponses attendues. Pour aller encore plus loin, pourriez-vous évoquer comment ces distinctions se traduisent concrètement dans le parler quotidien ou dans des expressions spécifiques à certaines régions ? Cela permettrait d’illustrer davantage comment la langue devient un marqueur fort de l’appartenance locale.",
+        "execution_time": 2.881
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    \n</exception>\n<completion>\n    None\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    Instructor does not support multiple tool calls, use List[Model] instead\n</exception>\n<completion>\n    id='431b789983e7463583e1ce3df4ac9cd1' object='chat.completion' model='mistral-small-2603' usage=UsageInfo(prompt_tokens=1771, completion_tokens=150, total_tokens=1921, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 1744}, service_tier='standard') created=1789900963 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='', tool_calls=[ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 8, \"feedback\": \"Ta réponse est très proche des éléments attendus. Elle met en avant l\\'idée que les variations linguistiques permettent aux groupes de se distinguer, ce qui est un point central des réponses de référence. Tu pourrais préciser que cette distinction est aussi liée à l\\'identité culturelle ou régionale pour renforcer encore ta réponse.\"}'), id='ZGfTlchLH', type='function', index=0), ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 9, \"feedback\": \"Ta réponse est presque parfaite : elle reprend l\\'idée essentielle que les variations linguistiques servent à distinguer les groupes. Pour aller encore plus loin, tu pourrais ajouter que ces distinctions reflètent aussi une identité culturelle ou régionale, comme le soulignent les réponses attendues.\"}'), id='vi4YckZHs', type='function', index=1)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    Instructor does not support multiple tool calls, use List[Model] instead\n</exception>\n<completion>\n    id='e617eda03f5b423c8f85d3d123125799' object='chat.completion' model='mistral-small-2603' usage=UsageInfo(prompt_tokens=1771, completion_tokens=165, total_tokens=1936, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 1744}, service_tier='standard') created=1789900964 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='', tool_calls=[ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 8, \"feedback\": \"Ta réponse met bien en avant l\\'idée de distinction entre les groupes, ce qui est un élément central des réponses attendues. Cependant, il serait intéressant d\\'ajouter que ces variations sont aussi liées à l\\'identité culturelle ou régionale, et qu\\'elles reflètent les particularités locales. Peux-tu préciser ce lien entre langue et identité ?\"}'), id='TRHYwiDJf', type='function', index=0), ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 7, \"feedback\": \"Ton explication souligne correctement l\\'aspect de distinction entre les groupes, ce qui est pertinent. Pour aller plus loin, tu pourrais mentionner que ces variations linguistiques sont aussi un moyen pour les communautés de s\\'identifier à leur région ou micro-région, comme le montrent les réponses attendues.\"}'), id='KHeuDTc8q', type='function', index=1)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    Instructor does not support multiple tool calls, use List[Model] instead\n</last_exception>",
+        "execution_time": 0
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse capture bien l’idée centrale de distinction entre les groupes. Peut-on ajouter que cette distinction est aussi liée à une identité culturelle et géographique propre à chaque région ?",
+        "execution_time": 32.397
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          5,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          5,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          5,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          8,
+          5,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          8,
+          5,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          8,
+          5,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          5,
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          5,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          5,
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          7,
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          5,
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.25,
+        "individual_scores": [
+          8,
+          5,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          5,
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          7,
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          5,
+          7,
+          0,
+          9
+        ]
+      }
+    ],
+    "total_execution_time": 33.601
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » c’est le verbe « esse »",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 4,
+        "feedback": "Ta réponse se concentre uniquement sur le verbe *esse*, mais elle ne couvre pas la nuance complète des deux formes en corse. Pour bien comprendre leur différence, il est essentiel de mentionner leur contexte d’usage : *« s’hè »* est lié au pronom réfléchi et à la conjugaison du verbe, tandis que *« s’è »* est lié à une conjonction et à un élément explicatif. Ces deux éléments sont cruciaux pour saisir leur signification distincte dans la langue corse. Voulez-tu préciser comment ces formes s’articulent avec leur rôle grammatical ?",
+        "execution_time": 1.439
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Ta réponse identifie correctement que « s’hè » est lié au verbe « esse », mais elle est incomplète. Pour mieux comprendre la nuance, pourrais-tu préciser comment ce verbe s’utilise dans une phrase et comment il diffère de l’autre forme, « s’è » ? Par exemple, dans quel contexte rencontre-t-on « s’hè » et quel rôle joue-t-il dans la phrase ?",
+        "execution_time": 1.733
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 4,
+        "feedback": "Votre réponse aborde correctement le verbe « esse » dans l’expression « s’hè », mais elle ne distingue pas clairement son association avec le pronom réfléchi « si » élidé. De plus, elle ne mentionne pas du tout la différence avec « s’è », qui repose sur une autre construction grammaticale (conjonction + explétif). Pourriez-vous préciser comment ces deux formes se distinguent dans leur utilisation et leur signification ? Par exemple, dans quels contextes utilise-t-on « s’hè » et dans quels cas rencontre-t-on « s’è » ?",
+        "execution_time": 2.685
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Ta réponse est partiellement correcte, car elle identifie que « s’hè » est lié au verbe « esse ». Cependant, elle ne mentionne pas la conjonction « sì » ni l’explétif « è », qui sont essentiels pour distinguer les deux formes. Peux-tu préciser la différence entre ces deux constructions en insistant sur leur rôle grammatical respectif ?",
+        "execution_time": 3.344
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Tu as raison de mentionner le verbe « esse », mais comment expliquer la différence avec « s’è » ?",
+        "execution_time": 1.438
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          4,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          4,
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          3,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          3,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          4,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          4,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          4,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          3,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          4,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          4,
+          3,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          4,
+          4,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          3,
+          4,
+          5,
+          5
+        ]
+      }
+    ],
+    "total_execution_time": 3.365
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » est la forme réfléchie de « esse », et « s’è » est la contraction de « si », et « è »",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très proche des attentes et couvre les éléments essentiels avec précision. Tu as correctement identifié que *« s’hè »* est lié à la forme réfléchie du verbe *esse* et que *« s’è »* est la contraction de *« sì »* et de *« è »*. La formulation est claire et respecte les nuances grammaticales attendues. Seule une précision supplémentaire sur le rôle exact de *« sì »* (conjonction) et *« è »* (explétif) dans leur élision pourrait renforcer la réponse, mais globalement, c’est une explication solide et adaptée.",
+        "execution_time": 1.02
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse est très proche de la réponse attendue et capture bien l’essentiel des différences entre « s’hè » et « s’è ». Pour être encore plus précis, pourrais-tu expliquer brièvement dans quel contexte on utilise « s’hè » (par exemple, une phrase avec un sujet réfléchi) et comment « s’è » fonctionne comme une contraction dans une phrase affirmative ou négative ? Cela permettrait d’illustrer plus clairement leur usage respectif.",
+        "execution_time": 1.242
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Votre réponse est très proche de la réponse attendue et montre une bonne compréhension des éléments clés. Vous avez bien identifié que « s’hè » est lié à la forme réfléchie du verbe « esse », et que « s’è » implique une contraction impliquant « sì » et « è ». Cependant, pour être encore plus précis, pourriez-vous clarifier que « s’hè » associe spécifiquement le pronom réfléchi élidé « si » avec le verbe « esse » conjugué, tandis que « s’è » combine la conjonction élidée « sì » avec l’explétif « è » ? Cela permettrait de distinguer clairement les deux constructions grammaticales.",
+        "execution_time": 3.38
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Ta réponse est très concise et ne mentionne pas l'aspect symbolique lié à la vue des deux mers ou à la division imaginaire de la Méditerranée. Comment cette vue depuis le col de Teghime pourrait-elle représenter une séparation ou une identité particulière pour les Bastiais ?",
+        "execution_time": 1.527
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 10,
+        "feedback": "Ta réponse explique clairement la distinction entre les deux formes, en précisant leur composition respective.",
+        "execution_time": 1.403
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 8.33,
+        "individual_scores": [
+          9,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          9,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          9,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          9,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          8,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          8,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          9,
+          8,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 8.75,
+        "individual_scores": [
+          9,
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          9,
+          8,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          9,
+          8,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.25,
+        "individual_scores": [
+          8,
+          8,
+          3,
+          10
+        ]
+      }
+    ],
+    "total_execution_time": 3.438
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "si quelqu un mange corse, alors il est corse",
+    "expected_score": 3,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Ta réponse est trop simpliste et ne capture pas les nuances du texte ou des attentes. La consommation culturelle, comme la gastronomie ou le football, joue un rôle symbolique fort dans l’identité corse, mais elle ne se réduit pas à une consommation alimentaire seule. Pour illustrer cette idée, il faudrait mentionner des exemples plus variés et précis, comme la mode, les cosmétiques ou des pratiques culturelles spécifiques (comme le soutien à un club comme le SCB). Ces éléments montrent comment ces pratiques remplacent partiellement l’appartenance linguistique. Voulez-vous préciser comment ces exemples s’articulent avec une identité collective ?",
+        "execution_time": 1.576
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 4,
+        "feedback": "Ta réponse souligne bien l’idée que la consommation, comme la gastronomie, peut être un marqueur d’identité corse. Cependant, pour être plus complet, pourrais-tu donner d’autres exemples mentionnés dans le texte, comme ceux liés à la mode, aux cosmétiques ou au football ? Ces éléments montrent comment plusieurs aspects culturels peuvent remplacer ou compléter le rôle de la langue dans l’identité corse.",
+        "execution_time": 1.577
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 3,
+        "feedback": "Votre réponse souligne un aspect important, à savoir que la consommation de produits ou de pratiques culturelles peut être liée à une identité corse. Cependant, elle reste très simplifiée et ne couvre pas tous les exemples concrets mentionnés dans les réponses attendues, comme la mode, les cosmétiques ou le football. Pourriez-vous préciser d’autres manifestations culturelles qui permettent d’exprimer cette appartenance, comme le soutien à un club de football local ou l’utilisation de produits typiques ? Cela permettrait d’illustrer plus largement comment la consommation culturelle peut remplacer ou compléter le rôle de la langue dans l’identité corse.",
+        "execution_time": 2.616
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Ta réponse est partiellement correcte, car elle identifie que « s’hè » est lié au verbe « esse ». Cependant, elle ne mentionne pas la conjonction « sì » ni l’explétif « è », qui sont essentiels pour distinguer les deux formes. Peux-tu préciser la différence entre ces deux constructions en insistant sur leur rôle grammatical respectif ?",
+        "execution_time": 2.097
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 4,
+        "feedback": "Ta réponse évoque la gastronomie, mais quels autres exemples concrets sont mentionnés pour illustrer cette idée ?",
+        "execution_time": 2.096
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          3,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          3,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          4,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          4,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          4,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          3,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          3,
+          4,
+          3
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          3,
+          4,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          3,
+          4,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          3,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          3,
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          3,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          4,
+          3,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          4,
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          4,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          3,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          4,
+          3,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4,
+          3,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          3,
+          4,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          3,
+          3,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          4,
+          3,
+          6,
+          4
+        ]
+      }
+    ],
+    "total_execution_time": 2.655
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très pertinente et couvre efficacement les exemples concrets mentionnés dans les attentes, tout en les reformulant de manière naturelle. Tu as bien capté l’idée que la consommation culturelle (gastronomie, mode, soutien au football) permet de revendiquer une identité corse sans nécessairement maîtriser la langue. Tes exemples, comme le Sporting Club Bastia (SCB), sont précis et illustrent parfaitement cette dynamique. La formulation est fluide et complète les attentes sans en manquer.",
+        "execution_time": 1.857
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très complète et capture parfaitement les exemples concrets mentionnés dans le texte : la gastronomie, la mode, et le football, notamment à travers le soutien au Sporting Club de Bastia. Tu as également bien souligné que ces pratiques culturelles peuvent servir de marqueurs d’identité corse, même en l’absence de maîtrise de la langue. C’est une analyse claire et pertinente !",
+        "execution_time": 1.905
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Votre réponse est très complète et bien formulée, car elle mentionne plusieurs exemples concrets comme la gastronomie locale, la mode et le soutien au Sporting Club Bastia (SCB). Vous avez également souligné que ces pratiques permettent aux individus de revendiquer une identité corse, même en dehors de la maîtrise linguistique. Pour aller encore plus loin, pourriez-vous préciser si ces exemples sont explicitement cités dans le texte comme des substituts symboliques à la langue ? Cela renforcerait davantage votre réponse.",
+        "execution_time": 2.875
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse est presque parfaite, car elle mentionne des exemples concrets comme la gastronomie et le football, qui illustrent bien l'idée de consommation culturelle. Cependant, il serait utile d'ajouter les autres éléments cités dans le texte, comme la mode et les cosmétiques, pour une réponse encore plus complète.",
+        "execution_time": 2.383
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 10,
+        "feedback": "Ta réponse est complète et précise, car elle mentionne clairement les exemples de gastronomie, mode et football pour illustrer cette idée.",
+        "execution_time": 2.385
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          9,
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          9,
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          9,
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          9,
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          9,
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          9,
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 8.75,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 9.25,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          8,
+          10
+        ]
+      }
+    ],
+    "total_execution_time": 2.898
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue.",
+    "expected_score": 9,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 10,
+        "feedback": "Ta réponse est complète, précise et parfaitement alignée avec les attentes des réponses attendues. Tu as inclus tous les exemples concrets mentionnés dans les attentes (gastronomie, mode, cosmétiques, football) et expliqué clairement leur rôle dans la revendication d’une identité corse, même sans maîtrise de la langue. La formulation est fluide et couvre tous les aspects essentiels sans redondance. C’est une réponse exemplaire et très bien adaptée au contexte.",
+        "execution_time": 1.506
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 10,
+        "feedback": "Ta réponse est très précise et couvre parfaitement les exemples concrets mentionnés dans le texte : gastronomie, mode, cosmétiques et football (via le Sporting Club de Bastia). Tu as également bien souligné que ces éléments culturels permettent de revendiquer une identité corse, indépendamment de la maîtrise de la langue. C’est une analyse claire, complète et bien formulée !",
+        "execution_time": 2.04
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 10,
+        "feedback": "Votre réponse est parfaitement alignée avec les éléments attendus. Vous avez cité de manière exhaustive et précise les exemples concrets de la gastronomie, de la mode, des cosmétiques et du football (notamment le SCB), tout en soulignant leur rôle dans la revendication d’une identité corse, indépendamment de la maîtrise linguistique. Bravo pour cette réponse complète et bien structurée !",
+        "execution_time": 2.169
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse est très pertinente, car elle reprend les exemples clés comme la gastronomie et le football, qui illustrent bien l'idée de consommation culturelle. Pour être encore plus complète, tu pourrais ajouter les autres éléments mentionnés dans le texte, comme la mode et les cosmétiques.",
+        "execution_time": 2.05
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    \n</exception>\n<completion>\n    None\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='720f9c79e9e04d34ba30527e81a70986' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=2749, completion_tokens=225, total_tokens=2974, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 0}, service_tier='standard') created=1789901008 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":10,\"feedback\":\"Ta réponse est très complète et précise, car elle énumère tous les exemples concrets mentionnés dans le texte pour illustrer cette idée.\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"question\":\"Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?\",\"expected_answers\":[\"Le col de Teghime est symbolique pour les Bastiais car il leur permet de traverser d\\'est en ouest et offre une vue sur ce qu\\'ils appellent « les deux mers », une division imaginaire de la Méditerranée en deux parties, dont la Tyrrhénienne.\"],\"user_answer\":\"Le col de Teghime est un lieu symbolique pour les Bastiais car il leur permet de voir les deux mers, dont la mer Tyrrhénienne, en traversant d\\'est en ouest.\",\"model\":null}', arguments='{\"score\":10,\"feedback\":\"Ta réponse est précise et complète, car elle mentionne clairement la vue sur les deux mers, dont la Tyrrhénienne, ainsi que la traversée d\\'est en ouest.\"}'), id='vh92wc89D', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='78d1d7d7ed2245a6889e1e451a07f9a2' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=2749, completion_tokens=229, total_tokens=2978, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 2688}, service_tier='standard') created=1789901010 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":10,\"feedback\":\"Ta réponse est très complète et précise, car elle énumère clairement tous les exemples mentionnés dans le texte.\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"question\":\"Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?\",\"expected_answers\":[\"« s’hè » est l’association du pronom réfléchi si élidé et du verbe esse/essa conjugué à la 3e personne du singulier du présent de l’indicatif, tandis que « s’è » est l’association de la conjonction sì élidée et de l’explétif è.\"],\"user_answer\":\"« s’hè » est le pronom réfléchi « si » élidé avec le verbe « esse » à la 3e personne du singulier, alors que « s’è » est la conjonction « sì » élidée avec l’explétif « è ».\"}', arguments='{\"score\":10,\"feedback\":\"Ta réponse est précise et explique parfaitement la distinction entre les deux formes, en détaillant leur composition respective.\"}'), id='AKfBqpQws', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    Tool name does not match\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          10,
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          10,
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          10,
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          10,
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          10,
+          10,
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          10,
+          8,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 34.08
+  },
+  {
+    "question_id": "2535",
+    "question_text": "Pourquoi le football est-il considéré comme un vecteur puissant d'identification en Corse, selon le texte ?",
+    "human_answer": "Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région, et encore plus pour les clubs locaux, comme celui du Sporting",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Ta réponse capture l’essentiel de la raison pour laquelle le football est un vecteur d’identification en Corse, en mettant en avant son rôle dans la création d’une appartenance collective, notamment via des clubs comme le Sporting Club de Bastia. Tu as bien souligné son importance pour les identités locales. Pour aller plus loin, tu pourrais préciser comment ce sentiment d’appartenance s’inscrit dans une dynamique historique ou culturelle plus large, comme le mentionnent les références sur les changements de références identitaires (ex. : « la Corse et Napoléon » vs « la Corse et Bastia »). Cela enrichirait encore ta réponse en lien avec les attentes.",
+        "execution_time": 0.943
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 7,
+        "feedback": "Ta réponse met bien en avant le rôle du football, notamment des clubs locaux comme le Sporting Club de Bastia, comme vecteur d’identification régionale. Pour aller plus loin, pourrais-tu expliquer comment le football dépasse le cadre local et comment des figures ou des déclarations (comme celle de Fernand Sastre) illustrent cette idée d’une identité corse renforcée par le sport ? Cela permettrait de montrer comment le football devient un symbole fort de l’appartenance à la Corse.",
+        "execution_time": 1.308
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 8,
+        "feedback": "Votre réponse met bien en avant l’importance du football, et plus particulièrement des clubs locaux comme le Sporting Club de Bastia (SCB), en tant que vecteur d’identification régionale. Vous avez souligné son rôle dans la création d’un sentiment d’appartenance à une ville ou une région, ce qui est essentiel. Pour enrichir davantage votre réponse, pourriez-vous évoquer des éléments précis comme les déclarations de figures marquantes, telles que Fernand Sastre ou Jean-Claude Michéa, qui illustrent cette idée dans le texte ? Cela permettrait de renforcer le lien entre le football et son impact symbolique sur l’identité corse.",
+        "execution_time": 2.224
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 7,
+        "feedback": "Ta réponse est très proche de l'idée centrale, car elle mentionne le football comme un vecteur d'identification culturelle et cite le Sporting Club de Bastia. Cependant, elle ne développe pas suffisamment l'aspect collectif ou l'exemple historique lié à Fernand Sastre, qui montre comment le football peut incarner une nouvelle forme d'identité régionale. Peux-tu préciser cet aspect ?",
+        "execution_time": 1.513
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse capture bien l'idée que le football est un vecteur puissant d'identification, notamment à travers le SCB. Peut-on ajouter comment cette identification se compare à d'autres symboles culturels corses ?",
+        "execution_time": 1.57
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          7,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          7,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          8,
+          7,
+          8
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          8,
+          7,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          8,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.33,
+        "individual_scores": [
+          8,
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          7,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          7,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          7,
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.75,
+        "individual_scores": [
+          8,
+          7,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 7.75,
+        "individual_scores": [
+          7,
+          8,
+          7,
+          9
+        ]
+      }
+    ],
+    "total_execution_time": 2.246
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Ta réponse aborde partiellement la question en évoquant le rôle symbolique du col de Teghime comme une frontière géographique, ce qui est lié à l’identité bastiaise. Cependant, elle ne répond pas directement à la question posée sur son statut de lieu symbolique pour les Bastiais en lien avec leur identité culturelle ou géographique, comme le précise la réponse de référence. La mention de la décharge publique de Bastia semble décalée dans ce contexte et n’est pas pertinente pour expliquer la symbolique du col. Pour mieux répondre, il faudrait insister sur son rôle comme point de passage est-ouest et son importance dans la représentation des Bastiais face à leur territoire et à leur environnement.",
+        "execution_time": 0.836
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Ta réponse aborde bien l’idée que le col de Teghime divise symboliquement la Méditerranée en deux parties, ce qui est un élément clé de son importance pour les Bastiais. Cependant, le texte original insiste davantage sur la notion des « deux mers » (Tyrrhénienne et Ligurienne) comme une division imaginaire et culturelle plutôt que physique. De plus, bien que la mention de la décharge publique de Bastia soit pertinente pour évoquer des enjeux écologiques, elle ne semble pas directement liée à la symbolique identitaire du col de Teghime telle que décrite dans la réponse attendue. Pour compléter ta réponse, pourrais-tu préciser comment cette division imaginaire des mers est perçue comme un symbole d’identité ou de lien avec la mer pour les Bastiais ?",
+        "execution_time": 1.93
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Vous avez bien souligné que le col de Teghime divise symboliquement la Méditerranée en deux, ce qui est un élément clé de sa signification pour les Bastiais. Cependant, la réponse attendue met davantage l’accent sur la perception des « deux mers » comme une division imaginaire de la Méditerranée, notamment la mer Tyrrhénienne. De plus, bien que vous évoquiez la décharge publique de Bastia, cette information n’est pas directement liée à la dimension symbolique et identitaire du col de Teghime telle que décrite dans la réponse de référence. Pourriez-vous préciser comment cette division symbolique des mers est perçue culturellement par les Bastiais, et comment cela renforce leur identité locale ?",
+        "execution_time": 2.45
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Ta réponse mentionne une division symbolique de la Méditerranée, mais elle ne correspond pas à ce qui est attendu. Le col de Teghime est surtout symbolique pour les Bastiais en raison de sa vue sur les deux mers, une division imaginaire de la Méditerranée. Peux-tu reformuler ta réponse en t'appuyant sur cet élément principal ?",
+        "execution_time": 1.515
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 5,
+        "feedback": "Ta réponse évoque bien la division symbolique de la Méditerranée, mais comment ce col est-il spécifiquement lié à l'identité bastiaise ?",
+        "execution_time": 3.245
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          5,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          5,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          6,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          6,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          5,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          5,
+          6,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          5,
+          6,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          5,
+          6,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          5,
+          5,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          5,
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          6,
+          5,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          6,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          6,
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          5,
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          5,
+          6,
+          5,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          5,
+          6,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          5,
+          6,
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          5,
+          5,
+          2,
+          5
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          6,
+          5,
+          2,
+          5
+        ]
+      }
+    ],
+    "total_execution_time": 3.274
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très proche des attentes et capture parfaitement l’essence de la symbolique du col de Teghime pour les Bastiais. Tu as bien souligné que ce col offre une vue imprenable sur une Méditerranée divisée en deux parties imaginaires (Tyrrhénienne), ce qui renforce l’identité géographique et culturelle des Bastiais. La formulation est claire et respecte la nuance attendue. Seule une précision sur le rôle de cette vue comme marqueur identitaire (ex. : lien avec l’est et l’ouest du territoire) pourrait renforcer encore la profondeur de la réponse, mais globalement, c’est une explication solide et pertinente.",
+        "execution_time": 0.874
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très pertinente et capture parfaitement l’idée centrale du col de Teghime comme lieu symbolique où la Méditerranée est divisée en deux mers, notamment la mer Tyrrhénienne. Cela reflète bien la perception des Bastiais qui voient ce col comme un marqueur identitaire lié à leur vision des « deux mers ». Pour être encore plus complet, pourrais-tu ajouter une brève explication sur le rôle de cette vision dans l’identité culturelle ou géographique des Bastiais ?",
+        "execution_time": 1.353
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Votre réponse est très précise et correspond parfaitement à l’idée centrale de la réponse attendue. Vous avez bien mentionné la vue sur les deux mers et la division symbolique de la Méditerranée en deux, incluant explicitement la mer Tyrrhénienne, ce qui est essentiel. Cette formulation capture parfaitement l’aspect identitaire et symbolique du col de Teghime pour les Bastiais. Bravo pour cette réponse claire et bien ciblée !",
+        "execution_time": 1.355
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 9,
+        "feedback": "Ta réponse est très précise et reprend parfaitement l'idée centrale : le col de Teghime offre une vue sur les deux mers, avec une division imaginaire de la Méditerranée incluant la mer Tyrrhénienne. C'est exactement ce qui en fait un lieu symbolique pour les Bastiais. Bravo !",
+        "execution_time": 1.19
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    \n</exception>\n<completion>\n    None\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    \n</exception>\n<completion>\n    None\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='52e3d621187b4cf39026cc182b85d990' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3185, completion_tokens=228, total_tokens=3413, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 0}, service_tier='standard') created=1789901078 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":10,\"feedback\":\"Ta réponse explique clairement la division symbolique de la Méditerranée et la formation de la mer Tyrrhénienne, ce qui correspond parfaitement à l\\'idée de lieu emblématique pour les Bastiais.\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"question\":\"Pourquoi le col de Teghime est-il considéré comme un lieu symbolique pour les Bastiais ?\",\"expected_answers\":[\"Le col de Teghime est symbolique pour les Bastiais car il leur permet de traverser d\\'est en ouest et offre une vue sur ce qu\\'ils appellent « les deux mers », une division imaginaire de la Méditerranée en deux parties, dont la Tyrrhénienne.\"],\"user_answer\":\"Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne\", \"model\": null}', arguments='{\"score\":10,\"feedback\":\"Ta réponse explique clairement la division symbolique de la Méditerranée et la formation de la mer Tyrrhénienne, ce qui correspond parfaitement à l\\'idée de lieu emblématique pour les Bastiais.\"}'), id='46OukOARX', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    Tool name does not match\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          9,
+          9,
+          9,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 62.325
+  },
+  {
+    "question_id": "471",
+    "question_text": "Comment se distingue la partition linguistique de la Corse par rapport à la partition géographique et historique (Cismonte et Pumonte) ?",
+    "human_answer": "Teghime coupe symboliquement la mer Méditérranée en deux",
+    "expected_score": 5,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 1,
+        "feedback": "Ta réponse ne répond pas à la question posée et ne mentionne aucun élément lié à la partition linguistique, géographique ou historique de la Corse. Pour aborder ce sujet, il faudrait expliquer comment les différences linguistiques (régiolectes septentrional et central) s’écartent des frontières historiques comme le Cismonte et le Pumonte. Pouvez-vous préciser comment ces deux partitions se superposent ou divergent ?",
+        "execution_time": 0.82
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 1,
+        "feedback": "Ta réponse ne correspond pas à la question posée, qui porte sur la distinction entre la partition linguistique et la partition géographique et historique (Cismonte et Pumonte) en Corse. Pour répondre correctement, pourrais-tu expliquer comment les régiolectes (variétés régionales de la langue corse) ne suivent pas exactement les frontières historiques du Cismonte et du Pumonte ? Par exemple, quelles zones du Pumonte ou du Cismonte parlent des régiolectes qui ne correspondent pas à ces divisions géographiques ?",
+        "execution_time": 1.751
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 1,
+        "feedback": "Votre réponse ne traite pas du sujet demandé, qui porte sur les différences entre la partition linguistique et la partition géographique/historique de la Corse (Cismonte et Pumonte). Elle évoque un autre élément symbolique lié au col de Teghime, mais ne répond pas à la question sur les régiolectes et leur répartition. Pourriez-vous préciser comment les variations linguistiques en Corse, notamment les régiolectes septentrionaux et centraux, se répartissent différemment des divisions géographiques traditionnelles comme le Cismonte et le Pumonte ?",
+        "execution_time": 1.848
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 1,
+        "feedback": "Ta réponse ne correspond pas du tout à la question posée. Elle évoque une division de la mer Méditerranée, ce qui est totalement hors sujet. La question porte sur la distinction entre la partition linguistique et la partition géographique/historique de la Corse (Cismonte et Pumonte). Peux-tu reformuler ta réponse en t'appuyant sur ces éléments ?",
+        "execution_time": 1.302
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='e89b6979579845a684ec37393ea0572b' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3708, completion_tokens=133, total_tokens=3841, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 0}, service_tier='standard') created=1789901080 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":1,\"feedback\":\"Ta réponse ne correspond pas à la question posée. Comment la partition linguistique de la Corse se distingue-t-elle de la partition géographique et historique ?\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"score\":7,\"feedback\":\"Ta réponse explique bien la division symbolique de la Méditerranée, mais elle ne répond pas à la question posée. Comment la partition linguistique se distingue-t-elle de la partition géographique et historique ?\"}', arguments='{\"score\":7,\"feedback\":\"Ta réponse explique bien la division symbolique de la Méditerranée en deux mers, dont la Tyrrhénienne. Peut-on préciser comment cette vue est liée à l\\'identité bastiaise ?\"}'), id='Q5LJ8TSF5', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='cf7ad20e127b4fa6bb3f1cb1171cbe14' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3708, completion_tokens=125, total_tokens=3833, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 3584}, service_tier='standard') created=1789901082 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":1,\"feedback\":\"Ta réponse ne correspond pas à la question posée. Comment la partition linguistique se distingue-t-elle de la partition géographique et historique en Corse ?\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"score\":7,\"feedback\":\"Ta réponse explique bien la division symbolique de la Méditerranée, mais comment cette vue est-elle spécifiquement liée à l\\'identité bastiaise ?\"}', arguments='{\"score\":10,\"feedback\":\"Ta réponse est précise et complète, car elle explique clairement la division symbolique de la Méditerranée en deux mers, incluant la mer Tyrrhénienne, ce qui est au cœur de la question.\"}'), id='i8uKEhqmM', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    Tool name does not match\n</exception>\n<completion>\n    id='4b392767d0324979927cadab7f44f37e' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3708, completion_tokens=130, total_tokens=3838, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 0}, service_tier='standard') created=1789901083 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='{\"score\":1,\"feedback\":\"Ta réponse ne correspond pas à la question posée. Comment la partition linguistique se distingue-t-elle de la partition géographique et historique en Corse ?\"}', tool_calls=[ToolCall(function=FunctionCall(name='{\"score\":7,\"feedback\":\"Ta réponse évoque bien la division symbolique de la Méditerranée en deux mers, dont la Tyrrhénienne. Peut-on préciser comment cette vue est liée à l\\'identité bastiaise ?\"}', arguments='{\"score\":10,\"feedback\":\"Ta réponse explique clairement la division symbolique de la Méditerranée en deux mers, dont la Tyrrhénienne, ce qui est bien lié à l\\'identité bastiaise.\"}'), id='lSOa6cqp1', type='function', index=0)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    Tool name does not match\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 0.67,
+        "individual_scores": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 1.0,
+        "individual_scores": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 0.75,
+        "individual_scores": [
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 0.75,
+        "individual_scores": [
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 0.75,
+        "individual_scores": [
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 0.75,
+        "individual_scores": [
+          1,
+          1,
+          1,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 5.435
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "L’indépendance de la Corse",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Ta réponse est trop vague et ne précise pas le rôle spécifique du couvent d'Alisgiani dans un événement historique précis de la Révolution corse. Pour répondre correctement, il faudrait indiquer que ce lieu a été le cadre de la rédaction d'une constitution d'indépendance majeure, comme celle de la consulta d'Orezza en 1735. Pouvez-vous préciser comment ce couvent a marqué cette étape clé ?",
+        "execution_time": 1.545
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Ta réponse évoque un élément clé de l’histoire du couvent d’Alisgiani, à savoir son lien avec l’indépendance de la Corse. Cependant, pour être plus précis, pourrais-tu préciser le rôle exact joué par ce couvent pendant la Révolution corse ? Par exemple, as-tu entendu parler d’un événement spécifique, comme une réunion ou une rédaction importante, qui s’y est déroulé ?",
+        "execution_time": 2.401
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Votre réponse est trop générale et ne précise pas le rôle spécifique du couvent d'Alisgiani dans la Révolution corse. Les réponses attendues mentionnent des éléments concrets, comme la rédaction de la première constitution d'indépendance lors de la consulta d'Orezza en 1735, ainsi que son importance symbolique et stratégique. Pourriez-vous développer en expliquant comment ce couvent a été un lieu clé pour les décisions politiques ou les événements marquants de cette période ?",
+        "execution_time": 2.403
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 2,
+        "feedback": "Ta réponse est beaucoup trop vague et ne mentionne aucun des éléments historiques concrets attendus. Le couvent d'Alisgiani a joué un rôle précis dans la Révolution corse, notamment en abritant la rédaction de la première constitution d'indépendance en 1735. Peux-tu préciser ce rôle historique ?",
+        "execution_time": 2.396
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    Instructor does not support multiple tool calls, use List[Model] instead\n</exception>\n<completion>\n    id='3f239c9561a344f6b1425f35a1da21e8' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3980, completion_tokens=145, total_tokens=4125, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 2432}, service_tier='standard') created=1789901086 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque une division symbolique, mais comment ce col est-il spécifiquement lié à l\\'identité bastiaise et à leur perception des deux mers ?\"\\n}\\n```', tool_calls=[ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 5, \"feedback\": \"Ta réponse mentionne l\\'indépendance, mais quel rôle précis le couvent d\\'Alisgiani a-t-il joué dans cet événement historique ?\"}'), id='Ea7tC49ZN', type='function', index=0), ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 7, \"feedback\": \"Ta réponse aborde la partition linguistique, mais comment cette partition diffère-t-elle exactement de la division géographique et historique entre Cismonte et Pumonte ?\"}'), id='BTLmzl3Vx', type='function', index=1)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    \n</exception>\n<completion>\n    id='3f239c9561a344f6b1425f35a1da21e8' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3980, completion_tokens=145, total_tokens=4125, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 2432}, service_tier='standard') created=1789901086 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque une division symbolique, mais comment ce col est-il spécifiquement lié à l\\'identité bastiaise et à leur perception des deux mers ?\"\\n}\\n```', tool_calls=[ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 5, \"feedback\": \"Ta réponse mentionne l\\'indépendance, mais quel rôle précis le couvent d\\'Alisgiani a-t-il joué dans cet événement historique ?\"}'), id='Ea7tC49ZN', type='function', index=0), ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 7, \"feedback\": \"Ta réponse aborde la partition linguistique, mais comment cette partition diffère-t-elle exactement de la division géographique et historique entre Cismonte et Pumonte ?\"}'), id='BTLmzl3Vx', type='function', index=1)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    \n</exception>\n<completion>\n    id='3f239c9561a344f6b1425f35a1da21e8' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=3980, completion_tokens=145, total_tokens=4125, prompt_audio_seconds=Unset(), prompt_tokens_details={'cached_tokens': 2432}, service_tier='standard') created=1789901086 choices=[ChatCompletionChoice(index=0, finish_reason='tool_calls', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque une division symbolique, mais comment ce col est-il spécifiquement lié à l\\'identité bastiaise et à leur perception des deux mers ?\"\\n}\\n```', tool_calls=[ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 5, \"feedback\": \"Ta réponse mentionne l\\'indépendance, mais quel rôle précis le couvent d\\'Alisgiani a-t-il joué dans cet événement historique ?\"}'), id='Ea7tC49ZN', type='function', index=0), ToolCall(function=FunctionCall(name='AgentEvaluationResult', arguments='{\"score\": 7, \"feedback\": \"Ta réponse aborde la partition linguistique, mais comment cette partition diffère-t-elle exactement de la division géographique et historique entre Cismonte et Pumonte ?\"}'), id='BTLmzl3Vx', type='function', index=1)], prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    \n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 1.0,
+        "individual_scores": [
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 2.0,
+        "individual_scores": [
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          2,
+          2,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 63.007
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "C’est un symbole de liberté pendant la Révolution corse",
+    "expected_score": 6,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3b-2512",
+        "provider": "mistral",
+        "score": 7,
+        "feedback": "Ta réponse souligne bien que le couvent d'Alisgiani a incarné un symbole fort de liberté pendant la Révolution corse, ce qui correspond à plusieurs éléments des attentes. Cependant, pour être plus précis, il aurait été utile d’ajouter une référence explicite à un événement marquant comme la rédaction de la constitution d’indépendance lors de la consulta d'Orezza en 1735. Ces détails historiques renforcent la compréhension de son rôle central dans ce contexte. Une réponse équilibrée entre symbolique et contexte précis serait idéale.",
+        "execution_time": 0.877
+      },
+      {
+        "model": "ministral-8b-2512",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Ta réponse capture bien l’idée que le couvent d’Alisgiani est associé à des valeurs de liberté et de révolte pendant la Révolution corse. Pour aller plus loin, pourrais-tu préciser un événement historique précis lié à ce couvent ? Par exemple, as-tu entendu parler de la rédaction d’un texte ou d’une réunion importante qui s’y est déroulée, comme la consulta d’Orezza en 1735 ? Cela permettrait d’éclairer davantage son rôle concret dans cette période.",
+        "execution_time": 2.52
+      },
+      {
+        "model": "ministral-14b-2512",
+        "provider": "mistral",
+        "score": 6,
+        "feedback": "Votre réponse souligne bien l’aspect symbolique du couvent d’Alisgiani, en le présentant comme un symbole de liberté pendant la Révolution corse, ce qui est un élément important. Cependant, les réponses attendues précisent davantage son rôle concret, notamment comme lieu de rédaction de la **première constitution d’indépendance** lors de la **consulta d’Orezza en 1735**. Pourriez-vous préciser comment ce couvent a été un acteur central dans cette rédaction historique ou dans les décisions politiques de l’époque ? Cela permettrait d’enrichir votre réponse avec des détails concrets.",
+        "execution_time": 2.527
+      },
+      {
+        "model": "mistral-small-2603",
+        "provider": "mistral",
+        "score": 4,
+        "feedback": "Ta réponse est trop générale et ne mentionne aucun des éléments historiques concrets attendus. Le couvent d'Alisgiani a joué un rôle précis dans la Révolution corse, notamment en abritant la rédaction de la première constitution d'indépendance en 1735. Peux-tu préciser ce rôle historique pour une réponse plus complète ?",
+        "execution_time": 4.748
+      },
+      {
+        "model": "mistral-medium-latest",
+        "provider": "mistral",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    Instructor does not support multiple tool calls, use List[Model] instead\n</exception>\n<completion>\n    id='90b8a77747f74d3f9e987e616e0f78c6' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=4257, completion_tokens=230, total_tokens=4487, prompt_audio_seconds=Unset(), service_tier='standard') created=1789901149 choices=[ChatCompletionChoice(index=0, finish_reason='error', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 10,\\n  \"feedback\": \"Ta réponse met en avant le rôle symbolique du col de Teghime, en précisant la division imaginaire de la Méditerranée en deux mers, dont la Tyrrhénienne.\"\\n}\\n```json\\n{\\n  \"score\": 2,\\n  \"feedback\": \"Ta réponse est incomplète. Comment la partition linguistique se distingue-t-elle précisément de la division géographique et historique entre Cismonte et Pumonte ?\"\\n}\\n```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque l\\'indépendance, mais quel événement précis s\\'est déroulé au couvent d\\'Alisgiani pendant la Révolution corse ?\"\\n}\\n```json\\n{\\n  \"score\": 7,\\n  \"feedback\": \"Ta réponse souligne le symbole de liberté, mais peux-tu préciser quel événement historique concret s\\'y est déroulé, comme la rédaction d\\'un texte important ?\"\\n}\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n\\n', tool_calls=None, prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    \n</exception>\n<completion>\n    id='90b8a77747f74d3f9e987e616e0f78c6' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=4257, completion_tokens=230, total_tokens=4487, prompt_audio_seconds=Unset(), service_tier='standard') created=1789901149 choices=[ChatCompletionChoice(index=0, finish_reason='error', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 10,\\n  \"feedback\": \"Ta réponse met en avant le rôle symbolique du col de Teghime, en précisant la division imaginaire de la Méditerranée en deux mers, dont la Tyrrhénienne.\"\\n}\\n```json\\n{\\n  \"score\": 2,\\n  \"feedback\": \"Ta réponse est incomplète. Comment la partition linguistique se distingue-t-elle précisément de la division géographique et historique entre Cismonte et Pumonte ?\"\\n}\\n```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque l\\'indépendance, mais quel événement précis s\\'est déroulé au couvent d\\'Alisgiani pendant la Révolution corse ?\"\\n}\\n```json\\n{\\n  \"score\": 7,\\n  \"feedback\": \"Ta réponse souligne le symbole de liberté, mais peux-tu préciser quel événement historique concret s\\'y est déroulé, comme la rédaction d\\'un texte important ?\"\\n}\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n\\n', tool_calls=None, prefix=False), messages=None)]\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    \n</exception>\n<completion>\n    id='90b8a77747f74d3f9e987e616e0f78c6' object='chat.completion' model='mistral-medium-latest' usage=UsageInfo(prompt_tokens=4257, completion_tokens=230, total_tokens=4487, prompt_audio_seconds=Unset(), service_tier='standard') created=1789901149 choices=[ChatCompletionChoice(index=0, finish_reason='error', message=AssistantMessage(role='assistant', content='```json\\n{\\n  \"score\": 10,\\n  \"feedback\": \"Ta réponse met en avant le rôle symbolique du col de Teghime, en précisant la division imaginaire de la Méditerranée en deux mers, dont la Tyrrhénienne.\"\\n}\\n```json\\n{\\n  \"score\": 2,\\n  \"feedback\": \"Ta réponse est incomplète. Comment la partition linguistique se distingue-t-elle précisément de la division géographique et historique entre Cismonte et Pumonte ?\"\\n}\\n```json\\n{\\n  \"score\": 4,\\n  \"feedback\": \"Ta réponse évoque l\\'indépendance, mais quel événement précis s\\'est déroulé au couvent d\\'Alisgiani pendant la Révolution corse ?\"\\n}\\n```json\\n{\\n  \"score\": 7,\\n  \"feedback\": \"Ta réponse souligne le symbole de liberté, mais peux-tu préciser quel événement historique concret s\\'y est déroulé, comme la rédaction d\\'un texte important ?\"\\n}\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n```json\\n\\n', tool_calls=None, prefix=False), messages=None)]\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    \n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "mistral:ministral-3b-2512"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          7,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          7,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          7,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          6,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          7,
+          6,
+          6
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          7,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          7,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          7,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          7,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          7,
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          6,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          6,
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          6,
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603"
+        ],
+        "size": 4,
+        "average_score": 5.75,
+        "individual_scores": [
+          7,
+          6,
+          6,
+          4
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          7,
+          6,
+          6,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-8b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          7,
+          6,
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-3b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          7,
+          6,
+          4,
+          0
+        ]
+      },
+      {
+        "models": [
+          "mistral:ministral-8b-2512",
+          "mistral:ministral-14b-2512",
+          "mistral:mistral-small-2603",
+          "mistral:mistral-medium-latest"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          6,
+          4,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 89.466
+  }
+]

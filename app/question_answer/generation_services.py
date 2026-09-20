@@ -304,6 +304,7 @@ async def generate_questions_single_answer_for_chunk(
                 document=chunk_content,
                 num_questions=num_questions
             )
+            print("Essai de génération :")
             response = agent.run(input_schema)
             questions_generated = len(response.QA_list) if response else 0
             print(questions_generated, "questions/réponses générées")

@@ -9,6 +9,22 @@ Deux prototypes sont disponibles :
 # Mise en place
 
 
+## Structure de la base de données
+
+### Table `user`
+
+| Field | Type | Null | Key | Default | Extra |
+|-------|------|------|-----|---------|-------|
+| id | int | NO | PRI | NULL | auto_increment |
+| email | varchar(190) | NO | UNI | NULL | |
+| name | varchar(190) | NO | | NULL | |
+| created | datetime | NO | | NULL | |
+| modified | datetime | YES | | NULL | |
+| password_hash | varchar(60) | YES | | NULL | |
+| role | varchar(190) | NO | | NULL | |
+| is_active | tinyint(1) | NO | | NULL | |
+
+> **Note**: Le champ `name` correspond au nom d'utilisateur (username).
 
 
 

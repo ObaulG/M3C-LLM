@@ -267,6 +267,7 @@ _FALLBACK_PROMPT_FROM_QUESTIONS = SystemPromptGenerator(
         "(ex: 'Léonard de Vinci' et non 'Léonard')",
         "Si aucune proposition factuelle vérifiable n'est présente dans les "
         "réponses, retourne une liste vide",
+        "Pas de doublons"
     ],
 )
 
@@ -435,6 +436,7 @@ async def generate_knowledge_items_from_questions(
         qa for qa in qa_items
         if qa.answers and any(a and a.strip() for a in qa.answers)
     ]
+    print("usable", usable)
     if not usable:
         return []
 

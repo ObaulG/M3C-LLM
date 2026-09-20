@@ -3,9 +3,11 @@ import copy
 import csv
 import json
 import logging
+import math
 import os
 import time
 import uuid
+from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -23,14 +25,12 @@ from starlette.responses import JSONResponse
 
 import database
 import auth
+from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
-                              QuestionSessionManager,
-                              EvaluateRequest,
-                              UserResponse,
-                              SessionStatus,
-                              EvaluationResult,
-                              from_AgentEvaluationResult_to_EvaluationResult, session_status_to_dict)
+                              QuestionSessionManager, SessionStatus, session_status_to_dict)
+from question_answer.answer_evaluation import UserEvaluationResponse, EvaluationResult, EvaluateRequestInput, \
+    from_AgentEvaluationResult_to_EvaluationResult
 from session_csv_logger import log_response_to_csv
 from evaluation_logger import log_evaluation_to_csv, get_reference_answers, get_reference_answer
 from evaluation_feedback_logger import log_feedback_to_csv
@@ -81,13 +81,16 @@ from question_answer.message_evaluator_router import router as message_evaluator
 from knowledge_items.router import router as knowledge_items_router
 
 # Import de la fonction de recommandation de questions
-from question_answer.services import recommend_questions_for_document, generate_questions_single_answer_for_chunk
+from question_answer.generation_services import recommend_questions_for_document, generate_questions_single_answer_for_chunk
 
 # Import du router Solr
 from solr.router import router as solr_router
 
 # Import du router de consultation des documents et de leurs chunks
 from documents.router import router as documents_router
+
+# Import du router de profil utilisateur
+from profile.router import router as profile_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -192,11 +195,15 @@ message_ev_agent = get_message_type_agent("ministral-3b-2410")
 question_session_manager = QuestionSessionManager()
 rag_session_manager = RAGSessionManager()
 # donne les modèles et providers pour pouvoir initialiser les agents évaluateurs
-models_evaluator = [("ministral-8b-latest", "mistral"), ("llama3.2:3b", "ollama"), ("gemma4:e2b", "ollama")]
-# Contient les instances d'agent effectuant les évaluations pour chaque modÃ¨le
+models_evaluator = [("ministral-8b-latest", "mistral"),
+                    ("ministral-14b-2512", "mistral"),
+                    ("ministral-3b-latest", "mistral")]
+# Contient les instances d'agent effectuant les évaluations pour chaque modèle
 # dans models_evaluator
 evaluators = []
-final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
+
+# on ne l'utilisera plus pour l'instant
+#final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
 # === GESTION DU CYCLE DE VIE ===
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -237,6 +244,7 @@ app.include_router(message_evaluator_router)
 app.include_router(knowledge_items_router)
 app.include_router(solr_router)
 app.include_router(documents_router)
+app.include_router(profile_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -801,7 +809,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     new_question = False
     is_finished = False
     message = ""
-    user_response = UserResponse(
+    user_response = UserEvaluationResponse(
         question_id=current_question_id,
         question_text=question['content'],
         user_answer=user_message,
@@ -824,6 +832,8 @@ async def submit_question_session_message(request: QuestionSessionMessage):
             # pour pouvoir effectuer ces appels en parallèle.
             evaluations = []
 
+
+            # lancement des évaluations pour chaque evaluator
             coroutines = [
                 monitor_agent_call_async(evaluator, evaluation_input, "run_async")
                 for evaluator in evaluators
@@ -834,9 +844,11 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                 evaluations.append(evaluation)
                 total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
+
+            """    
             if len(evaluations) > 1:
                 # /!\ contient un AgentEvaluationResult de answer_evaluation_agent.py.
-                # UserResponse attend pour l'attribut evaluation un EvaluationResult de
+                # UserEvaluationResponse attend pour l'attribut evaluation un EvaluationResult de
                 # question_session.py
                 # Provoque souvent cette erreur, pk ?
                 # Instructor does not support multiple tool calls, use List[Model] instead
@@ -848,19 +860,23 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                 total_output_tokens += output_tokens
             else:
                 final_evaluation = evaluations[0]
-            
+            """
+
             # Stocker les évaluations individuelles avec leurs modèles
             individual_evaluations = []
+            total_score = 0
             for i, eval_result in enumerate(evaluations):
                 # Le modèle de chaque évaluateur correspond à models_evaluator[i][0]
                 eval_model = models_evaluator[i][0] if i < len(models_evaluator) else f"evaluator_{i}"
                 individual_eval = from_AgentEvaluationResult_to_EvaluationResult(
                     eval_result, model=eval_model
                 )
+                total_score += individual_eval.score
                 individual_evaluations.append(individual_eval)
             user_response.individual_evaluations = individual_evaluations
-            
-            evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(final_evaluation)
+
+            # à partir des évaluations individuelles, on calcule la note qui sera attribuée
+            evaluation_final_result = math.ceil(total_score / len(models_evaluator))
             user_response.evaluation = evaluation_result
             if evaluation_result.score >= 7:
                 # Si le score est suffisant, passer à la question suivante
@@ -1050,6 +1066,7 @@ class QASingleRequest(BaseModel):
     message: Optional[str] = Field(None, description="Message ou instruction optionnel")
     document: str = Field(..., description="Texte du document/chunk sur lequel générer des questions", min_length=10)
     num_questions: int = Field(3, description="Nombre de questions à générer", ge=1, le=10)
+    num_answers: Optional[int] = Field(1, description="Nombre de réponses par question à générer", ge=1, le=10)
     model: Optional[str] = Field("mistral-small", description="Modèle LLM à utiliser")
 
 
@@ -1087,13 +1104,13 @@ async def generate_qa_single(request: QASingleRequest):
         # Extraire les informations de la requête
         document_text = request.document
         num_questions = request.num_questions
-        model_name = request.model or "mistral-small"
+        model_name = request.model
         
         # Définir provider et model
         provider_model = model_name.split("/") if "/" in model_name else ["mistral", model_name]
         provider = provider_model[0] if len(provider_model) > 0 else "mistral"
         model = provider_model[1] if len(provider_model) > 1 else model_name
-
+        print("generate_qa_single - model", model_name)
         qa_list, error = await generate_questions_single_answer_for_chunk(
             chunk_content=document_text,
             chunk_id="",
@@ -1141,6 +1158,29 @@ class QuestionsListResponse(BaseModel):
     questions: List[QuestionResponse] = Field(..., description="Liste des questions")
     count: int = Field(..., description="Nombre total de questions")
     timestamp: str = Field(..., description="Horodatage de la réponse")
+
+
+# === MODELS FOR QUESTION/ANSWER UPDATE ===
+class AnswerUpdateRequest(BaseModel):
+    """Modèle pour la mise à jour d'une réponse"""
+    answer_id: Optional[int] = Field(None, description="ID de la réponse existante à mettre à jour")
+    content: str = Field(..., description="Contenu de la réponse")
+    is_correct: Optional[bool] = Field(None, description="Indique si c'est la réponse correcte")
+
+
+class UpdateQuestionRequest(BaseModel):
+    """Modèle pour la mise à jour d'une question et de ses réponses"""
+    question_content: Optional[str] = Field(None, description="Nouveau contenu de la question")
+    answers: Optional[List[AnswerUpdateRequest]] = Field(default_factory=list, description="Liste des réponses à mettre à jour ou créer")
+    deleted_answer_ids: Optional[List[int]] = Field(default_factory=list, description="Liste des IDs des réponses à supprimer")
+
+
+class UpdateQuestionResponse(BaseModel):
+    """Modèle de réponse pour la mise à jour d'une question"""
+    success: bool = Field(..., description="Indique si la mise à jour a réussi")
+    message: str = Field(..., description="Message de statut")
+    question: Optional[Dict] = Field(None, description="Question mise à jour avec ses réponses")
+
 
 @app.get("/api/questions/{document_id}", response_model=QuestionsListResponse, tags=["Questions"])
 async def get_questions_for_document(
@@ -1200,6 +1240,61 @@ async def get_questions_for_document(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la récupération des questions: {str(e)}"
         )
+
+
+# === ENDPOINT UPDATE QUESTION/ANSWERS ===
+@app.post("/api/questions/{question_id}/update", response_model=UpdateQuestionResponse, tags=["Questions"])
+async def update_question_and_answers(
+    question_id: int,
+    request: UpdateQuestionRequest
+):
+    """
+    Met à jour une question et ses réponses en base de données.
+    
+    Args:
+        question_id: Identifiant de la question à mettre à jour
+        request: UpdateQuestionRequest contenant le nouveau contenu de la question et les réponses
+    
+    Returns:
+        UpdateQuestionResponse: Résultat de la mise à jour
+    """
+    try:
+        async with await get_db_connection() as conn:
+            # Appeler la fonction de mise à jour dans la base de données
+            updated_question = await database.update_question_and_answers(
+                conn=conn,
+                question_id=question_id,
+                question_content=request.question_content,
+                answers=[
+                    {
+                        "answer_id": answer.answer_id,
+                        "content": answer.content,
+                        "is_correct": answer.is_correct if answer.is_correct is not None else False
+                    }
+                    for answer in request.answers
+                ] if request.answers else [],
+                deleted_answer_ids=request.deleted_answer_ids if request.deleted_answer_ids else []
+            )
+        
+        if updated_question:
+            return UpdateQuestionResponse(
+                success=True,
+                message="Question et réponses mises à jour avec succès",
+                question=updated_question
+            )
+        else:
+            return UpdateQuestionResponse(
+                success=False,
+                message=f"Question avec ID {question_id} non trouvée",
+                question=None
+            )
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la mise à jour de la question: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la mise à jour de la question: {str(e)}"
+        )
+
 
 # === ENDPOINTS D'ÉVALUATION ===
 @app.post("/api/evaluate", tags=["Evaluation"])

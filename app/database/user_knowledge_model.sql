@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS knowledge_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     proposition TEXT NOT NULL COMMENT 'Proposition ou information formulée et vérifiable',
     summary VARCHAR(1000) COMMENT 'Résumé ou titre court de la connaissance',
-    is_verified BOOLEAN DEFAULT FALSE COMMENT 'La connaissance a-t-elle été vérifiée?',
+    is_verified BOOLEAN DEFAULT FALSE COMMENT 'La connaissance a-t-elle été vérifiée?',' ||
     verification_notes TEXT COMMENT 'Notes sur la vérification',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Dernière mise à jour'

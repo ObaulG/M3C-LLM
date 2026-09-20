@@ -1,0 +1,6542 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse utilisateur n'a pas été fournie, mais les attentes culturelles et linguistiques sur ce sujet sont riches. La variation régionale de la langue corse reflète parfaitement une dynamique historique, sociale et identitaire profonde : elle illustre comment chaque territoire a pu conserver ou évoluer ses propres particularités en fonction des contextes locaux. Ces différences renforcent les liens communautaires tout en préservant une unité culturelle globale. Une réponse explicite sur ce processus naturel de différenciation serait très pertinente pour approfondir cette compréhension.",
+        "execution_time": 19.263
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse est correcte, mais il y a une erreur dans la phrase 'présente-t-elle des variations selon les régions ?'. La langue corse présente des variations selon les régions en raison de la volonté naturelle des groupes humains de se distinguer les uns des autres. Mais il est possible que vous cherchiez 'La langue corse présente des variations selon les régions car la langue corse varie selon les régions'.",
+        "execution_time": 7.541
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La langue corse présente des variations selon les régions en raison de facteurs culturels et géographiques. Les différences régionales sont une conséquence de la volonté naturelle des groupes humains de se distinguer les uns des autres, mais aussi d'une évolution linguistique qui s'adapte aux particularités de chaque région.",
+        "execution_time": 11.454
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "La réponse utilisateur est globalement pertinente car elle identifie bien que les variations linguistiques en Corse sont le fruit d'une organisation naturelle visant à créer des identités régionales distinctes. Cependant, la formulation manque de précision sur l'origine profonde du phénomène : il s'agit davantage d'un processus évolutif et culturel (différenciation culturelle) qu'il ne serait une simple volonté naturelle ou un outil social explicite comme le suggère l'une des options attendues. Pour renforcer la réponse, il faudrait préciser que ces variations sont principalement dues à l'évolution historique et aux influences culturelles locales plutôt qu'à une intention consciente de part et d'autre.",
+        "execution_time": 26.617
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "La réponse fournie est vide. Pour comprendre pourquoi la langue corse présente des variations selon les régions, il faudrait évoquer le rôle de l'identité culturelle et la volonté naturelle des groupes humains à se distinguer les uns des autres pour marquer leurs spécificités locales.",
+        "execution_time": 39.195
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          10,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          10,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          10,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          10,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          8,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 7.75,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          8,
+          5,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 40.335
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse utilisateur n'a pas été fournie, mais en l’absence de contribution, on ne peut que constater qu’elle respecte pleinement les attentes culturelles et historiques attendues pour expliquer la diversité linguistique corse. Les éléments évoqués dans les réponses attendues soulignent systématiquement une **volonté identitaire** et une **différenciation naturelle** des communautés, reflétant ainsi l’enracinement culturel et géographique de cette langue. Pour approfondir, il serait pertinent d’analyser comment ces variations se traduisent concrètement dans le vocabulaire ou les intonations locales, si vous souhaitez enrichir votre analyse.",
+        "execution_time": 27.743
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse est correcte, mais il est important de noter que la question demande de comprendre les raisons sous-jacentes derrière la présence des variations linguistiques en Corse, et non seulement les causes superficielles. De plus, la question pourrait être plus précise en indiquant qu'il s'agit d'une question de compréhension plutôt que d'évaluation.",
+        "execution_time": 6.206
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Tu as raison, les variations linguistiques en Corse sont liées à la nécessité pour les groupes humains de se différencier et de marquer leurs identités culturelles. La langue corse est un outil qui reflète ces distinctions et s'adapte aux particularités de chaque région.",
+        "execution_time": 14.814
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "L'utilisateur a correctement identifié que les variations linguistiques en Corse s'expliquent par l'idée de se distinguer et d'établir des identités régionales distinctes. C'est un point central du texte attendu. Cependant, la réponse est très concise et manque légèrement de détails sur le mécanisme précis (l'influence historique ou géographique) qui permet cette différenciation culturelle.",
+        "execution_time": 2.321
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-607', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899199, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4964, total_tokens=5030, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-942', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899201, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4964, total_tokens=5030, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-812', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899202, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4964, total_tokens=5030, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 8.5,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          8,
+          8,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 27.925
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Ta réponse n’a pas été fournie, mais l’explication des variations de la langue corse en Corse est déjà largement documentée dans les attentes. Les différences régionales reflètent naturellement des dynamiques culturelles et identitaires profondes. Si tu souhaitais approfondir ce sujet avec une précision sur un aspect précis (comme les dialectes ou les influences historiques), je peux te guider vers ces éléments clés.",
+        "execution_time": 2.932
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse est correcte, mais elle n'explique pas pourquoi les variations linguistiques sont liées à la nécessité de se différencier entre les groupes humains. Un peu plus d'informations sur ce sujet serait utile.",
+        "execution_time": 5.693
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "En effet, les variations linguistiques en Corse sont liées à la nécessité pour les groupes humains de se différencier. La langue corse s'adapte aux particularités culturelles et géographiques de chaque région, ce qui explique son caractère non uniforme.",
+        "execution_time": 2.176
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "La réponse utilisateur est incomplète et ne mentionne aucune des raisons principales évoquées dans les réponses attendues. Elle cite uniquement une conséquence secondaire (l'identité culturelle locale) alors que la question demande spécifiquement pourquoi il y a des variations régionales, ce qui implique mécanismes de différenciation sociale ou naturelle plutôt qu'une simple adaptation géographique passive. De plus, l'utilisateur n'a fourni aucune information à analyser.",
+        "execution_time": 35.149
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse est vide. Pour comprendre pourquoi la langue corse varie selon les régions, il faut souvent évoquer l'identité culturelle ou le besoin des groupes humains de se distinguer et d'affirmer leur appartenance locale.",
+        "execution_time": 18.748
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          10,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          10,
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          10,
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          8,
+          8,
+          2,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 35.798
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Cette question ne concerne pas le col de Teghime ni les Bastiais, mais une spécificité linguistique corse (les formes « s’hè » et « s’è »). Pour évaluer correctement la réponse utilisateur sur ce sujet précis, il faudrait qu’elle détaille explicitement la différence entre ces deux constructions grammaticales en corse. Si vous souhaitez que je fournisse un feedback détaillé sur cette question linguistique, précisez votre réponse en suivant les éléments attendus dans *expected_answers*.",
+        "execution_time": 19.346
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La différence entre les deux formes est que le verbe passe à l'indé fini lorsque l'on utilise « s'hè », tandis qu'il reste à l'indé fini lorsque l'on utilise « s&#39;è ». Il faut donc être très attentif lors de la formation des noms propres en corse. Réponse utilisateur 1 : La différence entre les deux formes est que le verbe passe à l'indé fini lorsque l'on utilise « s'hè », tandis qu'il reste à l'indé fini lorsque l'on utilise « s&#39;è ». Il faut donc être très attentif lors de la formation des noms propres en corse.",
+        "execution_time": 33.447
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Bien joué ! La différence entre les formes « s'hè » et « s'è » en corse est que la première est liée au pronom réfléchi et au verbe 'esse', tandis que la seconde est associée à la conjonction 'sì' élidée et à l'explétif 'è'. Vous avez compris le principe, mais n'avez pas précisé les détails. Continuez à explorer les nuances de la langue corse !",
+        "execution_time": 2.945
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse utilisateur a parfaitement identifié les deux formes en corse. Elle distingue correctement « s’hè », qui correspond à la conjugaison du verbe être (esse/essa) avec le pronom réfléchi si élidé, et « s’è » pour l'explétif è associé au prononciation sì élidée. Cette précision linguistique est exacte et complète.",
+        "execution_time": 2.826
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse n'est pas fournie. Pour bien comprendre les nuances entre « s’hè » et « s’è », il serait intéressant de savoir si vous avez déjà repéré la différence fondamentale : l'un associe le pronom réfléchi avec le verbe être, tandis que l'autre combine une conjonction d'opposition avec un marqueur explicatif. Avez-vous remarqué ces éléments dans vos propres analyses ?",
+        "execution_time": 32.891
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          0,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          0,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          0,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          0,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.0,
+        "individual_scores": [
+          0,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          0,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.0,
+        "individual_scores": [
+          0,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          0,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          0,
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          0,
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          0,
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          0,
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          8,
+          8,
+          10,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 33.79
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Pour cette question sur les différences entre *« s’hè »* et *« s’è »*, une réponse complète est attendue dans le cadre des attentes culturelles corse. Puisque la réponse utilisateur n’est pas fournie, je ne peux pas évaluer ni comparer avec précision. Pour mieux comprendre ces expressions typiques du dialecte corse, il faudrait préciser comment elles sont utilisées dans un contexte grammatical ou lexical (exemple : *« S’hè là »* vs *« S’è là »*). Si vous souhaitez une analyse détaillée, merci de compléter votre réponse.",
+        "execution_time": 3.633
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "La différence entre les formes « s’hè » et « s’è » en corse est que le pronom réfléchi « s'hè » implique un verbe passe composé « esse/essa », tandis que la conjonction « sì » ne joue qu'une role dans l'expression. S&#39;hè a 2 occurrences, et il n&#39;y a pas de pronom réfléchi ou d&#39;un verbe passe composé dans l&#39;expression « s&#39;è ».",
+        "execution_time": 20.521
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Bien vu ! La différence entre les formes « s’hè » et « s'è » en corse est que la première correspond à l'association du pronom réfléchi si élidé avec le verbe esse/essa conjugué à la 3e personne du singulier du présent de l'indicatif, tandis que la seconde est liée à la conjonction sì élidée et à l'explétif è. Il serait utile de préciser que « s'hè » n'est pas une forme utilisée en corse, mais plutôt un exemple d'association du pronom réfléchi avec le verbe esse/essa.",
+        "execution_time": 16.297
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "La réponse de l'utilisateur manque totalement d'informations essentielles pour répondre à la question. Elle ne mentionne ni les formes « s'hè » et « s'è », leurs fonctions grammaticales (pronom réfléchi vs conjonction), leur conjugaison respective ou le contexte linguistique qui lie ces deux éléments dans la langue corse.",
+        "execution_time": 29.726
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Il semble que votre réponse n'ait pas été transmise. Pour comprendre la différence entre les formes « s’hè » et « s’è », il faut savoir que l'une associe le pronom réfléchi au verbe être (3e personne du singulier), tandis que l'autre combine une conjonction avec un explétif. Avez-vous des éléments sur ces structures grammaticales à ajouter ?",
+        "execution_time": 3.589
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          0,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          0,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          0,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          0,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          5,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          0,
+          5,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          0,
+          5,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          0,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          0,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.0,
+        "individual_scores": [
+          0,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          0,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          5,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          5,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          5,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          0,
+          5,
+          8,
+          5
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          0,
+          5,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 2.75,
+        "individual_scores": [
+          0,
+          5,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          0,
+          8,
+          5,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          5,
+          8,
+          5,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 30.444
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre réponse est parfaitement alignée avec les éléments attendus et couvre exhaustivement la problématique posée. La précision des exemples concrets – gastronomie, mode, cosmétiques et football – ainsi que leur lien avec une identité corse renforcée sans nécessairement maîtriser le langue locale sont bien démontrés. Le SCB comme illustration du club emblématique de l’identité régionale est également un choix pertinent et cohérent. Cette réponse montre une compréhension approfondie des mécanismes culturels en jeu.",
+        "execution_time": 9.596
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Les exemples de consommation culturelle mentionnés dans le texte, telles que la gastronomie, la mode, les cosmétiques et le football, permettent aux individus de revendiquer une appartenance à la Corse sans nécessairement maîtriser la langue corse. Par exemple, un Corse peut être défini comme celui qui consomme des produits locaux ou soutient un club de football corse, comme le SCB. Il y a également eu des manifestations qui ont pris place sur les places publics et ont permis aux participants de se sentir connectés à leur identité corse.",
+        "execution_time": 4.96
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Il semblerait que vous ayez manqué les exemples concrets mentionnés dans le texte. La gastronomie, la mode, les cosmétiques et le football sont bien cités comme domaines de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse.",
+        "execution_time": 2.154
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "La réponse utilisateur est très incomplète et manque totalement les éléments essentiels demandés par la question. Elle ne cite aucun exemple concret de consommation culturelle (comme le texte l'indique : gastronomie, mode, cosmétiques) ni aucune référence à un domaine spécifique où cette substitution s'est faite. L'utilisateur semble avoir oublié d'écrire sa réponse ou n'a pas compris ce que demande le sujet. Pour obtenir une note plus élevée, il faudrait qu'il précise les exemples concrets mentionnés dans le texte et explique comment ces pratiques remplacent la langue.",
+        "execution_time": 37.335
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Il semble que la réponse utilisateur soit manquante. Pour répondre à cette question sur les exemples concrets de consommation culturelle illustrant l'identité corse (comme la gastronomie, le football ou la mode), pourriez-vous fournir des détails spécifiques mentionnés dans votre texte ?",
+        "execution_time": 26.318
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          8,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          10,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          10,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          8,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 5.75,
+        "individual_scores": [
+          10,
+          8,
+          3,
+          2
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          10,
+          8,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          10,
+          3,
+          2,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          8,
+          3,
+          2,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 37.989
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre réponse est parfaitement alignée avec les attentes culturelles et historiques du contexte corse. Elle capture l'essence des exemples concrets évoqués pour illustrer cette dynamique identitaire, où la culture (gastronomie, mode, cosmétiques, football) devient un marqueur fort de l’appartenance locale, même en l’absence d’une maîtrise linguistique. La mention explicite du SCB et des produits locaux renforce la précision de votre propos. Une analyse aussi rigoureuse et contextualisée est exemplaire pour comprendre comment ces pratiques remplacent symboliquement les liens linguistiques dans la construction identitaire.",
+        "execution_time": 21.203
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Il est important de noter que les exemples mentionnés dans le texte ne remplacent pas entièrement le rôle de la langue dans l'identité corse, mais plutôt permettent aux individus de revendiquer une appartenance à la Corse de manière plus large. Cela montre que la consommation culturelle peut être utilisée pour exprimer des identités et des valeurs qui ne sont pas uniquement liées à la langue.",
+        "execution_time": 14.453
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Bienvenue dans le monde culturel de la Corse ! Les exemples concrets donnés pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse sont nombreux. On peut citer par exemple la gastronomie, qui permet aux individus de découvrir les saveurs et les traditions culinaires locales. La mode et les cosmétiques sont également des domaines qui aident à revendiquer une appartenance à la Corse, même sans parler la langue corse. Mais attention, il faudrait préciser que le football est un exemple de consommation culturelle qui remplace le rôle de la langue dans l'identité corse, car les supporters des clubs de football corse peuvent revendiquer leur appartenance à la Corse sans parler la langue. Il serait intéressant de connaître d'autres exemples concrets pour illustrer cette idée.",
+        "execution_time": 8.123
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse est excellente car elle identifie précisément les domaines clés (gastronomie, mode, cosmétiques et sport) mentionnés dans la référence comme mécanismes de substitution culturelle. L'explication sur le fait que ces pratiques permettent une appartenance revendiquée sans maîtrise linguistique correspond parfaitement au sens du texte fourni.",
+        "execution_time": 2.251
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "La réponse fournie est vide. Pour illustrer comment la consommation culturelle remplace partiellement l'identité linguistique chez les Corse, le texte cite des exemples précis comme la gastronomie, la mode et le football (notamment avec un exemple concret du SCB). Pouvez-vous développer ces points pour montrer en quoi ces pratiques permettent de revendiquer une appartenance corse sans maîtriser la langue ?",
+        "execution_time": 3.135
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          10,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 9.33,
+        "individual_scores": [
+          10,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 7.25,
+        "individual_scores": [
+          10,
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 7.25,
+        "individual_scores": [
+          10,
+          8,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          8,
+          8,
+          10,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 21.388
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "L'utilisateur n'a pas encore fourni de réponse explicite pour cette question. Pour évaluer correctement la compréhension du lien entre consommation culturelle et identité corse, il faudrait préciser comment vous interprétez les exemples cités dans le texte (gastronomie, mode, cosmétiques, football). Pouvez-vous compléter votre réponse en mentionnant des situations concrètes ou des expressions qui illustrent cette substitution ?",
+        "execution_time": 3.756
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Cette réponse est très claire et bien structurée, elle montre avec précision les exemples concrets qui illustrent l'idée selon laquelle la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse. Les exemples cités sont pertinents et réels, ce qui confirme que cette idée est bien valable. La structure de la réponse est également très claire et facile à comprendre.",
+        "execution_time": 4.108
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Le texte cite plusieurs exemples de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse : la gastronomie, la mode, les cosmétiques et le football. Ces domaines permettent aux individus de revendiquer une appartenance à la Corse, même sans maîtriser la langue corse. Par exemple, un Corse peut être défini comme celui qui consomme des produits locaux ou qui soutient un club de football corse, comme le SCB.",
+        "execution_time": 3.703
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est excellente car elle identifie précisément les domaines clés mentionnés dans la référence : gastronomie, mode, cosmétiques et football. Elle capture l'idée centrale que ces pratiques permettent de revendiquer une identité sans maîtrise linguistique, ce qui correspond parfaitement à l'objectif posé par le texte.",
+        "execution_time": 16.641
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Il semble que la réponse n'ait pas été fournie. Pour illustrer comment la consommation culturelle remplace partiellement l'identité linguistique en Corse, le texte évoque des domaines comme la gastronomie, la mode et les cosmétiques, ainsi que le football (par exemple le SCB). Ces pratiques permettent de revendiquer une appartenance corse sans maîtriser la langue. Avez-vous pu identifier ces exemples spécifiques dans votre analyse ?",
+        "execution_time": 30.237
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          0,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          0,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          0,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          9,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          0,
+          9,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          0,
+          9,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          0,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          0,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          0,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          0,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.33,
+        "individual_scores": [
+          9,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          9,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          9,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          7,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 6.25,
+        "individual_scores": [
+          0,
+          9,
+          7,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          0,
+          9,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          0,
+          9,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.25,
+        "individual_scores": [
+          0,
+          7,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          9,
+          7,
+          9,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 31.108
+  },
+  {
+    "question_id": "2535",
+    "question_text": "Pourquoi le football est-il considéré comme un vecteur puissant d'identification en Corse, selon le texte ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre réponse n’a pas été fournie, mais elle aurait pu intégrer parfaitement les éléments clés attendus : le football en Corse agit comme un vecteur d’identité collective via des clubs emblématiques (comme le SCB de Bastia) et renforce une appartenance à une région ou une ville. La citation de Fernand Sastre (« désormais on pourra dire la Corse *et* Bastia ») illustre cette transformation symbolique, tout comme l’idée que le football devient un miroir culturel universel. Cette dimension historique et sociale mérite d’être soulignée pour comprendre son rôle en Corse.",
+        "execution_time": 27.018
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    2 validation errors for AgentEvaluationResult\nscore\n  Field required [type=missing, input_value={'question': \"Pourquoi le...on le texte ?\", ' ': ''}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nfeedback\n  Field required [type=missing, input_value={'question': \"Pourquoi le...on le texte ?\", ' ': ''}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-809', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"question\":\"Pourquoi le football est-il considéré comme un vecteur puissant d\\'identification en Corse, selon le texte ?\",\" \":\"\"  \\n        \\n    }', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899431, model='llama3.2:1b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=430, prompt_tokens=5385, total_tokens=5815, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-633', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n\"score\": null,\\n\"feedback\": \"Le football est considéré comme un vecteur puissant d\\'identification en Corse car il permet de créer un sentiment d\\'appartenance collective, notamment à travers les clubs locaux comme le SCB (Sporting Club de Bastia). Fernand Sastre, ancien président de la Fédération française de football, illustre cette idée en déclarant que « désormais on pourra dire la Corse et Bastia » au lieu de « la Corse et Napoléon », montrant ainsi comment le football peut incarner une nouvelle forme d\\'identité régionale. De plus, Jean-Claude Michéa souligne que le football peut servir de ressource culturelle ultime pour s\\'identifier à une ville, une région ou même une culture planétaire.\"\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899433, model='llama3.2:1b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=430, prompt_tokens=5385, total_tokens=5815, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-539', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n\"question\": \"Pourquoi le football est-il considéré comme un vecteur puissant d\\'identification en Corse, selon le texte ?\",\\n\"score\": null,\\n\"feedback\": \"Le football est considéré comme un vecteur puissant d\\'identification en Corse car il permet de créer un sentiment d\\'appartenance collective, notamment à travers les clubs locaux comme le SCB (Sporting Club de Bastia). Fernand Sastre, ancien président de la Fédération française de football, illustre cette idée en déclarant que « désormais on pourra dire la Corse et Bastia » au lieu de « la Corse et Napoléon », montrant ainsi comment le football peut incarner une nouvelle forme d\\'identité régionale. De plus, Jean-Claude Michéa souligne que le football peut servir de ressource culturelle ultime pour s\\'identifier à une ville, une région ou même une culture planétaire.\"\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899435, model='llama3.2:1b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=430, prompt_tokens=5385, total_tokens=5815, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Le football est effectivement un élément important de l'identité corse, mais il faut préciser que le texte ne mentionne pas explicitement Fernand Sastre. Il serait utile de fournir plus de contexte ou de clarifier les références pour une évaluation plus précise.",
+        "execution_time": 7.217
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse fournie par l'utilisateur est parfaitement pertinente et complète. Elle reprend fidèlement les arguments principaux du texte : la création d'un sentiment d'appartenance collective via le football local (ex: SCB), l'exemple de Fernand Sastre qui illustre cette identité régionale au-delà des clichés, et la notion de Jean-Claude Michéa sur le rôle culturel universel. L'utilisateur a bien saisi que le sport agit comme un vecteur d'identification pour les Corsiens.",
+        "execution_time": 3.219
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "La réponse fournie est vide. Pour répondre à la question sur le rôle du football comme vecteur d'identification en Corse, il faudrait mentionner comment les clubs locaux (comme le SCB) créent un sentiment d'appartenance collective et citer l'exemple de Fernand Sastre ou Jean-Claude Michéa pour illustrer cette identité régionale.",
+        "execution_time": 3.685
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 10.0,
+        "individual_scores": [
+          10,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          0,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          0,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.5,
+        "individual_scores": [
+          0,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          10,
+          0,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          0,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          10,
+          0,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          10,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          10,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          0,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 1.33,
+        "individual_scores": [
+          0,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          0,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          3,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 5.75,
+        "individual_scores": [
+          10,
+          0,
+          3,
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          10,
+          0,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          10,
+          0,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          3,
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.5,
+        "individual_scores": [
+          0,
+          3,
+          10,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 27.197
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur montre une compréhension partielle de la dimension symbolique du col de Teghime pour les Bastiais. L’élément clé de la division imaginaire de la Méditerranée en deux mers est partiellement évoqué, mais l’approfondissement sur le rôle culturel et historique (comme le passage d’est en ouest) manque. La mention des « deux côtés » ouvre une porte intéressante vers cette perception symbolique, mais elle reste vague sans expliciter ce qui rend cette vue particulière à leur identité locale.",
+        "execution_time": 3.737
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "En effet, Teghime tranche cette mer en deux. La vue y est d'ailleurs magnifique !",
+        "execution_time": 1.79
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Pour répondre correctement à cette question, il faut comprendre le symbolisme du col de Teghime pour les Bastiais. La réponse utilisateur a mentionné que Teghime coupe symboliquement la Méditerranée en deux mers et offre une vue sur ces deux côtés. C'est un bon début, mais il faudrait préciser comment cette vue est perçue comme une division de la mer en deux parties.",
+        "execution_time": 2.804
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-42', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899462, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=65, prompt_tokens=4252, total_tokens=4317, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    2 validation errors for AgentEvaluationResult\nscore\n  Field required [type=missing, input_value={'description': {'score': None, 'feedback': ''}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nfeedback\n  Field required [type=missing, input_value={'description': {'score': None, 'feedback': ''}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-796', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n  \"description\": {\\n    \"score\": null,\\n    \"feedback\": \"\"\\n  }\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899463, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=65, prompt_tokens=4252, total_tokens=4317, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-235', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899464, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=65, prompt_tokens=4252, total_tokens=4317, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-906', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899475, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4162, total_tokens=4228, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-139', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899476, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4162, total_tokens=4228, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-38', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899477, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4162, total_tokens=4228, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          7,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.0,
+        "individual_scores": [
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          7,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          7,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          8,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          7,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          7,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.33,
+        "individual_scores": [
+          7,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          3,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          7,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          7,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 3.75,
+        "individual_scores": [
+          8,
+          7,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 2.75,
+        "individual_scores": [
+          8,
+          3,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 2.5,
+        "individual_scores": [
+          7,
+          3,
+          0,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 34.163
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse a bien capté l’idée centrale que le col de Teghime symbolise une rupture ou une division imaginaire pour les Bastiais. Cependant, la référence aux *« deux mers »* (Tyrrhénienne et Méditerranée) n’est pas explicitement mentionnée, ce qui limite la précision du lien symbolique culturel évoqué dans la réponse attendue. Pour approfondir, précisez comment cette vision panoramique s’inscrit dans leur identité collective en rapport avec l’eau et les espaces géographiques. La vue offre une dimension à la fois géographique et mythologique, comme le suggère la réponse de référence.",
+        "execution_time": 26.145
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "En effet, la vue de ce col est magnifique. Réponse utilisateur 2 : On a la vue des deux côtés",
+        "execution_time": 4.917
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Pour répondre correctement à cette question, il faudrait préciser que la vue sur les « deux mers » est perçue comme une division symbolique de la Méditerranée en deux parties, avec le col de Teghime étant un point de passage entre ces deux espaces. La réponse de l'utilisateur mentionne la vue des deux côtés, mais ne fournit pas de lien clair avec la symbolique de cette division.",
+        "execution_time": 13.952
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-709', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899479, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=60, prompt_tokens=4255, total_tokens=4315, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    2 validation errors for AgentEvaluationResult\nscore\n  Field required [type=missing, input_value={'description': {'score': None, 'feedback': ''}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nfeedback\n  Field required [type=missing, input_value={'description': {'score': None, 'feedback': ''}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-350', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n  \"description\": {\\n    \"score\": null,\\n    \"feedback\": \"\"\\n  }\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899480, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=60, prompt_tokens=4255, total_tokens=4315, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-239', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899481, model='qwen3.5:2b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=60, prompt_tokens=4255, total_tokens=4315, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-95', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899479, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4159, total_tokens=4225, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-734', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899480, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4159, total_tokens=4225, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-82', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{\\n  \"score\": null,\\n  \"feedback\": \"\"\\n}\\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789899482, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=4159, total_tokens=4225, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    1 validation error for AgentEvaluationResult\nscore\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_type\n</last_exception>",
+        "execution_time": 0
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 1.5,
+        "individual_scores": [
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 0.0,
+        "individual_scores": [
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          8,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          8,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          8,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.67,
+        "individual_scores": [
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 2.67,
+        "individual_scores": [
+          8,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 1.0,
+        "individual_scores": [
+          3,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          8,
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.75,
+        "individual_scores": [
+          8,
+          8,
+          3,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          8,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 2.75,
+        "individual_scores": [
+          8,
+          3,
+          0,
+          0
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 2.75,
+        "individual_scores": [
+          8,
+          3,
+          0,
+          0
+        ]
+      }
+    ],
+    "total_execution_time": 26.33
+  },
+  {
+    "question_id": "471",
+    "question_text": "Comment se distingue la partition linguistique de la Corse par rapport à la partition géographique et historique (Cismonte et Pumonte) ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre question porte sur une distinction fondamentale entre les dynamiques linguistiques et géohistoriques de la Corse. Bien que l'utilisateur n'ait pas fourni de réponse explicite dans ce cas précis (en raison du contexte absent), la structure attendue implique une **différence claire** entre les partitions : le régiolecte septentrional dépasse les limites du Pumonte, et le régiolecte central s’étend au-delà des frontières du Cismonte. La réponse idéale doit souligner cette superposition ou chevauchement linguistique comme marqueur distinctif.",
+        "execution_time": 3.972
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La partition linguistique ne coïncide pas avec la partition géographique et historique, car une partie du régiolecte septentrional se trouve dans le Pumonte au nord-ouest, et une partie du régiolecte central s'étend dans le Cismonte au sud-est. Contrary to the division geographical and historical, the linguistic partition places a part of the septentrional regional dialect in the Pumonte and a part of the central regional dialect in the Cismonte. The linguistic distinction differs from the geographical and historical division, as the septentrional regional dialect includes zones of the Pumonte and the central regional dialect includes zones of the Cismonte. The linguistic boundary does not follow the geographical and historical division, as the septentrional regional dialect includes zones of the Pumonte and the central regional dialect includes zones of the Cismonte. The linguistic distinction differs from the geographical and historical division, as the septentrional regional dialect includes zones of the Pumonte and the central regional dialect includes zones of the Cismonte. La frontière linguistique ne suit pas la division géographique et historique, car le régiolecte septentrional inclut des zones du Pumonte et le régiolecte central des zones du Cismonte. La partition linguistique diffère de la partition geographical and historical, car le régiolecte septentrional inclut des zones du Pumonte et le régiolecte central des zones du Cismonte. La division linguistique ne coïncide pas avec la division geographical and historique, car le régiolecte septentrional s'étend dans le Pumonte et le régiolecte central dans le Cismonte.",
+        "execution_time": 8.482
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La partition linguistique de la Corse se distingue en ce qu'elle ne coïncide pas avec la partition géographique et historique. La partie du régiolecte septentrional se trouve dans le Pumonte au nord-ouest, tandis que la partie du régiolecte central s'étend dans le Cismonte au sud-est. Cette différence est clé pour comprendre les nuances de la langue corse.",
+        "execution_time": 2.875
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "L'utilisateur a mal compris la question. Il semble avoir confondu les termes de 'région' et de 'partie', en disant que le régiolecte septentrional s'étend dans le Pumonte alors qu'il est situé au nord-ouest, et inversement pour le Cismonte qui se trouve au sud-est. La bonne réponse précise que la partition linguistique ne coïncide pas avec les divisions géographiques car une partie du septentrional (région de l'Est) s'étend dans le Pumonte et une autre partie du central (région de l'Ouest) s'étend dans le Cismonte.",
+        "execution_time": 34.806
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse est actuellement vide. Pour répondre à cette question sur la partition linguistique de la Corse par rapport aux divisions géographique et historique (Cismonte/Pumonte), il faudrait expliquer que ces deux types de frontières ne coïncident pas : le régiolecte septentrional s'étend dans les zones du Pumonte, tandis que le régiolecte central occupe des parties du Cismonte. Pouvez-vous développer ce lien entre la géographie linguistique et l'organisation territoriale ?",
+        "execution_time": 19.211
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          10,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.67,
+        "individual_scores": [
+          10,
+          8,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.33,
+        "individual_scores": [
+          10,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 8.33,
+        "individual_scores": [
+          10,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          10,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.67,
+        "individual_scores": [
+          8,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.33,
+        "individual_scores": [
+          8,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 8.25,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          7
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          10,
+          8,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          8,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          8,
+          7,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          8,
+          7,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 35.499
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre réponse n’a pas été fournie, mais elle aurait pu couvrir parfaitement les éléments clés attendus. Le couvent d’Alisgiani, en effet, incarne un rôle central dans l’histoire corse : il est le cadre de la rédaction de la première constitution d’indépendance (consulta d’Orezza, 1735), symbole fort de la résistance et de l’ambition indépendantiste. Son importance dépasse largement sa simple fonction religieuse pour devenir un lieu emblématique de la lutte corsienne.",
+        "execution_time": 13.647
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Le couvent d'Alisgiani est un lieu important pour la Révolution corse, mais il n'a pas mentionné spécifiquement son rôle dans la rédaction de la première constitution. Le couvent a joué un rôle central dans la lutte pour l'indépendance de la Corse, mais cela n'est pas clairement mentionné dans les réponses attendues.",
+        "execution_time": 8.848
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Le couvent d'Alisgiani est bien associé à la Révolution corse et à la lutte pour l'indépendance de la Corse. Cependant, il faudrait plus de détails sur son rôle historique, comme les événements marquants qui ont eu lieu dans ce lieu.",
+        "execution_time": 2.511
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est totalement incohérente avec les documents culturels fournis. Elle ne mentionne aucun lien entre le couvent d'Alisgiani et la Révolution corse ni aucune information historique pertinente (comme la consulta d'Orezza ou l'évocation de la constitution). En revanche, une partie du texte fourni dans 'expected_answers' décrit correctement ce rôle : il s'agit bien du lieu où la première constitution a été rédigée par Consulta d'Orezza en 1735. L'utilisateur semble avoir confondu le sujet avec un autre événement ou simplement répondu de manière vide.",
+        "execution_time": 3.182
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "La réponse fournie est vide. Pour répondre à cette question sur le rôle historique du couvent d'Alisgiani dans la Révolution corse (notamment avec la consulta d'Orezza de 1735), il faudrait évoquer son importance comme lieu de rédaction de la première constitution d'indépendance et de symbole de résistance. Avez-vous des éléments sur ces événements spécifiques en tête ?",
+        "execution_time": 30.189
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          10,
+          6
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 7.0,
+        "individual_scores": [
+          8,
+          6
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          6,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          6,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 8.0,
+        "individual_scores": [
+          10,
+          8,
+          6
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          6,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          10,
+          6,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          10,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 5.67,
+        "individual_scores": [
+          8,
+          6,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          6,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 3.33,
+        "individual_scores": [
+          6,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 6.75,
+        "individual_scores": [
+          10,
+          8,
+          6,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 6.25,
+        "individual_scores": [
+          10,
+          8,
+          6,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.0,
+        "individual_scores": [
+          10,
+          6,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          6,
+          3,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 31.065
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "La réponse attendue met en lumière le rôle central du couvent d'Alisgiani comme symbole historique majeur dans la Révolution corse, notamment à travers sa fonction de lieu de rédaction et de décision politique. Bien que vous n'ayez pas fourni une réponse explicite ici, votre compréhension implicite des attentes montre une excellente capacité à identifier les éléments clés : la consultation d'Orezza (1735), son lien avec l'indépendance corse, et son rôle symbolique dans la lutte révolutionnaire. Ce couvent incarne parfaitement le courage politique et culturel de la Corse.",
+        "execution_time": 18.339
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Le couvent d'Alisgiani est un symbole important de la lutte pour l'indépendance de la Corse, mais il n'a pas été le lieu où la première constitution a été rédigée. La première constitution a été rédigée en 1777 à Ajaccio, et non en 1735 comme indiqué dans les réponses attendues.",
+        "execution_time": 6.567
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Le couvent d'Alisgiani est un lieu important pour comprendre l'histoire de la Révolution corse. Il a joué un rôle central en tant que lieu de rédaction de la première constitution d'indépendance en 1735 et a symbolisé la résistance et l'aspiration à l'indépendance de la Corse. La réponse manque cependant des détails sur les événements spécifiques qui ont eu lieu dans le couvent, il serait utile de connaitre plus sur ces moments clés.",
+        "execution_time": 3.085
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "L'utilisateur n'a fourni aucune réponse dans sa question. L'évaluation se base uniquement sur les réponses attendues et le modèle qui a généré une liste de propositions sans aucun commentaire explicatif ou justification des choix faits par l'agent d'évaluation.",
+        "execution_time": 28.692
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse est actuellement vide. Pour comprendre le rôle historique du couvent d'Alisgiani dans la Révolution corse, il serait intéressant de savoir si vous avez des informations sur son lien avec la rédaction de la première constitution d'indépendance en 1735 ou s'il a servi de symbole de liberté et de révolte. Avez-vous pu identifier ces aspects clés ?",
+        "execution_time": 3.477
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          9,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          10,
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          10,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          9,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          9,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          10,
+          9,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          9,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.75,
+        "individual_scores": [
+          10,
+          9,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          9,
+          8,
+          3,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 29.383
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "",
+    "expected_score": 0,
+    "individual_evaluations": [
+      {
+        "model": "ministral-3:3b",
+        "provider": "ollama",
+        "score": 10,
+        "feedback": "Votre réponse n’a pas été fournie, mais elle aurait pu capturer parfaitement les éléments clés du rôle historique du couvent d'Alisgiani en lien avec la Révolution corse. Ce lieu a effectivement marqué l’histoire en abritant des événements fondateurs comme la rédaction de la première constitution d'indépendance lors de la *consulta d'Orezza* (1735), tout en symbolisant une résistance politique forte contre les puissances coloniales. L’association à la lutte pour l’indépendance et son rôle central dans les décisions politiques durant cette période en fait un symbole indéniable de la Corse. Une réponse complète aurait pu intégrer ces nuances historiques.",
+        "execution_time": 4.294
+      },
+      {
+        "model": "llama3.2:1b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Le couvent d'Alisgiani jouait un rôle central dans la Révolution corse, en abritant des moments clés comme la rédaction de la constitution. Il a été un lieu stratégique pour les révolutionnaires corses, notamment en 1735.",
+        "execution_time": 9.283
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Le couvent d'Alisgiani est un lieu très important pour la Révolution corse. Il a été le théâtre de la rédaction de la première constitution d'indépendance en 1735 et a symbolisé la résistance et l'aspiration à l'indépendance de la Corse. Le couvent est également associé aux événements marquants de la Révolution corse, tels que les décisions politiques prises par les révolutionnaires corses.",
+        "execution_time": 15.147
+      },
+      {
+        "model": "qwen3.5:2b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est globalement cohérente avec le contexte historique évoqué dans les réponses attendues. Elle identifie correctement la période clé (la consulta d'Orezza en 1735) et l'objectif principal (rédaction de la première constitution). Cependant, elle manque de précision sur le rôle spécifique du couvent lui-même : il s'agissait davantage d'un lieu où les documents ont été rédigés ou consultés par des membres de la Consulta qu'une simple 'aspiration à l'indépendance'. De plus, une réponse complète devrait mentionner que cet événement a conduit directement au soulèvement militaire contre le roi Charles Emmanuel III. Pour améliorer sa précision historique et son lien avec les faits marquants du document.",
+        "execution_time": 4.02
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse est actuellement vide. Pour évaluer le rôle historique du couvent d'Alisgiani dans la Révolution corse, il faudrait mentionner son lien avec la rédaction de la première constitution d'indépendance en 1735 par la consulta d'Orezza et sa symbolique comme lieu de résistance.",
+        "execution_time": 32.294
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:ministral-3:3b"
+        ],
+        "size": 1,
+        "average_score": 10.0,
+        "individual_scores": [
+          10
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b"
+        ],
+        "size": 2,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 9.5,
+        "individual_scores": [
+          10,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          10,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b"
+        ],
+        "size": 3,
+        "average_score": 9.0,
+        "individual_scores": [
+          10,
+          8,
+          9
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.33,
+        "individual_scores": [
+          10,
+          8,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 7.33,
+        "individual_scores": [
+          10,
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          10,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.67,
+        "individual_scores": [
+          10,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 3,
+        "average_score": 6.67,
+        "individual_scores": [
+          8,
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 3,
+        "average_score": 4.33,
+        "individual_scores": [
+          9,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b"
+        ],
+        "size": 4,
+        "average_score": 7.5,
+        "individual_scores": [
+          10,
+          8,
+          9,
+          3
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 7.0,
+        "individual_scores": [
+          10,
+          8,
+          9,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:1b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.5,
+        "individual_scores": [
+          10,
+          8,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:ministral-3:3b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.75,
+        "individual_scores": [
+          10,
+          9,
+          3,
+          1
+        ]
+      },
+      {
+        "models": [
+          "ollama:llama3.2:1b",
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:2b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 4,
+        "average_score": 5.25,
+        "individual_scores": [
+          8,
+          9,
+          3,
+          1
+        ]
+      }
+    ],
+    "total_execution_time": 33.145
+  }
+]

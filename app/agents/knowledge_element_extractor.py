@@ -510,7 +510,7 @@ async def extract_knowledge_fallback(text: str,
 async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidate],
                                          db_connection,
                                          resource_id: Optional[int] = None,
-                                         document_id: Optional[str] = None,
+                                         document_id: Optional[int] = None,
                                          author: Optional[str] = None) -> List[int]:
     """
     Sauvegarde les candidats de connaissance dans la base de données MySQL.
@@ -551,7 +551,7 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                     all_theme_names.add(clean_entity_name(theme.name))
         
         # 1.1 Gérer les entités
-        print(f"Trouvées {len(all_entity_names)} entités uniques à traiter")
+        print(f"Trouvées:  {len(all_entity_names)} entités uniques à traiter")
         for entity_name in all_entity_names:
             # Vérifier si l'entité existe déjà
             await cursor.execute(
@@ -560,7 +560,7 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
             )
             result = await cursor.fetchone()
             if result:
-                entity_map[entity_name] = result['id']
+                entity_map[entity_name] = result[0]
             else:
                 # Créer une nouvelle entité
                 entity_type = EntityType.OTHER.value
@@ -582,7 +582,7 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
             )
             result = await cursor.fetchone()
             if result:
-                theme_map[theme_name] = result['id']
+                theme_map[theme_name] = result[0]
             else:
                 # Créer un nouveau thème
                 await cursor.execute(
@@ -641,14 +641,13 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                     # Créer un nouveau knowledge_item
                     await cursor.execute(
                         "INSERT INTO knowledge_items "
-                        "(proposition, summary, is_verified, verification_notes, confidence, created_at) "
-                        "VALUES (%s, %s, %s, %s, %s, NOW())",
+                        "(proposition, summary, is_verified, verification_notes, created_at) "
+                        "VALUES (%s, %s, %s, %s, NOW())",
                         (
                             candidate.proposition[:65535],
                             candidate.summary[:1000] if candidate.summary else None,
                             candidate.is_verified,
                             candidate.verification_notes[:65535] if candidate.verification_notes else None,
-                            candidate.confidence
                         )
                     )
                     knowledge_id = cursor.lastrowid
