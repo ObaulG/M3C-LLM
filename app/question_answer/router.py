@@ -295,8 +295,6 @@ async def save_question_manually(request: dict):
 
 from pydantic import BaseModel, Field
 from typing import List, Optional
-import json
-import re
 
 
 class GenerateAnswersRequest(BaseModel):
@@ -323,54 +321,30 @@ class GenerateAnswersResponse(BaseModel):
 async def generate_answers(request: GenerateAnswersRequest):
     """
     Génère des réponses multiples pour une question.
-    Utilise un prompt direct au modèle LLM.
+    Utilise l'agent qa_agent pour générer les réponses.
     """
-    from agents.mistral_client import get_client
+    from agents import qa_agent
     
     # Définir provider et model
-    provider_model = request.model_name.split("/") if "/" in request.model_name else ["mistral", request.model_name]
-    provider = provider_model[0] if len(provider_model) > 0 else "mistral"
-    model = provider_model[1] if len(provider_model) > 1 else request.model_name
+    provider, model = tuple(request.model_name.split("/")) if "/" in request.model_name else ("mistral", request.model_name)
     
-    client = get_client(request.model_name)
+    agent = qa_agent.get_qa_agent(model=model, provider=provider, async_mode=True)
     
-    prompt = f"""Tu es un assistant expert. Génère exactement {request.num_answers} réponses différentes, précises et complètes à la question suivante.
-
-Question: {request.question_text}
-
-Contexte: {request.document_context[:2000]}
-
-Règles:
-- Génère UNIQUEMENT des réponses, pas de questions
-- Chaque réponse doit être différente des autres
-- Les réponses doivent être basées sur le contexte fourni
-- Ne génère AUCUN commentaire ou explication supplémentaire
-- Retourne les réponses sous forme de liste JSON avec exactement {request.num_answers} éléments: {{"answers": ["réponse 1", "réponse 2", ...]}}
-"""
+    input_schema = qa_agent.QuestionRequestInput(
+        message=(
+            f"Question: {request.question_text}\n\n"
+            f"Génère exactement {request.num_answers} réponses différentes à la question ci-dessus, "
+            f"en t'appuyant uniquement sur le contexte fourni. Ne génère aucune question."
+        ),
+        document=request.document_context,
+        num_questions=1,
+        num_answers_per_question=request.num_answers
+    )
     
-    response_text = await client.chat(prompt)
+    response = await agent.run_async(input_schema)
     
-    # Parser la réponse JSON
-    answers = []
-    try:
-        # Essayer de parser le JSON directement
-        data = json.loads(response_text)
-        answers = data.get("answers", [])
-    except (json.JSONDecodeError, AttributeError):
-        # Si ça échoue, essayer d'extraire la liste manuellement
-        # Chercher entre crochets
-        match = re.search(r'\[(.*?)\]', response_text, re.DOTALL)
-        if match:
-            try:
-                answers = json.loads('[' + match.group(1) + ']')
-            except:
-                # Si ça échoue encore, prendre la réponse brute
-                answers = [response_text.strip()]
-        else:
-            answers = [response_text.strip()]
-    
-    # Limiter au nombre demandé
-    answers = answers[:request.num_answers]
+    # Récupérer les réponses de la première question (unique) générée
+    answers = response.questions_answers[0].answers_text[:request.num_answers] if response.questions_answers else []
     
     return GenerateAnswersResponse(
         question=request.question_text,
