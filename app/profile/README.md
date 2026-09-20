@@ -15,6 +15,10 @@ app/profile/
 app/database/
 └── user_profile_views.sql  # Vues SQL pour agréger les données du profil
 
+app/static/
+├── profile.html            # Page de profil statique (rendu client via /profile/api/me)
+└── auth.html               # Connexion/inscription (redirige vers profile.html si authentifié)
+
 app/templates/
 ├── pages/
 │   └── profile.j2          # Template principal de la page de profil
@@ -47,7 +51,18 @@ app/templates/
 | `/profile/api/{user_id}/knowledge` | GET | Retourne les éléments de connaissance groupés par thème |
 | `/profile/api/{user_id}/observations` | GET | Retourne l'état des observations : compteurs par famille et observations récentes |
 | `/profile/api/{user_id}/export/csv` | GET | Télécharge les données du profil en CSV |
-| `/profile/api/me` | GET | Retourne les données du profil de l'utilisateur connecté |
+| `/profile/api/me` | GET | Retourne les données du profil de l'utilisateur connecté (cookie `m3c_api_key`) |
+
+### Page statique `profile.html`
+
+La page `app/static/profile.html` (servie sur `/static/profile.html`) affiche le profil directement dans le navigateur :
+
+- Même en-tête et navigation que les autres pages du portail (m3c-chatbot.html, etc.), avec le widget de connexion
+- Au chargement, elle interroge `GET /profile/api/me` et affiche : statistiques globales, état des observations (compteurs par famille + historique récent), éléments de connaissance par thème
+- Si l'utilisateur n'est pas connecté : message invitant à se connecter (lien vers auth.html)
+- Après connexion via le widget de l'en-tête, la page se recharge automatiquement (événement `profile-widget-login`)
+
+`auth.html` redirige automatiquement vers `profile.html` si l'utilisateur est déjà authentifié, ainsi qu'après un login ou une inscription réussie.
 
 ## Modèles de données
 

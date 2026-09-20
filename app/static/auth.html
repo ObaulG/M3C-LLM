@@ -241,6 +241,7 @@
         </div>
 
         <div class="nav-links">
+            <a href="profile.html">Mon Profil</a>
             <a href="m3c-chatbot.html">ChatBot RAG</a>
             <a href="question_session.html">Chatbot Invers&eacute;</a>
             <a href="questions_management.html">Gestion Q/R</a>
@@ -324,6 +325,7 @@
             document.getElementById('userInfo').innerHTML =
                 '<strong>' + user.username + '</strong> (' + user.email + ')<br/>' +
                 'R&ocirc;le : ' + user.role;
+            window.location.replace('profile.html');
         }
 
         function handleLogout() {
@@ -336,8 +338,7 @@
             try {
                 const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
                 if (response.ok) {
-                    const data = await response.json();
-                    showLoggedIn(data.user);
+                    window.location.replace('profile.html');
                 }
             } catch (e) { /* pas de session */ }
         }

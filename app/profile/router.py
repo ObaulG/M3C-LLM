@@ -6,13 +6,13 @@ Ce router expose les endpoints pour :
 - Récupérer les données du profil en JSON (GET /api/profile/{user_id})
 - Exporter le profil en CSV (GET /api/profile/{user_id}/export/csv)
 """
-from fastapi import APIRouter, Request, HTTPException, status, Depends
+from fastapi import APIRouter, Request, HTTPException, status, Depends, Cookie
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from typing import Optional
 import io
 
 from .page_builder import build_profile_page, build_profile_page_with_auth, generate_profile_csv
-from .services import get_user_profile_data, user_exists, _get_profile_db_connection as get_db_connection
+from .services import get_user_profile_data, user_exists, ensure_user_profile, _get_profile_db_connection as get_db_connection
 from .models import UserProfileResponse
 
 
@@ -42,6 +42,44 @@ async def get_profile_page(request: Request):
 # ============================================================================
 # Endpoints API pour récupérer les données du profil
 # ============================================================================
+
+@router.get(
+    "/api/me",
+    response_model=UserProfileResponse,
+    summary="Récupère les données du profil de l'utilisateur connecté",
+    description="Retourne les données du profil de l'utilisateur actuellement authentifié "
+                "(identifié via le cookie de session m3c_api_key).",
+)
+async def get_current_user_profile(
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """
+    Récupère les données du profil de l'utilisateur actuellement authentifié.
+    
+    Défini avant "/api/{user_id}" pour ne pas être capturé par ce chemin
+    dynamique. L'utilisateur est identifié via le cookie httpOnly posé par
+    /api/auth/login, ou via un header Authorization Bearer.
+    """
+    import auth as auth_module
+    
+    user_id = auth_module.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth_module.user_id_from_authorization(authorization)
+    
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Non autorisé - Veuillez vous connecter"
+        )
+    
+    user_id = str(user_id)
+    
+    async with await get_db_connection() as conn:
+        await ensure_user_profile(user_id, conn)
+        profile_data = await get_user_profile_data(user_id, conn)
+    
+    return profile_data
 
 @router.get(
     "/api/{user_id}",
@@ -302,34 +340,4 @@ async def export_profile_csv(user_id: str):
     )
 
 
-@router.get(
-    "/api/me",
-    response_model=UserProfileResponse,
-    summary="Récupère les données du profil de l'utilisateur connecté",
-    description="Retourne les données du profil de l'utilisateur actuellement authentifié.",
-)
-async def get_current_user_profile(request: Request):
-    """
-    Récupère les données du profil de l'utilisateur actuellement authentifié.
-    
-    Le user_id est récupéré depuis l'authentification.
-    """
-    # Récupérer le user_id depuis l'authentification
-    user_id = None
-    if hasattr(request.state, 'user_id') and request.state.user_id:
-        user_id = request.state.user_id
-    elif hasattr(request, 'session') and 'user_id' in request.session:
-        user_id = request.session['user_id']
-    elif hasattr(request, 'headers') and 'X-User-ID' in request.headers:
-        user_id = request.headers['X-User-ID']
-    
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Non autorisé - Veuillez vous connecter"
-        )
-    
-    async with await get_db_connection() as conn:
-        profile_data = await get_user_profile_data(user_id, conn)
-    
-    return profile_data
+
