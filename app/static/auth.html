@@ -228,14 +228,7 @@
                     <label for="regPassword">Mot de passe</label>
                     <input type="password" id="regPassword" name="password" required minlength="6" autocomplete="new-password" />
                 </div>
-                <div class="form-group">
-                    <label for="regRole">R&ocirc;le</label>
-                    <select id="regRole" name="role">
-                        <option value="user" selected>Utilisateur</option>
-                        <option value="validator">Validateur</option>
-                        <option value="admin">Administrateur</option>
-                    </select>
-                </div>
+
                 <div class="auth-message" id="registerMessage"></div>
                 <button type="submit" class="btn" id="registerBtn">Cr&eacute;er le compte</button>
             </form>
@@ -315,7 +308,6 @@
             const username = document.getElementById('regUsername').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
-            const role = document.getElementById('regRole').value;
             const btn = document.getElementById('registerBtn');
             btn.disabled = true;
             showMessage('registerMessage', '', '');
@@ -323,7 +315,7 @@
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username, email: email, password: password, role: role })
+                    body: JSON.stringify({ username: username, email: email, password: password })
                 });
                 const data = await response.json();
                 if (!response.ok) {
