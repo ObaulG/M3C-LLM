@@ -642,6 +642,32 @@ async def get_user_profile_data(user_id: str, conn) -> UserProfileResponse:
 
 
 # ============================================================================
+# Fonctions utilitaires pour la gestion du profil
+# ============================================================================
+
+async def ensure_user_profile(user_id: str, conn) -> None:
+    """
+    Crée la ligne user_profiles de l'utilisateur si elle n'existe pas encore.
+    
+    Conforme au schéma user_knowledge_model.sql (section 4.1) : les valeurs
+    par défaut (languages, accessibility_needs) sont posées par MySQL.
+    
+    Args:
+        user_id: Identifiant de l'utilisateur
+        conn: Connexion à la base de données
+    """
+    query = """
+        INSERT IGNORE INTO user_profiles (user_id, is_active, last_activity_at)
+        VALUES (%s, TRUE, NOW())
+    """
+    
+    async with conn.cursor() as cursor:
+        await cursor.execute(query, (user_id,))
+    
+    await conn.commit()
+
+
+# ============================================================================
 # Fonction utilitaire pour vérifier l'existence d'un utilisateur
 # ============================================================================
 

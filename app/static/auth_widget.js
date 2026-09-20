@@ -60,6 +60,7 @@
                 if (!resp.ok) throw new Error(data.detail || 'Connexion échouée');
                 showLoggedIn(data.user);
                 setMessage('Connecté', false);
+                document.dispatchEvent(new CustomEvent('profile-widget-login', { detail: data.user }));
             });
         }).catch(function (err) {
             setMessage(err.message, true);

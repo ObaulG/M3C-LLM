@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - M3C-LLM</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .profile-body {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .profile-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 15px;
+        }
+
+        .profile-error {
+            background: #fff0f0;
+            border: 1px solid #ffe0e0;
+            color: #b74420;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .profile-login-hint {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            color: #495057;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .profile-login-hint a {
+            color: #b74420;
+            font-weight: bold;
+        }
+
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .profile-info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .profile-info-item strong {
+            color: #b74420;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .profile-stat-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .profile-stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #b74420;
+            display: block;
+        }
+
+        .profile-stat-card .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .knowledge-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .knowledge-stat-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .knowledge-stat-item .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .knowledge-stat-item .stat-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .knowledge-stat-item .stat-pct {
+            font-weight: 700;
+            color: #b74420;
+            font-size: 16px;
+        }
+
+        .progress-container {
+            height: 16px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .progress-fill.demonstrated { background: #28a745; }
+        .progress-fill.developing { background: #ffc107; }
+        .progress-fill.encountered { background: #17a2b8; }
+        .progress-fill.unknown { background: #6c757d; }
+
+        .knowledge-stat-item .stat-count {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+
+        .observation-type-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .observation-type-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-left: 4px solid #b74420;
+            border-radius: 10px;
+            padding: 12px 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .observation-type-card .type-name {
+            font-weight: 600;
+            color: #333;
+            display: block;
+        }
+
+        .observation-type-card .type-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #b74420;
+            display: block;
+            margin: 4px 0;
+        }
+
+        .observation-type-card .type-desc {
+            font-size: 12px;
+            color: #666;
+            display: block;
+        }
+
+        .observation-type-card .type-last {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .observations-table-wrapper {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .observations-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .observations-table th {
+            background: #b74420;
+            color: white;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .observations-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .observations-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .observations-table tr:hover td {
+            background: #fdf6f4;
+        }
+
+        .observation-type-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .observation-type-badge.type-declarative { background: #e7f3ff; color: #004085; }
+        .observation-type-badge.type-behavioral { background: #fff3cd; color: #856404; }
+        .observation-type-badge.type-evaluative { background: #d4edda; color: #155724; }
+
+        .observation-specific-type {
+            font-family: monospace;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .observation-target-tag {
+            display: inline-block;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin: 2px 4px 2px 0;
+            font-size: 11px;
+        }
+
+        .observation-context {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .observation-confidence {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .profile-empty {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .profile-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .profile-section-header h2 {
+            margin: 0;
+        }
+
+        .profile-count-badge {
+            background: #b74420;
+            color: white;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .theme-group {
+            margin-bottom: 25px;
+        }
+
+        .theme-group h3 {
+            color: #b74420;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 17px;
+        }
+
+        .knowledge-item-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .knowledge-item-card .ki-proposition {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.status-unknown { background: #f0f0f0; color: #666; }
+        .status-badge.status-encountered { background: #e7f3ff; color: #004085; }
+        .status-badge.status-developing { background: #fff3cd; color: #856404; }
+        .status-badge.status-demonstrated { background: #d4edda; color: #155724; }
+
+        .ki-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .profile-actions a {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .profile-actions .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+
+        .profile-actions .btn-export {
+            background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="main_container">
+    <div class="container">
+        <div class="header">
+    <div class="header-main">
+        <h1>👤 Mon Profil</h1><p class="subtitle">Statistiques de visite, observations et éléments de connaissance</p></div>
+    <div class="header-nav"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="profile.html" class="nav-link active">Mon Profil</a></div>    <div class="profile-widget" id="profileWidget">
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="auth.html" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="profile.html" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
+    </div>
+</div></div>
+
+        <div class="profile-body" id="profileRoot">
+            <div class="profile-loading">Chargement du profil…</div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var OBS_TYPE_LABELS = {
+        declarative: 'Déclarative',
+        behavioral: 'Comportementale',
+        evaluative: 'Évaluative'
+    };
+    var OBS_TYPE_DESC = {
+        declarative: 'Langue, objectif de visite, préférences',
+        behavioral: 'Consultations, recherches, clics',
+        evaluative: 'Réponses, scores, évaluations'
+    };
+    var TARGET_TYPE_LABELS = {
+        knowledge: 'Connaissance',
+        theme: 'Thème',
+        entity: 'Entité'
+    };
+    var STATUS_LABELS = {
+        unknown: 'Inconnu',
+        encountered: 'Rencontré',
+        developing: 'En développement',
+        demonstrated: 'Maîtrisé'
+    };
+
+    function esc(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function formatDate(iso) {
+        if (!iso) return 'N/A';
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString('fr-FR') + ' à ' +
+               d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatScore(score) {
+        if (score === null || score === undefined) return '0%';
+        return Math.round(score * 100) + '%';
+    }
+
+    function pct(part, total) {
+        if (!total) return 0;
+        return Math.round((part / total) * 1000) / 10;
+    }
+
+    function root() {
+        return document.getElementById('profileRoot');
+    }
+
+    function fetchJson(url) {
+        return fetch(url, { credentials: 'same-origin' }).then(function (resp) {
+            return resp.json().then(function (data) {
+                if (!resp.ok) {
+                    var err = new Error(data.detail || ('Erreur ' + resp.status));
+                    err.status = resp.status;
+                    throw err;
+                }
+                return data;
+            });
+        });
+    }
+
+    function renderError(message) {
+        root().innerHTML = '<div class="profile-error">' + esc(message) + '</div>';
+    }
+
+    function renderLoginHint(message) {
+        root().innerHTML =
+            '<div class="profile-login-hint">' + esc(message) +
+            ' <a href="auth.html">Se connecter ou s\'inscrire</a></div>';
+    }
+
+    function renderProfile(data) {
+        var stats = data.stats || {};
+        var profile = data.profile || {};
+        var html = '';
+
+        // ---- En-tête du profil
+        html += '<div class="profile-info-grid">';
+        html += '<div class="profile-info-item"><strong>Inscrit le :</strong> ' + esc(formatDate(profile.created_at)) + '</div>';
+        if (profile.last_activity_at) {
+            html += '<div class="profile-info-item"><strong>Dernière activité :</strong> ' + esc(formatDate(profile.last_activity_at)) + '</div>';
+        }
+        if (profile.visit_goal) {
+            html += '<div class="profile-info-item"><strong>Objectif :</strong> ' + esc(profile.visit_goal) + '</div>';
+        }
+        if (profile.detail_level) {
+            html += '<div class="profile-info-item"><strong>Niveau :</strong> ' + esc(profile.detail_level) + '</div>';
+        }
+        html += '</div>';
+
+        // ---- Statistiques globales
+        html += '<div class="profile-section-header"><h2>📈 Statistiques Globales</h2>' +
+                '<span class="profile-count-badge">' + (stats.total_observations || 0) + '</span></div>';
+        html += '<div class="profile-stats-grid">';
+        var statItems = [
+            [stats.total_observations, 'Observations'],
+            [stats.total_resource_views, 'Vues ressources'],
+            [stats.total_theme_views, 'Vues thèmes'],
+            [stats.total_evaluations, 'Évaluations'],
+            [stats.total_resources_visited, 'Ressources'],
+            [stats.total_themes_explored, 'Thèmes']
+        ];
+        statItems.forEach(function (item) {
+            html += '<div class="profile-stat-card"><span class="stat-value">' + (item[0] || 0) +
+                    '</span><span class="stat-label">' + esc(item[1]) + '</span></div>';
+        });
+        html += '</div>';
+
+        // ---- État des connaissances
+        var totalK = stats.total_knowledge_items_encountered || 0;
+        if (totalK > 0) {
+            var kStats = [
+                ['Maîtrisées', stats.total_knowledge_demonstrated || 0, 'demonstrated'],
+                ['En développement', stats.total_knowledge_developing || 0, 'developing'],
+                ['Rencontrées', stats.total_knowledge_encountered || 0, 'encountered'],
+                ['Inconnues', stats.total_knowledge_unknown || 0, 'unknown']
+            ];
+            html += '<div class="knowledge-stats-row">';
+            kStats.forEach(function (item) {
+                html += '<div class="knowledge-stat-item">' +
+                    '<div class="stat-header"><span class="stat-name">' + esc(item[0]) +
+                    '</span><span class="stat-pct">' + pct(item[1], totalK) + '%</span></div>' +
+                    '<div class="progress-container"><div class="progress-fill ' + item[2] +
+                    '" style="width:' + pct(item[1], totalK) + '%"></div></div>' +
+                    '<span class="stat-count">' + item[1] + ' éléments</span></div>';
+            });
+            html += '</div>';
+        }
+
+        // ---- Observations (état conforme au modèle observations)
+        html += '<div class="profile-section-header"><h2>👁️ Observations</h2>' +
+                '<span class="profile-count-badge">' + (stats.total_observations || 0) + '</span></div>';
+        html += '<p style="color:#666;font-size:14px;">Chaque interaction est enregistrée comme une observation horodatée ' +
+                '(déclarative, comportementale ou évaluative), avec son contexte et sa confiance.</p>';
+
+        var typeStats = data.observation_type_stats || [];
+        if (typeStats.length) {
+            html += '<div class="observation-type-cards">';
+            typeStats.forEach(function (ts) {
+                var key = ts.observation_type;
+                html += '<div class="observation-type-card">' +
+                    '<span class="type-name">' + esc(OBS_TYPE_LABELS[key] || key) + '</span>' +
+                    '<span class="type-count">' + (ts.count || 0) + '</span>' +
+                    '<span class="type-desc">' + esc(OBS_TYPE_DESC[key] || '') + '</span>' +
+                    (ts.last_at ? '<span class="type-last">Dernière : ' + esc(formatDate(ts.last_at)) + '</span>' : '') +
+                    '</div>';
+            });
+            html += '</div>';
+        }
+
+        var recent = data.recent_observations || [];
+        if (recent.length) {
+            html += '<div class="observations-table-wrapper"><table class="observations-table">' +
+                '<thead><tr><th>Date / Heure</th><th>Type</th><th>Détail</th><th>Cibles</th><th>Contexte</th><th>Confiance</th></tr></thead><tbody>';
+            recent.forEach(function (obs) {
+                var typeKey = obs.observation_type;
+                var targets = (obs.targets || []).map(function (t) {
+                    var label = t.target_label ? (String(t.target_label).length > 60 ? String(t.target_label).slice(0, 60) + '…' : t.target_label) : ('#' + t.target_id);
+                    return '<span class="observation-target-tag">' +
+                        esc((TARGET_TYPE_LABELS[t.target_type] || t.target_type) + ' : ' + label) + '</span>';
+                }).join('');
+                html += '<tr>' +
+                    '<td style="white-space:nowrap;">' + esc(formatDate(obs.timestamp)) + '</td>' +
+                    '<td><span class="observation-type-badge type-' + esc(typeKey) + '">' + esc(OBS_TYPE_LABELS[typeKey] || typeKey) + '</span><br>' +
+                    '<span class="observation-specific-type">' + esc(obs.specific_type) + '</span></td>' +
+                    '<td>#' + obs.observation_id + '</td>' +
+                    '<td>' + (targets || '—') + '</td>' +
+                    '<td class="observation-context">' + esc(obs.context_display || '—') + '</td>' +
+                    '<td class="observation-confidence">' + formatScore(obs.confidence) + '</td>' +
+                    '</tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '<p style="color:#888;font-size:12px;margin-top:8px;">' + recent.length +
+                    ' observations les plus récentes affichées sur ' + (stats.total_observations || 0) + ' au total.</p>';
+        } else if (!typeStats.length || typeStats.every(function (ts) { return !(ts.count || 0); })) {
+            html += '<div class="profile-empty">Aucune observation enregistrée pour le moment.<br>' +
+                    'Naviguez sur le portail, consultez des ressources et répondez à des évaluations pour générer des observations.</div>';
+        }
+
+        // ---- Éléments de connaissance par thème
+        var knowledgeByTheme = data.knowledge_by_theme || {};
+        var themeNames = Object.keys(knowledgeByTheme);
+        html += '<div class="profile-section-header"><h2>💡 Éléments de Connaissance</h2>' +
+                '<span class="profile-count-badge">' + themeNames.length + '</span></div>';
+        if (themeNames.length) {
+            themeNames.forEach(function (themeName) {
+                var group = knowledgeByTheme[themeName];
+                html += '<div class="theme-group"><h3>' + esc(themeName) + '</h3>';
+                (group.knowledge_items || []).forEach(function (ki) {
+                    var statusKey = ki.status;
+                    html += '<div class="knowledge-item-card">' +
+                        '<div class="ki-proposition">' + esc(ki.proposition) + '</div>' +
+                        '<span class="status-badge status-' + esc(statusKey) + '">' + esc(STATUS_LABELS[statusKey] || statusKey) + '</span>' +
+                        '<div class="ki-meta"><span>Maîtrise : ' + formatScore(ki.score) + '</span>' +
+                        '<span>Confiance : ' + formatScore(ki.confidence) + '</span></div>' +
+                        '</div>';
+                });
+                html += '</div>';
+            });
+        } else {
+            html += '<div class="profile-empty">Aucun élément de connaissance pour le moment.</div>';
+        }
+
+        // ---- Actions
+        html += '<div class="profile-actions">' +
+                '<a href="index.html" class="btn-back">← Retour à l\'accueil</a>' +
+                '<a href="/profile/api/' + encodeURIComponent(data.user_id) + '/export/csv" class="btn-export">📥 Exporter en CSV</a>' +
+                '</div>';
+
+        root().innerHTML = html;
+    }
+
+    function load() {
+        fetchJson('/profile/api/me').then(renderProfile).catch(function (err) {
+            if (err.status === 401) {
+                renderLoginHint('Vous devez être connecté pour consulter votre profil.');
+            } else if (err.status === 404) {
+                renderError('Aucun profil trouvé pour votre compte. Un profil de connaissances sera créé lors de vos premières interactions.');
+            } else {
+                renderError(err.message || 'Erreur lors du chargement du profil.');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', load);
+    document.addEventListener('profile-widget-login', load);
+})();
+</script>
+<script src="auth_widget.js"></script>
+</body>
+</html>
