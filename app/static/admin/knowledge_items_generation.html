@@ -121,7 +121,25 @@
                     <a href="questions_generation.html" class="nav-link">Génération de Questions</a>
                     <a href="knowledge_items_generation.html" class="nav-link active">Knowledge Items</a>
                 </div>
-            </div>
+                <div class="profile-widget" id="profileWidget">
+        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+                   autocomplete="username" required />
+            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+                   autocomplete="current-password" required />
+            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+            <span class="profile-message" id="profileMessage"></span>
+            <a href="../auth.html" class="profile-register-link">S'inscrire</a>
+        </form>
+        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+            <a href="../auth.html" class="profile-user-link" id="profileUserLink">
+                <span class="profile-avatar">&#128100;</span>
+                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
+            </a>
+            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
+        </div>
+    </div>
+</div>
 
             <div class="admin-content">
                 <h2 class="section-title">Génération de Knowledge Items</h2>
@@ -759,5 +777,6 @@
                 .replace(/'/g, '&#039;');
         }
     </script>
+<script src="../auth_widget.js"></script>
 </body>
 </html>
