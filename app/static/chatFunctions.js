@@ -122,10 +122,10 @@ const API_URL_OBSERVATION_CLOSE = 'http://localhost:8000/api/observations/docume
 
 // Identifiant anonyme persistant pour les visiteurs non connectés
 function getAnonymousUserId() {
-    let anonymousId = localStorage.getItem('m3c_anonymous_user_id');
+    let anonymousId = localStorage.getItem('m3c_anonymous_id');
     if (!anonymousId) {
-        anonymousId = 'anonymous:' + crypto.randomUUID();
-        localStorage.setItem('m3c_anonymous_user_id', anonymousId);
+        anonymousId = crypto.randomUUID();
+        localStorage.setItem('m3c_anonymous_id', anonymousId);
     }
     return anonymousId;
 }
@@ -138,7 +138,7 @@ async function recordDocumentOpen(resourceId, numPage) {
         const body = JSON.stringify({
             resource_id: resourceId,
             num_page: numPage,
-            user_id: getAnonymousUserId(),
+            anonymous_id: getAnonymousUserId(),
             metadata: {page: 'm3c-chatbot.html'},
         });
         const response = await fetch(API_URL_OBSERVATION_OPEN, {

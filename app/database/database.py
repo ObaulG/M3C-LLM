@@ -1765,8 +1765,9 @@ async def update_question_and_answers(
 
 async def start_document_reading_session(
     conn,
-    user_id: str,
     resource_id: int,
+    user_id: Optional[int] = None,
+    anonymous_id: Optional[str] = None,
     num_page: Optional[int] = None,
     metadata: Optional[dict] = None,
 ) -> Optional[int]:
@@ -1774,7 +1775,8 @@ async def start_document_reading_session(
     Enregistre l'ouverture d'un document PDF dans la table document_reading_sessions.
 
     Args:
-        user_id: Identifiant de l'utilisateur ('user:<id>' ou 'anonymous:<uuid>')
+        user_id: user_id de la table users si l'utilisateur est connecté
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté
         resource_id: resource_id (table value) du document ouvert
         num_page: Numéro de page ciblé à l'ouverture, si connu
         metadata: Métadonnées supplémentaires (session RAG, page d'origine, etc.)
@@ -1782,14 +1784,17 @@ async def start_document_reading_session(
     Returns:
         reading_session_id ou None en cas d'erreur
     """
+    if user_id is None and not anonymous_id:
+        print("Erreur ouverture session de lecture: user_id et anonymous_id absents.")
+        return None
     try:
         async with conn.cursor() as cur:
             await cur.execute("""
                 INSERT INTO document_reading_sessions
-                (user_id, resource_id, num_page, opened_at, metadata)
-                VALUES (%s, %s, %s, CURRENT_TIMESTAMP, %s)
+                (user_id, anonymous_id, resource_id, num_page, opened_at, metadata)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
             """, (
-                user_id, resource_id, num_page,
+                user_id, anonymous_id, resource_id, num_page,
                 json.dumps(metadata) if metadata else None
             ))
             return cur.lastrowid

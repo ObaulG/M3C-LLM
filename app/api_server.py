@@ -165,7 +165,7 @@ class DocumentReadingOpenRequest(BaseModel):
     """Modèle de requête pour enregistrer l'ouverture d'un document PDF"""
     resource_id: int = Field(..., description="resource_id (table value) du document ouvert", ge=1)
     num_page: Optional[int] = Field(None, description="Numéro de page ciblé à l'ouverture", ge=1)
-    user_id: Optional[str] = Field(None, description="Identifiant libre (utilisateur connecté ou anonyme)")
+    anonymous_id: Optional[str] = Field(None, description="Identifiant anonyme persistant (localStorage), ignoré si l'utilisateur est connecté")
     metadata: Optional[Dict] = Field(None, description="Métadonnées supplémentaires (session RAG, page d'origine, etc.)")
 
 
@@ -409,21 +409,18 @@ async def open_document_observation(
     """
     Enregistre l'ouverture d'un document PDF dans la table document_reading_sessions.
 
-    L'identifiant de l'utilisateur est pris dans l'ordre: user_id fourni par le client
-    (permet le suivi anonyme), sinon utilisateur authentifié via le cookie de session,
-    sinon un identifiant anonyme est généré côté serveur.
+    Si l'utilisateur est authentifié via le cookie de session, son user_id (int) est
+    enregistré et l'identifiant anonyme est ignoré. Sinon, l'identifiant anonyme
+    persistant fourni par le client est utilisé.
     """
-    user_id = request.user_id
-    auth_user_id = auth.user_id_from_token(m3c_api_key)
-    if auth_user_id is not None:
-        user_id = f"user:{auth_user_id}"
-    elif not user_id:
-        user_id = f"anonymous:{uuid.uuid4()}"
+    user_id = auth.user_id_from_token(m3c_api_key)
+    anonymous_id = None if user_id is not None else request.anonymous_id
 
     reading_session_id = await start_document_reading_session(
         await get_db_connection(),
-        user_id=user_id,
         resource_id=request.resource_id,
+        user_id=user_id,
+        anonymous_id=anonymous_id,
         num_page=request.num_page,
         metadata=request.metadata,
     )
