@@ -8,7 +8,7 @@ import os
 import time
 import uuid
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Literal
 from datetime import datetime
 from contextlib import asynccontextmanager
 from unittest import case
@@ -50,7 +50,9 @@ from database.database import (get_db_connection,
                                insert_session,
                                VALID_TEXT_RESOURCE_ID, get_pdf_url_for_resource, get_pdf_name_from_resource_id,
                                get_document_id_from_resource_id,
-                               M3C_BASE_URL)
+                               M3C_BASE_URL,
+                               start_document_reading_session,
+                               close_document_reading_session)
 from agents.token_monitor import *
 from config import DOCUMENTS_PATH
 import asyncio
@@ -159,6 +161,31 @@ class QuestionSessionResponse(BaseModel):
     # pour faciliter le traitement cÃ´té client
     new_question: bool
     is_finished: bool
+class DocumentReadingOpenRequest(BaseModel):
+    """Modèle de requête pour enregistrer l'ouverture d'un document PDF"""
+    resource_id: int = Field(..., description="resource_id (table value) du document ouvert", ge=1)
+    num_page: Optional[int] = Field(None, description="Numéro de page ciblé à l'ouverture", ge=1)
+    user_id: Optional[str] = Field(None, description="Identifiant libre (utilisateur connecté ou anonyme)")
+    metadata: Optional[Dict] = Field(None, description="Métadonnées supplémentaires (session RAG, page d'origine, etc.)")
+
+
+class DocumentReadingCloseRequest(BaseModel):
+    """Modèle de requête pour enregistrer la fermeture d'un document PDF"""
+    reading_session_id: int = Field(..., description="Identifiant de la session de lecture à clore", ge=1)
+    close_reason: Literal["button", "document_change", "page_hide"] = Field(
+        "page_hide", description="Événement ayant déclenché la fermeture: button, document_change, page_hide")
+
+
+class DocumentReadingOpenResponse(BaseModel):
+    reading_session_id: int = Field(..., description="Identifiant de la session de lecture créée")
+
+
+class DocumentReadingCloseResponse(BaseModel):
+    reading_session_id: int = Field(..., description="Identifiant de la session de lecture close")
+    closed_at: str = Field(..., description="Timestamp de fermeture")
+    duration_seconds: int = Field(..., description="Durée de lecture en secondes")
+
+
 class HealthResponse(BaseModel):
     """ModÃ¨le de réponse pour le health check"""
     status: str = Field(..., description="Etat du serveur")
@@ -373,6 +400,61 @@ async def logout(
         auth.revoke_token("Bearer " + token)
     _clear_auth_cookie(response)
     return {"message": "Déconnecté."}
+
+@app.post("/api/observations/document-open", response_model=DocumentReadingOpenResponse, tags=["Observations"])
+async def open_document_observation(
+    request: DocumentReadingOpenRequest,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+):
+    """
+    Enregistre l'ouverture d'un document PDF dans la table document_reading_sessions.
+
+    L'identifiant de l'utilisateur est pris dans l'ordre: user_id fourni par le client
+    (permet le suivi anonyme), sinon utilisateur authentifié via le cookie de session,
+    sinon un identifiant anonyme est généré côté serveur.
+    """
+    user_id = request.user_id
+    auth_user_id = auth.user_id_from_token(m3c_api_key)
+    if auth_user_id is not None:
+        user_id = f"user:{auth_user_id}"
+    elif not user_id:
+        user_id = f"anonymous:{uuid.uuid4()}"
+
+    reading_session_id = await start_document_reading_session(
+        await get_db_connection(),
+        user_id=user_id,
+        resource_id=request.resource_id,
+        num_page=request.num_page,
+        metadata=request.metadata,
+    )
+    if reading_session_id is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Erreur lors de l'enregistrement de l'ouverture du document.")
+    return DocumentReadingOpenResponse(reading_session_id=reading_session_id)
+
+
+@app.post("/api/observations/document-close", response_model=DocumentReadingCloseResponse, tags=["Observations"])
+async def close_document_observation(request: DocumentReadingCloseRequest):
+    """
+    Enregistre la fermeture d'une session de lecture de document PDF.
+
+    La durée de lecture est calculée côté serveur à partir de opened_at.
+    Compatible avec navigator.sendBeacon (Content-Type: application/json).
+    """
+    result = await close_document_reading_session(
+        await get_db_connection(),
+        reading_session_id=request.reading_session_id,
+        close_reason=request.close_reason,
+    )
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Session de lecture introuvable ou déjà fermée.")
+    return DocumentReadingCloseResponse(
+        reading_session_id=request.reading_session_id,
+        closed_at=result["closed_at"],
+        duration_seconds=result["duration_seconds"],
+    )
+
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
