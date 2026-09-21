@@ -3,7 +3,6 @@ import copy
 import csv
 import json
 import logging
-import math
 import os
 import time
 import uuid
@@ -29,16 +28,14 @@ from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               QuestionSessionManager, SessionStatus, session_status_to_dict)
-from question_answer.answer_evaluation import UserEvaluationResponse, EvaluationResult, EvaluateRequestInput, \
-    from_AgentEvaluationResult_to_EvaluationResult
+from question_answer.answer_evaluation import (UserEvaluationResponse, _determine_message_type,
+                                              evaluate_answer as evaluate_user_answer)
 from session_csv_logger import log_response_to_csv
 from evaluation_logger import log_evaluation_to_csv, get_reference_answers, get_reference_answer
 from evaluation_feedback_logger import log_feedback_to_csv
 from agents.qa_agent import get_qa_agent
-from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent, \
-    ListAgentEvaluationResult, AgentEvaluationResult
-from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
-from agents.message_evaluator_agent import get_message_type_agent, MessageTypeRequestInput
+from agents.answer_evaluator_agent import get_evaluator_agent, EvaluateRequestInput, get_final_evaluator_agent
+from agents.message_evaluator_agent import get_message_type_agent
 from database.database import (get_db_connection,
                                get_questions_by_document_id,
                                get_question_by_id,
@@ -216,19 +213,27 @@ class AuthResponse(BaseModel):
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
 
-message_ev_agent = get_message_type_agent("ministral-3b-2410")
-question_session_manager = QuestionSessionManager()
-rag_session_manager = RAGSessionManager()
-# donne les modèles et providers pour pouvoir initialiser les agents évaluateurs
-models_evaluator = [("ministral-8b-latest", "mistral"),
+# Configuration de l'évaluation au lancement du serveur.
+# message type : agent classant le message de l'utilisateur
+MESSAGE_EVALUATOR_MODEL = "ministral-3b-2410"
+# évaluation de la réponse : un ou plusieurs agents évaluateurs
+MODELS_EVALUATOR = [("ministral-8b-latest", "mistral"),
                     ("ministral-14b-2512", "mistral"),
                     ("ministral-3b-latest", "mistral")]
-# Contient les instances d'agent effectuant les évaluations pour chaque modèle
-# dans models_evaluator
-evaluators = []
+# agent faisant la synthèse des évaluations individuelles, ou None pour
+# retenir la moyenne des évaluations individuelles
+FINAL_EVALUATOR_MODEL = None
+# nombre de réponses de référence données aux agents évaluateurs
+# (None = toutes les réponses disponibles)
+NUM_REFERENCE_ANSWERS = None
 
-# on ne l'utilisera plus pour l'instant
-#final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
+# Instances d'agents instanciées au démarrage du serveur
+message_ev_agent = get_message_type_agent(MESSAGE_EVALUATOR_MODEL)
+question_session_manager = QuestionSessionManager()
+rag_session_manager = RAGSessionManager()
+# (nom du modèle, instance d'agent évaluateur) pour chaque modèle dans MODELS_EVALUATOR
+evaluators: list[tuple[str, object]] = []
+final_evaluator = get_final_evaluator_agent(FINAL_EVALUATOR_MODEL) if FINAL_EVALUATOR_MODEL else None
 # === GESTION DU CYCLE DE VIE ===
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -311,9 +316,11 @@ def initialize_rag():
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
         raise
 def initialize_evaluators(async_mode: bool = True):
-    evaluators.extend([get_evaluator_agent(model,
-                                           provider=provider,
-                                           async_mode=async_mode) for model, provider in models_evaluator])
+    """Instancie les agents évaluateurs configurés dans MODELS_EVALUATOR."""
+    evaluators.extend([
+        (model, get_evaluator_agent(model, provider=provider, async_mode=async_mode))
+        for model, provider in MODELS_EVALUATOR
+    ])
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
@@ -876,9 +883,6 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     Ajoute un message à la conversation d'une session. L'agent analyse la réponse pour vérifier
     si c'est la réponse à la question en cours, ou une demande de contexte supplémentaire.
     """
-
-    # TODO: fonction trop longue, à découper
-
     start_time = time.time()
     total_input_tokens = 0
     total_output_tokens = 0
@@ -893,22 +897,20 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     current_question_id = question_session_manager.get_current_question_id(session_id)
     if not current_question_id:
         raise HTTPException(status_code=500, detail="Erreur détectée lors du traitement de la session")
+
     # récupérer la question et ses réponses
     question = await get_question_by_id(await get_db_connection(),
                                         current_question_id,
                                         include_answers=True)
-    # vérifier que les réponses existent
     reference_answers = [answer["content"] for answer in question["answers"]]
-    # vérification du type de message.
-    # -> Tuple[OutputSchema, int, int]
-    result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
-                                                                   user_input=MessageTypeRequestInput(
-                                                                              current_question=question["content"],
-                                                                              reference_answers=reference_answers,
-                                                                              user_message=user_message
-                                                                   ),
-                                                                   method = "run")
-    message_type = result.message_type
+
+    # vérification du type de message avec l'agent instancié au lancement du serveur
+    message_type, _, _, token_count_result, output_tokens = await _determine_message_type(
+        question["content"],
+        reference_answers,
+        user_message,
+        agent=message_ev_agent
+    )
     total_input_tokens += token_count_result
     total_output_tokens += output_tokens
     logging.info("Message type determined : {message_type}".format(message_type=message_type),)
@@ -927,63 +929,23 @@ async def submit_question_session_message(request: QuestionSessionMessage):
         case "reponse":
             if not question["answers"]:
                 raise HTTPException(status_code=500, detail="Pas de réponse prévue pour cette question...")
-            # Utiliser toutes les réponses disponibles pour l'évaluation
-            expected_answers = [answer["content"] for answer in question["answers"]]
-            evaluation_input = EvaluateRequestInput(
-                question=question['content'],
-                expected_answers=expected_answers,
-                user_answer=user_message
+            # évaluation de la réponse avec les agents évaluateurs instanciés
+            # au lancement du serveur
+            user_response = await evaluate_user_answer(
+                question_id=current_question_id,
+                user_answer=user_message,
+                evaluator_models=[model for model, _ in evaluators],
+                evaluator_final=FINAL_EVALUATOR_MODEL,
+                csv_logging=True,
+                num_reference_answers=NUM_REFERENCE_ANSWERS,
+                question=question,
+                evaluator_agents=[agent for _, agent in evaluators],
+                final_evaluator_agent=final_evaluator
             )
-            # note: les evaluators sont initialisés avec des clients async.
-            # pour pouvoir effectuer ces appels en parallèle.
-            evaluations = []
-
-
-            # lancement des évaluations pour chaque evaluator
-            coroutines = [
-                monitor_agent_call_async(evaluator, evaluation_input, "run_async")
-                for evaluator in evaluators
-            ]
-            eval_results = await asyncio.gather(*coroutines)
-            for result in eval_results:
-                evaluation, token_count_result, output_tokens = result
-                evaluations.append(evaluation)
-                total_input_tokens += token_count_result
-                total_output_tokens += output_tokens
-
-            """    
-            if len(evaluations) > 1:
-                # /!\ contient un AgentEvaluationResult de answer_evaluation_agent.py.
-                # UserEvaluationResponse attend pour l'attribut evaluation un EvaluationResult de
-                # question_session.py
-                # Provoque souvent cette erreur, pk ?
-                # Instructor does not support multiple tool calls, use List[Model] instead
-                final_evaluation, token_count_result, output_tokens = monitor_agent_call(final_evaluator,
-                                                            ListAgentEvaluationResult(
-                                                                evaluations=evaluations),
-                                                            "run")
-                total_input_tokens += token_count_result
-                total_output_tokens += output_tokens
-            else:
-                final_evaluation = evaluations[0]
-            """
-
-            # Stocker les évaluations individuelles avec leurs modèles
-            individual_evaluations = []
-            total_score = 0
-            for i, eval_result in enumerate(evaluations):
-                # Le modèle de chaque évaluateur correspond à models_evaluator[i][0]
-                eval_model = models_evaluator[i][0] if i < len(models_evaluator) else f"evaluator_{i}"
-                individual_eval = from_AgentEvaluationResult_to_EvaluationResult(
-                    eval_result, model=eval_model
-                )
-                total_score += individual_eval.score
-                individual_evaluations.append(individual_eval)
-            user_response.individual_evaluations = individual_evaluations
-
-            # à partir des évaluations individuelles, on calcule la note qui sera attribuée
-            evaluation_final_result = math.ceil(total_score / len(models_evaluator))
-            user_response.evaluation = evaluation_result
+            user_response.message_type = message_type
+            evaluation_result = user_response.evaluation
+            total_input_tokens += user_response.metadata["token_usage"]["input_tokens"]
+            total_output_tokens += user_response.metadata["token_usage"]["output_tokens"]
             if evaluation_result.score >= 7:
                 # Si le score est suffisant, passer à la question suivante
                 # peut également marquer la fin de la session si c'était la dernière qst
@@ -991,7 +953,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
                 is_finished = question_session_manager.is_finished(session_id)
                 if not is_finished:
                     new_question = True
-            # le client pourra détécter les changements par rapport à l'ancienne version de
+            # le client pourra détecter les changements par rapport à l'ancienne version de
             # sessionStatus : chgt de question, question à refaire, ou fin de session
             message = evaluation_result.feedback
         case "demande_renseignement":

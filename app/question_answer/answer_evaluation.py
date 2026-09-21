@@ -8,9 +8,11 @@ modularité et maintenabilité.
 """
 
 import asyncio
+import math
 import time
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
+from atomic_agents import AtomicAgent
 from pydantic import BaseModel, Field
 
 # Imports pour la base de données
@@ -91,10 +93,11 @@ def from_AgentEvaluationResult_to_EvaluationResult(evaluation: AgentEvaluationRe
 async def _determine_message_type(
     question_text: str,
     reference_answers: List[str],
-    user_answer: str
+    user_answer: str,
+    agent: Optional[AtomicAgent] = None
 ) -> Tuple[str, float, str, int, int]:
-    message_ev_agent = get_message_type_agent()
-    
+    message_ev_agent = agent if agent is not None else get_message_type_agent()
+
     if message_ev_agent is None:
         raise RuntimeError("L'agent message_evaluator n'est pas initialisé. Appeler init_evaluators() au préalable.")
     
@@ -130,10 +133,11 @@ async def _determine_message_type(
 
 async def _evaluate_answer_single_model(question_id: int,
                                         question_text: str,
-                                        answer: str ,
+                                        answer: str,
                                         reference_answers: list[str],
                                         model: str,
-                                        logging_csv: bool = True) -> EvaluationResult:
+                                        logging_csv: bool = True,
+                                        agent: Optional[AtomicAgent] = None) -> EvaluationResult:
 
     evaluation_input = EvaluateRequestInput(
         question=question_text,
@@ -141,19 +145,33 @@ async def _evaluate_answer_single_model(question_id: int,
         user_answer=answer
     )
 
-    provider, model_name = tuple(model.split("/"))
-    evaluator = get_evaluator_agent(model_name, provider=provider, async_mode=True)
+    if agent is not None:
+        evaluator = agent
+        model_name = model.split("/")[-1]
+    else:
+        if "/" in model:
+            provider, model_name = tuple(model.split("/"))
+        else:
+            provider, model_name = "mistral", model
+        evaluator = get_evaluator_agent(model_name, provider=provider, async_mode=True)
     start_time = time.time()
     result, input_tokens, output_tokens = await monitor_agent_call_async(evaluator, evaluation_input, "run_async")
     end_time = time.time()
     time_elapsed = end_time - start_time
-    evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(result, input_tokens, output_tokens)
+    evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(
+        result,
+        model=model_name,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens
+    )
 
     if logging_csv:
         log_response_to_csv(evaluation_input, evaluation_result, question_id, time_elapsed)
     return evaluation_result
 
-async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_logging:bool = True) -> EvaluationResult:
+async def _aggregate_evaluations(evaluations: List[EvaluationResult],
+                                 csv_logging: bool = True,
+                                 final_evaluator: Optional[AtomicAgent] = None) -> EvaluationResult:
     # 1. Convertir chaque EvaluationResult en AgentEvaluationResult
     agent_evaluations = [
         AgentEvaluationResult(score=ev.score, feedback=ev.feedback)
@@ -163,12 +181,12 @@ async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_loggin
     # 2. Créer ListAgentEvaluationResult
     list_agent_evaluation = ListAgentEvaluationResult(evaluations=agent_evaluations)
 
-    # 3. Obtenir l'agent final avec paramètres par défaut
-    final_evaluator = get_final_evaluator_agent(async_mode=True)
+    # 3. Obtenir l'agent final (instance fournie ou paramètres par défaut)
+    final_agent = final_evaluator if final_evaluator is not None else get_final_evaluator_agent(async_mode=True)
 
     # 4. Appeler l'agent avec monitoring des tokens
     result, input_tokens, output_tokens = await monitor_agent_call_async(
-        final_evaluator,
+        final_agent,
         list_agent_evaluation,
         "run_async"
     )
@@ -180,6 +198,13 @@ async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_loggin
         input_tokens=input_tokens,
         output_tokens=output_tokens
     )
+
+def _average_evaluations(evaluations: List[EvaluationResult]) -> EvaluationResult:
+    return EvaluationResult(
+        score=math.ceil(sum(ev.score for ev in evaluations) / len(evaluations)),
+        feedback=" | ".join(ev.feedback for ev in evaluations),
+        model=f"moyenne_{len(evaluations)}_evaluateurs"
+    )
 # ============================================================================
 # Fonction principale
 # ============================================================================
@@ -187,16 +212,20 @@ async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_loggin
 async def evaluate_answer(
     question_id: int,
     user_answer: str,
-    evaluator_models: list[str],
-    evaluator_final: Optional[str],
+    evaluator_models: List[str],
+    evaluator_final: Optional[str] = None,
     csv_logging: bool = True,
-    num_reference_answers: Optional[list[int]] = None
+    num_reference_answers: Optional[int] = None,
+    question: Optional[Dict] = None,
+    evaluator_agents: Optional[List[AtomicAgent]] = None,
+    final_evaluator_agent: Optional[AtomicAgent] = None
 ) -> UserEvaluationResponse:
 
     #1. récupérer la question et les réponses
-    question = await get_question_by_id(await get_db_connection(),
-                                        question_id,
-                                        include_answers=True)
+    if question is None:
+        question = await get_question_by_id(await get_db_connection(),
+                                            question_id,
+                                            include_answers=True)
     # vérifier que les réponses existent
     all_reference_answers = [answer["content"] for answer in question["answers"]]
 
@@ -208,36 +237,49 @@ async def evaluate_answer(
         reference_answers = all_reference_answers[:num_reference_answers]
     else:
         raise ValueError("num_reference_answers doit être None ou un entier positif")
-    
+
     # Initialiser les compteurs de tokens
     total_input_tokens = 0
     total_output_tokens = 0
 
-    evaluations = []
-    for model in evaluator_models:
-        evaluation = await _evaluate_answer_single_model(question_id,
-                                                          question["content"],
-                                                          user_answer,
-                                                          reference_answers,
-                                                          model,
-                                                          csv_logging)
-        evaluations.append(evaluation)
+    # les évaluations individuelles sont lancées en parallèle, que les agents
+    # soient pré-instanciés (evaluator_agents) ou créés à la demande
+    evaluation_coroutines = []
+    for i, model in enumerate(evaluator_models):
+        agent = evaluator_agents[i] if evaluator_agents is not None and i < len(evaluator_agents) else None
+        evaluation_coroutines.append(
+            _evaluate_answer_single_model(question_id,
+                                          question["content"],
+                                          user_answer,
+                                          reference_answers,
+                                          model,
+                                          csv_logging,
+                                          agent)
+        )
+    evaluations = list(await asyncio.gather(*evaluation_coroutines))
+    for evaluation in evaluations:
         total_input_tokens += evaluation.input_tokens
         total_output_tokens += evaluation.output_tokens
 
     final_evaluation = None
-    if evaluator_final:
-        final_evaluation = await _aggregate_evaluations(evaluations)
+    if final_evaluator_agent is not None or evaluator_final:
+        final_evaluation = await _aggregate_evaluations(evaluations,
+                                                        final_evaluator=final_evaluator_agent)
         total_input_tokens += final_evaluation.input_tokens
         total_output_tokens += final_evaluation.output_tokens
+    elif len(evaluations) == 1:
+        final_evaluation = evaluations[0]
+    else:
+        # sans agent d'agrégation, on retient la moyenne (arrondie au supérieur)
+        # des évaluations individuelles
+        final_evaluation = _average_evaluations(evaluations)
 
-
-    
     # Construire et retourner le résultat final
     return UserEvaluationResponse(
         question_id=question_id,
         question_text=question["content"],
         user_answer=user_answer,
+        date_sent=datetime.now(),
         message_type="reponse",
         evaluation=final_evaluation,
         individual_evaluations=evaluations,

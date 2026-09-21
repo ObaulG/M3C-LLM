@@ -44,7 +44,7 @@ def log_response_to_csv(evaluation_input,
         base_row = {
             "timestamp": datetime.now(),
             "question_id": question_id,
-            "question_text": evaluation_input.question_text,
+            "question_text": evaluation_input.question,
             "user_answer": evaluation_input.user_answer,
             "score": evalution_result.score,
             "feedback": evalution_result.feedback,
