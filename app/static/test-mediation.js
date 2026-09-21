@@ -3,7 +3,7 @@
 
 const API_URL_RAG = 'http://localhost:8000/api/query/rag';
 const API_URL_DOCUMENTS = 'http://localhost:8000/api/documents';
-const API_URL_MESSAGE = 'http://localhost:8000/api/sessions/questions/message/'
+const API_URL_MESSAGE = 'http://localhost:8000/api/sessions/questions/message';
 const API_URL_SESSION_INIT = 'http://localhost:8000/api/sessions/questions/init';
 let currentDocument = null;
 
