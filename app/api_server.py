@@ -27,6 +27,7 @@ import database
 import auth
 from indexing.services import download_pdf
 from rag_pipeline import RAGPipeline, RetrievalResult, RAGSource
+from dependencies import RagPipelineDep
 from question_session import (PREMADE_QUESTIONS_BY_DOCUMENT_ID,
                               QuestionSessionManager, SessionStatus, session_status_to_dict)
 from question_answer.answer_evaluation import UserEvaluationResponse, EvaluationResult, EvaluateRequestInput, \
@@ -54,7 +55,6 @@ from database.database import (get_db_connection,
                                start_document_reading_session,
                                close_document_reading_session)
 from agents.token_monitor import *
-from config import DOCUMENTS_PATH
 import asyncio
 from rag_session import RAGSessionManager, RAGSession, RAGInteraction
 if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
@@ -90,6 +90,9 @@ from solr.router import router as solr_router
 
 # Import du router de consultation des documents et de leurs chunks
 from documents.router import router as documents_router
+
+# Import du router d'authentification
+from routers.auth import router as auth_router
 
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
@@ -193,25 +196,7 @@ class HealthResponse(BaseModel):
     timestamp: str = Field(..., description="Horodatage du check")
     version: str = Field(..., description="Version de l'API")
 
-class AuthRegisterRequest(BaseModel):
-    username: str = Field(..., min_length=1, max_length=255)
-    email: str = Field(...)
-    password: str = Field(..., min_length=6)
 
-class AuthLoginRequest(BaseModel):
-    username: str = Field(...)
-    password: str = Field(...)
-
-class AuthUserResponse(BaseModel):
-    user_id: int
-    username: str
-    email: str
-    role: str
-    is_active: bool
-    created_at: Optional[str] = None
-
-class AuthResponse(BaseModel):
-    user: AuthUserResponse
 
 qa_agent = get_qa_agent()
 evaluation_agent = get_evaluator_agent("mistral-small",async_mode=True)
@@ -225,7 +210,6 @@ models_evaluator = [("ministral-8b-latest", "mistral"),
                     ("ministral-3b-latest", "mistral")]
 # Contient les instances d'agent effectuant les évaluations pour chaque modèle
 # dans models_evaluator
-evaluators = []
 
 # on ne l'utilisera plus pour l'instant
 #final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
@@ -234,8 +218,8 @@ evaluators = []
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie de l'application"""
     # Startup
-    initialize_rag()
-    initialize_evaluators()
+    initialize_rag(app)
+    initialize_evaluators(app)
     yield
     # Shutdown (si nécessaire)
     print("Arrêt du serveur : sauvegarde des sessions...")
@@ -270,6 +254,7 @@ app.include_router(knowledge_items_router)
 app.include_router(solr_router)
 app.include_router(documents_router)
 app.include_router(profile_router)
+app.include_router(auth_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -290,7 +275,6 @@ def initialize_rag():
     - L'ontologie
     - Les modÃ¨les d'embeddings et de reranking
     """
-    global rag_pipeline
     print("\n" + "=" * 60)
     print("Système RAG")
     print("=" * 60 + "\n")
@@ -299,9 +283,10 @@ def initialize_rag():
     embedder_model_name = "mistral-embed"
     try:
         # Initialiser le pipeline RAG v3 avec l'embedder
-        rag_pipeline = RAGPipeline(load_local=False, embedder_name=embedder_model_name)
+        pipeline = RAGPipeline(load_local=False, embedder_name=embedder_model_name)
+        app.state.rag_pipeline = pipeline
         # for api_visualization
-        set_rag_pipeline(rag_pipeline)
+        set_rag_pipeline(pipeline)
         
         # Mettre à jour le nom du modèle d'embedding pour api_visualization
         set_embedding_model(embedder_model_name)
@@ -310,10 +295,10 @@ def initialize_rag():
     except Exception as e:
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
         raise
-def initialize_evaluators(async_mode: bool = True):
-    evaluators.extend([get_evaluator_agent(model,
+def initialize_evaluators(app: FastAPI, async_mode: bool = True):
+    app.state.evaluators = [get_evaluator_agent(model,
                                            provider=provider,
-                                           async_mode=async_mode) for model, provider in models_evaluator])
+                                                async_mode=async_mode) for model, provider in models_evaluator]
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
@@ -324,82 +309,6 @@ async def root():
         "health_check": "/api/health",
         "query_endpoint": "/api/query"
     }
-
-AUTH_COOKIE_NAME = "m3c_api_key"
-
-def _set_auth_cookie(response: Response, token: str) -> None:
-    response.set_cookie(
-        AUTH_COOKIE_NAME,
-        token,
-        max_age=auth._TOKEN_TTL_SECONDS,
-        httponly=True,
-        samesite="lax",
-        path="/",
-    )
-
-def _clear_auth_cookie(response: Response) -> None:
-    response.delete_cookie(AUTH_COOKIE_NAME, path="/")
-
-@app.post("/api/auth/register", response_model=AuthResponse, tags=["Auth"])
-async def register(request: AuthRegisterRequest):
-    """Crée un nouveau compte utilisateur dans la table `users`."""
-    try:
-        user, token = await auth.create_user(
-            username=request.username,
-            email=request.email,
-            password=request.password,
-        )
-        response = JSONResponse(content=AuthResponse(user=AuthUserResponse(**user)).model_dump(mode="json"))
-        _set_auth_cookie(response, token)
-        return response
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR inscription: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erreur lors de la création du compte.")
-
-@app.post("/api/auth/login", response_model=AuthResponse, tags=["Auth"])
-async def login(request: AuthLoginRequest):
-    """Connecte un utilisateur existant à partir de son nom d'utilisateur ou email."""
-    try:
-        user, token = await auth.authenticate_user(request.username, request.password)
-        response = JSONResponse(content=AuthResponse(user=AuthUserResponse(**user)).model_dump(mode="json"))
-        _set_auth_cookie(response, token)
-        return response
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-    except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR connexion: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erreur lors de la connexion.")
-
-@app.get("/api/auth/me", tags=["Auth"])
-async def get_current_user(
-    m3c_api_key: Optional[str] = Cookie(default=None),
-    authorization: Optional[str] = None,
-):
-    """Retourne l'utilisateur associé au cookie de session (ou Bearer token)."""
-    user_id = auth.user_id_from_token(m3c_api_key)
-    if user_id is None:
-        user_id = auth.user_id_from_authorization(authorization)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
-    user = await auth.get_user_by_id(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable.")
-    return {"user": AuthUserResponse(**user)}
-
-@app.post("/api/auth/logout", tags=["Auth"])
-async def logout(
-    response: Response,
-    m3c_api_key: Optional[str] = Cookie(default=None),
-    authorization: Optional[str] = None,
-):
-    """Révoque le token de session (cookie ou Bearer) et efface le cookie."""
-    token = m3c_api_key or auth._token_from_authorization(authorization)
-    if token:
-        auth.revoke_token("Bearer " + token)
-    _clear_auth_cookie(response)
-    return {"message": "Déconnecté."}
 
 @app.post("/api/observations/document-open", response_model=DocumentReadingOpenResponse, tags=["Observations"])
 async def open_document_observation(
@@ -461,8 +370,8 @@ async def health_check():
         HealthResponse avec le statut du serveur
     """
     return HealthResponse(
-        status="healthy" if rag_pipeline is not None else "unhealthy",
-        rag_initialized=rag_pipeline is not None,
+        status="healthy" if getattr(app.state, "rag_pipeline", None) is not None else "unhealthy",
+        rag_initialized=getattr(app.state, "rag_pipeline", None) is not None,
         timestamp=datetime.now().isoformat(),
         version="0.1.0"
     )
@@ -506,7 +415,7 @@ async def health_check():
 @app.post("/api/query/simple",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_simple(request: QueryRequest):
+async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep):
     if not request.models:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -531,7 +440,7 @@ async def query_simple(request: QueryRequest):
 @app.post("/api/query/rag",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_rag(request: QueryRequest):
+async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
     """
     Pose une question au système et retourne la réponse en fournissant les sources
     Args:
@@ -542,12 +451,6 @@ async def query_rag(request: QueryRequest):
         HTTPException 503: Si le systÃ¨me RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    # Vérifier que le RAG est initialisé
-    if rag_pipeline is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
-        )
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
 
@@ -576,18 +479,12 @@ async def query_rag(request: QueryRequest):
 @app.post("/api/query/rag/tutorial",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_rag_tutorial(request: QueryRequest):
+async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep):
     """
     Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
     permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
     de QueryResponse
     """
-    # Vérifier que le RAG est initialisé
-    if rag_pipeline is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
-        )
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
 
@@ -598,7 +495,7 @@ async def query_rag_tutorial(request: QueryRequest):
 
         # On calcule normalement la réponse du RAG
         # QueryResponse
-        response = await query_rag(request)
+        response = await query_rag(request, rag_pipeline)
 
         prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question)
         best_50_chunks = await database.get_top_k_similar_chunks_qdrant(
@@ -645,7 +542,8 @@ async def query_rag_tutorial(request: QueryRequest):
 async def api_recommend_questions(
     user_prompt: str,
     document_id: str,
-    k: int = 5
+    k: int = 5,
+    rag_pipeline: RagPipelineDep = None,
 ):
     """
     Recommande les questions les plus pertinentes d'un document par rapport à un prompt utilisateur.
@@ -672,12 +570,6 @@ async def api_recommend_questions(
         HTTPException 404: Si le document n'a aucune question
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    # Vérifier que le RAG est initialisé
-    if rag_pipeline is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le système RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
-        )
     
     try:
         questions = await recommend_questions_for_document(
@@ -711,7 +603,7 @@ async def api_recommend_questions(
 @app.post("/api/query/compare",
           response_model=QueryCompareResponse,
           tags=["Query"])
-async def query_compare(request: QueryRequest):
+async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep):
     """
     Note: can be done with or without RAG
     """
@@ -757,7 +649,7 @@ async def query_compare(request: QueryRequest):
 @app.post("/api/query/single-doc-rag",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_single_doc_rag(request: QueryRequest):
+async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
     """
     Pose une question au systÃ¨me en utilisant le RAG sur un seul document spécifique.
     Sauvegarde également l'historique d'une session utilisateur
@@ -769,12 +661,6 @@ async def query_single_doc_rag(request: QueryRequest):
         HTTPException 503: Si le systÃ¨me RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    # Vérifier que le RAG est initialisé
-    if rag_pipeline is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Le systÃ¨me RAG n'est pas encore initialisé. Veuillez réessayer dans quelques instants."
-        )
     # Vérifier qu'un document_id est fourni
     if not request.rag_monodocument_id:
         raise HTTPException(
@@ -887,6 +773,7 @@ async def submit_question_session_message(request: QuestionSessionMessage):
     session = question_session_manager.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session non trouvée")
+    evaluators = getattr(app.state, "evaluators", [])
     if not evaluators:
         logging.error("Evaluateurs non initialisés")
         raise HTTPException(status_code=500, detail="Evaluateurs non initialisés")
