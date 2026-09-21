@@ -1757,3 +1757,89 @@ async def update_question_and_answers(
         updated_question = await get_question_by_id(conn, question_id, include_answers=True)
         
         return updated_question
+
+
+# ============================================================================
+# FONCTIONS DE GESTION DES SESSIONS DE LECTURE DE DOCUMENTS
+# ============================================================================
+
+async def start_document_reading_session(
+    conn,
+    resource_id: int,
+    user_id: Optional[int] = None,
+    anonymous_id: Optional[str] = None,
+    num_page: Optional[int] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Enregistre l'ouverture d'un document PDF dans la table document_reading_sessions.
+
+    Args:
+        user_id: user_id de la table users si l'utilisateur est connecté
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté
+        resource_id: resource_id (table value) du document ouvert
+        num_page: Numéro de page ciblé à l'ouverture, si connu
+        metadata: Métadonnées supplémentaires (session RAG, page d'origine, etc.)
+
+    Returns:
+        reading_session_id ou None en cas d'erreur
+    """
+    if user_id is None and not anonymous_id:
+        print("Erreur ouverture session de lecture: user_id et anonymous_id absents.")
+        return None
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                INSERT INTO document_reading_sessions
+                (user_id, anonymous_id, resource_id, num_page, opened_at, metadata)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
+            """, (
+                user_id, anonymous_id, resource_id, num_page,
+                json.dumps(metadata) if metadata else None
+            ))
+            return cur.lastrowid
+    except Exception as e:
+        print(f"Erreur ouverture session de lecture pour resource_id={resource_id}: {e}")
+        return None
+
+
+async def close_document_reading_session(
+    conn,
+    reading_session_id: int,
+    close_reason: str,
+) -> Optional[dict]:
+    """
+    Enregistre la fermeture d'une session de lecture: complète closed_at,
+    close_reason et duration_seconds (calculée côté serveur).
+
+    Args:
+        reading_session_id: Identifiant de la session de lecture à clore
+        close_reason: 'button', 'document_change' ou 'page_hide'
+
+    Returns:
+        Dictionnaire {closed_at, duration_seconds} ou None en cas d'erreur
+    """
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                UPDATE document_reading_sessions
+                SET closed_at = CURRENT_TIMESTAMP,
+                    close_reason = %s,
+                    duration_seconds = TIMESTAMPDIFF(SECOND, opened_at, CURRENT_TIMESTAMP)
+                WHERE reading_session_id = %s
+                  AND closed_at IS NULL
+            """, (close_reason, reading_session_id))
+            if cur.rowcount == 0:
+                return None
+            await cur.execute("""
+                SELECT closed_at, duration_seconds
+                FROM document_reading_sessions
+                WHERE reading_session_id = %s
+            """, (reading_session_id,))
+            row = await cur.fetchone()
+            if row:
+                return {"closed_at": str(row[0]), "duration_seconds": row[1]}
+            return None
+    except Exception as e:
+        print(f"Erreur fermeture session de lecture {reading_session_id}: {e}")
+        return None

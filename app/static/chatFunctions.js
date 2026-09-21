@@ -113,6 +113,91 @@ function createSourcesSection(response) {
     return sourcesDiv;
 }
 
+// ============================================================
+// Observation de lecture de documents (timestamps ouverture/fermeture)
+// ============================================================
+
+const API_URL_OBSERVATION_OPEN = 'http://localhost:8000/api/observations/document-open';
+const API_URL_OBSERVATION_CLOSE = 'http://localhost:8000/api/observations/document-close';
+
+// Identifiant anonyme persistant pour les visiteurs non connectés
+function getAnonymousUserId() {
+    let anonymousId = localStorage.getItem('m3c_anonymous_id');
+    if (!anonymousId) {
+        anonymousId = crypto.randomUUID();
+        localStorage.setItem('m3c_anonymous_id', anonymousId);
+    }
+    return anonymousId;
+}
+
+// Session de lecture courante: {reading_session_id, resource_id}
+let currentReadingSession = null;
+
+async function recordDocumentOpen(resourceId, numPage) {
+    try {
+        const body = JSON.stringify({
+            resource_id: resourceId,
+            num_page: numPage,
+            anonymous_id: getAnonymousUserId(),
+            metadata: {page: 'm3c-chatbot.html'},
+        });
+        const response = await fetch(API_URL_OBSERVATION_OPEN, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: body,
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        currentReadingSession = {
+            reading_session_id: data.reading_session_id,
+            resource_id: resourceId,
+        };
+    } catch (error) {
+        console.error("Erreur lors de l'enregistrement de l'ouverture du document:", error);
+        currentReadingSession = null;
+    }
+}
+
+function recordDocumentClose(closeReason) {
+    if (!currentReadingSession) {
+        return;
+    }
+    const payload = JSON.stringify({
+        reading_session_id: currentReadingSession.reading_session_id,
+        close_reason: closeReason,
+    });
+    currentReadingSession = null;
+    // sendBeacon pour que la requête survive au déchargement de la page;
+    // fallback fetch si le beacon n'est pas supporté.
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon(API_URL_OBSERVATION_CLOSE, new Blob([payload], {type: 'application/json'}));
+    } else {
+        fetch(API_URL_OBSERVATION_CLOSE, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: payload,
+        }).catch(error => console.error('Erreur fermeture observation:', error));
+    }
+}
+
+// Ferme proprement l'affichage du PDF et enregistre la fermeture de lecture
+function closePdfDisplay() {
+    const divIframe = document.getElementById("pdf-display");
+    if (divIframe) {
+        divIframe.style.display = "none";
+        const pdfIframe = divIframe.querySelector('iframe');
+        if (pdfIframe) {
+            pdfIframe.src = 'about:blank';
+        }
+    }
+    recordDocumentClose('button');
+}
+
+// Fermeture automatique lors du départ de la page
+window.addEventListener('pagehide', () => recordDocumentClose('page_hide'));
+
 /**
  * Crée un bouton pour afficher le PDF d'une source
  * @param {Object} source - objet RagSource
@@ -123,11 +208,19 @@ function createShowPdfButton(source) {
     const showPdfButton = createDivWithClass('show-pdf-button');
     showPdfButton.textContent = 'Afficher le PDF';
 
-    showPdfButton.onclick = () => {
+    showPdfButton.onclick = async () => {
         // source.metadata contient resource_id, qui permet de récupérer le pdf.
         const resource_id = source.metadata.resource_id
         if (!resource_id) {
             alert("L'identifiant permettant de récupérer le pdf est absent.");
+        }
+
+        // Si un autre document est déjà ouvert, enregistrer sa fermeture (changement de document)
+        if (currentReadingSession && currentReadingSession.resource_id !== resource_id) {
+            recordDocumentClose('document_change');
+        } else if (currentReadingSession) {
+            // même document déjà affiché: simple retour au premier plan, rien à enregistrer
+            return;
         }
 
         // Logique pour afficher le PDF
@@ -154,6 +247,8 @@ function createShowPdfButton(source) {
         pdfIframe.height = '100%';
         pdfIframe.style.border = 'none';
         divIframe.style.display = "flex";
+
+        await recordDocumentOpen(resource_id, numPage);
     };
     return showPdfButton;
 }
