@@ -104,7 +104,7 @@ async def get_profile_stats(user_id: str, conn) -> ProfileStats:
     # Sinon, calcul direct
     query = """
         SELECT 
-            user_id,
+            up.user_id,
             COUNT(DISTINCT o.id) AS total_observations,
             COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'resource_view' THEN o.id END) AS total_resource_views,
             COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'theme_view' THEN o.id END) AS total_theme_views,

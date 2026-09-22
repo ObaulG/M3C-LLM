@@ -23,7 +23,7 @@ from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
 from agents.message_evaluator_agent import get_message_type_agent
 from database.database import (get_db_connection,
                                get_document_id_from_resource_id,
-                               M3C_BASE_URL)
+                               M3C_BASE_URL, get_pdf_name_from_resource_id)
 from agents.token_monitor import *
 import asyncio
 from rag_session import RAGInteraction
@@ -140,8 +140,6 @@ models_evaluator = [("ministral-8b-latest", "mistral"),
 # Contient les instances d'agent effectuant les évaluations pour chaque modèle
 # dans models_evaluator
 
-# on ne l'utilisera plus pour l'instant
-#final_evaluator = get_final_evaluator_agent("ministral-8b-latest")
 # === GESTION DU CYCLE DE VIE ===
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -192,7 +190,7 @@ app.add_middleware(
     allow_headers=["*"],  # Headers autorisés
 )
 # === INITIALISATION DU RAG ===
-def initialize_rag():
+def initialize_rag(app: FastAPI):
     """
     Initialise le pipeline RAG au démarrage du serveur
     Charge:
@@ -204,11 +202,9 @@ def initialize_rag():
     print("\n" + "=" * 60)
     print("Système RAG")
     print("=" * 60 + "\n")
-    # Vérifier la présence de l'API Mistral AI
-    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+
     embedder_model_name = "mistral-embed"
     try:
-        # Initialiser le pipeline RAG v3 avec l'embedder
         pipeline = RAGPipeline(load_local=False, embedder_name=embedder_model_name)
         app.state.rag_pipeline = pipeline
         # for api_visualization
@@ -221,6 +217,7 @@ def initialize_rag():
     except Exception as e:
         print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
         raise
+
 def initialize_evaluators(app: FastAPI, async_mode: bool = True):
     app.state.evaluators = [get_evaluator_agent(model,
                                            provider=provider,
@@ -318,11 +315,11 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
     """
     Pose une question au système et retourne la réponse en fournissant les sources
     Args:
-        request: QueryRequest contenant la question et les paramÃ¨tres
+        request: QueryRequest contenant la question et les paramètres
     Returns:
         QueryResponse avec la réponse et les sources
     Raises:
-        HTTPException 503: Si le systÃ¨me RAG n'est pas initialisé
+        HTTPException 503: Si le système RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
     try:

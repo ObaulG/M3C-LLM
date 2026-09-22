@@ -101,6 +101,22 @@ evaluation_system_prompt_generator_bis = SystemPromptGenerator(
     ],
 )
 
+evaluation_system_prompt_generator_ter = SystemPromptGenerator(
+    background=[
+        "Tu évalues en français une réponse à une question de compréhension sur la culture corse, en la comparant aux réponses attendues."
+    ],
+    steps=[
+        "Identifie les idées essentielles attendues, accepte les reformulations, puis attribue une note entière de 1 à 10 selon la pertinence et la complétude."
+    ],
+    output_instructions=[
+        'Réponds uniquement avec un JSON valide : {"score": <entier de 1 à 10>, "feedback": "<texte>"}',
+        "Le feedback doit être bref, naturel, constructif et adopter un ton de médiateur culturel.",
+        "Mentionne les éléments corrects et, si la réponse est incomplète, invite l'utilisateur à préciser les éléments manquants par une question.",
+        "Ne mentionne ni la note ni le mot « score » dans le feedback.",
+        "N'ajoute aucun champ, ne reformule pas la question et n'explique pas ton raisonnement."
+    ],
+)
+
 final_evaluation_system_prompt_generator = SystemPromptGenerator(
     background=[
         "Cet agent est spécialisé dans la synthèse des évaluations fournies par plusieurs évaluateurs.",
@@ -194,7 +210,7 @@ def get_evaluator_agent_local_bis(model: str = "ministral-3:3b", provider: str =
             mode=instructor.Mode.JSON,
             history=None,
             tools=None,
-            system_prompt_generator=evaluation_system_prompt_generator_bis,
+            system_prompt_generator=evaluation_system_prompt_generator_ter,
             model_api_parameters=parameters,
         )
     )

@@ -1,0 +1,992 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "parce que chacun va dire la sienne",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est un bon début, mais elle manque de précision. La langue corse présente des variations selon les régions en raison d'éléments tels que l'influence géographique, le contact avec d'autres langues et la volonté des groupes humains de se distinguer les uns des autres.",
+        "execution_time": 9.38,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse est incomplète. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la volonté naturelle des groupes humains de se distinguer. Par exemple : « La langue corse varie selon les régions en raison de la volonté naturelle des groupes humains de se distinguer les uns des autres et de la différenciation culturelle entre les groupes, qui a conduit à l'émergence de variations linguistiques régionales. » Essayer de compléter la réponse avec cette explication pour obtenir un score plus élevé.",
+        "execution_time": 11.081,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est parti de bonne foi, mais il manque un élément clé. La langue corse présente des variations selon les régions en raison d'un mélange de facteurs, notamment la volonté naturelle des groupes humains de se distinguer et la différenciation culturelle entre les communautés. Il est important de noter que ces différences sont également influencées par l'histoire et la géographie régionales.",
+        "execution_time": 15.515,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "La réponse manque de pertinence et d'exactitude. La langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle, la volonté naturelle des groupes humains de se distinguer et l'évolution linguistique liée aux communautés. Les réponses correctes soulignent également l'importance du rôle de la langue dans le marquage des distinctions entre les communautés.",
+        "execution_time": 14.204,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "La réponse manque de pertinence et de complétude. La langue corse présente des variations selon les régions en raison de facteurs tels que la volonté naturelle des groupes humains de se distinguer, la différenciation culturelle entre les groupes, l'évolution de la langue pour marquer les distinctions entre les communautés et la diversité linguistique qui reflète l'identité culturelle locale. Les locuteurs corse sont influencés par leur région ou micro-région, ce qui contribue aux variations linguistiques.",
+        "execution_time": 12.822,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 16.29
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "Les habitants d’une région veulent pouvoir se distinguer des autres",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est un bon début, mais elle manque un peu de précision. La bonne réponse devrait être plus concrète et expliquer que la volonté naturelle des groupes humains de se distinguer les uns des autres conduit à des différences linguistiques régionales. Par exemple : « Les habitants d’une région veulent pouvoir se distinguer des autres, ce qui conduit à l’émergence de variations linguistiques spécifiques à cette région ».",
+        "execution_time": 3.725,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche, mais il manque un élément clé. La bonne réponse devrait mentionner explicitement la « volonté naturelle » des groupes humains de se distinguer les uns des autres, comme indiqué dans l'explication correcte. Par exemple : « Les habitants d'une région veulent pouvoir se distinguer des autres et cette volonté est ancrée dans leur identité culturelle ». Essayer de compléter la réponse avec ce détail pour obtenir un score plus élevé.",
+        "execution_time": 8.778,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "Votre réponse est un bon début, mais il manque de précision. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la volonté naturelle des groupes humains de se distinguer. Par exemple : « Les habitants d'une région veulent pouvoir se distinguer des autres, ce qui conduit à des variations linguistiques régionales, et cela est également influencé par la différenciation culturelle entre les groupes. » Essayer de compléter la réponse avec cette explication pour obtenir un score plus élevé.",
+        "execution_time": 2.367,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Votre réponse est un bon début, mais elle manque de précision. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la volonté naturelle des groupes humains de se distinguer. Les habitants d'une région veulent pouvoir se distinguer des autres est un bon point, mais il faudrait préciser que c'est une motivation générale qui s'applique à de nombreux facteurs, pas seulement à la langue corse.",
+        "execution_time": 7.211,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche de la bonne réponse. La langue corse présente des variations selon les régions en raison de facteurs tels que l'influence géographique, le contact avec d'autres langues et la volonté des groupes humains de se distinguer. Les habitants d'une région veulent pouvoir se distinguer des autres, ce qui peut conduire à des différences linguistiques régionales. Cependant, il est important de noter que ces différences sont également influencées par la différenciation culturelle entre les groupes et l'évolution de la langue pour marquer les distinctions entre les communautés.",
+        "execution_time": 5.712,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 8.794
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "les variations existent pour que les différents groupes puissent se distinguer",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est proche de la bonne réponse. La langue corse présente des variations selon les régions en raison d'un facteur clé : la volonté naturelle des groupes humains de se distinguer les uns des autres. Cependant, votre formulation « pour que les différents groupes puissent se distinguer » est un peu vague et ne rend pas compte avec précision du mécanisme qui sous-tend ces variations linguistiques. Essayer de reformuler cela pour qu'il soit plus concis et précis.",
+        "execution_time": 2.401,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est proche de la bonne réponse. La langue corse présente des variations selon les régions en raison d'un facteur clé : la volonté naturelle des groupes humains de se distinguer les uns des autres. Les variations existent pour que les différents groupes puissent se distinguer, ce qui est un aspect important de l'identité culturelle locale. Cependant, il faudrait préciser que cette volonté est ancrée dans la différenciation culturelle entre les groupes.",
+        "execution_time": 7.567,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est un bon début, mais il manque de précision. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la raison pour laquelle les variations existent. Par exemple : « Les variations existent pour que les différents groupes puissent se distinguer, mais cela est également influencé par la différenciation culturelle entre les groupes. » Essayer de compléter la réponse avec cette explication pour obtenir un score plus élevé.",
+        "execution_time": 5.943,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est un bon début, mais elle manque de précision. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la raison pour laquelle les variations existent. Par exemple : « Les variations existent pour que les différents groupes puissent se distinguer, ce qui est également influencé par la différence culturelle entre les groupes et l'évolution de la langue pour marquer ces distinctions ». Essayer de compléter la réponse avec cette explication pour obtenir un score plus élevé.",
+        "execution_time": 9.411,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est un bon début, mais elle manque de précision. La bonne réponse devrait inclure l'explication de la différenciation culturelle entre les groupes, en plus de la motivation générale des groupes humains de se distinguer. Par exemple : « Les variations existent pour que les différents groupes puissent se distinguer et cela est également influencé par la différence culturelle entre les groupes ». Essayer de compléter la réponse avec cette explication pour obtenir un score plus élevé.",
+        "execution_time": 4.284,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 9.428
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » c’est le verbe « esse »",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse est incorrecte. La bonne réponse devrait expliquer clairement la différence entre les formes « s'hè » et « s'è ». Par exemple : « s'hè » est l'association du pronom réfléchi si élidé avec le verbe « esse », tandis que « s'è » est l'association de la conjonction « sì » élidée avec l'explétif « è ». Essayer de comprendre les règles grammaticales en corse pour obtenir un score plus élevé.",
+        "execution_time": 3.109,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 3.124
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » est la forme réfléchie de « esse », et « s’è » est la contraction de « si », et « è »",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche de la bonne réponse. La langue corse présente des particularités intéressantes en termes d'élision et de contraction. Cependant, votre explication pour les formes « s'hè » et « s'è » n'est pas entièrement précise. Par exemple : « s'hè » est bien l'association du pronom réfléchi si élidé avec le verbe « esse », tandis que « s'è » est effectivement la contraction de la conjonction « sì » et de l'explétif « è ». Cependant, il faudrait préciser les règles grammaticales en jeu pour obtenir un score plus élevé.",
+        "execution_time": 3.669,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 3.698
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "si quelqu un mange corse, alors il est corse",
+    "expected_score": 3,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse est incorrecte. La bonne réponse devrait expliquer comment la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse en donnant des exemples concrets, tels que la gastronomie, la mode, les cosmétiques et le football. Par exemple : « Si quelqu'un mange de la cuisine corse, il peut revendiquer une appartenance à la Corse, même s'il ne maîtrise pas la langue corse ». Votre réponse « si quelqu'un mange corse, alors il est corse » n'est pas précise et ne rend pas compte avec clarté de l'idée que vous essayez de transmettre.",
+        "execution_time": 3.589,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre formulation « si quelqu'un mange corse, alors il est corse » n'est pas exacte. La langue corse joue un rôle important dans l'identité corse, mais la consommation culturelle peut remplacer partiellement son rôle. Le texte cite plusieurs exemples de domaines où la consommation de produits ou pratiques corses permet à un individu de s'identifier à la Corse, comme la gastronomie, la mode, les cosmétiques et le football. Par exemple, un Corse peut être défini comme celui qui consomme des produits locaux ou qui soutient un club de football corse, comme le SCB.",
+        "execution_time": 6.951,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est très proche de la bonne réponse. Cependant, votre explication pour les exemples concrets de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse n'est pas entièrement précise. Par exemple, vous avez mentionné que si quelqu'un mange « corse », alors il est corse, ce qui n'est pas exactement ce que dit le texte. Le texte cite plutôt des exemples spécifiques comme la gastronomie, la mode, les cosmétiques et le football, qui permettent aux individus de revendiquer une appartenance à la Corse, même sans maîtriser la langue corse. Par exemple, un Corse peut être défini comme celui qui consomme des produits locaux ou qui soutient un club de football corse, comme le SCB.",
+        "execution_time": 10.593,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 10.622
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre formulation « Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse » n'est pas exacte. Le texte cite plusieurs exemples spécifiques de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse, tels que la gastronomie, la mode, les cosmétiques et le football. Votre réponse inclut des exemples plus généraux, tels que « manger local » et « acheter les vêtements ici », qui ne sont pas exactement ce que dit le texte. Cependant, votre idée de base est correcte, et vous avez identifié l'importance de la consommation culturelle dans l'identité corse.",
+        "execution_time": 4.422,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est très proche de la bonne réponse. Cependant, votre explication pour les exemples concrets de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse n'est pas entièrement précise. Vous avez mentionné que manger local, acheter les vêtements ici et supporter le Sporting sont des moyens de se considérer Corse, ce qui est correct, mais vous n'avez pas mentionné explicitement les domaines spécifiques de consommation culturelle cités dans le texte, tels que la gastronomie, la mode, les cosmétiques et le football. Par exemple : « Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse, car ces activités sont liées à des domaines spécifiques de consommation culturelle, tels que la gastronomie, la mode, les cosmétiques et le football. »",
+        "execution_time": 8.689,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre formulation « Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autants de moyens de se considérer Corse » n'est pas exacte. Le texte cite plusieurs exemples de domaines où la consommation de produits ou pratiques corses permet à un individu de s'identifier à la Corse, comme la gastronomie, la mode, les cosmétiques et le football. Par exemple : « Un Corse peut être défini comme celui qui consomme des produits locaux ou qui soutient un club de football corse, comme le SCB ». Votre réponse est plus vaste et ne rend pas compte avec clarté de l'idée que vous essayez de transmettre.",
+        "execution_time": 12.3,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 12.315
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue.",
+    "expected_score": 9,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est très proche de la bonne réponse. Cependant, votre phrase « La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, » n'est pas exactement ce que dit le texte. Le texte mentionne explicitement ces domaines de consommation culturelle, mais il les présente sous forme d'exemples concrets qui remplacent partiellement le rôle de la langue dans l'identité corse. Votre réponse inclut une phrase « même sans maîtriser sa langue », qui n'est pas exactement ce que dit le texte. Cependant, votre idée de base est correcte, et vous avez identifié l'importance de la consommation culturelle dans l'identité corse.",
+        "execution_time": 4.274,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre formulation « La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue » n'est pas exacte. Le texte cite plusieurs exemples spécifiques de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse, tels que la gastronomie, la mode, les cosmétiques et le football. Votre réponse inclut des exemples plus généraux, tels que « la consommation culturelle » et « le Sporting », qui ne sont pas exactement ce que dit le texte. Cependant, votre idée de base est correcte, et vous avez identifié l'importance de la consommation culturelle dans l'identité corse.",
+        "execution_time": 8.312,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre formulation « La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue » n'est pas entièrement précise. Le texte cite plusieurs exemples spécifiques de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse, tels que la gastronomie, la mode, les cosmétiques et le football. Votre réponse inclut des exemples plus généraux, tels que « la consommation culturelle » et « le Sporting », qui ne sont pas exactement ce que dit le texte. Cependant, votre idée de base est correcte, et vous avez identifié l'importance de la consommation culturelle dans l'identité corse.",
+        "execution_time": 12.302,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 12.315
+  },
+  {
+    "question_id": "2535",
+    "question_text": "Pourquoi le football est-il considéré comme un vecteur puissant d'identification en Corse, selon le texte ?",
+    "human_answer": "Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région, et encore plus pour les clubs locaux, comme celui du Sporting",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est proche de la bonne réponse. Cependant, votre phrase « Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région » n'est pas exactement ce que dit le texte. Le texte mentionne explicitement les raisons pour lesquelles le football est considéré comme un vecteur puissant d'identification en Corse, notamment à travers les clubs locaux comme le SCB et la déclaration de Fernand Sastre. Votre réponse manque de précision et ne rend pas compte avec clarté de l'idée que vous essayez de transmettre. Cependant, votre idée de base est correcte, et vous avez identifié l'importance du football dans l'identité corse.",
+        "execution_time": 4.37,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 4.384
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Il semble que vous n'aie pas répondu à la question. Le texte ne mentionne pas le Teghime comme un lieu symbolique de la question de l'écologie, mais plutôt comme une coupe qui sépare la Méditerranée en deux mers, d'est en ouest. Votre réponse manque de pertinence et n'est pas exacte.",
+        "execution_time": 3.165,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 3.176
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "Votre réponse est plus précise que la précédente. Vous avez identifié correctement le Teghime comme un lieu qui permet une vue imprenable sur les deux mers, et vous avez ajouté l'information que la Méditerranée est symboliquement coupée en deux pour former la mer Tyrrhénienne. Cependant, votre réponse manque de contexte et ne rend pas compte avec clarté de l'idée que vous essayez de transmettre. Il serait utile d'ajouter quelques mots pour expliquer le lien entre le Teghime et la question de l'écologie.",
+        "execution_time": 2.883,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 2.893
+  },
+  {
+    "question_id": "471",
+    "question_text": "Comment se distingue la partition linguistique de la Corse par rapport à la partition géographique et historique (Cismonte et Pumonte) ?",
+    "human_answer": "Teghime coupe symboliquement la mer Méditérranée en deux",
+    "expected_score": 5,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "Il semble que vous n'aie pas répondu à la question. La partition linguistique de la Corse et la partition géographique et historique (Cismonte et Pumonte) sont deux concepts distincts qui ne sont pas directement liés au Teghime. Votre réponse est incorrecte et ne rend pas compte avec clarté de l'idée que vous essayez de transmettre.",
+        "execution_time": 3.446,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est plus précise que la précédente. Vous avez identifié correctement les différences entre la partition linguistique et la partition géographique/historique, et vous avez ajouté une explication claire pour expliquer pourquoi ces deux partitions ne coïncident pas. Cependant, votre réponse manque de pertinence car elle se concentre sur le Teghime et non sur la question posée. Il serait utile d'ajouter quelques mots pour répondre directement à la question et expliquer comment la partition linguistique se distingue de la partition géographique/historique.",
+        "execution_time": 7.983,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est correcte. Vous avez identifié les différences entre la partition linguistique et la partition géographique/historique de la Corse, notamment que la partition linguistique ne coïncide pas avec la partition géographique et historique. Votre réponse est claire et précise, et elle rend compte avec clarté de l'idée que vous essayez de transmettre.",
+        "execution_time": 5.723,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est plus complète que la précédente. Vous avez identifié correctement les différences entre la partition linguistique et la partition géographique/historique, et vous avez ajouté plusieurs explications pour clarifier l'idée. Cependant, votre réponse manque de précision en ce qui concerne le Teghime, qui n'est pas mentionné dans le texte comme un lieu symbolique de la question de l'écologie. Il serait utile d'éviter de mentionner le Teghime dans votre réponse.",
+        "execution_time": 10.73,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est plus précise que la précédente. Vous avez identifié correctement les points de différence entre la partition linguistique et la partition géographique/historique, notamment que la partition linguistique ne coïncide pas avec la partition géographique et historique, car le régiolecte septentrional inclut des zones du Pumonte et le régiolecte central inclut des zones du Cismonte. Votre réponse est claire et concise, mais il serait utile d'ajouter quelques mots pour expliquer le lien entre la partition linguistique et la question de l'identité corse.",
+        "execution_time": 13.68,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 13.693
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "L’indépendance de la Corse",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Il semble que vous n'aie pas répondu à la question. La réponse « L'indépendance de la Corse » est trop vague et ne répond pas spécifiquement au rôle historique du couvent d'Alisgiani dans la Révolution corse. Votre réponse manque de pertinence et n'est pas exacte.",
+        "execution_time": 5.873,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est incomplète. La question demande un rôle historique spécifique joué par le couvent d'Alisgiani, et votre réponse ne répond pas à cette question. Il serait utile de préciser quel rôle exact le couvent a joué pendant la Révolution corse.",
+        "execution_time": 3.361,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est incomplète. Le couvent d'Alisgiani a joué un rôle important dans la Révolution corse, mais votre réponse ne rend pas compte avec clarté de son importance. Il serait utile d'ajouter quelques mots pour expliquer le lien entre le couvent et la rédaction de la première constitution d'indépendance en 1735.",
+        "execution_time": 4.694,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est correcte. Vous avez identifié le rôle historique du couvent d'Alisgiani dans la Révolution corse, notamment en mentionnant l'accueil de la première constitution d'indépendance rédigée par la consulta d'Orezza en 1735. Cependant, votre réponse manque de précision car elle ne mentionne pas explicitement le lien entre le couvent et la lutte pour l'indépendance de la Corse. Il serait utile d'ajouter quelques mots pour expliquer ce lien et rendre votre réponse encore plus complète.",
+        "execution_time": 11.217,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est correcte. Vous avez identifié le rôle historique du couvent d'Alisgiani dans la Révolution corse, notamment en mentionnant qu'il a été le lieu où la première constitution d'indépendance a été rédigée par la consulta d'Orezza en 1735. Votre réponse est claire et concise, et elle rend compte avec précision de l'idée que vous essayez de transmettre.",
+        "execution_time": 8.338,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 11.247
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "C’est un symbole de liberté pendant la Révolution corse",
+    "expected_score": 6,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Votre réponse est trop vague et ne répond pas spécifiquement au rôle historique du couvent d'Alisgiani dans la Révolution corse. La mention de « symbole de liberté » n'est pas suffisante pour répondre à la question. Il serait utile de préciser quel rôle exact le couvent a joué pendant cette période.",
+        "execution_time": 3.775,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est incomplète. La question demande un rôle historique spécifique joué par le couvent d'Alisgiani, et votre réponse ne répond pas à cette question. Il serait utile de préciser quel rôle exact le couvent a joué pendant la Révolution corse. Votre réponse est correcte dans le sens que le couvent est un symbole de liberté, mais cela n'est pas suffisant pour répondre à la question posée.",
+        "execution_time": 6.334,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Votre réponse est incomplète. La question demande un rôle historique spécifique joué par le couvent d'Alisgiani, et votre réponse ne répond pas à cette question. Il serait utile de préciser quel rôle exact le couvent a joué pendant la Révolution corse.",
+        "execution_time": 10.889,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse est correcte. Le couvent d'Alisgiani a effectivement joué un rôle important dans la Révolution corse, mais votre réponse ne mentionne pas explicitement le lien entre ce symbole de liberté et la rédaction de la première constitution d'indépendance en 1735. Il serait utile d'ajouter quelques mots pour expliquer ce lien et rendre votre réponse encore plus complète.",
+        "execution_time": 8.814,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "Votre réponse est trop vague et ne répond pas spécifiquement au rôle historique du couvent d'Alisgiani dans la Révolution corse. Il serait utile d'ajouter quelques mots pour expliquer le lien entre le couvent et la rédaction de la première constitution d'indépendance en 1735.",
+        "execution_time": 13.139,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 13.153
+  }
+]

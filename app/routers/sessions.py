@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import FastAPI, APIRouter, HTTPException, Request, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -156,12 +156,16 @@ async def init_question_session(document_id: int,
 
 
 @router.post("/questions/message", response_model=QuestionSessionResponse)
-async def submit_question_session_message(request: QuestionSessionMessage, http_request: Request):
+async def submit_question_session_message(request: QuestionSessionMessage,
+                                          http_request: Request):
     """
     Ajoute un message à la conversation d'une session. L'agent analyse la réponse pour vérifier
     si c'est la réponse à la question en cours, ou une demande de contexte supplémentaire.
+    Utilise les agents initialisés en début de session, disponibles dans app.state
     """
 
+    # instance de FastAPI
+    app = http_request.app
     # TODO: fonction trop longue, à découper
 
     start_time = time.time()
@@ -169,6 +173,7 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
     total_output_tokens = 0
     session_id = request.session_id
     user_message = request.user_message
+
     session = question_session_manager.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session non trouvée")
@@ -189,7 +194,7 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
     # -> Tuple[OutputSchema, int, int]
     message_ev_agent = getattr(app.state, "message_ev_agent", None)
     if message_ev_agent is None:
-        raise HTTPException(status_code=500, detail="Agent de type de message non initialis\u00e9")
+        raise HTTPException(status_code=500, detail="Agent de type de message non initialisé")
     result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
                                                                    user_input=MessageTypeRequestInput(
                                                                               current_question=question["content"],
@@ -227,7 +232,6 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
             # pour pouvoir effectuer ces appels en parallèle.
             evaluations = []
 
-
             # lancement des évaluations pour chaque evaluator
             coroutines = [
                 monitor_agent_call_async(evaluator, evaluation_input, "run_async")
@@ -239,23 +243,6 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
                 evaluations.append(evaluation)
                 total_input_tokens += token_count_result
                 total_output_tokens += output_tokens
-
-            """    
-            if len(evaluations) > 1:
-                # /!\ contient un AgentEvaluationResult de answer_evaluation_agent.py.
-                # UserEvaluationResponse attend pour l'attribut evaluation un EvaluationResult de
-                # question_session.py
-                # Provoque souvent cette erreur, pk ?
-                # Instructor does not support multiple tool calls, use List[Model] instead
-                final_evaluation, token_count_result, output_tokens = monitor_agent_call(final_evaluator,
-                                                            ListAgentEvaluationResult(
-                                                                evaluations=evaluations),
-                                                            "run")
-                total_input_tokens += token_count_result
-                total_output_tokens += output_tokens
-            else:
-                final_evaluation = evaluations[0]
-            """
 
             # Stocker les évaluations individuelles avec leurs modèles
             individual_evaluations = []
@@ -270,10 +257,16 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
                 individual_evaluations.append(individual_eval)
             user_response.individual_evaluations = individual_evaluations
 
+            # plus d'agent final ici. On affectera à user_response.evaluation le 1er élément
+            # de user_response.individual_evaluations, avec la note finale calculée + bas
+
+            user_response.evaluation = individual_evaluations[0]
+
             # à partir des évaluations individuelles, on calcule la note qui sera attribuée
-            evaluation_final_result = math.ceil(total_score / len(models_evaluator))
-            user_response.evaluation = evaluation_result
-            if evaluation_result.score >= 7:
+            # on fixe ici la moyenne mais cela pourrait être autre chose
+            user_response.evaluation.score = math.ceil(total_score / len(models_evaluator))
+
+            if user_response.evaluation.score >= 7:
                 # Si le score est suffisant, passer à la question suivante
                 # peut également marquer la fin de la session si c'était la dernière qst
                 question_session_manager.increment_current_index(session_id)
@@ -282,7 +275,7 @@ async def submit_question_session_message(request: QuestionSessionMessage, http_
                     new_question = True
             # le client pourra détécter les changements par rapport à l'ancienne version de
             # sessionStatus : chgt de question, question à refaire, ou fin de session
-            message = evaluation_result.feedback
+            message = user_response.evaluation.feedback
         case "demande_renseignement":
             # faire appel à un LLM pour répondre à la question
             message = "Message de demande de renseignement détecté (pas implémenté pour l'instant)"

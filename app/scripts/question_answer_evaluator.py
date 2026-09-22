@@ -201,7 +201,7 @@ class QuestionAnswerEvaluator:
         "ministral-3b-2512",
         "ministral-8b-2512",
         "ministral-14b-2512",
-        "mistral-small-2603",
+        #"mistral-small-2603",
     ]
 
     #MISTRAL_MODELS = []
@@ -214,10 +214,11 @@ class QuestionAnswerEvaluator:
         "qwen3.5:4b"
     ]
 
-    #OLLAMA_MODELS = []
+    OLLAMA_MODELS = []
 
     GEMINI_MODELS = [
-        "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"
+        #"gemini-3.5-flash-lite",
+        #"gemini-3.1-flash-lite"
         #"gemma-4-26b-a4b-it",
         #"gemma-4-31b-it"
     ]
@@ -407,7 +408,7 @@ class QuestionAnswerEvaluator:
                 if not question:
                     logger.warning(f"Question {question_id} non trouvée en base de données")
                     return f"Question {question_id}", []
-            
+                logger.info(f"Question {question_id} - {question["content"]}")
             question_text = question.get("content", "")
             answers = question.get("answers", [])
             expected_answers = [
@@ -415,7 +416,7 @@ class QuestionAnswerEvaluator:
                 for answer in answers 
                 if answer.get("content")
             ]
-            
+            logger.info(expected_answers)
             if not expected_answers:
                 logger.warning(f"Pas de réponses attendues pour la question {question_id}")
             

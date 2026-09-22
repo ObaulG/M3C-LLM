@@ -1,0 +1,2400 @@
+[
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "parce que chacun va dire la sienne",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "En effet, la langue corse présente des variations selon les régions en raison de facteurs historiques et culturels qui ont influencé le développement de ces dialectes. La volonté naturelle des groupes humains de se distinguer n'est pas l'explication la plus précise.",
+        "execution_time": 11.898,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Vous avez bien saisi l'idée centrale : le fait que chaque groupe ait son propre mode d'expression. C'est effectivement une volonté naturelle de se distinguer qui explique ces variations linguistiques régionales en Corse. Pour aller plus loin et enrichir votre réflexion, pourriez-vous préciser comment cette distinction s'exerce concrètement dans la vie quotidienne ou si vous avez des exemples de mots différents selon les zones ?",
+        "execution_time": 29.068,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "En effet, la langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle entre les groupes et la volonté naturelle des groupes humains de se distinguer. Les expressions de l'utilisateur sont un peu simplifiées, mais le principe est là : la langue varie en fonction du contexte géographique.",
+        "execution_time": 14.026,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Vous avez bien saisi l'idée centrale : chaque groupe veut affirmer son identité propre. C'est une très belle façon de le formuler ! Pour aller plus loin dans la compréhension des nuances culturelles corse, pourriez-vous préciser si cette volonté d'individualité s'exerce autant au niveau du langage que sur les coutumes ou les traditions ?",
+        "execution_time": 23.744,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est vague et manque de précision. La langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle entre les groupes ou la volonté naturelle des groupes humains de se distinguer. Il serait utile de préciser les raisons exactes de ces variations pour avoir une réponse plus complète.",
+        "execution_time": 10.624,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "C'est une excellente manière d'exprimer l'idée de différenciation personnelle. En corse comme ailleurs, chaque groupe souhaite marquer son identité propre par rapport aux autres.",
+        "execution_time": 27.167,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est très limitée et ne prend pas en compte les raisons culturelles et historiques qui influencent les variations linguistiques en Corse. La bonne réponse devrait mentionner l'importance de la différenciation culturelle entre les groupes humains et le rôle de la langue dans marquer ces distinctions.",
+        "execution_time": 12.801,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Votre réponse touche juste l'idée de personnalisation et d'expression individuelle. En effet, si chaque groupe veut « dire sa », cela implique une volonté de se distinguer les uns des autres pour affirmer son identité régionale. Cependant, la formulation est très familière ; il serait plus précis de lier cette idée à un mécanisme social ou culturel (comme l'appartenance à un micro-région) qui explique pourquoi ces variations linguistiques persistent et évoluent différemment dans les différentes zones corse.",
+        "execution_time": 21.936,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur manque d'informations. Pourquoi les groupes humains se distinguent-ils naturellement ? Quelle est l'importance de la langue dans cette différenciation ?",
+        "execution_time": 14.888,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Votre réponse touche juste l'idée centrale : les gens ont tendance à exprimer leur propre identité. Cela rejoint parfaitement le concept de volonté individuelle et collective pour se distinguer par la langue. Cependant, pour enrichir votre propos dans un contexte culturel corse, il faudrait préciser que cette expression personnelle est souvent liée à une différenciation culturelle plus large entre les groupes régionaux ou micro-régionnels.",
+        "execution_time": 25.935,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          6,
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          3,
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          3,
+          6
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          3,
+          4
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 30.116
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "Les habitants d’une région veulent pouvoir se distinguer des autres",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "En effet, la langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle entre les groupes et la volonté naturelle des groupes humains de se distinguer. La réponse utilisateur est claire et évoque l'idée selon laquelle les habitants d'une région veulent pouvoir se distinguer des autres, ce qui correspond à une partie de la raison pour laquelle la langue varie en fonction du contexte géographique.",
+        "execution_time": 5.022,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente et très pertinente : elle identifie précisément le mécanisme social qui explique ces variations. En effet, la volonté de se distinguer les uns des autres pour affirmer son identité régionale ou micro-régionale est au cœur du phénomène linguistique en Corse.",
+        "execution_time": 6.31,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est plus précise que la première, car elle mentionne l'importance de la différenciation culturelle entre les groupes. Cependant, il faudrait préciser ce qui signifie exactement 'se distinguer' et comment cela influence les variations linguistiques en Corse.",
+        "execution_time": 6.57,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est très pertinente : elle identifie directement le mécanisme social à l'œuvre, qui est la volonté de distinction entre les groupes. C'est exactement ce principe que vous cherchez dans vos réponses précédentes ! Pour approfondir votre réflexion sur ces variations linguistiques corse, pourriez-vous préciser si cette différenciation culturelle s'exerce aussi bien au niveau des coutumes et traditions locales ?",
+        "execution_time": 11.417,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est plus précise que la première, en mentionnant explicitement l'idée selon laquelle les habitants d'une région veulent se distinguer. Cependant, elle manque de contexte et ne prend pas en compte les raisons culturelles et historiques qui influencent ces variations.",
+        "execution_time": 10.325,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est tout à fait pertinente et touche directement le cœur du sujet : la volonté de se distinguer. C'est exactement ce mécanisme social qui explique pourquoi chaque groupe utilise sa langue différemment pour affirmer son identité propre.",
+        "execution_time": 3.911,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, mais elle manque encore de profondeur. La bonne réponse devrait mentionner l'importance de la différenciation culturelle entre les groupes humains et le rôle de la langue dans marquer ces distinctions. Il serait utile de préciser comment cela affecte les variations linguistiques en Corse.",
+        "execution_time": 8.748,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Vous avez parfaitement saisi l'idée centrale : la volonté naturelle des groupes humains de se distinguer les uns des autres. C'est bien cela qui explique pourquoi chaque région développe ses propres particularités linguistiques pour affirmer son identité propre.",
+        "execution_time": 12.746,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est vague et manque de précision. La langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle entre les groupes ou la volonté naturelle des groupes humains de se distinguer. Il serait utile de préciser les raisons exactes de ces variations pour avoir une réponse plus complète.",
+        "execution_time": 2.823,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Votre réponse touche parfaitement le cœur du sujet : la volonté de se distinguer est bien l'explication principale. Pour aller plus loin et comprendre comment cela fonctionne concrètement, pourriez-vous préciser si cette différenciation repose davantage sur des mots spécifiques ou plutôt sur les façons d'utiliser ces mots ?",
+        "execution_time": 9.196,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 8.0,
+        "individual_scores": [
+          7,
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          4,
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          4,
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          4,
+          6
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          3,
+          8
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 12.76
+  },
+  {
+    "question_id": "452",
+    "question_text": "Pourquoi la langue corse présente-t-elle des variations selon les régions ?",
+    "human_answer": "les variations existent pour que les différents groupes puissent se distinguer",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle évoque l'idée selon laquelle les variations linguistiques en Corse servent à marquer les distinctions entre les communautés, ce qui correspond à une partie des raisons pour lesquelles la langue varie selon les régions. Cependant, il faudrait préciser que cette volonté de se distinguer est un phénomène naturel et profondément ancré dans l'histoire et la culture corse.",
+        "execution_time": 8.318,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente et très précise. Vous avez parfaitement identifié le mécanisme central : la volonté de distinction entre les groupes humains, qui explique pourquoi chaque région développe ses propres particularités linguistiques pour affirmer son identité propre.",
+        "execution_time": 3.43,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse utilisateur est claire et évoque l'idée selon laquelle les variations linguistiques en Corse sont un moyen de marquer les distinctions entre les groupes humains. Cependant, il faudrait préciser ce qui signifie exactement 'se distinguer' et comment cela influence les variations linguistiques en Corse.",
+        "execution_time": 5.525,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est tout à fait pertinente et touche directement le cœur du sujet. En effet, l'existence de ces variations linguistiques répond précisément au besoin des différentes communautés corse d'affirmer leur identité propre en se distinguant les unes des autres.",
+        "execution_time": 10.634,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 3,
+        "feedback": "La réponse utilisateur est vague et manque de précision. La langue corse présente des variations selon les régions en raison de facteurs tels que la différenciation culturelle entre les groupes ou la volonté naturelle des groupes humains de se distinguer. Il serait utile de préciser les raisons exactes de ces variations pour avoir une réponse plus complète.",
+        "execution_time": 3.311,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente et très précise. Vous avez parfaitement identifié le mécanisme social fondamental : la langue corse varie bien parce qu'elle permet aux différentes communautés de s'affirmer et de se distinguer les unes des autres.",
+        "execution_time": 5.827,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, car elle mentionne explicitement l'idée selon laquelle les variations linguistiques existent pour permettre aux différents groupes de se distinguer. Cependant, il faudrait préciser ce qui signifie exactement 'se distinguer' et comment cela influence les variations linguistiques en Corse.",
+        "execution_time": 10.446,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est tout à fait pertinente et touche directement le cœur du sujet. Vous avez parfaitement identifié que ces variations linguistiques sont un outil au service de la volonté des groupes humains pour se distinguer les uns des autres.",
+        "execution_time": 12.547,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, en mentionnant explicitement l'idée selon laquelle les variations existent pour permettre aux différents groupes de se distinguer. Cependant, elle manque encore de profondeur et ne prend pas en compte les raisons culturelles et historiques qui influencent ces variations.",
+        "execution_time": 12.424,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente et très pertinente. Elle touche directement le cœur du sujet : la langue corse varie bien parce qu'elle sert d'outil de distinction entre les groupes humains. C'est exactement ce mécanisme social qui explique ces particularités régionales.",
+        "execution_time": 8.585,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 7.5,
+        "individual_scores": [
+          6,
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 3.0,
+        "individual_scores": [
+          3
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          3,
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          4,
+          9
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.5,
+        "individual_scores": [
+          4,
+          9
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 12.559
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » c’est le verbe « esse »",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "La réponse utilisateur est très limitée. La bonne réponse devrait expliquer que « s'hè » est associé au pronom réfléchi si élidé et au verbe « esse/essa », tandis que « s'è » est associé à la conjonction « sì » élidée et à l'explétif « è ». Il faudrait préciser les détails de ces associations pour avoir une réponse complète.",
+        "execution_time": 4.625,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Vous avez touché un point important : la présence du verbe 'esse' dans l'une des formes. Cependant, votre réponse ne précise pas que s'hè est une combinaison spécifique entre le pronom réfléchi (si) et ce verbe conjugué à la troisième personne singulier, alors que s'è repose sur une structure différente impliquant la conjonction sì.",
+        "execution_time": 4.317,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          2,
+          6
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 4.636
+  },
+  {
+    "question_id": "675",
+    "question_text": "Quelle est la différence entre les formes « s’hè » et « s’è » en corse ?",
+    "human_answer": "« s’hè » est la forme réfléchie de « esse », et « s’è » est la contraction de « si », et « è »",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, car elle mentionne explicitement l'idée selon laquelle « s'hè » est la forme réfléchie de « esse » et « s'è » est une contraction de « si » et « è ». Cependant, il faudrait préciser les détails de ces associations pour avoir une réponse complète. La bonne réponse devrait également expliquer que « s'hè » est associé au pronom réfléchi si élidé et au verbe « esse/essa », tandis que « s'è » est associé à la conjonction « sì » élidée et à l'explétif « è ». Il faudrait également préciser que la contraction « s'è » n'est pas exactement la même chose qu'une simple association de « si » et « è ».",
+        "execution_time": 6.736,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-266', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":7,\"feedback\":\"Vous avez parfaitement identifié que s\\'hè repose sur le verbe esse conjugué au pronom réfléchi', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941175, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-342', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":7,\"feedback\":\"Vous avez parfaitement identifié que s\\'hè repose sur le verbe esse conjugué à l\\'élision du', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941177, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-4', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":6,\"feedback\":\"Vous avez bien identifié que s’hè implique le verbe esse à forme réfléchie, ce qui correspond au', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941178, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.0,
+        "individual_scores": [
+          6,
+          0
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 7.738
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "si quelqu un mange corse, alors il est corse",
+    "expected_score": 3,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "La réponse utilisateur est très limitée et ne prend pas en compte les exemples concrets que le texte donne pour illustrer l'idée selon laquelle la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse. La bonne réponse devrait mentionner des domaines tels que la gastronomie, la mode, les cosmétiques et le football, qui permettent aux individus de revendiquer une appartenance à la Corse sans nécessairement maîtriser la langue corse. Un exemple concret comme celui du SCB (Société Corse de Football) serait également précieux pour compléter cette réponse.",
+        "execution_time": 6.617,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "Vous avez parfaitement saisi l'un des exemples clés : la gastronomie. En effet, consommer de la « cuisine corse » permet à une personne d'affirmer son appartenance identitaire même sans parler le langue maternelle. Pour enrichir votre réponse et couvrir les autres aspects mentionnés dans le texte (comme la mode, les cosmétiques ou le football), pourriez-vous citer un deuxième exemple qui illustre ce mécanisme de remplacement culturel ?",
+        "execution_time": 6.752,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 5,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, car elle mentionne explicitement l'idée selon laquelle consommer de produits locaux peut être une façon de revendiquer son appartenance à la Corse. Cependant, il faudrait préciser les exemples concrets fournis par le texte pour illustrer cette idée. La bonne réponse devrait également expliquer que ces domaines ne remplacent pas entièrement le rôle de la langue dans l'identité corse, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 12.082,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-5', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Votre réponse touche bien sur la logique centrale : consommer des éléments corses permet d\\'être perçu comme tel. Cependant, pour être plus précis et complet selon', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941189, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=117, prompt_tokens=12171, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-593', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Votre réponse illustre bien une logique simple : manger corses permet d\\'être considéré comme Corse. C\\'est effectivement l\\'un des exemples cités dans le texte !', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941195, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=117, prompt_tokens=12171, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-37', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":6,\"feedback\":\"Votre réponse touche juste sur le principe fondamental : consommer des éléments corses permet d\\'être perçu comme tel. Cependant, pour répondre précisément à la question', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941196, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=117, prompt_tokens=12171, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne explicitement l'idée selon laquelle les domaines tels que la gastronomie, la mode, les cosmétiques et le football peuvent remplacer partiellement le rôle de la langue dans l'identité corse. Cependant, il faudrait préciser les détails de ces associations pour avoir une réponse complète. La bonne réponse devrait également mentionner des exemples concrets tels que le football ou la gastronomie pour illustrer cette idée.",
+        "execution_time": 16.616,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Vous avez saisi une idée centrale : que consommer des éléments corses permet de se définir comme Corse. Cependant, votre réponse manque les exemples concrets demandés par le texte (la gastronomie, la mode, les cosmétiques et surtout le football). Pourriez-vous préciser comment ces différents domaines, au-delà du simple repas, permettent d'exprimer une identité locale ?",
+        "execution_time": 16.233,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          1,
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 5.0,
+        "individual_scores": [
+          5
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.5,
+        "individual_scores": [
+          5,
+          0
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          4
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 18.619
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "Autrement que la maîtrise de la langue, manger local, acheter les vêtements ici, supporter le Sporting sont autant de moyens de se considérer Corse",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très précise et mentionne plusieurs exemples concrets tels que manger locaux, acheter des vêtements locaux, soutenir un club de football corse. Cependant, il faudrait préciser l'importance de ces actions dans le contexte de la consommation culturelle comme remplacement partiel du rôle de la langue dans l'identité corse. La bonne réponse devrait également expliquer que ces actions ne remplacent pas entièrement le rôle de la langue, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 6.069,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-505', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941200, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=12, prompt_tokens=12276, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-391', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941209, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=12, prompt_tokens=12276, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-986', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941212, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=12, prompt_tokens=12276, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "La réponse utilisateur est plus précise que la première fois, car elle mentionne explicitement l'idée selon laquelle les activités telles que manger local, acheter des vêtements locaux et supporter un club de football peuvent être des moyens de se considérer Corse. Cependant, il faudrait préciser les exemples concrets fournis par le texte pour illustrer cette idée. La bonne réponse devrait également expliquer que ces domaines ne remplacent pas entièrement le rôle de la langue dans l'identité corse, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 11.32,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-576', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":9,\"feedback\":\"Votre réponse est excellente et très pertinente. Vous avez parfaitement identifié les trois exemples concrets essentiels (la gastronomie/manger local, la mode/acheter des vêtements, le football/soutenir', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941204, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=144, prompt_tokens=12144, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-228', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est très pertinente et couvre l\\'essentiel des exemples demandés : la gastronomie (« manger local »), la mode (« acheter les vêtements ici ») et le football (« supporter le Sporting », c', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941211, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=144, prompt_tokens=12144, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-225', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est excellente et très pertinente. Vous avez parfaitement identifié les trois exemples clés du texte : la gastronomie (« manger local »), la mode (« acheter les vêtements ici ») et le football («', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941215, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=144, prompt_tokens=12144, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne explicitement l'idée selon laquelle des activités telles que manger local, acheter des vêtements locaux et supporter un club de football comme le SC Sporting peuvent être des moyens de revendiquer son appartenance à la Corse sans nécessairement maîtriser la langue corse. Cependant, il faudrait préciser les exemples concrets fournis par le texte pour illustrer cette idée. La bonne réponse devrait également mentionner des domaines tels que la gastronomie, la mode, les cosmétiques et le football, qui sont explicitement cités dans le texte comme des exemples de consommation culturelle qui remplacent partiellement le rôle de la langue dans l'identité corse.",
+        "execution_time": 17.51,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-935', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est très pertinente et identifie clairement l\\'idée centrale : consommer des éléments locaux (manger, porter) ou soutenir une pratique culturelle locale (le football du Sporting Bastia) permet de s\\'identifier comme Corse sans nécessairement parler la langue. Vous avez bien compris que ces actes remplacent part', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941209, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=210, prompt_tokens=12078, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-397', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est très pertinente et identifie clairement l\\'essentiel : la consommation locale (manger, porter des vêtements) et le soutien sportif constituent effectivement des marqueurs d\\'appartenance qui remplacent ou complètent le rôle de la langue. Pour aller plus loin dans votre analyse, pourriez-vous mentionner que', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941214, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=210, prompt_tokens=12078, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-875', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est très juste et synthétise parfaitement l\\'idée centrale : consommer des éléments locaux (manger, porter) ou soutenir du sport local permet d\\'exprimer son identité corse même sans parler le langue. Pour enrichir votre propos, pourriez-vous préciser comment ces pratiques de consommation remplacent', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941217, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=210, prompt_tokens=12078, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 20.274
+  },
+  {
+    "question_id": "2534",
+    "question_text": "Quels exemples concrets sont donnés dans le texte pour illustrer l'idée que la consommation culturelle remplace partiellement le rôle de la langue dans l'identité corse ?",
+    "human_answer": "La consommation culturelle, comme par exemple la gastronomie, la mode, les cosmétiques, et le Sporting, est un élément qui permet de revendiquer une appartenance à la Corse, même sans maîtriser sa langue.",
+    "expected_score": 9,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne explicitement les domaines tels que la gastronomie, la mode, les cosmétiques et le Sporting comme exemples de consommation culturelle qui permettent de revendiquer une appartenance à la Corse sans nécessairement maîtriser la langue corse. Cependant, il faudrait préciser l'importance de ces actions dans le contexte de la consommation culturelle comme remplacement partiel du rôle de la langue dans l'identité corse. La bonne réponse devrait également expliquer que ces actions ne remplacent pas entièrement le rôle de la langue, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 6.873,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente. Vous avez parfaitement identifié l'essentiel : la gastronomie, la mode et le football (le Sporting) sont bien les exemples concrets qui permettent de revendiquer une identité corse sans nécessairement maîtriser la langue.",
+        "execution_time": 5.68,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne explicitement l'idée selon laquelle des activités telles que la gastronomie, la mode, les cosmétiques et le Sporting sont des exemples de consommation culturelle qui permettent de revendiquer une appartenance à la Corse. Cependant, il faudrait préciser l'importance de ces actions dans le contexte de la consommation culturelle comme remplacement partiel du rôle de la langue dans l'identité corse. La bonne réponse devrait également expliquer que ces actions ne remplacent pas entièrement le rôle de la langue, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 12.646,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "Votre réponse est excellente : vous avez parfaitement identifié l'ensemble des exemples concrets cités dans le texte (gastronomie, mode, cosmétiques et football) ainsi que leur fonction centrale de marqueur d'appartenance identitaire. Vous avez aussi bien compris la nuance importante selon laquelle ces pratiques permettent de se définir comme Corse même sans maîtriser la langue maternelle.",
+        "execution_time": 10.895,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très précise et mentionne explicitement l'idée selon laquelle les activités telles que la gastronomie, la mode, les cosmétiques et le football peuvent être des moyens de revendiquer son appartenance à la Corse sans nécessairement maîtriser la langue corse. La bonne réponse devrait également expliquer que ces actions ne remplacent pas entièrement le rôle de la langue, mais plutôt complètent ou substituent une forme d'expression culturelle.",
+        "execution_time": 15.443,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-49', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941230, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=15, prompt_tokens=12273, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-8', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941232, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=15, prompt_tokens=12273, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-463', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\\n{', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941233, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=15, prompt_tokens=12273, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 3
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          8,
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ],
+        "num_reference_answers": 3
+      }
+    ],
+    "total_execution_time": 16.329
+  },
+  {
+    "question_id": "2535",
+    "question_text": "Pourquoi le football est-il considéré comme un vecteur puissant d'identification en Corse, selon le texte ?",
+    "human_answer": "Le football est l’un des plus puissants vecteurs d’identification culturel pour s’identifier à une ville ou une région, et encore plus pour les clubs locaux, comme celui du Sporting",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne explicitement l'idée selon laquelle le football est un vecteur puissant d'identification en Corse, notamment à travers les clubs locaux comme le SCB. Cependant, il faudrait préciser la citation de Fernand Sastre et son lien avec l'identité corse pour renforcer la réponse. La bonne réponse devrait également mentionner l'importance du football dans la création d'un sentiment d'appartenance collective.",
+        "execution_time": 5.476,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-482', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941237, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=21, prompt_tokens=12267, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-209', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941239, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=21, prompt_tokens=12267, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-601', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941240, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=21, prompt_tokens=12267, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 7.308
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime coupe symboliquement la méditérranée en deux mers, d'est en ouest. Il est un lieu symbolique de la question de l'écologie, avec la décharge publique de Bastia",
+    "expected_score": 7,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur mentionne correctement que Teghime coupe symboliquement la Méditerranée en deux mers et qu'il est un lieu symbolique pour la question de l'écologie. Cependant, il faudrait préciser le lien entre ce lieu et la décharge publique de Bastia pour renforcer la réponse. La bonne réponse devrait également expliquer pourquoi Teghime est considéré comme un lieu symbolique pour la question de l'écologie.",
+        "execution_time": 5.759,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse fait référence à une idée intéressante concernant le col de Teghime et son lien écologique. Cependant, cela ne correspond pas directement aux informations attendues pour cette question spécifique (qui semble porter sur l'identité corse ou un autre thème différent selon la numérotation). Pourriez-vous préciser quel aspect du texte vous souhaitez aborder ?",
+        "execution_time": 6.256,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          2
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 6.271
+  },
+  {
+    "question_id": "417",
+    "question_text": "Question 417",
+    "human_answer": "Teghime permet d’avoir une vue imprenable sur les deux mers, la Méditerranée étant symboliquement coupée en deux, formant la mer Tyrrhénienne",
+    "expected_score": 8,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très précise et mentionne correctement que Teghime permet d'avoir une vue imprenable sur les deux mers. La bonne réponse devrait également expliquer pourquoi cette vue est considérée comme symbolique, notamment en relation avec la division de la Méditerranée en deux parties, formant ainsi la mer Tyrrhénienne.",
+        "execution_time": 3.138,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "Vous avez parfaitement saisi le lien entre le col de Teghime et l'identité bastiaise : il permet d'avoir une vue sur les « deux mers », ce qui symbolise la division imaginaire de la Méditerranée en Tyrrhénienne et Ionienne. C'est un élément clé pour comprendre comment certains Bastiais se définissent par cette perspective unique.",
+        "execution_time": 5.144,
+        "num_reference_answers": 1
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 8.5,
+        "individual_scores": [
+          9,
+          8
+        ],
+        "num_reference_answers": 1
+      }
+    ],
+    "total_execution_time": 5.153
+  },
+  {
+    "question_id": "471",
+    "question_text": "Comment se distingue la partition linguistique de la Corse par rapport à la partition géographique et historique (Cismonte et Pumonte) ?",
+    "human_answer": "Teghime coupe symboliquement la mer Méditérranée en deux",
+    "expected_score": 5,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "La réponse utilisateur se concentre sur l'importance de Teghime pour la partition géographique et historique, mais ne mentionne pas explicitement comment cela se distingue de la partition linguistique. La bonne réponse devrait expliquer que la partition linguistique est distincte des partitions géographiques et historiques, en particulier en ce qui concerne les régions du Cismonte et du Pumonte.",
+        "execution_time": 6.149,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-317', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":1,\"feedback', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941254, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=18, prompt_tokens=12270, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-330', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":1,\"feedback', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941274, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=18, prompt_tokens=12270, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-712', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":1,\"feedback', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941276, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=18, prompt_tokens=12270, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que Teghime coupe symboliquement la Méditerranée en deux, mais il faudrait préciser le lien entre cette vue et la partition linguistique de la Corse pour renforcer la réponse. La bonne réponse devrait également expliquer pourquoi la partition linguistique ne coïncide pas avec la partition géographique et historique.",
+        "execution_time": 12.976,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse mentionne l'aspect visuel et géographique du col de Teghime, ce qui est intéressant. Cependant, elle ne répond pas à votre question sur le lien entre la partition linguistique (corsicaise) et les divisions historiques comme Cismonte/Pumonte ou Est/Ouest. La langue corse n'est pas divisée par ces frontières géographiques traditionnelles : on trouve des variétés du régiolecte septentrional dans le Pumonte, tandis que certaines zones du centre s'étendent vers l'ouest.",
+        "execution_time": 8.873,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que Teghime coupe symboliquement la Méditerranée en deux, mais il faudrait préciser le lien entre cette vue et la partition linguistique de la Corse. La bonne réponse devrait expliquer comment cette vue est liée à la division des régions linguistiques du Cismonte et du Pumonte.",
+        "execution_time": 16.822,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-846', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":2,\"feedback\":\"Votre réponse parle de Teghime et de sa vue', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941262, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=54, prompt_tokens=12234, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-773', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":1,\"feedback\":\"Votre réponse parle de Teghime et de sa vue', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941275, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=54, prompt_tokens=12234, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-774', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":1,\"feedback\":\"Votre réponse parle de Teghime et de sa vue', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941277, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=54, prompt_tokens=12234, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très précise et mentionne correctement que la partition linguistique de la Corse diffère de la partition géographique et historique, notamment en ce qui concerne la répartition des régiolectes septentrional et central. La bonne réponse devrait également expliquer pourquoi cette différence est importante pour comprendre l'identité corse.",
+        "execution_time": 9.78,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse parle du col de Teghime et de sa vue sur les deux mers, ce qui est une belle image culturelle. Cependant, elle ne répond pas à votre question actuelle concernant la différence entre la partition linguistique (régiolectes) et la division géographique/historique (Cismonte/Pumonte). Pourriez-vous préciser comment le régiolecte septentrional ou central se répartit sur ces deux zones géographiques ?",
+        "execution_time": 15.573,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 9,
+        "feedback": "La réponse utilisateur est très précise et mentionne correctement que la partition linguistique ne coïncide pas avec la partition géographique et historique. La bonne réponse devrait également expliquer pourquoi cette différence se produit, notamment en relation avec les zones où le régiolecte septentrional se trouve dans le Pumonte et où le régiolecte central se trouve dans le Cismonte.",
+        "execution_time": 20.582,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 1,
+        "feedback": "Votre réponse parle de Teghime et de sa vue sur les deux mers, ce qui est une belle image pour comprendre l'identité bastiaise. Cependant, cette question porte spécifiquement sur la différence entre la partition linguistique (la langue corse) et les divisions géographique ou historique comme le Cismonte/Pumonte. Il semble que vous ayez confondu un autre sujet avec celui-ci : comment se situe exactement la frontière des langues dans ces deux régions ?",
+        "execution_time": 21.009,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 3.5,
+        "individual_scores": [
+          7,
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.5,
+        "individual_scores": [
+          9,
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 9.0,
+        "individual_scores": [
+          9
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 1.0,
+        "individual_scores": [
+          1
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          9,
+          1
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 25.054
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "L’indépendance de la Corse",
+    "expected_score": 4,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse utilisateur est trop vague et ne mentionne pas explicitement le rôle historique du couvent d'Alisgiani dans la Révolution corse. La bonne réponse devrait expliquer que le couvent a été le lieu où la première constitution d'indépendance a été rédigée par la consulta d'Orezza en 1735.",
+        "execution_time": 17.234,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse touche juste le cœur du sujet : l'Alisgiani est bien un lieu lié à l'idée d'autonomie et d'indépendance. Cependant, pour répondre précisément au rôle historique joué par ce couvent durant la Révolution corse, il faut préciser qu'il s'est avéré être le site où fut rédigée la première constitution d'une Corse indépendante en 1735.",
+        "execution_time": 7.737,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse utilisateur est trop vague. La bonne réponse devrait mentionner explicitement le rôle historique du couvent d'Alisgiani dans la Révolution corse, notamment en ce qui concerne l'édition de la première constitution d'indépendance en 1735.",
+        "execution_time": 5.713,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse touche juste le cœur du sujet en évoquant l'indépendance, mais elle reste très générale. Pour répondre précisément à votre question sur le rôle historique spécifique d'Alisgiani, il faudrait mentionner qu'il s'est agi de la première constitution corse rédigée par les Consulta d'Orezza en 1735.",
+        "execution_time": 12.533,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que l'indépendance de la Corse a été un événement important, mais il faudrait préciser le rôle spécifique du couvent d'Alisgiani dans cette histoire pour renforcer la réponse. La bonne réponse devrait également expliquer pourquoi le couvent est considéré comme un symbole de liberté et de révolte pendant la Révolution corse.",
+        "execution_time": 13.208,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-850', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":2,\"feedback\":\"Votre réponse évoque le thème central du couvent, à savoir l\\'idée d\\'indépendance. Cependant, pour répondre précisément à votre question sur son rôle historique dans la Révolution corse, il faut être plus', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941292, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=159, prompt_tokens=12129, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-949', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":2,\"feedback\":\"Votre réponse évoque le thème central (l\\'indépendance), mais elle reste trop générale et ne donne aucun exemple concret demandé par l\\'énoncé. Pour répondre correctement, il faudrait citer que c\\'est au couvent', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941302, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=159, prompt_tokens=12129, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-780', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":2,\"feedback\":\"Votre réponse évoque le thème central du couvent d\\'Alisgiani, qui est indissociable de l\\'idée d\\'indépendance corse. Cependant, pour répondre précisément à la question sur son', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941305, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=159, prompt_tokens=12129, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 6,
+        "feedback": "La réponse utilisateur se concentre uniquement sur le fait que l'indépendance de la Corse est liée au couvent d'Alisgiani, mais ne mentionne pas explicitement son rôle historique dans la Révolution corse. La bonne réponse devrait expliquer comment le couvent a été utilisé comme symbole de liberté et de révolte pendant cette période.",
+        "execution_time": 9.898,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse évoque le thème central du couvent d'Alisgiani (l'indépendance), mais elle reste trop générale. Pour répondre précisément à votre question sur son rôle historique, il faudrait mentionner que c'est là qu'a été rédigée la première constitution corse en 1735 par la consulta d'Orezza.",
+        "execution_time": 24.08,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur mentionne que le couvent d'Alisgiani a joué un rôle dans la Révolution corse, mais ne précise pas comment il a contribué à l'indépendance de la Corse. La bonne réponse devrait expliquer que le couvent a été le lieu où la première constitution d'indépendance a été rédigée et qu'il a servi de symbole de liberté et de révolte pendant la Révolution corse.",
+        "execution_time": 21.595,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 2,
+        "feedback": "Votre réponse est très courte et ne donne pas les informations essentielles attendues. Le couvent d'Alisgiani a joué un rôle crucial car c'est là que le 18 janvier 1735, la Consulta d'Orezza a rédigé la première constitution pour l'indépendance de la Corse. Il est devenu ainsi un symbole majeur de liberté et de révolte corse.",
+        "execution_time": 20.654,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          2
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          2
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 6.0,
+        "individual_scores": [
+          6
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          6,
+          2
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 2.0,
+        "individual_scores": [
+          2
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.0,
+        "individual_scores": [
+          8,
+          2
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 27.992
+  },
+  {
+    "question_id": "129",
+    "question_text": "Quel rôle historique a joué le couvent d'Alisgiani dans la Révolution corse ?",
+    "human_answer": "C’est un symbole de liberté pendant la Révolution corse",
+    "expected_score": 6,
+    "individual_evaluations": [
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "La réponse utilisateur est trop vague. La bonne réponse devrait mentionner explicitement le rôle historique du couvent d'Alisgiani dans la Révolution corse, notamment en ce qui concerne l'édition de la première constitution d'indépendance en 1735.",
+        "execution_time": 10.797,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-253', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":8,\"feedback\":\"Votre réponse est pertinente : vous avez bien identifié que le couvent d', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941316, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=12222, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-82', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Votre réponse touche juste sur l\\'un des aspects importants : le couvent est', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941330, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=12222, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-25', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":6,\"feedback\":\"Votre réponse est pertinente car elle identifie bien l\\'Alisgiani', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941335, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=66, prompt_tokens=12222, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 1
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que le couvent d'Alisgiani a été un symbole de liberté pendant la Révolution corse, mais il faudrait préciser qu'il a également joué un rôle historique en tant que lieu où la première constitution d'indépendance a été rédigée. La bonne réponse devrait expliquer explicitement le lien entre les deux événements.",
+        "execution_time": 7.05,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Vous avez identifié une qualité importante du lieu : son statut de symbole de liberté. Cependant, pour répondre pleinement à votre question sur le rôle historique précis d'Alisgiani, il faudrait ajouter que c'est aussi l'événement fondateur lui-même qui s'y est produit : la rédaction de la première constitution corse par les Consulta d'Orezza en 1735.",
+        "execution_time": 8.446,
+        "num_reference_answers": 2
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 7,
+        "feedback": "La réponse utilisateur se concentre uniquement sur le fait que le couvent d'Alisgiani est un symbole de liberté pendant la Révolution corse, mais ne mentionne pas explicitement son rôle historique dans l'édition de la première constitution d'indépendance en 1735. La bonne réponse devrait expliquer comment le couvent a été utilisé comme symbole de liberté et de révolte pendant cette période.",
+        "execution_time": 15.138,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 4,
+        "feedback": "Vous avez correctement identifié le rôle symbolique du couvent d'Alisgiani comme lieu de liberté, ce qui est une première étape importante. Cependant, pour répondre pleinement à l'enjeu historique, il faudrait aussi préciser que c'est là qu'a été rédigée la première constitution corse en 1735 par les Consulta d'Orezza.",
+        "execution_time": 32.149,
+        "num_reference_answers": 3
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que le couvent d'Alisgiani a été un symbole de liberté pendant la Révolution corse, mais il faudrait préciser son rôle historique dans l'édition de la première constitution d'indépendance en 1735 pour renforcer la réponse. La bonne réponse devrait également expliquer pourquoi le couvent est considéré comme un symbole de liberté et de révolte pendant cette période.",
+        "execution_time": 20.093,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-80', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Vous avez parfaitement saisi le symbolisme du couvent d\\'Alisgiani comme lieu de liberté et de révolte. Cependant, pour répondre pleinement à l\\'événement historique précis qui s\\'y est déroulé en 1735, il serait utile de préciser qu\\'il a également été le', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941326, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=213, prompt_tokens=12075, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-155', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Vous avez bien saisi le caractère symbolique du lieu comme un emblème de la lutte pour l\\'indépendance. Cependant, il manque une information historique cruciale : c\\'est précisément ce rôle qui lui a valu d\\'accueillir en 1735 les Consulta d\\'Orezza et la rédaction de la', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941334, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=213, prompt_tokens=12075, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-5', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":4,\"feedback\":\"Vous avez parfaitement saisi le rôle symbolique du couvent d\\'Alisgiani comme lieu emblématique de la lutte pour l\\'autonomie et de la révolte. Cependant, votre réponse reste un peu générale : il serait enrichissant de préciser que ce symbole s\\'ancre concrètement dans l\\'évén', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941338, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=213, prompt_tokens=12075, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 4
+      },
+      {
+        "model": "llama3.2:3b",
+        "provider": "ollama",
+        "score": 8,
+        "feedback": "La réponse utilisateur est très proche de la bonne réponse. Elle mentionne correctement que le couvent d'Alisgiani a été un symbole de liberté pendant la Révolution corse, mais il faudrait préciser comment cela se produit pour renforcer la réponse. La bonne réponse devrait également expliquer pourquoi le couvent est considéré comme un symbole de liberté et de révolte.",
+        "execution_time": 24.123,
+        "num_reference_answers": 5
+      },
+      {
+        "model": "qwen3.5:4b",
+        "provider": "ollama",
+        "score": 0,
+        "feedback": "Erreur: <failed_attempts>\n\n<generation number=\"1\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-708', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":3,\"feedback\":\"Votre réponse touche juste le point symbolique du couvent d\\'Alisgiani : il est en effet perçu', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941329, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"2\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-43', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":3,\"feedback\":\"Votre réponse touche juste le point symbolique du lieu : l\\'Alisgiani est effectivement perçu comme un embl', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941334, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n<generation number=\"3\">\n<exception>\n    The output is incomplete due to a max_tokens length limit.\n</exception>\n<completion>\n    ChatCompletion(id='chatcmpl-699', choices=[Choice(finish_reason='length', index=0, logprobs=None, message=ChatCompletionMessage(content='{\"score\":3,\"feedback\":\"Votre réponse touche juste l\\'aspect symbolique du lieu : Alisgiani est effectivement perçu comme un emblème', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1789941339, model='qwen3.5:4b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage=CompletionUsage(completion_tokens=93, prompt_tokens=12195, total_tokens=12288, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n</completion>\n</generation>\n\n</failed_attempts>\n\n<last_exception>\n    The output is incomplete due to a max_tokens length limit.\n</last_exception>",
+        "execution_time": 0,
+        "num_reference_answers": 5
+      }
+    ],
+    "combination_results": [
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 2.0,
+        "individual_scores": [
+          4,
+          0
+        ],
+        "num_reference_answers": 1
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 6.0,
+        "individual_scores": [
+          8,
+          4
+        ],
+        "num_reference_answers": 2
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 7.0,
+        "individual_scores": [
+          7
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 4.0,
+        "individual_scores": [
+          4
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 5.5,
+        "individual_scores": [
+          7,
+          4
+        ],
+        "num_reference_answers": 3
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ],
+        "num_reference_answers": 4
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b"
+        ],
+        "size": 1,
+        "average_score": 8.0,
+        "individual_scores": [
+          8
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 1,
+        "average_score": 0.0,
+        "individual_scores": [
+          0
+        ],
+        "num_reference_answers": 5
+      },
+      {
+        "models": [
+          "ollama:llama3.2:3b",
+          "ollama:qwen3.5:4b"
+        ],
+        "size": 2,
+        "average_score": 4.0,
+        "individual_scores": [
+          8,
+          0
+        ],
+        "num_reference_answers": 5
+      }
+    ],
+    "total_execution_time": 34.597
+  }
+]
