@@ -66,7 +66,7 @@ from routers.auth import router as auth_router
 from routers.observations import router as observations_router
 from routers.sessions import router as sessions_router
 from routers.evaluations import router as evaluations_router
-from routers.questions_admin import router as questions_admin_router
+from routers.models import router as models_router
 
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
@@ -179,6 +179,7 @@ app.include_router(observations_router)
 app.include_router(sessions_router)
 app.include_router(evaluations_router)
 app.include_router(questions_admin_router)
+app.include_router(models_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés

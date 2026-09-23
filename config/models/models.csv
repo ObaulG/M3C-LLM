@@ -1,0 +1,32 @@
+model,provider,label
+ministral-3:3b,ollama,ministral-3b
+cas/ministral-8b-instruct-2410_q4km,ollama,ministral-8b-q4km
+mistral:7b,ollama,mistral-7b
+gemma4:e2b,ollama,gemma4-e2b
+llama3.2:1b,ollama,llama3.2-1b
+llama3.2:3b,ollama,llama3.2-3b
+qwen3.5:0.8b,ollama,qwen3.5-0.8b
+qwen3.5:2b,ollama,qwen3.5-2b
+qwen3.5:4b,ollama,qwen3.5-4b
+gouranshitera/bloom-1b1,ollama,bloom-1b1
+gouranshitera/bloomz-1b7,ollama,bloomz-1b7
+mistral-tiny,mistral,Mistral Tiny
+mistral-small,mistral,Mistral Small
+mistral-medium,mistral,Mistral Medium
+mistral-medium-latest,mistral,Mistral Medium (latest)
+mistral-large-2411,mistral,Mistral Large 2411
+mistral-large-2512,mistral,Mistral Large 2512
+ministral-3b-2410,mistral,MiniStral 3B 2410
+ministral-8b-2410,mistral,MiniStral 8B 2410
+ministral-3b-2512,mistral,MiniStral 3B 2512
+ministral-8b-2512,mistral,MiniStral 8B 2512
+ministral-14b-2512,mistral,MiniStral 14B 2512
+open-mistral-7b,mistral,Open Mistral 7B
+open-mistral-nemo,mistral,Open Mistral Nemo
+gemini-2.0-flash-lite,google,Gemini 2.0 Flash Lite
+gemini-2.5-flash-lite,google,Gemini 2.5 Flash Lite
+gemini-3.5-flash-lite,google,Gemini 3.5 Flash Lite
+gemma-3-1b-it,google,Gemma 3 1B IT
+gemma-3-4b-it,google,Gemma 3 4B IT
+gemma-3-12b-it,google,Gemma 3 12B IT
+gemma-3-27b-it,google,Gemma 3 27B IT
