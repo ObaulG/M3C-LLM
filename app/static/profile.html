@@ -352,6 +352,122 @@
             color: #666;
         }
 
+        .ki-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .ki-filter-chip {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            color: #495057;
+            border-radius: 16px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .ki-filter-chip.active {
+            background: #b74420;
+            border-color: #b74420;
+            color: white;
+            font-weight: 600;
+        }
+
+        .ki-search {
+            width: 100%;
+            max-width: 320px;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .knowledge-item-card .ki-summary {
+            color: #666;
+            font-style: italic;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .ki-progress {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0 4px;
+        }
+
+        .theme-item-count {
+            background: #b74420;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .ki-entities {
+            font-size: 12px;
+            color: #333;
+            margin-top: 6px;
+        }
+
+        .entity-tag {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #004085;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin: 2px 4px 2px 0;
+            font-size: 11px;
+            cursor: help;
+        }
+
+        .ki-sources {
+            margin-top: 8px;
+            border-top: 1px dashed #e0e0e0;
+            padding-top: 6px;
+        }
+
+        .ki-sources summary {
+            cursor: pointer;
+            color: #b74420;
+            font-size: 12px;
+        }
+
+        .ki-source-item {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .ki-source-excerpt {
+            font-style: italic;
+            color: #555;
+            border-left: 3px solid #b74420;
+            padding-left: 8px;
+            margin: 4px 0;
+        }
+
+        .ki-source-meta {
+            color: #666;
+            font-size: 11px;
+            display: flex;
+            gap: 10px;
+        }
+
         .profile-actions {
             display: flex;
             gap: 10px;
@@ -461,6 +577,58 @@
     function pct(part, total) {
         if (!total) return 0;
         return Math.round((part / total) * 1000) / 10;
+    }
+
+    function buildKiSearchIndex(ki, themeName) {
+        var parts = [themeName, ki.proposition, ki.summary || ''];
+        (ki.entities || []).forEach(function (e) {
+            parts.push(e.entity_name, e.entity_type);
+        });
+        return parts.filter(Boolean).join(' ').toLowerCase();
+    }
+
+    function applyKnowledgeFilters() {
+        var activeStatus = document.querySelector('.ki-filter-chip.active');
+        var status = activeStatus ? activeStatus.getAttribute('data-status') : 'all';
+        var term = (document.getElementById('kiSearch').value || '').trim().toLowerCase();
+        var visibleCount = 0;
+
+        document.querySelectorAll('.knowledge-item-card').forEach(function (card) {
+            var matchStatus = status === 'all' || card.getAttribute('data-status') === status;
+            var matchTerm = !term || (card.getAttribute('data-search') || '').indexOf(term) !== -1;
+            var visible = matchStatus && matchTerm;
+            card.style.display = visible ? '' : 'none';
+            card.setAttribute('data-visible', visible ? '1' : '0');
+            if (visible) visibleCount++;
+        });
+
+        document.querySelectorAll('.theme-group').forEach(function (group) {
+            var hasVisible = group.querySelector('.knowledge-item-card[data-visible="1"]') !== null;
+            group.style.display = hasVisible ? '' : 'none';
+        });
+
+        var badge = document.getElementById('knowledgeCountBadge');
+        if (badge) {
+            badge.textContent = visibleCount;
+        }
+        var noResult = document.getElementById('knowledgeNoResult');
+        if (noResult) {
+            noResult.style.display = visibleCount ? 'none' : 'block';
+        }
+    }
+
+    function bindKnowledgeFilters() {
+        document.querySelectorAll('.ki-filter-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                document.querySelectorAll('.ki-filter-chip').forEach(function (c) { c.classList.remove('active'); });
+                chip.classList.add('active');
+                applyKnowledgeFilters();
+            });
+        });
+        var search = document.getElementById('kiSearch');
+        if (search) {
+            search.addEventListener('input', applyKnowledgeFilters);
+        }
     }
 
     function root() {
@@ -601,23 +769,82 @@
         // ---- Éléments de connaissance par thème
         var knowledgeByTheme = data.knowledge_by_theme || {};
         var themeNames = Object.keys(knowledgeByTheme);
+        var allKnowledgeItems = [];
+        themeNames.forEach(function (themeName) {
+            (knowledgeByTheme[themeName].knowledge_items || []).forEach(function (ki) {
+                allKnowledgeItems.push({ theme: themeName, item: ki });
+            });
+        });
+
         html += '<div class="profile-section-header"><h2>💡 Éléments de Connaissance</h2>' +
-                '<span class="profile-count-badge">' + themeNames.length + '</span></div>';
-        if (themeNames.length) {
+                '<span class="profile-count-badge" id="knowledgeCountBadge">' + allKnowledgeItems.length + '</span></div>';
+
+        if (allKnowledgeItems.length) {
+            // ---- Filtres par statut
+            var statusCounts = {};
+            allKnowledgeItems.forEach(function (pair) {
+                var s = pair.item.status || 'unknown';
+                statusCounts[s] = (statusCounts[s] || 0) + 1;
+            });
+            html += '<div class="ki-filters">';
+            html += '<button type="button" class="ki-filter-chip active" data-status="all">Tous (' + allKnowledgeItems.length + ')</button>';
+            ['demonstrated', 'developing', 'encountered', 'unknown'].forEach(function (s) {
+                if (statusCounts[s]) {
+                    html += '<button type="button" class="ki-filter-chip" data-status="' + s + '">' +
+                            esc(STATUS_LABELS[s] || s) + ' (' + statusCounts[s] + ')</button>';
+                }
+            });
+            html += '</div>';
+            html += '<input type="search" class="ki-search" id="kiSearch" placeholder="Rechercher dans les éléments de connaissance…" aria-label="Rechercher dans les éléments de connaissance">';
+
             themeNames.forEach(function (themeName) {
                 var group = knowledgeByTheme[themeName];
-                html += '<div class="theme-group"><h3>' + esc(themeName) + '</h3>';
-                (group.knowledge_items || []).forEach(function (ki) {
-                    var statusKey = ki.status;
-                    html += '<div class="knowledge-item-card">' +
-                        '<div class="ki-proposition">' + esc(ki.proposition) + '</div>' +
-                        '<span class="status-badge status-' + esc(statusKey) + '">' + esc(STATUS_LABELS[statusKey] || statusKey) + '</span>' +
-                        '<div class="ki-meta"><span>Maîtrise : ' + formatScore(ki.score) + '</span>' +
-                        '<span>Confiance : ' + formatScore(ki.confidence) + '</span></div>' +
-                        '</div>';
+                var items = group.knowledge_items || [];
+                html += '<div class="theme-group" data-theme="' + esc(themeName) + '"><h3>' + esc(themeName) +
+                        '<span class="theme-item-count">' + items.length + ' élément' + (items.length > 1 ? 's' : '') + '</span></h3>';
+                items.forEach(function (ki) {
+                    var statusKey = ki.status || 'unknown';
+                    html += '<div class="knowledge-item-card" data-status="' + esc(statusKey) + '" ' +
+                            'data-search="' + esc(buildKiSearchIndex(ki, themeName)) + '">';
+                    html += '<div class="ki-proposition">' + esc(ki.proposition) + '</div>';
+                    if (ki.summary) {
+                        html += '<div class="ki-summary">' + esc(ki.summary) + '</div>';
+                    }
+                    html += '<span class="status-badge status-' + esc(statusKey) + '">' + esc(STATUS_LABELS[statusKey] || statusKey) + '</span>';
+                    html += '<div class="ki-progress"><div class="progress-fill ' + esc(statusKey) + '" style="width:' +
+                            formatScore(ki.score) + '"></div></div>';
+                    html += '<div class="ki-meta"><span>Maîtrise : ' + formatScore(ki.score) + '</span>' +
+                            '<span>Confiance : ' + formatScore(ki.confidence) + '</span>' +
+                            (ki.last_interaction_at ? '<span>Dernière interaction : ' + esc(formatDate(ki.last_interaction_at)) + '</span>' : '') +
+                            '</div>';
+                    if (ki.entities && ki.entities.length) {
+                        html += '<div class="ki-entities">Entités : ';
+                        ki.entities.forEach(function (e) {
+                            html += '<span class="entity-tag" title="' + esc(e.entity_type) + ' — pertinence ' + formatScore(e.relevance) + '">' +
+                                    esc(e.entity_name) + '</span>';
+                        });
+                        html += '</div>';
+                    }
+                    if (ki.sources && ki.sources.length) {
+                        html += '<div class="ki-sources"><details><summary>Sources (' + ki.sources.length + ')</summary>';
+                        ki.sources.forEach(function (src) {
+                            html += '<div class="ki-source-item">';
+                            if (src.excerpt) {
+                                html += '<blockquote class="ki-source-excerpt">' + esc(src.excerpt) + '</blockquote>';
+                            }
+                            html += '<div class="ki-source-meta">';
+                            if (src.page) {
+                                html += '<span>Page : ' + esc(src.page) + '</span>';
+                            }
+                            html += '<span>Confiance : ' + formatScore(src.confidence) + '</span></div></div>';
+                        });
+                        html += '</details></div>';
+                    }
+                    html += '</div>';
                 });
                 html += '</div>';
             });
+            html += '<div class="profile-empty" id="knowledgeNoResult" style="display:none;">Aucun élément de connaissance ne correspond à votre recherche.</div>';
         } else {
             html += '<div class="profile-empty">Aucun élément de connaissance pour le moment.</div>';
         }
@@ -629,6 +856,7 @@
                 '</div>';
 
         root().innerHTML = html;
+        bindKnowledgeFilters();
     }
 
     function load() {
