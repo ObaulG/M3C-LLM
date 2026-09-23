@@ -184,14 +184,7 @@
 
                     <div class="form-group">
                         <label for="modelSelect">3. Modèle LLM</label>
-                        <select id="modelSelect">
-                            <option value="mistral-medium">Mistral Medium (défaut)</option>
-                            <option value="mistral-small">Mistral Small</option>
-                            <option value="mistral-small-2603">Mistral Small Latest</option>
-                            <option value="mistral-large-latest">Mistral Large</option>
-                            <option value="ministral-8b-latest">MiniStral 8B</option>
-                            <option value="ministral-3b-2410">MiniStral 3B</option>
-                        </select>
+                        <select id="modelSelect"></select>
                         <div class="description">Modèle utilisé pour l'extraction des knowledge_items</div>
                     </div>
 
@@ -777,6 +770,12 @@
                 .replace(/'/g, '&#039;');
         }
     </script>
+<script src="../models.js"></script>
 <script src="../auth_widget.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModelsIntoSelect(document.getElementById("modelSelect"), { providers: ["mistral"], selected: "mistral-medium" });
+  });
+</script>
 </body>
 </html>

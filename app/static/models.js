@@ -52,6 +52,7 @@ function buildOptionGroups(models, providerOrder) {
   return order.map((provider) => {
     const group = document.createElement('optgroup');
     group.label = PROVIDER_LABELS[provider] || provider;
+    group.dataset.provider = provider;
     for (const m of byProvider.get(provider)) {
       const option = document.createElement('option');
       option.value = m.model;
@@ -67,8 +68,11 @@ function buildOptionGroups(models, providerOrder) {
  * @param {HTMLSelectElement} selectEl - élément <select> à remplir
  * @param {Object} [options]
  * @param {Array<string>} [options.providerOrder] - ordre des fournisseurs
+ * @param {Array<string>} [options.providers] - limite la liste à ces fournisseurs
  * @param {boolean} [options.keepFirst] - conserve la première option existante
  * @param {string|Array<string>} [options.selected] - modèle(s) présélectionné(s)
+ * @param {boolean} [options.prefixProvider] - préfixe la valeur par le fournisseur
+ *   ("mistral/mistral-small"), attendu par certaines routes /api/qa-single, /api/evaluate
  * @returns {Promise<Array<{model: string, provider: string, label: string}>>}
  */
 async function loadModelsIntoSelect(selectEl, options = {}) {
@@ -76,7 +80,10 @@ async function loadModelsIntoSelect(selectEl, options = {}) {
     throw new Error("Élément <select> de modèles introuvable");
   }
 
-  const models = await fetchModels();
+  let models = await fetchModels();
+  if (options.providers && options.providers.length) {
+    models = models.filter((m) => options.providers.includes(m.provider));
+  }
   const firstOption = selectEl.options[0];
   const keepFirst = options.keepFirst && firstOption && firstOption.value === '';
 
@@ -86,6 +93,11 @@ async function loadModelsIntoSelect(selectEl, options = {}) {
   }
 
   for (const group of buildOptionGroups(models, options.providerOrder)) {
+    if (options.prefixProvider) {
+      for (const option of group.options) {
+        option.value = group.dataset.provider + '/' + option.value;
+      }
+    }
     selectEl.appendChild(group);
   }
 

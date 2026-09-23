@@ -4,6 +4,7 @@
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}models.js"></script>
 <script src="{{ static_prefix }}m3c-chatbot.js"></script>
 {% endblock %}
 
@@ -58,31 +59,7 @@
             <div class="model-selector">
                 <label for="model-select" class="model-selector-label">Modèle de langage</label>
                 <div class="model-select-container">
-                    <select id="model-select" name="models" multiple class="model-select">
-                    <optgroup label="Local">
-                        <option value="ministral-3:3b">ministral-3b</option>
-                    </optgroup>
-                    <optgroup label="Mistral">
-                        <option value="ministral-3b-2410">ministral-3b-2410</option>
-                        <option value="ministral-8b-2410">ministral-8b-2410</option>
-                        <option value="open-mistral-7b">open-mistral-7b</option>
-                        <option value="open-mistral-nemo">open-mistral-nemo</option>
-                        <option value="mistral-tiny">mistral-tiny</option>
-                        <option value="mistral-small">mistral-small</option>
-                        <option value="mistral-medium">mistral-medium</option>
-                        <option value="mistral-large-2411">mistral-large-2411</option>
-                    </optgroup>
-                    <optgroup label="Gemini">
-                        <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
-                        <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
-                    </optgroup>
-                    <optgroup label="Gemma">
-                        <option value="gemma-3-1b-it">gemma-3-1b-it</option>
-                        <option value="gemma-3-4b-it">gemma-3-4b-it</option>
-                        <option value="gemma-3-12b-it">gemma-3-12b-it</option>
-                        <option value="gemma-3-27b-it">gemma-3-27b-it</option>
-                    </optgroup>
-                    </select>
+                    <select id="model-select" name="models" multiple class="model-select"></select>
                     <div class="selected-models" id="selectedModels">
                         <span class="selected-model-badge">Aucun modèle sélectionné</span>
                     </div>
@@ -111,4 +88,12 @@
         <iframe></iframe>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModelsIntoSelect(document.getElementById("model-select"));
+  });
+</script>
 {% endblock %}
