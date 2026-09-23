@@ -127,6 +127,7 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
         "knowledge_by_theme": profile_data.knowledge_by_theme,
         "observation_type_stats": profile_data.observation_type_stats,
         "recent_observations": profile_data.recent_observations,
+        "skills": profile_data.skills,
         "static_prefix": static_prefix,
         "page": "profile.j2",
         "page_title": f"Profil de {user_id} - M3C",

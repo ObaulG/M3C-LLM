@@ -598,6 +598,31 @@
                     'Naviguez sur le portail, consultez des ressources et répondez à des évaluations pour générer des observations.</div>';
         }
 
+        // ---- Compétences (observations de compétence)
+        var skills = data.skills || [];
+        html += '<div class="profile-section-header"><h2>🛠️ Compétences</h2>' +
+                '<span class="profile-count-badge">' + skills.length + '</span></div>';
+        html += '<p style="color:#666;font-size:14px;">Vos interactions avec le portail alimentent un suivi de vos compétences : ';
+        if (skills.length) {
+            html += 'voici celles déjà observées.</p>';
+            html += '<div class="knowledge-stats-row">';
+            skills.forEach(function (sk) {
+                html += '<div class="knowledge-stat-item">' +
+                    '<div class="stat-header"><span class="stat-name">' + esc(sk.name) + '</span>' +
+                    '<span class="stat-pct">' + formatScore(sk.score) + '</span></div>' +
+                    '<div class="progress-container"><div class="progress-fill demonstrated" style="width:' +
+                    formatScore(sk.score) + '"></div></div>' +
+                    '<span class="stat-count">Confiance : ' + formatScore(sk.confidence) + '</span></div>';
+            });
+            html += '</div>';
+        } else {
+            html += 'aucune compétence n\'a encore été observée.<br>' +
+                    'Cette section se remplira au fil de vos visites, lectures et évaluations.</p>';
+            html += '<div class="profile-empty">Aucune observation de compétence pour le moment.<br>' +
+                    'Le portail construit progressivement un suivi de vos compétences à partir de vos interactions ' +
+                    '(consultations de ressources, réponses aux évaluations, questions posées). Revenez ici pour suivre votre progression.</div>';
+        }
+
         // ---- Éléments de connaissance par thème
         var knowledgeByTheme = data.knowledge_by_theme || {};
         var themeNames = Object.keys(knowledgeByTheme);

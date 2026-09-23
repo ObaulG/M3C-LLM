@@ -714,6 +714,51 @@
             </section>
 
             {# ================================================================
+               COMPÉTENCES
+               ================================================================ #}
+            <section class="section">
+                <div class="section-header">
+                    <span class="icon">🛠️</span>
+                    <h2>Compétences</h2>
+                    <span class="count">{{ skills|length }}</span>
+                </div>
+
+                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                    Vos interactions avec le portail alimentent un suivi de vos compétences :
+                    {% if skills %}voici celles déjà observées.{% else %}aucune compétence n'a encore été observée.{% endif %}
+                </p>
+
+                {% if skills %}
+                <div class="knowledge-stats-row">
+                    {% for skill in skills %}
+                    <div class="knowledge-stat-item">
+                        <div class="stat-header">
+                            <span class="stat-name">{{ skill.name }}</span>
+                            <span class="stat-pct">{{ format_score(skill.score) }}</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-fill demonstrated"
+                                 style="width: {{ ((skill.score or 0) * 100)|round(1) }}%"
+                                 title="{{ skill.name }}"></div>
+                        </div>
+                        <span class="stat-count">Confiance : {{ format_score(skill.confidence) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i>🛠️</i>
+                    <p>Aucune observation de compétence pour le moment.</p>
+                    <p style="font-size: 14px; margin-top: 10px; color: #888;">
+                        Le portail construit progressivement un suivi de vos compétences à partir de vos interactions
+                        (consultations de ressources, réponses aux évaluations, questions posées).
+                        Revenez ici pour suivre votre progression.
+                    </p>
+                </div>
+                {% endif %}
+            </section>
+
+            {# ================================================================
                RESSOURCES CONSULTÉES
                ================================================================ #}
             <section class="section">

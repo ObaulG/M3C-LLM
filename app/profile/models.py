@@ -182,6 +182,14 @@ class UserProfile(BaseModel):
     created_at: Optional[datetime] = Field(default=None, description="Date de création")
 
 
+class SkillObservation(BaseModel):
+    """Compétence observée chez l'utilisateur."""
+
+    name: str = Field(..., description="Nom de la compétence")
+    score: float = Field(default=0.0, description="Niveau estimé de la compétence (0-1)")
+    confidence: float = Field(default=0.5, description="Confiance dans cette estimation (0-1)")
+
+
 # ============================================================================
 # Modèle de réponse complet
 # ============================================================================
@@ -204,6 +212,10 @@ class UserProfileResponse(BaseModel):
     recent_observations: List[ObservationRecord] = Field(
         default_factory=list,
         description="Observations les plus récentes de l'utilisateur"
+    )
+    skills: List[SkillObservation] = Field(
+        default_factory=list,
+        description="Compétences observées chez l'utilisateur (fonctionnalité en cours de déploiement)"
     )
 
 

@@ -37,6 +37,7 @@ app/templates/
 - **Thèmes explorés** : Cartes avec statistiques par thème (poids d'intérêt, confiance, nombre d'observations, connaissances associées)
 - **Éléments de connaissance** : Liste complète des connaissances groupées par thème, avec statut et score
 - **Observations** : État des observations conformément au modèle `modele-utilisateur-connaissances-observations.md` — compteurs par famille (déclarative, comportementale, évaluative) et historique des observations récentes avec type spécifique, cibles (connaissances, thèmes, entités), contexte et confiance
+- **Compétences** : Section toujours visible sur le profil (page Jinja et page statique) ; elle annonce le suivi des compétences même si aucune observation de compétence n'existe encore, et affichera les compétences observées (nom, niveau estimé, confiance) dès que la donnée sera disponible via le champ `skills` de l'API
 - **Export CSV** : Option pour exporter toutes les données du profil (inclut les observations)
 
 ### Endpoints API
