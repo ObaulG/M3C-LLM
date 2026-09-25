@@ -2272,3 +2272,83 @@ async def complete_document_reading_observation(
         print(f"Erreur compl\u00e8tement observation lecture session {reading_session_id}: {e}")
         await conn.rollback()
         return False
+
+
+async def record_answer_evaluation_observation(
+    conn,
+    user_id: Optional[int],
+    anonymous_id: Optional[str],
+    session_id: str,
+    document_id: int,
+    question_id: int,
+    question_text: str,
+    user_answer: str,
+    message_type: str,
+    score: Optional[int] = None,
+    feedback: Optional[str] = None,
+    evaluator_models: Optional[list] = None,
+    individual_evaluations: Optional[list] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Crée l'observation évaluative correspondant à la réponse d'un utilisateur
+    à une question posée par le système (table observations du schéma
+    user_knowledge_model.sql).
+
+    L'utilisateur observé est identifié par son user_id (int, table users) s'il
+    est connecté, sinon par son identifiant anonyme persistant.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: user_id (int) de l'utilisateur connecté, sinon None.
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté.
+        session_id: Identifiant de la session de questions/réponses.
+        document_id: Identifiant du document sur lequel porte la session.
+        question_id: Identifiant de la question posée.
+        question_text: Texte de la question posée.
+        user_answer: Réponse envoyée par l'utilisateur.
+        message_type: Type de message calculé (reponse, demande_renseignement,
+                      hors_sujet, autre).
+        score: Note finale attribuée à la réponse (si évaluée).
+        feedback: Commentaire final retourné à l'utilisateur (si évalué).
+        evaluator_models: Liste des modèles évaluateurs utilisés.
+        individual_evaluations: Évaluations individuelles des évaluateurs.
+        metadata: Métadonnées supplémentaires (page d'origine, etc.).
+
+    Returns:
+        L'ID de l'observation créée, ou None en cas d'erreur.
+    """
+    obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
+    context = {
+        "page": "m3c-chatbot.html",
+        "session_id": session_id,
+        "document_id": document_id,
+        "question_id": question_id,
+    }
+    if metadata:
+        context.update(metadata)
+    payload = {
+        "event": "answer_evaluation",
+        "session_id": session_id,
+        "document_id": document_id,
+        "question_id": question_id,
+        "question_text": question_text,
+        "user_answer": user_answer,
+        "message_type": message_type,
+        "score": score,
+        "feedback": feedback,
+        "evaluator_models": evaluator_models,
+        "individual_evaluations": individual_evaluations,
+    }
+    result = await create_manual_observation(
+        conn,
+        user_id=obs_user_id,
+        observation_type="evaluative",
+        specific_type="answer_evaluation",
+        context=context,
+        confidence=1.0,
+        is_raw=True,
+        payload=payload,
+        targets=None,
+    )
+    return result["observation_id"] if result else None

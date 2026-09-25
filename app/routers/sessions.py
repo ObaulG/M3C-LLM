@@ -40,7 +40,9 @@ from database.database import (
     get_question_by_id,
     get_chunks_by_question_ids,
     insert_session,
+    record_answer_evaluation_observation,
 )
+import auth
 
 router = APIRouter(prefix="/api/sessions", tags=["Sessions"])
 
@@ -57,6 +59,7 @@ rag_session_manager = RAGSessionManager()
 class QuestionSessionMessage(BaseModel):
     session_id: str
     user_message: str
+    anonymous_id: Optional[str] = None
 
 
 class QuestionSessionResponse(BaseModel):
@@ -294,6 +297,39 @@ async def submit_question_session_message(request: QuestionSessionMessage,
     print(question_session_manager.get_session(session_id))
     # Log la réponse dans le CSV pour évaluation humaine
     log_response_to_csv(session_id, user_response)
+    # Recenser l'observation d'évaluation dans le profil utilisateur (observations),
+    # uniquement si la réponse à la question posée par le système a été évaluée
+    evaluation = user_response.evaluation
+    if evaluation is not None:
+        try:
+            individual_evaluations = [
+                ev.model_dump(mode="json") for ev in (user_response.individual_evaluations or [])
+            ]
+            conn = await get_db_connection()
+            try:
+                await record_answer_evaluation_observation(
+                    conn,
+                    user_id=auth.user_id_from_token(http_request.cookies.get("m3c_api_key")),
+                    anonymous_id=request.anonymous_id,
+                    session_id=session_id,
+                    document_id=session["document_id"],
+                    question_id=current_question_id,
+                    question_text=question["content"],
+                    user_answer=user_message,
+                    message_type=message_type,
+                    score=evaluation.score,
+                    feedback=evaluation.feedback,
+                    evaluator_models=[m[0] for m in models_evaluator],
+                    individual_evaluations=individual_evaluations,
+                    metadata={
+                        "page": "m3c-chatbot.html",
+                        "origin": "question_session",
+                    },
+                )
+            finally:
+                await conn.close()
+        except Exception as e:
+            logging.error(f"Erreur lors de l'enregistrement de l'observation d'évaluation : {e}")
     # Sauvegarder dans la base SQL
     session_response = QuestionSessionResponse(
         session_status=question_session_manager.get_session_status(session_id),
