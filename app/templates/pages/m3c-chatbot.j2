@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Chatbot RAG v3 - Interface de test{% endblock %}
+{% block title %}Chatbot RAG - M3C{% endblock %}
 
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -15,8 +15,7 @@
             title='Chatbot RAG M3C',
             subtitle='Système de Questions/Réponses sur documents',
             title_icon='🤖',
-            page='m3c-chatbot.html',
-            page_dir='root',
+            page='/m3c-chatbot',
             show_admin=false
         ) }}
 
@@ -91,9 +90,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
-  });
-</script>
+<script src="{{ static_prefix }}js/m3c-chatbot_page.js"></script>
 {% endblock %}

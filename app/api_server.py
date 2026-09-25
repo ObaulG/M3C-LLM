@@ -69,6 +69,7 @@ from routers.observations_admin import router as observations_admin_router
 from routers.sessions import router as sessions_router
 from routers.evaluations import router as evaluations_router
 from routers.models import router as models_router
+from routers.pages import router as pages_router
 
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
@@ -166,8 +167,7 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan
 )
-app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
-app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="admin")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(viz_router, prefix="/api/viz", tags=["viz"])
 app.include_router(indexing_router)
 app.include_router(embedders_router)
@@ -184,6 +184,7 @@ app.include_router(sessions_router)
 app.include_router(evaluations_router)
 app.include_router(question_answer_router)
 app.include_router(models_router)
+app.include_router(pages_router)
 
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
@@ -245,9 +246,9 @@ async def initialize_database(app: FastAPI):
         await conn.commit()
     print("Tables vérifiées")
 # === ENDPOINTS ===
-@app.get("/", tags=["Root"])
+@app.get("/api/root", tags=["Root"])
 async def root():
-    """Endpoint racine - Redirige vers la documentation"""
+    """Endpoint racine de l'API"""
     return {
         "message": "API Chatbot RAG v0.1 - M3C",
         "documentation": "/docs",

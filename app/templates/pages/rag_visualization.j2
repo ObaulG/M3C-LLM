@@ -1,36 +1,13 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG Visualization - t-SNE & UMAP Projection</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="rag_visualization.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}RAG Visualization - t-SNE & UMAP{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+{% block body %}
+
     <div class="container">
         <header>
-            <h1>RAG Embeddings Visualization</h1>
-            <p>Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE ou UMAP</p>
-            <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
-    </div>
+    {{ header(title='RAG Embeddings Visualization', subtitle='Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE ou UMAP', page='/rag-visualization', show_admin=false) }}
 </header>
 
         <main>
@@ -154,7 +131,8 @@
         </footer>
     </div>
 
-    <script src="rag_visualization.js"></script>
-<script src="auth_widget.js"></script>
-</body>
-</html>
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}rag_visualization.js"></script>
+{% endblock %}

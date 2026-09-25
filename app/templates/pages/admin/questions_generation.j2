@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Administration - Génération de Questions{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/admin_questions_generation.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Administration</h3>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="label">Documents validés</div>
+                    <div class="value" id="validDocsCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Jobs totaux</div>
+                    <div class="value" id="totalJobsCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Dernier job</div>
+                    <div class="value" id="lastJobStatus">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {{ header_centered(title='📝 Administration - Génération de Questions', subtitle='Générez des questions à partir des documents validés (VALID_TEXT_RESOURCE_ID)', page='/admin/questions-generation', show_admin=true) }}
+
+            <div class="admin-content">
+                <h2 class="section-title">Génération de Questions sur Documents Validés</h2>
+                
+                <div class="valid-documents-info">
+                    <h4>📋 Documents Validés (VALID_TEXT_RESOURCE_ID)</h4>
+                    <div class="valid-documents-list" id="validDocumentsList">
+                        Chargement...
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Paramètres de Génération</h3>
+                    
+                    <div class="form-group">
+                        <label for="numQuestions">Nombre de questions par document</label>
+                        <input type="number" id="numQuestions" value="3" min="1" max="10" placeholder="Nombre de questions">
+                        <div class="description">Nombre de questions Q/R à générer pour chaque document validé</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
+                        <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
+                        <div class="description">Nombre de réponses à générer pour chaque question</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modelSelect">Modèle LLM</label>
+                        <select id="modelSelect"></select>
+                        <div class="description">Modèle à utiliser pour la génération des questions</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="documentSelect">Document spécifique (optionnel)</label>
+                        <select id="documentSelect">
+                            <option value="">Tous les documents validés</option>
+                        </select>
+                        <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chunkSelect">Chunk spécifique (optionnel)</label>
+                        <select id="chunkSelect" disabled>
+                            <option value="">Sélectionnez un document d'abord</option>
+                        </select>
+                        <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contenu du chunk sélectionné</label>
+                        <div id="chunkContentDisplay" class="chunk-content-display">
+                            Sélectionnez un chunk pour afficher son contenu...
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3 class="section-title">Questions Existantes pour ce Chunk</h3>
+                        <div id="existingQuestionsContainer">
+                            <p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="startQuestionGeneration()" id="generateBtn">
+                        ✨ Générer des Questions
+                    </button>
+                    <button class="btn" onclick="refreshJobs()" id="refreshBtn" style="margin-left: 10px;">
+                        🔄 Rafraîchir
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Questions Générées (En Attente de Validation)</h3>
+                    <div id="generatedQuestionsContainer">
+                        <p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>
+                    </div>
+                    <button class="btn" onclick="validateAllQuestions()" id="validateAllBtn" style="margin-top: 10px; display: none;">
+                        ✅ Valider Toutes les Questions
+                    </button>
+                    <button class="btn" onclick="exportActionsLogToCSV()" id="exportLogBtn" style="margin-top: 10px; display: none;">
+                        📥 Exporter le Journal CSV
+                    </button>
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Génération en cours, veuillez patienter...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Historique des Jobs</h3>
+                    <div id="jobsContainer">
+                        <p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}js/admin_questions_generation.js"></script>
+{% endblock %}

@@ -1,235 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLMAgents - Tutoriels</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="rag_visualization.css">
-    <script src="https://cdn.plot.ly/plotly-3.7.0.min.js" charset="utf-8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Style CSS pour la zone de texte -->
-    <style>
-      .prompt-container {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
+{% extends "base.html" %}
+{% block title %}LLMAgents - Tutoriels{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/tutorials.css" />
+{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}rag_tutorial.js"></script>
+{% endblock %}
+{% block body %}
 
-      .prompt-input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-family: inherit;
-        font-size: 16px;
-        resize: vertical;
-      }
-
-      .submit-button {
-        padding: 10px 15px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        align-self: flex-start;
-      }
-
-      .submit-button:hover {
-        background-color: #0056b3;
-      }
-
-      /* Style des tooltips */
-  .tooltip {
-    display: inline-block;
-    cursor: help;
-    position: relative;
-    color: #007BFF;
-    font-weight: bold;
-    margin-left: 5px;
-  }
-
-  .tooltip .tooltiptext {
-    visibility: hidden;
-    width: 250px;
-    background-color: #555;
-    color: #fff;
-    text-align: left;
-    border-radius: 6px;
-    padding: 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  /* Style des paramètres */
-  .settings {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-  }
-
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-
-  .setting-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .setting-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-
-  .setting-label {
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-  }
-
-  .setting-input {
-    width: 60px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  /* Style du sélecteur de modèle */
-  .model-selector {
-    margin-top: 15px;
-  }
-
-  .model-select {
-    width: 100%;
-    height: 120px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-  }
-
-  .selected-models {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .selected-model-badge {
-    background-color: #e0e0e0;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-  }
-
-  /* Style du bouton et de la zone de texte */
-  .prompt-container {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .prompt-input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: inherit;
-    font-size: 16px;
-    resize: vertical;
-  }
-
-  .submit-button {
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    align-self: flex-start;
-  }
-
-  .submit-button:hover {
-    background-color: #0056b3;
-  }
-
-  .loading-spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top-color: #007BFF;
-    animation: spin 1s ease-in-out infinite;
-    display: inline-block;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-    </style>
-    <script src="chatFunctions.js"></script>
-    <script src="models.js"></script>
-<script src="rag_tutorial.js"></script>
-</head>
-<body>
 <div class="main_container">
   <div class="container">
       <!-- Header -->
-      <div class="header">
-          <div class="header-main">
-              <h1>🏠 LLMAgents - Tutoriels</h1>
-          </div>
-          <div class="nav-links">
-              <a href="index.html" class="nav-link">Index</a>
-              <a href="tutorials.html" class="nav-link active">Explications</a>
-              <a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
-              <a href="question_session.html" class="nav-link">Chatbot Inversé</a>
-              <a href="rag_visualization.html" class="nav-link">Visualisation RAG</a>
-              <a href="questions_management.html" class="nav-link">Gestion Q/R</a>
-          </div>
-          <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
-    </div>
-</div>
+      {{ header(title='LLMAgents - Tutoriels', title_icon='🏡', page='/tutorials', show_admin=false) }}
 
       <div class="section" id="accueil">
         <h2 class="section-title">📚 Le fondement des IA génératives</h2>
@@ -672,11 +457,8 @@
     </div>
 </div>
 </div>
-<script src="auth_widget.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
-  });
-</script>
-</body>
-</html>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}js/tutorials_page.js"></script>
+{% endblock %}

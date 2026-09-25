@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Test message_evaluator_agent - M3C{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/admin_message_evaluator_admin.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Administration</h3>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="label">Sessions évaluées</div>
+                    <div class="value" id="evaluatedSessionsCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Réponses testées</div>
+                    <div class="value" id="testedAnswersCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Fichier CSV</div>
+                    <div class="value" id="csvStatus">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {{ header_centered(title='🎯 Test message_evaluator_agent', subtitle="Évaluez la précision de l'agent message_evaluator_agent sur des sessions de questions/réponses", page='/admin/message-evaluator', show_admin=true) }}
+
+            <div class="admin-content">
+                <h2 class="section-title">Test de l'agent message_evaluator_agent</h2>
+
+                <div class="form-section">
+                    <h3>Sélection de session</h3>
+                    
+                    <div class="document-selector">
+                        <div class="form-group">
+                            <label for="documentSelect">Document (depuis PREMADE_QUESTIONS_BY_DOCUMENT_ID)</label>
+                            <select id="documentSelect" onchange="updateSessionInfo()">
+                                <option value="">-- Sélectionnez un document --</option>
+                            </select>
+                            <div class="description">Sélectionnez un document pour charger une session de questions prédéfinies</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sessionIdInput">Ou entrez un Session ID existant</label>
+                            <input type="text" id="sessionIdInput" placeholder="ID de la session">
+                            <div class="description">Entrez l'ID d'une session existante pour charger ses questions/réponses</div>
+                        </div>
+
+                        <button class="btn" onclick="loadSession()" id="loadSessionBtn">
+                            🔍 Charger la session
+                        </button>
+                    </div>
+                </div>
+
+                <div class="session-info" id="sessionInfo" style="display: none;">
+                    <h3>ℹ️ Informations de la session</h3>
+                    <div class="session-info-item">
+                        <span class="session-info-label">Document ID:</span>
+                        <span id="sessionDocumentId">-</span>
+                    </div>
+                    <div class="session-info-item">
+                        <span class="session-info-label">Session ID:</span>
+                        <span id="sessionIdDisplay">-</span>
+                    </div>
+                    <div class="session-info-item">
+                        <span class="session-info-label">Nombre de questions:</span>
+                        <span id="sessionQuestionCount">-</span>
+                    </div>
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Chargement de la session en cours...</p>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Questions et évaluations</h3>
+                    <div id="questionsContainer">
+                        <p style="text-align: center; color: #666; padding: 40px;">
+                            Sélectionnez un document ou entrez un Session ID pour commencer.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="csv-download" id="csvDownload" style="display: none;">
+                    <p>✅ Résultats sauvegardés dans: <a href="" id="csvFileLink">message_evaluator_results.csv</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}admin/message_evaluator_admin.js"></script>
+{% endblock %}

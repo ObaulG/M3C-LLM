@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Administration - Génération de Knowledge Items{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/admin_knowledge_items_generation.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Administration</h3>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="label">Documents validés</div>
+                    <div class="value" id="validDocsCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Knowledge items en base</div>
+                    <div class="value" id="knowledgeItemsCount">-</div>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="loadInitialData()">🔄 Rafraîchir</button>
+        </div>
+
+        <div class="content-area">
+            {{ header_centered(title='🧠 Administration - Génération de Knowledge Items', subtitle="Générez des knowledge_items (propositions vérifiables) à partir d'un document et d'un chunk précis, via un appel LLM", page='/admin/knowledge-items-generation', show_admin=true) }}
+
+            <div class="admin-content">
+                <h2 class="section-title">Génération de Knowledge Items</h2>
+
+                <div class="valid-documents-info">
+                    <h4>📋 Documents validés (VALID_TEXT_RESOURCE_ID)</h4>
+                    <div class="valid-documents-list" id="validDocumentsList">Chargement...</div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Sélection du document et du chunk</h3>
+
+                    <div class="form-group">
+                        <label for="documentSelect">1. Sélectionnez un document</label>
+                        <select id="documentSelect">
+                            <option value="">-- Sélectionnez un document --</option>
+                        </select>
+                        <div class="description">Document source parmi les documents validés (text_documents.id)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chunkSelect">2. Sélectionnez un chunk</label>
+                        <select id="chunkSelect" disabled>
+                            <option value="">Sélectionnez un document d'abord</option>
+                        </select>
+                        <div class="description">Chunk précis du document (text_chunks.id)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contenu du chunk sélectionné</label>
+                        <div id="chunkContentDisplay" class="chunk-content-display">
+                            Sélectionnez un document puis un chunk pour afficher son contenu...
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Questions et réponses associées au chunk</label>
+                        <div id="chunkQuestionsContainer">
+                            <p style="color:#888; font-size:13px;">Sélectionnez un chunk pour afficher les questions/réponses associées...</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modelSelect">3. Modèle LLM</label>
+                        <select id="modelSelect"></select>
+                        <div class="description">Modèle utilisé pour l'extraction des knowledge_items</div>
+                    </div>
+
+                    <div class="actions-bar">
+                        <button class="btn" onclick="generateKnowledgeItems()" id="generateBtn">
+                            ✨ Générer depuis le chunk
+                        </button>
+                        <button class="btn btn-secondary" onclick="generateKnowledgeItemsFromQuestions()" id="generateFromQuestionsBtn">
+                            ✨ Générer depuis les questions
+                        </button>
+                    </div>
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Génération en cours via le LLM, veuillez patienter...</p>
+                </div>
+
+                <div class="results-section" id="resultsSection" style="display:none;">
+                    <h3 class="section-title">
+                        Knowledge Items générés
+                        <span style="font-size:14px; color:#666; font-weight:normal;" id="generationMeta"></span>
+                    </h3>
+                    <div id="alertContainer"></div>
+                    <div class="compare-grid">
+                        <div class="compare-column">
+                            <h4>
+                                <span>À partir du chunk</span>
+                                <span class="col-meta" id="chunkColMeta"></span>
+                            </h4>
+                            <div class="col-actions">
+                                <button class="btn" onclick="saveAllKnowledgeItems('chunk')" id="saveBtn">
+                                    💾 Sauvegarder
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearGeneratedItems('chunk')" id="clearBtn">
+                                    ✖ Effacer
+                                </button>
+                            </div>
+                            <div id="knowledgeItemsContainer"></div>
+                        </div>
+                        <div class="compare-column">
+                            <h4>
+                                <span>À partir des questions/réponses</span>
+                                <span class="col-meta" id="questionsColMeta"></span>
+                            </h4>
+                            <div class="col-actions">
+                                <button class="btn" onclick="saveAllKnowledgeItems('questions')" id="saveFromQuestionsBtn" disabled>
+                                    💾 Sauvegarder
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearGeneratedItems('questions')" id="clearFromQuestionsBtn" disabled>
+                                    ✖ Effacer
+                                </button>
+                            </div>
+                            <div id="knowledgeItemsFromQuestionsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Knowledge Items déjà en base</h3>
+                    <div id="savedItemsContainer">
+                        <p style="text-align: center; color: #666; padding: 20px;">Chargement...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}js/admin_knowledge_items_generation.js"></script>
+{% endblock %}

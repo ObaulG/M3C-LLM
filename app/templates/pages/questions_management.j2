@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Questions/Réponses{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/questions_management.css" />
+{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Documents</h3>
+            <div class="document-selector">
+                <div class="loading" id="loadingDocuments">
+                    <div class="spinner"></div>
+                    <p>Chargement des documents...</p>
+                </div>
+                <ul class="document-list" id="documentList">
+                    <!-- Les documents seront chargés dynamiquement -->
+                </ul>
+            </div>
+            
+            <div class="filters-section">
+                <h4>Filtres</h4>
+                
+                <div class="filter-group">
+                    <label for="statusFilter">Statut</label>
+                    <select id="statusFilter">
+                        <option value="">Tous</option>
+                        <option value="generated">Généré</option>
+                        <option value="validated">Validé</option>
+                        <option value="pending">En attente</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="difficultyFilter">Difficulté</label>
+                    <select id="difficultyFilter">
+                        <option value="">Toutes</option>
+                        <option value="1">1 - Très facile</option>
+                        <option value="2">2 - Facile</option>
+                        <option value="3">3 - Moyenne</option>
+                        <option value="4">4 - Difficile</option>
+                        <option value="5">5 - Très difficile</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="limitFilter">Nombre de résultats</label>
+                    <input type="number" id="limitFilter" min="1" max="100" placeholder="Toutes">
+                </div>
+
+                <div class="filter-group">
+                    <label for="chunkFilter">Numéro de chunk</label>
+                    <input type="text" id="chunkFilter" placeholder="Ex: 1, 2, 123">
+                </div>
+
+                <div class="filter-group">
+                    <label for="modelFilter">Modèle LLM pour l'évaluation</label>
+                    <select id="modelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
+                </div>
+
+                <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
+                <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 10px;">Réinitialiser</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {{ header_centered(title='📝 Gestion des Questions/Réponses', page='/questions-management', show_admin=false) }}
+
+            <div class="questions-container">
+                <div class="loading" id="loadingQuestions">
+                    <div class="spinner"></div>
+                    <p>Chargement des questions...</p>
+                </div>
+                
+                <div id="questionsContent">
+                    <!-- Les questions seront affichées ici -->
+                    <div class="empty-state" id="emptyState">
+                        <h3>Aucun document sélectionné</h3>
+                        <p>Sélectionnez un document dans la barre latérale pour afficher ses questions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}questions_management.js"></script>
+<script src="{{ static_prefix }}js/questions_management_page.js"></script>
+{% endblock %}

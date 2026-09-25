@@ -288,7 +288,7 @@ async function endSession(reason){
 
     // Proposer de revoir les réponses
     const sessionId = sessionResponse.session_status.session_id;
-    const reviewUrl = `questions_management.html?session_id=${sessionId}`;
+    const reviewUrl = `/questions-management?session_id=${sessionId}`;
 
     const questionnaireUrl = "https://paulpg.limesurvey.net/234267?lang=fr&newtest=Y";
     const response = confirm("Souhaitez-vous accéder au questionnaire maintenant ?");

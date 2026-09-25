@@ -1,50 +1,16 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot RAG v3 - Interface de test</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="style.css" />
+{% extends "base.html" %}
+{% block title %}Historique - Chatbot RAG{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}m3c-chatbot.js"></script>
+{% endblock %}
+{% block body %}
 
-    <script src="chatFunctions.js"></script>
-    <script src="models.js"></script>
-<script src="m3c-chatbot.js"></script>
-</head>
-
-<body>
 <div class="main_container">
     <div class="container">
-        <div class="header">
-            <div class="header-main">
-                <h1>🤖 Chatbot RAG M3C</h1>
-                <p class="subtitle">Système de Questions/Réponses sur documents</p>
-            </div>
-             <div class="header-nav">
-                <a href="m3c-chatbot.html" class="nav-link">Interface Standard</a>
-                <span class="nav-separator">|</span>
-                <a href="question_session.html" class="nav-link">Interface PDF+Chat</a>
-                <span class="nav-separator">|</span>
-            </div>
-            <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
-    </div>
-</div>
+        {{ header(title='Chatbot RAG M3C', subtitle='Système de Questions/Réponses sur documents', title_icon='🤖', page='/m3c-chatbot-history', show_admin=false) }}
 
         <div class="settings">
             <div class="settings-grid">
@@ -123,11 +89,8 @@
         </iframe>
     </div>
 </div>
-<script src="auth_widget.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
-  });
-</script>
-</body>
-</html>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}js/m3c-chatbot-history_page.js"></script>
+{% endblock %}

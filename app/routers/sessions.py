@@ -322,7 +322,7 @@ async def submit_question_session_message(request: QuestionSessionMessage,
                     evaluator_models=[m[0] for m in models_evaluator],
                     individual_evaluations=individual_evaluations,
                     metadata={
-                        "page": "m3c-chatbot.html",
+                        "page": "/m3c-chatbot",
                         "origin": "question_session",
                     },
                 )

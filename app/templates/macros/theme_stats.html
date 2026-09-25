@@ -1,5 +1,4 @@
 {# -*- jinja2 -*- Macro pour afficher les statistiques d'un thème -*- #}
-
 {% macro theme_stats_card(theme, show_details=true, expandable=false) -%}
 <div class="theme-stats-card" data-theme-id="{{ theme.theme_id }}" {% if expandable %}data-expandable="true"{% endif %}>
     <div class="theme-stats-header" {% if expandable %}onclick="toggleTheme(this)"{% endif %}>
@@ -7,7 +6,7 @@
         {%- if theme.theme_description %}
         <p class="theme-description">{{ theme.theme_description[:100] }}{% if theme.theme_description|length > 100 %}...{% endif %}</p>
         {%- endif %}
-        
+
         <div class="theme-scores">
             <div class="theme-score interest">
                 <span class="score-label">Intérêt:</span>
@@ -24,12 +23,12 @@
                 <span class="score-value">{{ (theme.interest_confidence * 100)|round(1) }}%</span>
             </div>
         </div>
-        
+
         {%- if expandable %}
         <span class="expand-indicator">▼</span>
         {%- endif %}
     </div>
-    
+
     <div class="theme-stats-body" {% if expandable %}style="display: none;"{% endif %}>
         <div class="theme-counters">
             <div class="counter">
@@ -49,7 +48,7 @@
                 <span class="counter-label">Connaissances</span>
             </div>
         </div>
-        
+
         {%- if theme.knowledge_items_count > 0 %}
         <div class="theme-knowledge-status">
             <div class="status-item">
@@ -74,7 +73,7 @@
             </div>
         </div>
         {%- endif %}
-        
+
         {%- if show_details and (theme.last_interaction_at or theme.first_interaction_at) %}
         <div class="theme-dates">
             {%- if theme.last_interaction_at %}
@@ -85,7 +84,7 @@
             {%- endif %}
         </div>
         {%- endif %}
-        
+
         {%- if expandable %}
         <div class="theme-content-slot">
             {{ caller() if caller else '' }}
@@ -93,208 +92,4 @@
         {%- endif %}
     </div>
 </div>
-
-{# CSS intégré pour la carte #}
-{% if include_css|default(true) %}
-<style>
-.theme-stats-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: all 0.2s ease;
-}
-
-.theme-stats-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.theme-stats-card[data-expandable="true"] {
-    cursor: pointer;
-}
-
-.theme-stats-header {
-    padding: 15px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 1px solid #e0e0e0;
-    position: relative;
-}
-
-.theme-stats-header:hover {
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-}
-
-.theme-name {
-    color: #333;
-    font-size: 16px;
-    margin: 0 0 5px 0;
-}
-
-.theme-description {
-    color: #666;
-    font-size: 13px;
-    margin: 0;
-    font-style: italic;
-}
-
-.theme-scores {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.theme-score {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-}
-
-.score-label {
-    color: #666;
-}
-
-.progress-bar {
-    width: 80px;
-    height: 8px;
-    background: #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #0066cc 0%, #004085 100%);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
-
-.score-value {
-    color: #333;
-    font-weight: 600;
-    min-width: 40px;
-    text-align: right;
-}
-
-.expand-indicator {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: #666;
-    transition: transform 0.3s ease;
-}
-
-.theme-stats-body {
-    padding: 15px;
-}
-
-.theme-counters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.counter {
-    text-align: center;
-    padding: 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
-}
-
-.counter-value {
-    display: block;
-    font-size: 18px;
-    font-weight: 700;
-    color: #b74420;
-}
-
-.counter-label {
-    display: block;
-    font-size: 11px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.theme-knowledge-status {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.status-dot.demonstrated { background: #28a745; }
-.status-dot.developing { background: #ffc107; }
-.status-dot.encountered { background: #17a2b8; }
-.status-dot.unknown { background: #6c757d; }
-
-.status-count {
-    font-weight: 600;
-    color: #333;
-}
-
-.status-text {
-    color: #666;
-}
-
-.theme-dates {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    font-size: 12px;
-}
-
-.date-item {
-    color: #666;
-}
-
-.date-item strong {
-    color: #333;
-}
-
-.theme-content-slot {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed #ccc;
-}
-</style>
-
-{% if expandable %}
-<script>
-function toggleTheme(element) {
-    var card = element.closest('.theme-stats-card');
-    var body = card.querySelector('.theme-stats-body');
-    var indicator = card.querySelector('.expand-indicator');
-    
-    if (body.style.display === 'none') {
-        body.style.display = 'block';
-        indicator.style.transform = 'translateY(-50%) rotate(180deg)';
-    } else {
-        body.style.display = 'none';
-        indicator.style.transform = 'translateY(-50%) rotate(0deg)';
-    }
-}
-</script>
-{% endif %}
-{% endif %}
 {%- endmacro %}
