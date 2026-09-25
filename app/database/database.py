@@ -1843,3 +1843,432 @@ async def close_document_reading_session(
     except Exception as e:
         print(f"Erreur fermeture session de lecture {reading_session_id}: {e}")
         return None
+
+
+# ============================================================================
+# FONCTIONS POUR LES OBSERVATIONS MANUELLES (admin) - user_knowledge_model.sql
+# ============================================================================
+
+async def get_observation_users(conn) -> List[Dict]:
+    """
+    Liste les utilisateurs concernés par des observations ou un profil :
+    comptes de la table users et profils user_profiles (schéma user_knowledge_model.sql).
+
+    Returns:
+        Liste de dicts {user_id, label, source} triée par label.
+    """
+    users: Dict[str, Dict] = {}
+
+    async with conn.cursor() as cur:
+        await cur.execute("SELECT user_id, username FROM users ORDER BY username")
+        for row in await cur.fetchall():
+            users[str(row[0])] = {"user_id": str(row[0]), "label": row[1], "source": "users"}
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("SELECT user_id FROM user_profiles")
+            for row in await cur.fetchall():
+                uid = str(row[0])
+                if uid not in users:
+                    users[uid] = {"user_id": uid, "label": f"Profil {uid}", "source": "user_profiles"}
+    except Exception as e:
+        print(f"Avertissement: table user_profiles indisponible: {e}")
+
+    return sorted(users.values(), key=lambda u: u["label"].lower())
+
+
+async def get_observation_target_options(conn, target_type: str, search: Optional[str] = None, limit: int = 200) -> List[Dict]:
+    """
+    Liste les cibles possibles d'une observation pour un type donné.
+
+    Args:
+        conn: Connexion MySQL.
+        target_type: 'knowledge', 'theme' ou 'entity'.
+        search: Filtre optionnel sur le libellé.
+        limit: Nombre maximum de résultats.
+
+    Returns:
+        Liste de dicts {id, label, extra}.
+    """
+    tables = {
+        "knowledge": ("knowledge_items", "proposition", "summary"),
+        "theme": ("themes", "name", "description"),
+        "entity": ("entities", "name", "type"),
+    }
+    if target_type not in tables:
+        return []
+    table, label_col, extra_col = tables[target_type]
+
+    query = f"SELECT id, {label_col}, {extra_col} FROM {table}"
+    params: list = []
+    if search:
+        query += f" WHERE {label_col} LIKE %s"
+        params.append(f"%{search}%")
+    query += f" ORDER BY {label_col} LIMIT %s"
+    params.append(limit)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(params))
+        rows = await cur.fetchall()
+
+    return [
+        {"id": row[0], "label": (row[1] or "")[:200], "extra": row[2]}
+        for row in rows
+    ]
+
+
+async def get_observation_resource_options(conn, search: Optional[str] = None, limit: int = 100) -> List[Dict]:
+    """
+    Liste les ressources documentaires (knowledge_resources) pour le contexte d'une observation.
+
+    Returns:
+        Liste de dicts {id, title, uri, resource_type}.
+    """
+    query = "SELECT id, title, uri, resource_type FROM knowledge_resources"
+    params: list = []
+    if search:
+        query += " WHERE title LIKE %s"
+        params.append(f"%{search}%")
+    query += " ORDER BY title LIMIT %s"
+    params.append(limit)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(params))
+        rows = await cur.fetchall()
+
+    return [
+        {"id": row[0], "title": (row[1] or "")[:200], "uri": row[2], "resource_type": row[3]}
+        for row in rows
+    ]
+
+
+async def create_manual_observation(
+    conn,
+    user_id: str,
+    observation_type: str,
+    specific_type: str,
+    context: Dict,
+    confidence: float = 1.0,
+    is_raw: bool = True,
+    payload: Optional[Dict] = None,
+    targets: Optional[List[Dict]] = None,
+) -> Optional[Dict]:
+    """
+    Insère une observation manuelle (démo admin) dans le schéma user_knowledge_model.sql :
+    une ligne dans observations, éventuellement un payload structuré dans
+    observation_payloads et les cibles dans observation_targets.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Identifiant de l'utilisateur observé (observations.user_id, VARCHAR(100)).
+        observation_type: 'declarative', 'behavioral' ou 'evaluative'.
+        specific_type: Type spécifique libre (ex: 'language', 'click', 'free_response').
+        context: Contexte JSON (page, session_id, resource_id, device...).
+        confidence: Fiabilité de l'interprétation (0-1).
+        is_raw: Vrai si l'observation est une donnée brute.
+        payload: Donnée brute ou structurée (payload_type='structured').
+        targets: Liste de {target_type, target_id, weight} avec target_type
+                  parmi 'knowledge', 'theme', 'entity'.
+
+    Returns:
+        Dict {observation_id, targets_count, payload_saved} ou None en cas d'erreur.
+    """
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO observations
+                    (user_id, observation_type, specific_type, timestamp, context, confidence, is_raw)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP, %s, %s, %s)
+                """,
+                (
+                    user_id[:100],
+                    observation_type,
+                    specific_type[:100] if specific_type else "manual",
+                    json.dumps(context) if context else json.dumps({}),
+                    confidence,
+                    is_raw,
+                ),
+            )
+            observation_id = cur.lastrowid
+
+            payload_saved = False
+            if payload is not None:
+                await cur.execute(
+                    """
+                    INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                    VALUES (%s, 'structured', %s, %s)
+                    """,
+                    (
+                        observation_id,
+                        json.dumps(payload),
+                        json.dumps({"origin": "manual_admin"}),
+                    ),
+                )
+                payload_saved = True
+
+            targets_count = 0
+            for target in targets or []:
+                await cur.execute(
+                    """
+                    INSERT IGNORE INTO observation_targets
+                        (observation_id, target_type, target_id, weight)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (
+                        observation_id,
+                        target["target_type"],
+                        target["target_id"],
+                        target.get("weight", 1.0),
+                    ),
+                )
+                targets_count += 1
+
+        await conn.commit()
+        return {
+            "observation_id": observation_id,
+            "targets_count": targets_count,
+            "payload_saved": payload_saved,
+        }
+    except Exception as e:
+        print(f"Erreur création observation manuelle pour user_id={user_id}: {e}")
+        await conn.rollback()
+        return None
+
+
+async def get_manual_observations(
+    conn,
+    user_id: Optional[str] = None,
+    observation_type: Optional[str] = None,
+    limit: int = 50,
+) -> List[Dict]:
+    """
+    Récupère les observations les plus récentes, filtrables par utilisateur et type,
+    avec leurs cibles et payloads pour l'affichage de démonstration.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Filtre optionnel sur observations.user_id.
+        observation_type: Filtre optionnel ('declarative', 'behavioral', 'evaluative').
+        limit: Nombre maximum d'observations.
+
+    Returns:
+        Liste de dicts {id, user_id, observation_type, specific_type, timestamp,
+        confidence, is_raw, context, targets: [{target_type, target_id, weight, label}],
+        payloads: [{payload_type, payload}]}.
+    """
+    where_clauses = []
+    params: list = []
+    if user_id:
+        where_clauses.append("o.user_id = %s")
+        params.append(user_id)
+    if observation_type:
+        where_clauses.append("o.observation_type = %s")
+        params.append(observation_type)
+
+    query = """
+        SELECT o.id, o.user_id, o.observation_type, o.specific_type, o.timestamp,
+               o.confidence, o.is_raw, o.context
+        FROM observations o
+    """
+    if where_clauses:
+        query += " WHERE " + " AND ".join(where_clauses)
+    query += " ORDER BY o.timestamp DESC, o.id DESC LIMIT %s"
+    params.append(limit)
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(params))
+        rows = await cur.fetchall()
+        if not rows:
+            return []
+
+        observations = []
+        for row in rows:
+            obs_id = row[0]
+            context = {}
+            try:
+                context = json.loads(row[7]) if row[7] else {}
+            except (TypeError, ValueError):
+                context = {"raw": str(row[7])}
+
+            await cur.execute(
+                """
+                SELECT ot.target_type, ot.target_id, ot.weight
+                FROM observation_targets ot
+                WHERE ot.observation_id = %s
+                """,
+                (obs_id,),
+            )
+            target_rows = await cur.fetchall()
+            targets = []
+            for tr in target_rows:
+                label = None
+                label_queries = {
+                    "knowledge": "SELECT proposition FROM knowledge_items WHERE id = %s",
+                    "theme": "SELECT name FROM themes WHERE id = %s",
+                    "entity": "SELECT name FROM entities WHERE id = %s",
+                }
+                if tr[0] in label_queries:
+                    await cur.execute(label_queries[tr[0]], (tr[1],))
+                    label_row = await cur.fetchone()
+                    label = label_row[0] if label_row else None
+                targets.append({
+                    "target_type": tr[0],
+                    "target_id": tr[1],
+                    "weight": float(tr[2]) if tr[2] is not None else 1.0,
+                    "label": (label or "")[:200],
+                })
+
+            await cur.execute(
+                """
+                SELECT payload_type, payload
+                FROM observation_payloads
+                WHERE observation_id = %s
+                """,
+                (obs_id,),
+            )
+            payload_rows = await cur.fetchall()
+            payloads = []
+            for pr in payload_rows:
+                try:
+                    payloads.append({"payload_type": pr[0], "payload": json.loads(pr[1]) if pr[1] else None})
+                except (TypeError, ValueError):
+                    payloads.append({"payload_type": pr[0], "payload": {"raw": str(pr[1])}})
+
+            observations.append({
+                "id": obs_id,
+                "user_id": row[1],
+                "observation_type": row[2],
+                "specific_type": row[3],
+                "timestamp": str(row[4]) if row[4] else None,
+                "confidence": float(row[5]) if row[5] is not None else 1.0,
+                "is_raw": bool(row[6]) if row[6] is not None else True,
+                "context": context,
+                "targets": targets,
+                "payloads": payloads,
+            })
+
+    return observations
+
+
+# ============================================================================
+# OBSERVATION DE LECTURE DE DOCUMENTS (m3c-chatbot) - schéma observations
+# ============================================================================
+
+async def record_document_reading_open_observation(
+    conn,
+    user_id: Optional[int],
+    anonymous_id: Optional[str],
+    resource_id: int,
+    num_page: Optional[int] = None,
+    reading_session_id: Optional[int] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Crée l'observation comportementale de lecture à l'ouverture d'un PDF
+    dans m3c-chatbot (table observations du schéma user_knowledge_model.sql).
+
+    L'utilisateur observé est identifié par son user_id (int, table users) s'il
+    est connecté, sinon par son identifiant anonyme persistant.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: user_id (int) de l'utilisateur connecté, sinon None.
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté.
+        resource_id: resource_id du document ouvert.
+        num_page: Numéro de page ciblé à l'ouverture.
+        reading_session_id: Identifiant de la session de lecture (document_reading_sessions).
+        metadata: Métadonnées du client (page d'origine, etc.).
+
+    Returns:
+        L'ID de l'observation créée, ou None en cas d'erreur.
+    """
+    obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
+    context = {"page": "m3c-chatbot.html", "resource_id": resource_id}
+    if reading_session_id is not None:
+        context["reading_session_id"] = reading_session_id
+    if num_page is not None:
+        context["num_page"] = num_page
+    if metadata:
+        context.update(metadata)
+
+    payload = {
+        "event": "document_reading_open",
+        "resource_id": resource_id,
+        "num_page": num_page,
+        "reading_session_id": reading_session_id,
+    }
+
+    result = await create_manual_observation(
+        conn,
+        user_id=obs_user_id,
+        observation_type="behavioral",
+        specific_type="document_reading",
+        context=context,
+        confidence=1.0,
+        is_raw=True,
+        payload=payload,
+        targets=None,
+    )
+    return result["observation_id"] if result else None
+
+
+async def complete_document_reading_observation(
+    conn,
+    reading_session_id: int,
+    duration_seconds: Optional[int],
+    close_reason: str,
+) -> bool:
+    """
+    Complète l'observation de lecture d'ouverture avec un payload 'processed'
+    contenant la durée de lecture et la raison de fermeture
+    (table observation_payloads, PK (observation_id, payload_type)).
+
+    L'observation d'ouverture est retrouvée via context->'$.reading_session_id'.
+
+    Args:
+        conn: Connexion MySQL.
+        reading_session_id: Identifiant de la session de lecture fermée.
+        duration_seconds: Durée de lecture en secondes (calculée côté serveur).
+        close_reason: 'button', 'document_change' ou 'page_hide'.
+
+    Returns:
+        True si le payload a été ajouté, False sinon.
+    """
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                SELECT id FROM observations
+                WHERE JSON_EXTRACT(context, '$.reading_session_id') = %s
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (reading_session_id,),
+            )
+            row = await cur.fetchone()
+            if not row:
+                return False
+            observation_id = row[0]
+            await cur.execute(
+                """
+                INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                VALUES (%s, 'processed', %s, %s)
+                """,
+                (
+                    observation_id,
+                    json.dumps({
+                        "event": "document_reading_close",
+                        "reading_session_id": reading_session_id,
+                        "close_reason": close_reason,
+                        "duration_seconds": duration_seconds,
+                    }),
+                    json.dumps({"origin": "document_reading_session"}),
+                ),
+            )
+        await conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erreur compl\u00e8tement observation lecture session {reading_session_id}: {e}")
+        await conn.rollback()
+        return False
