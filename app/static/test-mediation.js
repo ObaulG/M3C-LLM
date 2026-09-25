@@ -222,6 +222,7 @@ async function sendMessage() {
     let params = {
         session_id: localStorage.getItem('sessionId'),
         user_message: message,
+        anonymous_id: (typeof getAnonymousUserId === 'function') ? getAnonymousUserId() : null,
     };
     let response;
     try {
