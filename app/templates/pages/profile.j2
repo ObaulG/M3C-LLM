@@ -479,14 +479,13 @@
 <div class="main_container">
     <div class="container">
         {# En-tête de la page #}
-        {% call header(
+        {{ header(
             title=page_title|default("Mon Profil"),
             subtitle='Statistiques de visite, ressources consultées, thèmes et éléments de connaissance',
             title_icon='👤',
-            page='profile.j2',
-            page_dir='root',
+            page='/profile',
             show_admin=false
-        ) %}{% endcall %}
+        ) }}
 
         <div class="profile-container">
             {# ================================================================
@@ -851,7 +850,7 @@
                ACTIONS
                ================================================================ #}
             <div class="action-buttons">
-                <a href="{{ static_prefix }}index.html" class="btn btn-secondary">
+                <a href="/" class="btn btn-secondary">
                     ← Retour à l'accueil
                 </a>
                 {% if user_id %}

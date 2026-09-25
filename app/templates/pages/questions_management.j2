@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Questions/Réponses</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="questions.css" />
-    <style>
+{% extends "base.html" %}
+{% block title %}Gestion des Questions/Réponses{% endblock %}
+{% block styles %}
+<style>
         /* Styles spécifiques pour la gestion des questions */
         .main_container {
             display: flex;
@@ -245,8 +239,12 @@
         }
 
     </style>
-</head>
-<body>
+{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+{% block body %}
+
     <div class="main_container">
         <div class="sidebar">
             <h3>Documents</h3>
@@ -306,34 +304,7 @@
         </div>
 
         <div class="content-area">
-            <div class="header">
-                <h1>📝 Gestion des Questions/Réponses</h1>
-                <p>Sélectionnez un document pour visualiser ses questions générées</p>
-                <div class="nav-links">
-                    <a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
-                    <a href="question_session.html" class="nav-link">Chatbot Inversé</a>
-                    <a href="rag_visualization.html" class="nav-link">Visualisation RAG</a>
-                    <a href="questions_management.html" class="nav-link active">Gestion Q/R</a>
-                </div>
-                <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
-    </div>
-</div>
+            {{ header_centered(title='📝 Gestion des Questions/Réponses', page='/questions-management', show_admin=false) }}
 
             <div class="questions-container">
                 <div class="loading" id="loadingQuestions">
@@ -352,7 +323,12 @@
         </div>
     </div>
 
-    <script>
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}questions_management.js"></script>
+<script>
         // Données des réponses de référence chargées au démarrage
         let referenceAnswers = {};
         
@@ -379,13 +355,9 @@
             loadReferenceAnswers();
         });
     </script>
-    <script src="models.js"></script>
-<script src="questions_management.js"></script>
-<script src="auth_widget.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
   });
 </script>
-</body>
-</html>
+{% endblock %}

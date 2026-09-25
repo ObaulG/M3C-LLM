@@ -277,8 +277,7 @@
             title='LLMAgents - Portail M3C',
             subtitle='Système RAG pour l\'analyse documentaire et la recherche intelligente',
             title_icon='🏠',
-            page='index.html',
-            page_dir='root',
+            page='/',
             show_admin=false
         ) }}
 
@@ -308,7 +307,7 @@
                 {{ feature_card(
                     title='Chatbot RAG',
                     description="Interface principale de discussion avec le modèle LLM. Posez des questions en langage naturel et obtenez des réponses basées sur les documents indexés avec sources citées.",
-                    href='m3c-chatbot.html',
+                    href='/m3c-chatbot',
                     icon='🤖',
                     category='user',
                     modal_id='chatbot-info'
@@ -317,7 +316,7 @@
                 {{ feature_card(
                     title='PDF + Chat',
                     description="Interface permettant de sélectionner un document PDF et d'interagir avec son contenu via un chat intelligent. Visualisation du PDF intégrée.",
-                    href='question_session.html',
+                    href='/question-session',
                     icon='📄',
                     category='user',
                     features=['Sélection de documents PDF','Visualisation du PDF','Chat contextuel par document','Navigation facile','Recherche ciblée'],
@@ -327,7 +326,7 @@
                 {{ feature_card(
                     title='Recherche Solr',
                     description="Interface de recherche sémantique avancée utilisant Apache Solr pour trouver des informations précises dans le corpus documentaire.",
-                    href='solr_search.html',
+                    href='/solr-search',
                     icon='🔍',
                     category='user',
                     features=['Recherche full-text','Filtrage avancé','Résultats pertinents','Visualisation des résultats','Export possible'],
@@ -337,7 +336,7 @@
                 {{ feature_card(
                     title='Visualisation RAG',
                     description="Visualisation interactive des embeddings en 2D utilisant les algorithmes t-SNE ou UMAP. Explorez les relations entre les chunks de documents.",
-                    href='rag_visualization.html',
+                    href='/rag-visualization',
                     icon='📊',
                     category='user',
                     features=['Projection t-SNE','Projection UMAP','Visualisation interactive','Coloration par document','Exploration des clusters'],
@@ -347,7 +346,7 @@
                 {{ feature_card(
                     title='Gestion Q/R',
                     description="Interface de gestion des questions et réponses. Créez, modifiez et organisez les questions pour faciliter la recherche et l'apprentissage.",
-                    href='questions_management.html',
+                    href='/questions-management',
                     icon='🎯',
                     category='user',
                     features=['Création de questions','Organisation par catégories','Suivi des réponses','Évaluation des réponses','Export des données'],
@@ -364,7 +363,7 @@
                 <a href="#accueil">Accueil</a>
                 <a href="#interfaces">Interfaces</a>
                 <a href="#admin">Administration</a>
-                <a href="m3c-chatbot.html">Chatbot</a>
+                <a href="/m3c-chatbot">Chatbot</a>
             </div>
             <p style="margin-top: 15px; font-size: 12px;">Version 0.1.0 | FastAPI | Mistral AI | RAG Technology</p>
         </div>
@@ -390,7 +389,7 @@
         <li>Explorer le corpus documentaire de manière interactive</li>
         <li>Trouver des informations précises rapidement</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="m3c-chatbot.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="/m3c-chatbot" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="pdf-chat-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('pdf-chat-info')">&times;</span>
@@ -410,7 +409,7 @@
         <li>Comparer différents documents</li>
         <li>Étudier un document en détail</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="question_session.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="/question-session" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="solr-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('solr-info')">&times;</span>
@@ -430,7 +429,7 @@
         <li>Explorer les relations entre les documents</li>
         <li>Effectuer des recherches complexes avec filtres</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="solr_search.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="/solr-search" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="visualization-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('visualization-info')">&times;</span>
@@ -451,7 +450,7 @@
         <li>Analyser la distribution des embeddings</li>
         <li>Explorer les similarités entre chunks</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="rag_visualization.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="/rag-visualization" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="qr-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('qr-info')">&times;</span>
@@ -472,7 +471,7 @@
         <li>Évaluer la qualité des réponses</li>
         <li>Exporter les données pour analyse</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="questions_management.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="/questions-management" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 {% endblock %}
 

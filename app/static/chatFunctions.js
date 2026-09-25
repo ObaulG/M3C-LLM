@@ -139,7 +139,7 @@ async function recordDocumentOpen(resourceId, numPage) {
             resource_id: resourceId,
             num_page: numPage,
             anonymous_id: getAnonymousUserId(),
-            metadata: {page: 'm3c-chatbot.html'},
+            metadata: {page: '/m3c-chatbot'},
         });
         const response = await fetch(API_URL_OBSERVATION_OPEN, {
             method: 'POST',

@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Génération de Knowledge Items</title>
-    <link rel="stylesheet" href="../style.css" />
-    <style>
+{% extends "base.html" %}
+{% block title %}Administration - Génération de Knowledge Items{% endblock %}
+{% block styles %}
+<style>
         .main_container { display: flex; height: 100vh; width: 100%; }
         .sidebar { width: 300px; background: white; border-right: 1px solid #ddd; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .content-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
@@ -90,8 +86,9 @@
         @media (max-width: 768px) { .compare-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
     </style>
-</head>
-<body>
+{% endblock %}
+{% block body %}
+
     <div class="main_container">
         <div class="sidebar">
             <h3>Administration</h3>
@@ -109,38 +106,7 @@
         </div>
 
         <div class="content-area">
-            <div class="header">
-                <h1>🧠 Administration - Génération de Knowledge Items</h1>
-                <p>Générez des knowledge_items (propositions vérifiables) à partir d'un document et d'un chunk précis, via un appel LLM</p>
-                <div class="nav-links">
-                    <a href="../m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
-                    <a href="../question_session.html" class="nav-link">Chatbot Inversé</a>
-                    <a href="../rag_visualization.html" class="nav-link">Visualisation RAG</a>
-                    <a href="../questions_management.html" class="nav-link">Gestion Q/R</a>
-                    <a href="indexation.html" class="nav-link">Indexation</a>
-                    <a href="questions_generation.html" class="nav-link">Génération de Questions</a>
-                    <a href="knowledge_items_generation.html" class="nav-link active">Knowledge Items</a>
-                    <a href="observations_admin.html" class="nav-link">Observations</a>
-                </div>
-                <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="../auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="../profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
-    </div>
-</div>
+            {{ header_centered(title='🧠 Administration - Génération de Knowledge Items', subtitle="Générez des knowledge_items (propositions vérifiables) à partir d'un document et d'un chunk précis, via un appel LLM", page='/admin/knowledge-items-generation', show_admin=true) }}
 
             <div class="admin-content">
                 <h2 class="section-title">Génération de Knowledge Items</h2>
@@ -254,7 +220,11 @@
         </div>
     </div>
 
-    <script>
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
+<script>
         const API_BASE = window.location.origin;
         const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
         const DOCUMENTS_API = API_BASE + '/api/documents';
@@ -771,12 +741,9 @@
                 .replace(/'/g, '&#039;');
         }
     </script>
-<script src="../models.js"></script>
-<script src="../auth_widget.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("modelSelect"), { providers: ["mistral"], selected: "mistral-medium" });
   });
 </script>
-</body>
-</html>
+{% endblock %}
