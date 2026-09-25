@@ -16,13 +16,11 @@ CREATE TABLE IF NOT EXISTS document_reading_sessions (
     close_reason ENUM('button', 'document_change', 'page_hide') NULL COMMENT 'Événement ayant déclenché la fermeture',
     duration_seconds INT NULL COMMENT 'Durée de lecture en secondes, calculée à la fermeture',
     metadata JSON COMMENT 'Métadonnées supplémentaires (session RAG, page, etc.)',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE SET NULL,
     INDEX idx_drs_user (user_id),
     INDEX idx_drs_anonymous (anonymous_id),
     INDEX idx_drs_resource (resource_id),
     INDEX idx_drs_opened_at (opened_at),
     INDEX idx_drs_user_opened (user_id, opened_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)
 
--- Vérification: afficher la structure de la table
-SHOW CREATE TABLE document_reading_sessions;

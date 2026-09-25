@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import time
+from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -148,6 +149,7 @@ async def lifespan(app: FastAPI):
     # Startup
     initialize_rag(app)
     initialize_evaluators(app)
+    await initialize_database(app)
     app.state.message_ev_agent = get_message_type_agent("ministral-3b-2410")
     yield
     # Shutdown (si nécessaire)
@@ -225,6 +227,23 @@ def initialize_evaluators(app: FastAPI, async_mode: bool = True):
     app.state.evaluators = [get_evaluator_agent(model,
                                            provider=provider,
                                                 async_mode=async_mode) for model, provider in models_evaluator]
+
+async def initialize_database(app: FastAPI):
+    """
+    Vérifie l'existence de l'ensemble des tables avant le lancement, et lance la création d'une table qui
+    serait absente
+    """
+
+    sql_file_path = Path("app/database/create_document_reading_sessions.sql")
+    sql = sql_file_path.read_text(encoding="utf-8")
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cursor:
+            await cursor.execute(sql)
+            while await cursor.nextset():
+                pass
+
+        await conn.commit()
+    print("Tables vérifiées")
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():

@@ -60,8 +60,7 @@ async def open_document_observation(
     """
     user_id = auth.user_id_from_token(m3c_api_key)
     anonymous_id = None if user_id is not None else request.anonymous_id
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn :
         reading_session_id = await start_document_reading_session(
             conn,
             resource_id=request.resource_id,
@@ -86,8 +85,7 @@ async def open_document_observation(
             reading_session_id=reading_session_id,
             observation_id=observation_id,
         )
-    finally:
-        await conn.close()
+
 
 
 @router.post("/document-close", response_model=DocumentReadingCloseResponse)
@@ -97,8 +95,7 @@ async def close_document_observation(request: DocumentReadingCloseRequest):
     La dure de lecture est calcule ct serveur  partir de opened_at.
     Compatible avec navigator.sendBeacon (Content-Type: application/json).
     """
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn:
         result = await close_document_reading_session(
             conn,
             reading_session_id=request.reading_session_id,
@@ -113,8 +110,6 @@ async def close_document_observation(request: DocumentReadingCloseRequest):
             duration_seconds=result["duration_seconds"],
             close_reason=request.close_reason,
         )
-    finally:
-        await conn.close()
     return DocumentReadingCloseResponse(
         reading_session_id=request.reading_session_id,
         closed_at=result["closed_at"],

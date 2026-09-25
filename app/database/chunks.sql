@@ -1,4 +1,4 @@
-CREATE TABLE text_documents (
+CREATE TABLE IF NOT EXISTS text_documents (
     id INT AUTO_INCREMENT PRIMARY KEY ,  -- Identifiant unique interne
     source_type VARCHAR(50) NOT NULL,  -- "pdf", "web_page", etc.
     source_id VARCHAR(255) NOT NULL,  -- ID externe (ex: ID du PDF dans la table pdfs, URL pour une page web)
@@ -8,7 +8,7 @@ CREATE TABLE text_documents (
     UNIQUE(source_type, source_id)  -- Évite les doublons pour une même source
 );
 
-CREATE TABLE text_chunking_strategies (
+CREATE TABLE IF NOT EXISTS text_chunking_strategies (
     id INT AUTO_INCREMENT PRIMARY KEY ,
     name VARCHAR(255) NOT NULL,                -- Nom de la stratégie (ex: "800_tokens_overlap_100")
     description TEXT,                          -- Description de la stratégie
@@ -20,7 +20,7 @@ CREATE TABLE text_chunking_strategies (
     CONSTRAINT unique_strategy_name UNIQUE (name)
 );
 
-CREATE TABLE text_chunks (
+CREATE TABLE IF NOT EXISTS text_chunks (
     id VARCHAR(255) PRIMARY KEY,
     document_id INT NOT NULL,
     strategy_id INT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE text_chunks (
     FOREIGN KEY (strategy_id) REFERENCES text_chunking_strategies(id)
 );
 
-CREATE TABLE text_document_chunking_validation (
+CREATE TABLE IF NOT EXISTS text_document_chunking_validation (
     document_id INT NOT NULL,
     strategy_id INT NOT NULL,
     chunks_nb INT NOT NULL,

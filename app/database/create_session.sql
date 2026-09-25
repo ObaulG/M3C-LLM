@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     session_id VARCHAR(255) PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     document_id VARCHAR(255) NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
@@ -10,7 +10,7 @@ CREATE TABLE sessions (
     CONSTRAINT valid_session CHECK (ended_at IS NULL OR ended_at > started_at)
 );
 
-CREATE TABLE session_answers (
+CREATE TABLE IF NOT EXISTS session_answers (
     answer_id SERIAL PRIMARY KEY,
     session_id VARCHAR(255) NOT NULL REFERENCES sessions(session_id) ON DELETE CASCADE,
     question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
