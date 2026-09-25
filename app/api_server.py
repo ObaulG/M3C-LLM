@@ -180,7 +180,7 @@ app.include_router(observations_router)
 app.include_router(observations_admin_router)
 app.include_router(sessions_router)
 app.include_router(evaluations_router)
-app.include_router(questions_admin_router)
+app.include_router(question_answer_router)
 app.include_router(models_router)
 
 # === CONFIGURATION CORS ===
