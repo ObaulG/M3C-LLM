@@ -1,14 +1,12 @@
 """Router FastAPI des pages HTML du portail.
 
 Les pages ne sont plus des fichiers statiques dans app/static/ : elles sont
-désormais des templates Jinja2 (app/templates/pages/*.j2) rendus par ces routes.
-Chaque route sert exactement le contenu qui était auparavant servi par
-StaticFiles (app/static/*.html et app/static/admin/*.html), aux mêmes URLs de
-type "belle" (/m3c-chatbot au lieu de /static/m3c-chatbot.html).
+désormais des templates Jinja2 (app/templates/pages/*.j2) rendus par ces routes,
+avec des URLs explicites (/m3c-chatbot au lieu de /static/m3c-chatbot.html).
+Les assets (CSS, JS, images) restent servis par StaticFiles sous /static/.
 """
 
 import os
-from typing import Optional
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse

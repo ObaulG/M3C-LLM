@@ -11,6 +11,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ static_prefix }}css/profile.css" />
+<link rel="stylesheet" href="{{ static_prefix }}css/theme_cards.css" />
 {% endblock %}
 
 {% block head_scripts %}
@@ -295,11 +296,11 @@
                 {% if theme_stats %}
                 <div class="cards-grid">
                     {% for theme in theme_stats %}
-                    {{ theme_stats_card(theme, show_details=true, expandable=true, include_css=false) }}
+                    {{ theme_stats_card(theme, show_details=true, expandable=true) }}
                         {# Afficher les éléments de connaissance pour ce thème #}
                         {% if theme.theme_name in knowledge_by_theme and knowledge_by_theme[theme.theme_name].knowledge_items %}
                             {% for ki in knowledge_by_theme[theme.theme_name].knowledge_items[:5] %}
-                                {{ knowledge_item_card(ki, show_details=false, show_sources=false, include_css=false) }}
+                                {{ knowledge_item_card(ki, show_details=false, show_sources=false) }}
                             {% endfor %}
                             {% if knowledge_by_theme[theme.theme_name].knowledge_items|length > 5 %}
                             <p style="margin-top: 10px; color: #666; font-size: 13px; text-align: center;">
@@ -346,7 +347,7 @@
                     
                     <div class="cards-grid">
                         {% for ki in theme_group.knowledge_items %}
-                        {{ knowledge_item_card(ki, show_details=true, show_sources=false, include_css=false) }}
+                        {{ knowledge_item_card(ki, show_details=true, show_sources=false) }}
                         {% endfor %}
                     </div>
                 </div>
@@ -408,43 +409,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-// Fonction pour basculer l'affichage des thèmes
-function toggleTheme(element) {
-    var card = element.closest('.theme-stats-card');
-    var body = card.querySelector('.theme-stats-body');
-    var indicator = card.querySelector('.expand-indicator');
-    
-    if (body.style.display === 'none') {
-        body.style.display = 'block';
-        indicator.style.transform = 'translateY(-50%) rotate(180deg)';
-    } else {
-        body.style.display = 'none';
-        indicator.style.transform = 'translateY(-50%) rotate(0deg)';
-    }
-}
-
-// Animation au scroll
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -20px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, observerOptions);
-
-// Animer les sections au scroll
-document.querySelectorAll('.section').forEach(section => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(20px)';
-    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(section);
-});
-</script>
+<script src="{{ static_prefix }}js/profile.js"></script>
 {% endblock %}

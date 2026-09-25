@@ -1,0 +1,927 @@
+// Configuration de l'API
+        const API_BASE = window.location.origin || window.location.protocol + '//' + window.location.host;
+        const QUESTIONS_API = API_BASE + '/api/admin/questions';
+        const DOCUMENTS_API = API_BASE + '/api/documents';
+        
+        // Variables globales
+        let currentJobId = null;
+        let refreshInterval = null;
+        let currentDocumentId = null;
+        
+        // Fonction pour rafraîchir les statistiques
+        async function refreshStats() {
+            try {
+                const response = await fetch(QUESTIONS_API + '/valid-documents');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur API valid-documents:', response.status, errorText);
+                    alert('Erreur lors du chargement des documents. Voir la console pour plus de détails.');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                // Vérifier que nous avons des données
+                if (!data || !data.documents) {
+                    console.error('Aucune donnée de documents reçue:', data);
+                    alert('Aucun document validé trouvé.');
+                    return;
+                }
+                
+                document.getElementById('validDocsCount').textContent = data.count;
+                
+                const docsList = document.getElementById('validDocumentsList');
+                if (data.documents.length === 0) {
+                    docsList.innerHTML = '<span>Aucun document validé</span>';
+                } else {
+                    docsList.innerHTML = data.documents.map(doc => 
+                        `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`
+                    ).join('');
+                }
+                
+                // Remplir le sélecteur de documents avec les titres et document_id
+                const docSelect = document.getElementById('documentSelect');
+                let selectOptions = '<option value="">Tous les documents validés</option>';
+                
+                data.documents.forEach(doc => {
+                    selectOptions += `<option value="${doc.document_id}">${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</option>`;
+                });
+                
+                docSelect.innerHTML = selectOptions;
+                
+                // Écouteur pour le changement de document
+                docSelect.onchange = async function() {
+                    const selectedValue = this.value;
+                    currentDocumentId = selectedValue ? parseInt(selectedValue) : null;
+                    await loadChunksForDocument(currentDocumentId);
+                };
+                
+                // Réinitialiser le sélecteur de chunks (le chargement se fera à la sélection d'un document)
+                resetChunkSelector();
+                
+                console.log('Documents chargés avec succès:', data.documents.length, 'documents');
+            } catch (error) {
+                console.error('Erreur lors du chargement des documents validés:', error);
+                alert('Erreur lors du chargement des documents. Vérifiez la console pour plus de détails: ' + error.message);
+            }
+        }
+        
+        // Fonction pour charger les chunks d'un document
+        async function loadChunksForDocument(documentId) {
+            const chunkSelect = document.getElementById('chunkSelect');
+            const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+            
+            if (!documentId) {
+                resetChunkSelector();
+                return;
+            }
+            
+            try {
+                chunkSelect.disabled = true;
+                chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
+                chunkContentDisplay.textContent = 'Chargement des chunks...';
+                
+                const response = await fetch(`${DOCUMENTS_API}/${documentId}/chunks`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.chunks && data.chunks.length > 0) {
+                    let options = '<option value="">Tous les chunks du document</option>';
+                    
+                    data.chunks.forEach(chunk => {
+                        const preview = chunk.content.substring(0, 80).replace(/\s+/g, ' ');
+                        const displayText = `Chunk ${chunk.id} - Page ${chunk.num_page || 'N/A'} - ${preview}...`;
+                        
+                        // Encoder le contenu pour l'attribut data
+                        const encodedContent = encodeURIComponent(chunk.content);
+                        
+                        options += `<option value="${chunk.id}" data-content="${encodedContent}" data-preview="${displayText}">
+                            ${displayText}
+                        </option>`;
+                    });
+                    
+                    chunkSelect.innerHTML = options;
+                    chunkSelect.disabled = false;
+                    chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                    
+                    // Ajouter l'écouteur pour l'affichage du contenu et le chargement des questions existantes
+                    chunkSelect.onchange = async function() {
+                        const selectedOption = this.options[this.selectedIndex];
+                        const content = selectedOption.dataset.content;
+                        const chunkId = this.value;
+                        
+                        if (content) {
+                            chunkContentDisplay.textContent = decodeURIComponent(content);
+                        } else {
+                            chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                        }
+                        
+                        // Charger les questions existantes pour ce chunk
+                        if (chunkId) {
+                            await loadExistingQuestionsForChunk(chunkId);
+                        } else {
+                            document.getElementById('existingQuestionsContainer').innerHTML = 
+                                '<p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>';
+                        }
+                    };
+                } else {
+                    chunkSelect.innerHTML = '<option value="">Aucun chunk disponible</option>';
+                    chunkSelect.disabled = true;
+                    chunkContentDisplay.textContent = 'Aucun chunk trouvé pour ce document.';
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des chunks:', error);
+                chunkSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                chunkSelect.disabled = true;
+                chunkContentDisplay.textContent = 'Erreur lors du chargement des chunks.';
+            }
+        }
+        
+        // Fonction pour réinitialiser le sélecteur de chunks
+        function resetChunkSelector() {
+            const chunkSelect = document.getElementById('chunkSelect');
+            const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+            
+            chunkSelect.innerHTML = '<option value="">Sélectionnez un document d\'abord</option>';
+            chunkSelect.disabled = true;
+            chunkContentDisplay.textContent = 'Sélectionnez un document puis un chunk...';
+            
+            // Retirer l'écouteur s'il existe
+            chunkSelect.onchange = null;
+        }
+        
+        // Fonction pour rafraîchir la liste des jobs
+        async function refreshJobs() {
+            try {
+                const response = await fetch(QUESTIONS_API + '/jobs');
+                const data = await response.json();
+                
+                document.getElementById('totalJobsCount').textContent = data.count;
+                
+                if (data.jobs.length === 0) {
+                    document.getElementById('jobsContainer').innerHTML = 
+                        '<p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>';
+                    document.getElementById('lastJobStatus').textContent = 'Aucun';
+                    return;
+                }
+                
+                // Mettre à jour le statut du dernier job
+                const latestJob = data.jobs[0];
+                const statusText = getStatusText(latestJob.status);
+                document.getElementById('lastJobStatus').textContent = statusText;
+                
+                // Afficher tous les jobs
+                let html = '';
+                data.jobs.forEach(job => {
+                    html += renderJobCard(job);
+                });
+                
+                document.getElementById('jobsContainer').innerHTML = html;
+                
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement des jobs:', error);
+            }
+        }
+        
+        // Fonction pour obtenir le texte du statut
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'En attente',
+                'running': 'En cours',
+                'completed': 'Terminé',
+                'completed_with_errors': 'Terminé (avec erreurs)',
+                'failed': 'Échoué',
+                'cancelled': 'Annulé'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // Fonction pour obtenir la classe CSS du statut
+        function getStatusClass(status) {
+            const classMap = {
+                'pending': 'status-pending',
+                'running': 'status-running',
+                'completed': 'status-completed',
+                'completed_with_errors': 'status-completed_with_errors',
+                'failed': 'status-failed',
+                'cancelled': 'status-cancelled'
+            };
+            return classMap[status] || 'status-pending';
+        }
+        
+        // Fonction pour obtenir la classe CSS du document
+        function getDocumentClass(status) {
+            if (status === 'completed') return 'completed';
+            if (status === 'failed') return 'failed';
+            return 'pending';
+        }
+        
+        // Fonction pour rendre une carte de job
+        function renderJobCard(job) {
+            const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
+            const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
+            const statusText = getStatusText(job.status);
+            const statusClass = getStatusClass(job.status);
+            
+            let parametersHtml = '';
+            if (job.parameters && Object.keys(job.parameters).length > 0) {
+                parametersHtml = '<div class="job-parameters"><strong>Paramètres:</strong>';
+                parametersHtml += `<span><strong>Questions/doc:</strong> ${job.parameters.num_questions_per_doc || 'N/A'}</span>`;
+                parametersHtml += `<span><strong>Modèle:</strong> ${job.parameters.model_name || 'N/A'}</span>`;
+                parametersHtml += '</div>';
+            }
+            
+            let progressHtml = '';
+            if (job.progress && Object.keys(job.progress).length > 0) {
+                progressHtml = '<div class="document-list"><strong>Documents:</strong>';
+                for (const [docId, progress] of Object.entries(job.progress)) {
+                    const docClass = getDocumentClass(progress.status);
+                    progressHtml += `
+                        <div class="document-item ${docClass}">
+                            <div class="doc-id">Document ID: ${progress.resource_id}</div>
+                            <div class="doc-stats">
+                                ✓ ${progress.questions_generated || 0} générées | 
+                                💾 ${progress.questions_saved || 0} sauvegardées
+                            </div>
+                            ${progress.error ? `<div class="doc-error">❌ ${progress.error}</div>` : ''}
+                        </div>
+                    `;
+                }
+                progressHtml += '</div>';
+            }
+            
+            let errorsHtml = '';
+            if (job.errors && job.errors.length > 0) {
+                errorsHtml = '<div style="margin-top: 10px;"><strong>Erreurs:</strong><ul>';
+                job.errors.forEach(error => {
+                    errorsHtml += `<li class="error-item">${error}</li>`;
+                });
+                errorsHtml += '</ul></div>';
+            }
+            
+            return `
+                <div class="job-card">
+                    <div class="job-header">
+                        <span class="job-id">Job: ${job.job_id.substring(0, 8)}...</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="job-meta">
+                        Créé: ${createdDate} | Mis à jour: ${updatedDate} | 
+                        ${job.processed_documents || 0}/${job.total_documents || 0} documents
+                    </div>
+                    ${parametersHtml}
+                    ${progressHtml}
+                    ${errorsHtml}
+                    ${job.status === 'running' ? 
+                        '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitemement en cours...</div>' : ''}
+                </div>
+            `;
+        }
+        
+        // Fonction pour générer des questions et les stocker localement
+        async function startQuestionGeneration() {
+            const numQuestions = parseInt(document.getElementById('numQuestions').value) || 3;
+            const modelName = document.getElementById('modelSelect').value;
+            const documentId = document.getElementById('documentSelect').value;
+            const chunkId = document.getElementById('chunkSelect').value;
+            const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+            
+            // Vérifier qu'un chunk est sélectionné et que son contenu est disponible
+            if (!chunkId || chunkContent === 'Sélectionnez un chunk pour afficher son contenu...' || chunkContent === 'Sélectionnez un document puis un chunk...') {
+                alert('❌ Veuillez sélectionner un chunk avec du contenu valide.');
+                return;
+            }
+            
+            // Désactiver le bouton
+            const generateBtn = document.getElementById('generateBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            generateBtn.disabled = true;
+            refreshBtn.disabled = true;
+            generateBtn.textContent = 'Génération en cours...';
+            
+            // Afficher le loading
+            const loading = document.getElementById('loadingIndicator');
+            loading.classList.add('active');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            
+            try {
+                // Appeler l'API pour générer des questions sur ce chunk spécifique
+                // On utilise un endpoint direct pour générer des QA sur un document
+                const qa_agent_api = API_BASE + '/api/qa-single';
+                
+                // Confirmer avec l'utilisateur que nous allons générer des questions UNIQUEMENT pour ce chunk
+            const shouldProceed = confirm(`Vous allez générer ${numQuestions} question(s) UNIQUEMENT pour le chunk sélectionné.\n\nVoulez-vous continuer ?`);
+            if (!shouldProceed) {
+                generateBtn.disabled = false;
+                refreshBtn.disabled = false;
+                generateBtn.textContent = '✨ Générer des Questions';
+                loading.classList.remove('active');
+                return;
+            }
+            
+            const numAnswersPerQuestion = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+            const requestBody = {
+                message: `Génère exactement ${numQuestions} questions avec leurs réponses basées sur le texte suivant. ${chunkContent} Ne génère AUCUNE question en dehors de ce texte.`,
+                document: chunkContent,
+                num_questions: numQuestions,
+                num_answers: numAnswersPerQuestion,
+                model: modelName
+            };
+                
+                const response = await fetch(qa_agent_api, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = `Erreur: ${response.status} - ${response.statusText}`;
+                    if (errorText) {
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            errorMessage = errorData.detail || errorMessage;
+                        } catch (e) {
+                            errorMessage = errorText || errorMessage;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                const data = await response.json();
+                
+                // Vérifier que l'on a des questions
+                if (data && data.QA_list && data.QA_list.length > 0) {
+                    const newQuestions = data.QA_list.map((qa, index) => ({
+                        id: `local-${Date.now()}-${index}`,
+                        question: qa.question,
+                        answer: qa.answer,
+                        chunk_id: chunkId,
+                        document_id: documentId ? parseInt(documentId) : null,
+                        model: modelName,
+                        created_at: new Date().toISOString(),
+                        validated: false,
+                        editable: true
+                    }));
+                    
+                    // Sauvegarder les questions en sessionStorage
+                    saveQuestionsToSession(newQuestions);
+                    
+                    // Afficher les questions générées
+                    renderGeneratedQuestions();
+                    
+                    alert(`✅ ${newQuestions.length} question(s) générée(s) et sauvegardée(s) localement!`);
+                } else {
+                    throw new Error('Aucune question générée par le modèle');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération:', error);
+                alert('❌ Erreur: ' + error.message);
+            } finally {
+                generateBtn.disabled = false;
+                refreshBtn.disabled = false;
+                generateBtn.textContent = '✨ Générer des Questions';
+                loading.classList.remove('active');
+            }
+        }
+        
+        // Fonction pour sauvegarder les questions dans le sessionStorage
+        function saveQuestionsToSession(newQuestions) {
+            let existingQuestions = JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+            existingQuestions = existingQuestions.concat(newQuestions);
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(existingQuestions));
+        }
+        
+        // Fonction pour récupérer les questions du sessionStorage
+        function getQuestionsFromSession() {
+            return JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+        }
+        
+        // Fonction pour supprimer une question du sessionStorage
+        function removeQuestionFromSession(questionId) {
+            let questions = getQuestionsFromSession();
+            questions = questions.filter(q => q.id !== questionId);
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(questions));
+        }
+        
+        // Fonction pour afficher les questions générées
+        function renderGeneratedQuestions() {
+            const container = document.getElementById('generatedQuestionsContainer');
+            const validateAllBtn = document.getElementById('validateAllBtn');
+            const exportLogBtn = document.getElementById('exportLogBtn');
+            const questions = getQuestionsFromSession();
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>';
+                validateAllBtn.style.display = 'none';
+                exportLogBtn.style.display = 'none';
+                return;
+            }
+            
+            validateAllBtn.style.display = 'inline-block';
+            
+            // Afficher le bouton d'export si des logs existent
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+            
+            let html = '<div class="questions-list">';
+            questions.forEach((q, index) => {
+                // Créer des IDs uniques pour les champs editables
+                const questionId = `edit-question-${q.id}`;
+                const answerId = `edit-answer-${q.id}`;
+                
+                html += `
+                    <div class="question-card" data-id="${q.id}" data-index="${index}">
+                        <div class="question-header">
+                            <strong>Question ${index + 1}</strong>
+                            <div>
+                                <button class="validate-btn" onclick="validateQuestion('${q.id}')">✅ Valider</button>
+                                <button class="delete-btn" onclick="deleteQuestion('${q.id}')">❌ Supprimer</button>
+                            </div>
+                        </div>
+                        <textarea id="${questionId}" class="editable-question" onchange="updateQuestionInSession('${q.id}', this.value, document.getElementById('${answerId}').value)">${escapeHtml(q.question)}</textarea>
+                        <textarea id="${answerId}" class="editable-answer" onchange="updateQuestionInSession('${q.id}', document.getElementById('${questionId}').value, this.value)">${escapeHtml(q.answer)}</textarea>
+                        ${q.chunk_id ? `<div class="question-meta">Chunk ID: ${q.chunk_id} | Document ID: ${q.document_id || 'N/A'} | Modèle: ${q.model || 'N/A'}</div>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Fonction pour mettre à jour une question dans le sessionStorage
+        function updateQuestionInSession(questionId, newQuestion, newAnswer) {
+            const questions = getQuestionsFromSession();
+            const updatedQuestions = questions.map(q => {
+                if (q.id === questionId) {
+                    return { ...q, question: newQuestion, answer: newAnswer };
+                }
+                return q;
+            });
+            sessionStorage.setItem('unvalidated_questions', JSON.stringify(updatedQuestions));
+        }
+        
+        // Fonction pour échapper le HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Fonction pour formater une ligne CSV
+        function formatCSVRow(data) {
+            return data.map(field => {
+                if (field === null || field === undefined) return '';
+                const stringField = String(field).replace(/"/g, '""');
+                if (stringField.includes(',') || stringField.includes('\n') || stringField.includes('"')) {
+                    return `"${stringField}"`;
+                }
+                return stringField;
+            }).join(',');
+        }
+        
+        // Fonction pour logger une action sur une question
+        function logQuestionAction(question, action) {
+            let logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            const logEntry = {
+                model: question.model || 'N/A',
+                document_id: question.document_id || 'N/A',
+                chunk_id: question.chunk_id || 'N/A',
+                question_text: question.question || '',
+                answer_text: question.answer || '',
+                action: action,
+                timestamp: new Date().toISOString()
+            };
+            logs.push(logEntry);
+            sessionStorage.setItem('question_actions_log', JSON.stringify(logs));
+            updateExportButtonVisibility();
+            return logEntry;
+        }
+        
+        // Fonction pour mettre à jour l'affichage du bouton d'export CSV
+        function updateExportButtonVisibility() {
+            const exportLogBtn = document.getElementById('exportLogBtn');
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            if (exportLogBtn) {
+                exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+            }
+        }
+        
+        // Fonction pour exporter le journal CSV
+        function exportActionsLogToCSV() {
+            const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+            if (logs.length === 0) {
+                alert('Aucune action à exporter.');
+                return;
+            }
+            const header = ['model', 'document_id', 'chunk_id', 'question_text', 'answer_text', 'action', 'timestamp'];
+            let csvContent = formatCSVRow(header) + '\n';
+            logs.forEach(log => {
+                const row = [
+                    log.model || '',
+                    log.document_id || '',
+                    log.chunk_id || '',
+                    log.question_text || '',
+                    log.answer_text || '',
+                    log.action || '',
+                    log.timestamp || ''
+                ];
+                csvContent += formatCSVRow(row) + '\n';
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `journal_actions_questions_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Fonction pour valider une question (la sauvegarder en BDD)
+        async function validateQuestion(questionId) {
+            if (!confirm('Valider cette question et la sauvegarder en base de données?')) {
+                return;
+            }
+            
+            const questions = getQuestionsFromSession();
+            const questionToSave = questions.find(q => q.id === questionId);
+            
+            if (!questionToSave) {
+                alert('Question introuvable');
+                return;
+            }
+            
+            try {
+                // Envoie la question à l'API pour la sauvegarder dans le backend
+                const response = await fetch(QUESTIONS_API + '/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: questionToSave.question,
+                        answers: [questionToSave.answer],
+                        chunk_id: questionToSave.chunk_id,
+                        model: questionToSave.model || 'local-generation',
+                        difficulty_level: 3
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur: ${response.status} - ${response.statusText}`);
+                }
+                
+                // Logger l'action de validation
+                logQuestionAction(questionToSave, 'VALIDATION');
+                
+                // Supprimer la question du localStorage
+                removeQuestionFromSession(questionId);
+                
+                // Rafraîchir l'affichage
+                renderGeneratedQuestions();
+                
+                alert('✅ Question validée et sauvegardée en base de données!');
+                
+            } catch (error) {
+                console.error('Erreur lors de la validation:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        // Fonction pour supprimer une question localement
+        function deleteQuestion(questionId) {
+            if (!confirm('Supprimer cette question de la file d\'attente?')) {
+                return;
+            }
+            
+            const questions = getQuestionsFromSession();
+            const questionToDelete = questions.find(q => q.id === questionId);
+            if (questionToDelete) {
+                logQuestionAction(questionToDelete, 'SUPPRESSION');
+            }
+            
+            removeQuestionFromSession(questionId);
+            renderGeneratedQuestions();
+        }
+        
+        // Fonction pour valider toutes les questions
+        async function validateAllQuestions() {
+            const questions = getQuestionsFromSession();
+            
+            if (questions.length === 0 || !confirm(`Valider TOUTES les ${questions.length} questions?`)) {
+                return;
+            }
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (const question of questions) {
+                try {
+                    const response = await fetch(QUESTIONS_API + '/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question: question.question,
+                            answers: [question.answer],
+                            chunk_id: question.chunk_id,
+                            model: question.model || 'local-generation',
+                            difficulty_level: 3
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                        logQuestionAction(question, 'VALIDATION');
+                    } else {
+                        errorCount++;
+                        console.error(`Erreur validation question ${question.id}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Erreur validation question ${question.id}:`, error);
+                }
+            }
+            
+            // Effacer toutes les questions du sessionStorage
+            sessionStorage.removeItem('unvalidated_questions');
+            renderGeneratedQuestions();
+            
+            alert(`✅ ${successCount} question(s) validées avec succès! ${errorCount > 0 ? `\n❌ ${errorCount} échec(s).` : ''}`);
+        }
+        
+        // Fonction pour obtenir la classe CSS du statut de question
+        function getQuestionStatusClass(status) {
+            const classMap = {
+                'generated': 'status-running',
+                'validated': 'status-completed',
+                'pending': 'status-pending',
+                'rejected': 'status-failed'
+            };
+            return classMap[status] || 'status-pending';
+        }
+        
+        // Fonction pour charger les questions existantes d'un chunk
+        async function loadExistingQuestionsForChunk(chunkId) {
+            const container = document.getElementById('existingQuestionsContainer');
+            
+            try {
+                const response = await fetch(API_BASE + '/api/admin/questions/chunk/' + chunkId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.questions && data.questions.length > 0) {
+                    renderExistingQuestions(data.questions, chunkId);
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question existante pour ce chunk.</p>';
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des questions existantes:', error);
+                container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Erreur lors du chargement des questions existantes.</p>';
+            }
+        }
+        
+        // Fonction pour afficher les questions existantes
+        function renderExistingQuestions(questions, chunkId) {
+            const container = document.getElementById('existingQuestionsContainer');
+            
+            let html = '<div class="questions-list">';
+            
+            questions.forEach((q, index) => {
+                const questionId = q.question_id;
+                const questionContent = escapeHtml(q.content);
+                const status = q.status || 'generated';
+                const statusClass = getQuestionStatusClass(status);
+                
+                // Formatage des réponses existantes
+                let answersHtml = '<div class="existing-answers">';
+                if (q.answers && q.answers.length > 0) {
+                    q.answers.forEach((answer, idx) => {
+                        const answerContent = escapeHtml(answer.content);
+                        const isCorrect = answer.is_correct ? '✓' : '✗';
+                        answersHtml += `
+                            <div class="answer-item" style="margin: 5px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
+                                <strong>${isCorrect} Réponse ${idx + 1}:</strong> ${answerContent}
+                            </div>
+                        `;
+                    });
+                } else {
+                    answersHtml += '<p style="color: #666; font-style: italic;">Aucune réponse associée</p>';
+                }
+                answersHtml += '</div>';
+                
+                // Bouton pour générer de nouvelles réponses
+                const generateAnswersBtn = '<button class="btn" onclick="handleGenerateAnswers(this)" ' +
+                            'data-question-id="' + questionId + '" ' +
+                            'data-chunk-id="' + chunkId + '" ' +
+                            'style="margin-top: 10px; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">' +
+                            '🔄 Générer de nouvelles réponses</button>';
+                
+                html += `
+                    <div class="question-card existing-question" data-id="${questionId}" data-chunk-id="${chunkId}">
+                        <div class="question-header">
+                            <strong>Question ${index + 1}</strong>
+                            <span class="status-badge ${statusClass}">${status.toUpperCase()}</span>
+                        </div>
+                        <div class="question-text" style="margin: 10px 0;">${questionContent}</div>
+                        <div style="margin-top: 10px;">
+                            <strong>Réponses existantes :</strong>
+                            ${answersHtml}
+                        </div>
+                        <div class="actions" style="margin-top: 15px;">
+                            ${generateAnswersBtn}
+                        </div>
+                        <div class="question-meta">Question ID: ${q.question_id} | Chunk ID: ${q.chunk_id || chunkId}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Fonction pour générer de nouvelles réponses à une question
+        async function handleGenerateAnswers(button) {
+            console.log('handleGenerateAnswers called');
+            const questionId = button.dataset.questionId;
+            const chunkId = button.dataset.chunkId;
+            
+            console.log('Question ID:', questionId, 'Chunk ID:', chunkId);
+            
+            const numNewAnswers = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+            const modelName = document.getElementById('modelSelect').value;
+            const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+            
+            if (!chunkContent || chunkContent.includes('Sélectionnez un chunk')) {
+                alert('❌ Veuillez sélectionner un chunk valide.');
+                return;
+            }
+            
+            const shouldProceed = confirm(`Vous allez générer ${numNewAnswers} nouvelle(s) réponse(s) pour cette question.\n\nVoulez-vous continuer ?`);
+            if (!shouldProceed) {
+                return;
+            }
+            
+            // Obtenir la question pour la passer au modèle
+            const questionCard = button.closest('.question-card');
+            const questionElement = questionCard ? questionCard.querySelector('.question-text') : null;
+            const questionText = questionElement ? questionElement.textContent : '';
+            
+            if (!questionText) {
+                alert('❌ Impossible de récupérer le texte de la question.');
+                return;
+            }
+            
+            try {
+                // Appeler l'API pour générer de nouvelles réponses
+                const apiUrl = API_BASE + '/api/admin/questions/generate-answers';
+                const requestBody = {
+                    question_text: questionText,
+                    document_context: chunkContent,
+                    num_answers: numNewAnswers,
+                    model_name: modelName
+                };
+                
+                console.log('Calling API:', apiUrl, 'with body:', requestBody);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('API response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API error:', errorText);
+                    throw new Error(`Erreur API: ${response.status} - ${response.statusText} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API response data:', data);
+                
+                if (data && data.answers && data.answers.length > 0) {
+                    // Sauvegarder les nouvelles réponses pour cette question
+                    await saveNewAnswersForQuestion(questionId, chunkId, data.answers, modelName);
+                    
+                    // Recharger les questions pour mettre à jour l'affichage
+                    await loadExistingQuestionsForChunk(chunkId);
+                    
+                    alert(`✅ ${data.answers.length} nouvelle(s) réponse(s) générée(s) et ajoutée(s) à la question!`);
+                } else {
+                    throw new Error('Aucune réponse générée par le modèle');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération des réponses:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        // Fonction pour sauvegarder de nouvelles réponses à une question existante
+        async function saveNewAnswersForQuestion(questionId, chunkId, answers, modelName) {
+            try {
+                // Sauvegarder chaque nouvelle réponse
+                for (const answer of answers) {
+                    const response = await fetch(API_BASE + `/api/admin/questions/${questionId}/add-answer`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            answer_text: answer,
+                            is_correct: true,
+                            model_name: modelName
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.warn(`Erreur lors de la sauvegarde d'une réponse: ${response.status} - ${errorText}`);
+                        // Ne pas bloquer le processus si une sauvegarde échoue
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde des réponses:', error);
+                throw error;
+            }
+        }
+        
+        // Fonction pour démarrer le rafraîchissement automatique
+        function startAutoRefresh() {
+            // Arrêter le rafraîchissement existant
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            // Rafraîchir immédiatement
+            refreshJobs();
+            refreshStats();
+            
+            // Rafraîchir toutes les 3 secondes
+            refreshInterval = setInterval(() => {
+                refreshJobs();
+            }, 3000);
+        }
+        
+        // Fonction pour arrêter le rafraîchissement automatique
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+        
+        // Initialisation de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialiser le sélecteur de documents
+            const docSelect = document.getElementById('documentSelect');
+            docSelect.innerHTML = '<option value="">Chargement des documents...</option>';
+            
+            // Charger les documents
+            refreshStats().then(() => {
+                console.log('Documents initialisés');
+            }).catch(error => {
+                console.error('Échec de l\'initialisation des documents:', error);
+                docSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+            
+            // Charger les jobs et les questions
+            refreshJobs();
+            renderGeneratedQuestions();
+            updateExportButtonVisibility();
+        });
+        
+        // Arrêter le rafraîchissement automatique lorsque la page est masquée
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else if (currentJobId) {
+                startAutoRefresh();
+            }
+        });
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, selected: "mistral/mistral-tiny" });
+  });

@@ -11,6 +11,10 @@ Les assets (CSS, JS, images) restent servis par `StaticFiles` sous `/static/`.
 app/
 ├── routers/
 │   └── pages.py              Routes HTML du portail + environnement Jinja2 partagé
+├── static/
+│   ├── css/                  Un fichier CSS par page (+ theme_cards.css partagé)
+│   ├── js/                   Un fichier JS par page (bootstrap + logique inline extraits)
+│   └── *.css, *.js           Styles/scripts communs (style.css, models.js, …)
 └── templates/
     ├── base.html             Squelette HTML (DOCTYPE, head, body, scripts)
     ├── macros/

@@ -460,9 +460,5 @@
 
 {% endblock %}
 {% block scripts %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
-  });
-</script>
+<script src="{{ static_prefix }}js/tutorials_page.js"></script>
 {% endblock %}
