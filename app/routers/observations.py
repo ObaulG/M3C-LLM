@@ -14,6 +14,8 @@ from database.database import (
     get_db_connection,
     start_document_reading_session,
     close_document_reading_session,
+    record_document_reading_open_observation,
+    complete_document_reading_observation,
 )
 
 router = APIRouter(prefix="/api/observations", tags=["Observations"])
@@ -36,6 +38,7 @@ class DocumentReadingCloseRequest(BaseModel):
 
 class DocumentReadingOpenResponse(BaseModel):
     reading_session_id: int = Field(..., description="Identifiant de la session de lecture cre")
+    observation_id: Optional[int] = Field(None, description="Identifiant de l'observation de lecture cre (table observations)")
 
 
 class DocumentReadingCloseResponse(BaseModel):
@@ -57,18 +60,34 @@ async def open_document_observation(
     """
     user_id = auth.user_id_from_token(m3c_api_key)
     anonymous_id = None if user_id is not None else request.anonymous_id
-    reading_session_id = await start_document_reading_session(
-        await get_db_connection(),
-        resource_id=request.resource_id,
-        user_id=user_id,
-        anonymous_id=anonymous_id,
-        num_page=request.num_page,
-        metadata=request.metadata,
-    )
-    if reading_session_id is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Erreur lors de l'enregistrement de l'ouverture du document.")
-    return DocumentReadingOpenResponse(reading_session_id=reading_session_id)
+    conn = await get_db_connection()
+    try:
+        reading_session_id = await start_document_reading_session(
+            conn,
+            resource_id=request.resource_id,
+            user_id=user_id,
+            anonymous_id=anonymous_id,
+            num_page=request.num_page,
+            metadata=request.metadata,
+        )
+        if reading_session_id is None:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Erreur lors de l'enregistrement de l'ouverture du document.")
+        observation_id = await record_document_reading_open_observation(
+            conn,
+            user_id=user_id,
+            anonymous_id=anonymous_id,
+            resource_id=request.resource_id,
+            num_page=request.num_page,
+            reading_session_id=reading_session_id,
+            metadata=request.metadata,
+        )
+        return DocumentReadingOpenResponse(
+            reading_session_id=reading_session_id,
+            observation_id=observation_id,
+        )
+    finally:
+        await conn.close()
 
 
 @router.post("/document-close", response_model=DocumentReadingCloseResponse)
@@ -78,14 +97,24 @@ async def close_document_observation(request: DocumentReadingCloseRequest):
     La dure de lecture est calcule ct serveur  partir de opened_at.
     Compatible avec navigator.sendBeacon (Content-Type: application/json).
     """
-    result = await close_document_reading_session(
-        await get_db_connection(),
-        reading_session_id=request.reading_session_id,
-        close_reason=request.close_reason,
-    )
-    if result is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Session de lecture introuvable ou dj ferme.")
+    conn = await get_db_connection()
+    try:
+        result = await close_document_reading_session(
+            conn,
+            reading_session_id=request.reading_session_id,
+            close_reason=request.close_reason,
+        )
+        if result is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Session de lecture introuvable ou dj ferme.")
+        await complete_document_reading_observation(
+            conn,
+            reading_session_id=request.reading_session_id,
+            duration_seconds=result["duration_seconds"],
+            close_reason=request.close_reason,
+        )
+    finally:
+        await conn.close()
     return DocumentReadingCloseResponse(
         reading_session_id=request.reading_session_id,
         closed_at=result["closed_at"],

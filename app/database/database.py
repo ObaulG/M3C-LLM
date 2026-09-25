@@ -2149,3 +2149,126 @@ async def get_manual_observations(
             })
 
     return observations
+
+
+# ============================================================================
+# OBSERVATION DE LECTURE DE DOCUMENTS (m3c-chatbot) - schéma observations
+# ============================================================================
+
+async def record_document_reading_open_observation(
+    conn,
+    user_id: Optional[int],
+    anonymous_id: Optional[str],
+    resource_id: int,
+    num_page: Optional[int] = None,
+    reading_session_id: Optional[int] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Crée l'observation comportementale de lecture à l'ouverture d'un PDF
+    dans m3c-chatbot (table observations du schéma user_knowledge_model.sql).
+
+    L'utilisateur observé est identifié par son user_id (int, table users) s'il
+    est connecté, sinon par son identifiant anonyme persistant.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: user_id (int) de l'utilisateur connecté, sinon None.
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté.
+        resource_id: resource_id du document ouvert.
+        num_page: Numéro de page ciblé à l'ouverture.
+        reading_session_id: Identifiant de la session de lecture (document_reading_sessions).
+        metadata: Métadonnées du client (page d'origine, etc.).
+
+    Returns:
+        L'ID de l'observation créée, ou None en cas d'erreur.
+    """
+    obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
+    context = {"page": "m3c-chatbot.html", "resource_id": resource_id}
+    if reading_session_id is not None:
+        context["reading_session_id"] = reading_session_id
+    if num_page is not None:
+        context["num_page"] = num_page
+    if metadata:
+        context.update(metadata)
+
+    payload = {
+        "event": "document_reading_open",
+        "resource_id": resource_id,
+        "num_page": num_page,
+        "reading_session_id": reading_session_id,
+    }
+
+    result = await create_manual_observation(
+        conn,
+        user_id=obs_user_id,
+        observation_type="behavioral",
+        specific_type="document_reading",
+        context=context,
+        confidence=1.0,
+        is_raw=True,
+        payload=payload,
+        targets=None,
+    )
+    return result["observation_id"] if result else None
+
+
+async def complete_document_reading_observation(
+    conn,
+    reading_session_id: int,
+    duration_seconds: Optional[int],
+    close_reason: str,
+) -> bool:
+    """
+    Complète l'observation de lecture d'ouverture avec un payload 'processed'
+    contenant la durée de lecture et la raison de fermeture
+    (table observation_payloads, PK (observation_id, payload_type)).
+
+    L'observation d'ouverture est retrouvée via context->'$.reading_session_id'.
+
+    Args:
+        conn: Connexion MySQL.
+        reading_session_id: Identifiant de la session de lecture fermée.
+        duration_seconds: Durée de lecture en secondes (calculée côté serveur).
+        close_reason: 'button', 'document_change' ou 'page_hide'.
+
+    Returns:
+        True si le payload a été ajouté, False sinon.
+    """
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                SELECT id FROM observations
+                WHERE JSON_EXTRACT(context, '$.reading_session_id') = %s
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (reading_session_id,),
+            )
+            row = await cur.fetchone()
+            if not row:
+                return False
+            observation_id = row[0]
+            await cur.execute(
+                """
+                INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                VALUES (%s, 'processed', %s, %s)
+                """,
+                (
+                    observation_id,
+                    json.dumps({
+                        "event": "document_reading_close",
+                        "reading_session_id": reading_session_id,
+                        "close_reason": close_reason,
+                        "duration_seconds": duration_seconds,
+                    }),
+                    json.dumps({"origin": "document_reading_session"}),
+                ),
+            )
+        await conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erreur compl\u00e8tement observation lecture session {reading_session_id}: {e}")
+        await conn.rollback()
+        return False
