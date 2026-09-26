@@ -4,53 +4,41 @@
 
 {# Liste centrale de toutes les pages du portail. #}
 {# Chaque entrée : {href, label, group}. group: 'user' | 'admin'. #}
-{# href est toujours relatif à la racine static (ex 'admin/indexation.html'). #}
+{# href est toujours une route de l'application (ex 'admin/indexation'). #}
 {%- set ALL_PAGES = [
-    {'href': 'index.html', 'label': 'Index', 'group': 'user'},
-    {'href': 'tutorials.html', 'label': 'Explications', 'group': 'user'},
-    {'href': 'm3c-chatbot.html', 'label': 'ChatBot RAG', 'group': 'user'},
-    {'href': 'question_session.html', 'label': 'Chatbot Inversé', 'group': 'user'},
-    {'href': 'rag_visualization.html', 'label': 'Visualisation RAG', 'group': 'user'},
-    {'href': 'questions_management.html', 'label': 'Gestion Q/R', 'group': 'user'},
-    {'href': 'solr_search.html', 'label': 'Recherche Solr', 'group': 'user'},
-    {'href': 'm3c-chatbot-history.html', 'label': 'Historique', 'group': 'user'},
-    {'href': 'auth.html', 'label': 'Connexion', 'group': 'user'},
-    {'href': 'admin/indexation.html', 'label': 'Indexation', 'group': 'admin'},
-    {'href': 'admin/questions_generation.html', 'label': 'Génération Questions', 'group': 'admin'},
-    {'href': 'admin/knowledge_items_generation.html', 'label': 'Knowledge Items', 'group': 'admin'},
-    {'href': 'admin/message_evaluator_admin.html', 'label': 'Test Message Evaluator', 'group': 'admin'},
-    {'href': 'admin/chatbot_admin.html', 'label': 'Admin Chatbot', 'group': 'admin'}
+    {'href': '/', 'label': 'Index', 'group': 'user'},
+    {'href': '/tutorials', 'label': 'Explications', 'group': 'user'},
+    {'href': '/m3c-chatbot', 'label': 'ChatBot RAG', 'group': 'user'},
+    {'href': '/question-session', 'label': 'Chatbot Inversé', 'group': 'user'},
+    {'href': '/rag-visualization', 'label': 'Visualisation RAG', 'group': 'user'},
+    {'href': '/questions-management', 'label': 'Gestion Q/R', 'group': 'user'},
+    {'href': '/solr-search', 'label': 'Recherche Solr', 'group': 'user'},
+    {'href': '/m3c-chatbot-history', 'label': 'Historique', 'group': 'user'},
+    {'href': '/auth', 'label': 'Connexion', 'group': 'user'},
+    {'href': '/profile', 'label': 'Mon Profil', 'group': 'user'},
+    {'href': '/admin/indexation', 'label': 'Indexation', 'group': 'admin'},
+    {'href': '/admin/questions-generation', 'label': 'Génération Questions', 'group': 'admin'},
+    {'href': '/admin/knowledge-items-generation', 'label': 'Knowledge Items', 'group': 'admin'},
+    {'href': '/admin/message-evaluator', 'label': 'Test Message Evaluator', 'group': 'admin'},
+    {'href': '/admin/observations', 'label': 'Observations', 'group': 'admin'},
+    {'href': '/admin/chatbot', 'label': 'Admin Chatbot', 'group': 'admin'}
 ] -%}
 
-{# Préfixe relatif vers la racine static depuis la page courante. #}
-{# page_dir: 'root' | 'admin'. Les pages sous admin/ préfixent les liens racine de '../'. #}
-{%- macro _prefix(page_dir) -%}
-{%- if page_dir == 'admin' %}../{% endif -%}
-{%- endmacro -%}
-
-{# Construit le href relatif correct selon l'emplacement de la page courante. #}
-{%- macro _rel_href(entry, page_dir) -%}
-{%- if entry.group == 'admin' -%}
-    {%- if page_dir == 'admin' -%}{{ entry.href.split('/')|last }}{%- else -%}{{ entry.href }}{%- endif -%}
-{%- else -%}
-    {%- if page_dir == 'admin' -%}../{{ entry.href }}{%- else -%}{{ entry.href }}{%- endif -%}
-{%- endif -%}
-{%- endmacro -%}
+{# Les routes sont absolues : plus besoin de préfixe relatif selon l'emplacement. #}
+{%- macro _rel_href(entry) -%}{{ entry.href }}{%- endmacro -%}
 
 {# Détermine si une entrée est la page courante. #}
-{# page: nom de fichier simple (ex 'indexation.html'), match sur le dernier segment. #}
-{%- macro _is_active(entry, page) -%}
-{{ entry.href.split('/')|last == page }}
-{%- endmacro -%}
+{# page: route de la page courante (ex '/m3c-chatbot'), comparée au href. #}
+{%- macro _is_active(entry, page) -%}{{ entry.href == page }}{%- endmacro -%}
 
 {# Barre de navigation unifiée (variantes header-nav / nav-links). #}
-{# page: nom de fichier de la page courante. page_dir: 'root' | 'admin'. #}
+{# page: route de la page courante. #}
 {# show_admin: inclure les liens admin (défaut true). container: 'header-nav' | 'nav-links'. #}
-{% macro nav_bar(page=None, page_dir='root', show_admin=true, container='header-nav') -%}
+{% macro nav_bar(page=None, show_admin=true, container='header-nav') -%}
 <div class="{{ container }}">
     {%- set entries = ALL_PAGES if show_admin else ALL_PAGES|rejectattr('group', 'equalto', 'admin')|list -%}
     {%- for entry in entries -%}
-    {{ nav_link(_rel_href(entry, page_dir), entry.label, _is_active(entry, page)|trim == 'True') }}
+    {{ nav_link(_rel_href(entry), entry.label, _is_active(entry, page)|trim == 'True') }}
     {%- if not loop.last %}{{ nav_separator() }}{% endif -%}
     {%- endfor -%}
 </div>
@@ -58,28 +46,28 @@
 
 {# En-tête complet : header-main (titre + sous-titre) + barre nav + zone profil. #}
 {# Utilisé par les pages avec .header > .header-main (index, m3c-chatbot, solr_search...). #}
-{% macro header(title, subtitle=None, title_icon=None, page=None, page_dir='root', show_admin=true, include_profile=true) -%}
+{% macro header(title, subtitle=None, title_icon=None, page=None, show_admin=true, include_profile=true) -%}
 <div class="header">
     <div class="header-main">
         <h1>{% if title_icon %}{{ title_icon }} {% endif %}{{ title }}</h1>
         {%- if subtitle %}<p class="subtitle">{{ subtitle }}</p>{%- endif -%}
     </div>
-    {{ nav_bar(page=page, page_dir=page_dir, show_admin=show_admin) }}
+    {{ nav_bar(page=page, show_admin=show_admin) }}
     {%- if include_profile %}
-    {{ profile_widget(page_dir=page_dir) }}
+    {{ profile_widget() }}
     {%- endif %}
 </div>
 {%- endmacro %}
 
 {# En-tête centré compact (titre + nav-links + profil). #}
 {# Utilisé par les pages admin / question_session où .header est centré sans header-main. #}
-{% macro header_centered(title, subtitle=None, page=None, page_dir='root', show_admin=true, include_profile=true) -%}
+{% macro header_centered(title, subtitle=None, page=None, show_admin=true, include_profile=true) -%}
 <div class="header">
     <h1>{{ title }}</h1>
-    {%- if subtitle %}<p>{{ subtitle }}</p>{%- endif -%}
-    {{ nav_bar(page=page, page_dir=page_dir, show_admin=show_admin, container='nav-links') }}
+    {%- if subtitle %}<p>{{ subtitle }}</p>{%- endif %}
+    {{ nav_bar(page=page, show_admin=show_admin, container='nav-links') }}
     {%- if include_profile %}
-    {{ profile_widget(page_dir=page_dir) }}
+    {{ profile_widget() }}
     {%- endif %}
 </div>
 {%- endmacro %}

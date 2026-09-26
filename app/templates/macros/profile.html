@@ -1,11 +1,7 @@
 {# -*- jinja2 -*- Zone profil utilisateur dans l'en-tête. #}
 {# Bascule côté client (auth_widget.js) : mini-form de connexion si non connecté, #}
-{# sinon nom d'utilisateur + lien vers la page de profil (profile.html). #}
-
-{# page_dir: 'root' | 'admin' (pour ajuster les hrefs relatifs). #}
-{% macro profile_widget(page_dir='root') -%}
-{%- set auth_href = 'auth.html' if page_dir == 'root' else '../auth.html' -%}
-{%- set profile_href = 'profile.html' if page_dir == 'root' else '../profile.html' -%}
+{# sinon nom d'utilisateur + lien vers la page de profil (/profile). #}
+{% macro profile_widget() -%}
 <div class="profile-widget" id="profileWidget">
     {# État non connecté : mini-formulaire de connexion compact #}
     <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
@@ -15,12 +11,11 @@
                autocomplete="current-password" required />
         <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
         <span class="profile-message" id="profileMessage"></span>
-        <a href="{{ auth_href }}" class="profile-register-link">S'inscrire</a>
+        <a href="/auth" class="profile-register-link">S'inscrire</a>
     </form>
-
     {# État connecté : masqué par défaut, affiché par auth_widget.js #}
     <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-        <a href="{{ profile_href }}" class="profile-user-link" id="profileUserLink">
+        <a href="/profile" class="profile-user-link" id="profileUserLink">
             <span class="profile-avatar">👤</span>
             <span class="profile-username" id="profileUsernameDisplay">—</span>
         </a>

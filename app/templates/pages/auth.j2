@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Connexion / Inscription - M3C-LLM{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/auth.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>M3C-LLM</h1>
+            <p>Connexion ou cr&eacute;ation de compte</p>
+        </div>
+
+        <div id="authView">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tabLogin" onclick="showTab('login')">Connexion</div>
+                <div class="auth-tab" id="tabRegister" onclick="showTab('register')">Inscription</div>
+            </div>
+
+            <form class="auth-form active" id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginUsername">Nom d'utilisateur ou email</label>
+                    <input type="text" id="loginUsername" name="username" required autocomplete="username" />
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password" />
+                </div>
+                <div class="auth-message" id="loginMessage"></div>
+                <button type="submit" class="btn" id="loginBtn">Se connecter</button>
+            </form>
+
+            <form class="auth-form" id="registerForm" onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label for="regUsername">Nom d'utilisateur</label>
+                    <input type="text" id="regUsername" name="username" required autocomplete="username" />
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" name="email" required autocomplete="email" />
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Mot de passe</label>
+                    <input type="password" id="regPassword" name="password" required minlength="6" autocomplete="new-password" />
+                </div>
+
+                <div class="auth-message" id="registerMessage"></div>
+                <button type="submit" class="btn" id="registerBtn">Cr&eacute;er le compte</button>
+            </form>
+        </div>
+
+        <div class="logged-in" id="loggedInView">
+            <h2>Vous &ecirc;tes connect&eacute;</h2>
+            <div class="user-info" id="userInfo"></div>
+            <button class="btn" onclick="handleLogout()">Se d&eacute;connecter</button>
+        </div>
+
+        <div class="nav-links">
+            <a href="/profile">Mon Profil</a>
+            <a href="/m3c-chatbot">ChatBot RAG</a>
+            <a href="/question-session">Chatbot Invers&eacute;</a>
+            <a href="/questions-management">Gestion Q/R</a>
+            <a href="/rag-visualization">Visualisation RAG</a>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}js/auth.js"></script>
+{% endblock %}

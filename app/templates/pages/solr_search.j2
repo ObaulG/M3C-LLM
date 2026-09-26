@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Recherche Solr - M3C{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/solr_search.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="container">
+            <!-- Header avec navigation -->
+            {{ header(title='Recherche Solr', subtitle='Recherchez et indexez vos documents dans Solr', title_icon='🔍', page='/solr-search', show_admin=false) }}
+
+            <!-- Onglets -->
+            <div class="tab-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('search')">🔍 Recherche</button>
+                    <button class="tab" onclick="switchTab('indexing')">📤 Indexation</button>
+                </div>
+            </div>
+
+            <!-- Contenu des onglets -->
+            <div id="search-tab" class="tab-content active">
+                <!-- Paramètres de recherche -->
+                <div class="settings">
+                <div class="search-bar">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Entrez votre requête de recherche... (ex: *:*, recherche, titre:document)" 
+                        onkeypress="if(event.key==='Enter') performSearch()"
+                    >
+                    <button id="searchButton" onclick="performSearch()">Rechercher</button>
+                </div>
+
+                <div class="settings-row">
+                    <div class="rows-selector">
+                        <label for="rowsSelect">Résultats par page:</label>
+                        <select id="rowsSelect" onchange="updateRows()">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    
+                    <div class="sort-selector">
+                        <label for="sortSelect">Trier par:</label>
+                        <select id="sortSelect">
+                            <option value="">Pertinence (défaut)</option>
+                            <option value="score desc">Score décroissant</option>
+                            <option value="score asc">Score croissant</option>
+                            <option value="id asc">ID croissant</option>
+                            <option value="id desc">ID décroissant</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section des filtres -->
+                <div class="filters-section">
+                    <div class="filters-header">
+                        <h4>Filtres</h4>
+                        <button class="add-filter-btn" onclick="addFilter()">+ Ajouter un filtre</button>
+                    </div>
+                    <div id="filtersContainer"></div>
+                </div>
+            </div>
+
+            <!-- Zone de chargement -->
+            <div class="loading" id="loadingIndicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Recherche en cours...</p>
+            </div>
+
+            <!-- Résultats -->
+            <div class="chat-container" style="padding: 0 20px;" id="resultsContainer">
+                <div class="no-results" id="noResults">
+                    Aucune requête effectuée. Entrez un terme de recherche.
+                </div>
+                <div class="results-info" id="resultsInfo" style="display: none;"></div>
+                <div id="resultsList"></div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <button onclick="prevPage()" id="prevBtn" disabled>← Précédent</button>
+                <span class="page-info" id="pageInfo"></span>
+                <button onclick="nextPage()" id="nextBtn" disabled>Suivant →</button>
+            </div>
+        </div>
+        
+        <!-- Onglet Indexation -->
+        <div id="indexing-tab" class="tab-content">
+            <div class="indexing-section">
+                <h3 style="color: #b74420; margin-top: 0;">📤 Indexation Solr</h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+                    Lancez un job pour indexer vos documents dans Solr. Les documents seront récupérés depuis la base MySQL et formatés pour Solr.
+                </p>
+                
+                <!-- Formulaire de lancement -->
+                <div class="indexing-controls">
+                    <div class="indexing-form-group">
+                        <label for="indexSolrCore">Core Solr</label>
+                        <input type="text" id="indexSolrCore" value="m3c" placeholder="Nom du core">
+                    </div>
+                    
+                    <div class="indexing-form-group">
+                        <label for="indexBatchSize">Taille du batch</label>
+                        <select id="indexBatchSize">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+                    
+                    <div class="indexing-form-group">
+                        <label>
+                            <input type="checkbox" id="indexCommit"> 
+                            Commit après chaque batch
+                        </label>
+                    </div>
+                    
+                    <div class="indexing-form-group">
+                        <label>
+                            <input type="checkbox" id="indexClearIndex"> 
+                            <span style="color: #ef573e;">⚠️ Vider l'index avant</span>
+                        </label>
+                    </div>
+                    
+                    <button class="start-indexing-btn" onclick="startIndexingJob()" id="startIndexingBtn">
+                        Lancer l'indexation
+                    </button>
+                </div>
+                
+                <!-- Résultat du lancement -->
+                <div id="indexingResult" style="display: none;"></div>
+                
+                <!-- Liste des jobs -->
+                <div class="jobs-section">
+                    <div class="jobs-header">
+                        <h4>Jobs d'indexation</h4>
+                        <button class="refresh-jobs-btn" onclick="loadJobs()">↻ Rafraîchir</button>
+                    </div>
+                    <div id="jobsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}js/solr_search.js"></script>
+{% endblock %}

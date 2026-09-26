@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Interface PDF et Chat - M3C{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/question_session.css" />
+{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}test-mediation.js"></script>
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="collapse">
+            <div class="document-selector">
+                <h3>Documents disponibles</h3>
+                <div class="loading-documents" id="loadingDocuments">
+                    <div class="spinner-small"></div>
+                    <p>Chargement des documents...</p>
+                </div>
+                <ul class="document-list" id="documentList">
+                    <!-- Les documents seront chargés dynamiquement ici -->
+                </ul>
+            </div>
+
+            <div class="pdf-viewer">
+                <button id="backToList" class="back-button">← Retour à la liste</button>
+                <h2>Document PDF</h2>
+                <iframe id="pdf-iframe" src=""></iframe>
+            </div>
+
+            <div class="container">
+                {{ header(title='Chatbot inversé M3C', subtitle='Système de Questions/Réponses sur documents', title_icon='🤖', page='/question-session', show_admin=false) }}
+
+                <div class="chat-container" id="chatMessages">
+                    <div class="message bot">
+                        <div class="message-content">
+                            👋 Bonjour ! Choisissez un document à étudier.<br><br>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Traitement en cours...</p>
+                </div>
+
+                <div class="input-container">
+                    <input
+                        type="text"
+                        id="questionInput"
+                        placeholder="Posez votre question sur le document..."
+                        onkeypress="if(event.key==='Enter') sendMessage()"
+                    >
+                    <button id="sendButton" onclick="sendMessage()">Envoyer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

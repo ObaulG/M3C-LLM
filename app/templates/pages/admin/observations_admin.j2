@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Administration - Observations manuelles{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/admin_observations_admin.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Administration</h3>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="label">Observations en base</div>
+                    <div class="value" id="observationsCount">-</div>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="loadObservations()">&#128260; Rafraîchir</button>
+        </div>
+        <div class="content-area">
+            {{ header_centered(title='👁 Administration - Observations manuelles', subtitle='Démonstration : appliquez manuellement des observations d\'éléments de connaissance (schéma user_knowledge_model.sql)', page='/admin/observations', show_admin=true) }}
+
+                <div class="schema-note">
+                    Une observation est un événement horodaté, jamais une conclusion : elle est enregistrée dans
+                    <code>observations</code>, ses données dans <code>observation_payloads</code> et les éléments
+                    de connaissance, thèmes ou entités concernés dans <code>observation_targets</code>.
+                    Familles : <b>déclarative</b> (préférences explicites), <b>comportementale</b> (consultation,
+                    recherche, clic), <b>évaluative</b> (réponse libre, score).
+                </div>
+
+                <h2 class="section-title">Appliquer une observation</h2>
+                <div class="form-section">
+                    <form id="observationForm" onsubmit="return submitObservation(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="userId">Utilisateur observé</label>
+                                <select id="userId" required>
+                                    <option value="">-- Chargement... --</option>
+                                </select>
+                                <div class="description">observations.user_id : compte users ou profil user_profiles</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="observationType">Famille d'observation</label>
+                                <select id="observationType" required>
+                                    <option value="declarative">Déclarative (préférence, langue, objectif)</option>
+                                    <option value="behavioral">Comportementale (consultation, clic, recherche)</option>
+                                    <option value="evaluative">Évaluative (réponse libre, score)</option>
+                                </select>
+                                <div class="description">observations.observation_type</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="specificType">Type spécifique</label>
+                                <input type="text" id="specificType" placeholder="ex: language, click, free_response, reading_time" required />
+                                <div class="description">observations.specific_type</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confidence">Confiance (0 à 1)</label>
+                                <input type="number" id="confidence" min="0" max="1" step="0.1" value="1.0" required />
+                                <div class="description">observations.confidence : fiabilité de l'interprétation</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="contextJson">Contexte (JSON)</label>
+                            <textarea id="contextJson" rows="3" placeholder='{"page": "m3c-chatbot", "session_id": "demo", "resource_id": 116782, "device": "desktop"}'></textarea>
+                            <div class="description">observations.context : session, page, ressource, dispositif</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="payloadJson">Payload (JSON, optionnel)</label>
+                            <textarea id="payloadJson" rows="3" placeholder='{"answer": "...", "score": 0.8}'></textarea>
+                            <div class="description">observation_payloads.payload : donnée brute ou résultat structuré</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Cibles (connaissances, thèmes, entités concernés)</label>
+                            <div class="targets-editor">
+                                <div id="targetsContainer"></div>
+                                <button type="button" class="target-add" onclick="addTargetRow()">+ Ajouter une cible</button>
+                            </div>
+                            <div class="description">observation_targets : target_type, target_id, weight</div>
+                        </div>
+                        <button type="submit" class="btn" id="submitBtn">Enregistrer l'observation</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Réinitialiser</button>
+                    </form>
+                </div>
+
+                <h2 class="section-title">Observations enregistrées</h2>
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="filterUser">Filtrer par utilisateur</label>
+                            <select id="filterUser">
+                                <option value="">Tous</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterType">Filtrer par famille</label>
+                            <select id="filterType">
+                                <option value="">Toutes</option>
+                                <option value="declarative">Déclaratives</option>
+                                <option value="behavioral">Comportementales</option>
+                                <option value="evaluative">Évaluatives</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn" onclick="loadObservations()">Appliquer les filtres</button>
+                </div>
+                <div class="loading" id="obsLoading">
+                    <div class="spinner"></div>
+                    <div>Chargement des observations...</div>
+                </div>
+                <div class="observations-table-wrapper">
+                    <table class="observations-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Type</th>
+                                <th>Spécifique</th>
+                                <th>Horodatage</th>
+                                <th>Confiance</th>
+                                <th>Cibles</th>
+                                <th>Contexte</th>
+                                <th>Payload</th>
+                            </tr>
+                        </thead>
+                        <tbody id="observationsBody">
+                            <tr><td colspan="9" class="empty-state">Aucune observation chargée.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}admin/observations_admin.js"></script>
+{% endblock %}

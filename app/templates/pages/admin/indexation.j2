@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Administration - Indexation{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ static_prefix }}css/admin_indexation.css" />
+{% endblock %}
+{% block body %}
+
+    <div class="main_container">
+        <div class="sidebar">
+            <h3>Administration</h3>
+            <div class="stats-section">
+                <p style="padding: 15px; color: #666;">Fonctionnalités d'indexation disponibles.</p>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {{ header_centered(title='📊 Administration - Indexation', subtitle='Indexez tous les documents par métadonnées ou par contenu extrait', page='/admin/indexation', show_admin=true) }}
+
+            <div class="admin-content">
+                <h2 class="section-title">Indexation des Documents</h2>
+                
+                <div class="form-section">
+                    <h3>Choisissez le type d'indexation</h3>
+                    
+                    <div class="count-info">
+                        Indexez vos documents par métadonnées ou par contenu extrait.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="embedderSelect">Modèle d'Embedding</label>
+                        <select id="embedderSelect" class="input-group input-wrapper" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;">
+                            <option value="">Chargement des embedders...</option>
+                        </select>
+                        <div class="description">Sélectionnez le modèle d'embedding à utiliser pour l'indexation</div>
+                    </div>
+                    
+                    <div class="indexation-type">
+                        <div class="indexation-option selected" data-type="all-metadata">
+                            <input type="radio" name="indexType" value="all-metadata" checked id="optAllMetadata">
+                            <label for="optAllMetadata">
+                                <span class="title">📋 Tous les documents - Métadonnées</span>
+                                <span class="desc">Indexer les métadonnées de TOUS les documents existants</span>
+                            </label>
+                        </div>
+                        <div class="indexation-option" data-type="all-with-text">
+                            <input type="radio" name="indexType" value="all-with-text" id="optWithText">
+                            <label for="optWithText">
+                                <span class="title">📄 Documents avec extracted_text - Contenu</span>
+                                <span class="desc">Indexer le contenu extrait (découpé en chunks) de TOUS les documents qui ont un extracted_text</span>
+                            </label>
+                        </div>
+                        <div class="indexation-option" data-type="pdf-from-m3c">
+                            <input type="radio" name="indexType" value="pdf-from-m3c" id="optPdfFromM3c">
+                            <label for="optPdfFromM3c">
+                                <span class="title">📄 PDFs depuis M3C - Contenu</span>
+                                <span class="desc">Indexer les PDFs téléchargés depuis M3C (découpage en chunks)</span>
+                                <span class="count-badge" id="m3cCountBadge" style="display: inline-block; margin-top: 5px; font-size: 12px; color: #b74420;"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="chunkParameters" style="display: none; margin-top: 20px;">
+                        <h4 style="color: #b74420; margin-bottom: 15px;">Paramètres de Découpage</h4>
+                        <div class="input-group">
+                            <div class="input-wrapper">
+                                <label for="chunkSize">Taille des Chunks (caractères)</label>
+                                <input type="number" id="chunkSize" value="2700" min="100" max="10000">
+                                <div class="description">Taille maximale de chaque chunk</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="chunkOverlap">Recouvrement (caractères)</label>
+                                <input type="number" id="chunkOverlap" value="400" min="0" max="5000">
+                                <div class="description">Recouvrement entre les chunks</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="startIndexation()" id="indexBtn" style="margin-top: 20px;">
+                        Lancer l'Indexation
+                    </button>
+                </div>
+                
+                <div class="results-section">
+                    <div id="resultsContainer"></div>
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Indexation en cours, veuillez patienter...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}
+{% block scripts %}
+<script src="{{ static_prefix }}admin/indexation.js"></script>
+{% endblock %}

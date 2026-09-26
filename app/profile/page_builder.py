@@ -6,27 +6,11 @@ la page HTML complète du profil utilisateur.
 """
 from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from typing import Optional, Dict, Any
-import os
+from typing import Dict, Any
 
 from .services import get_user_profile_data, user_exists, _get_profile_db_connection as get_db_connection
 from .models import UserProfileResponse
-
-
-# Chemin vers le dossier des templates
-TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-
-# Initialisation des templates (sera faite au premier appel)
-_templates: Optional[Jinja2Templates] = None
-
-
-def get_templates() -> Jinja2Templates:
-    """Retourne l'instance Jinja2Templates (créée à la première utilisation)."""
-    global _templates
-    if _templates is None:
-        _templates = Jinja2Templates(directory=TEMPLATES_DIR)
-    return _templates
+from routers.pages import get_templates
 
 
 async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
@@ -61,13 +45,8 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
         # Récupérer toutes les données du profil
         profile_data = await get_user_profile_data(user_id, conn)
     
-    # Déterminer le préfixe pour les ressources statiques
-    # Si la requête vient de /admin, utiliser ../static/, sinon static/
-    path_str = str(request.url.path)
-    if "/admin" in path_str or path_str.startswith("/admin"):
-        static_prefix = "../static/"
-    else:
-        static_prefix = "static/"
+    # Les pages sont servies par des routes ; les assets vivent sous /static/
+    static_prefix = "/static/"
     
     # Formater les dates pour l'affichage
     def format_date(dt: Any) -> str:
@@ -157,7 +136,7 @@ async def build_profile_page(user_id: str, request: Request) -> HTMLResponse:
     
     # Rendre le template
     templates = get_templates()
-    return templates.TemplateResponse("pages/profile.j2", context)
+    return templates.TemplateResponse(request, "pages/profile.j2", context)
 
 
 async def build_profile_page_with_auth(request: Request) -> HTMLResponse:

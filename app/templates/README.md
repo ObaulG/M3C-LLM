@@ -1,50 +1,81 @@
 # Templates Jinja2 du portail M3C-LLM
 
-Cette bibliothèque de templates Jinja2 permet de **réutiliser les éléments
-d'affichage** communs à toutes les pages du portail (en-tête, barre de
-navigation, zone de message, cartes de question, boutons, badges, etc.).
+Les pages du portail sont des **templates Jinja2 rendus par des routes FastAPI**
+(`app/routers/pages.py`). Ce ne sont plus des fichiers HTML statiques compilés :
+chaque page est servie par une route du type `/m3c-chatbot`, `/admin/indexation`, etc.
+Les assets (CSS, JS, images) restent servis par `StaticFiles` sous `/static/`.
 
 ## Organisation
 
 ```
-app/templates/
-├── base.html                    Squelette HTML (DOCTYPE, head, body, scripts)
-├── macros/
-│   ├── ui.html                  Macros UI atomiques (btn, badge, spinner,
-│   │                            message, message_input, chat_zone, sources…)
-│   ├── header_nav.html          En-tête + barre de navigation unifiée
-│   ├── profile.html             Zone profil (mini-form / utilisateur connecté)
-│   └── question_card.html       Carte de question + section d'évaluation
-└── pages/                       Pages du portail (une par route)
-    ├── index.j2
-    ├── m3c-chatbot.j2
-    └── admin/indexation.j2 …
+app/
+├── routers/
+│   └── pages.py              Routes HTML du portail + environnement Jinja2 partagé
+├── static/
+│   ├── css/                  Un fichier CSS par page (+ theme_cards.css partagé)
+│   ├── js/                   Un fichier JS par page (bootstrap + logique inline extraits)
+│   └── *.css, *.js           Styles/scripts communs (style.css, models.js, …)
+└── templates/
+    ├── base.html             Squelette HTML (DOCTYPE, head, body, scripts)
+    ├── macros/
+    │   ├── ui.html           Macros UI atomiques (btn, badge, spinner, message…)
+    │   ├── header_nav.html   En-tête + barre de navigation unifiée
+    │   ├── profile.html      Zone profil (mini-form / utilisateur connecté)
+    │   ├── question_card.html, knowledge_item_card.html, …
+    │   └── theme_stats.html, resource_card.html
+    └── pages/                Pages du portail (une par route)
+        ├── index.j2
+        ├── m3c-chatbot.j2
+        ├── profile.j2        (rendue par app/profile/, contexte utilisateur)
+        └── admin/indexation.j2, admin/questions_generation.j2, …
+
 ```
 
 Les macros sont importées automatiquement comme variables globales par
-`app/build_templates.py` : inutile d'écrire `{% import %}` dans les pages.
-Toutes les macros sont accessibles directement (ex. `{{ header(...) }}`,
-`{{ chat_zone(...) }}`, `{{ question_card(q) }}`).
+`app/routers/pages.py` (environnement Jinja2 partagé) : inutile d'écrire
+`{% import %}` dans les pages. Toutes les macros sont accessibles directement
+(ex. `{{ header(...) }}`, `{{ chat_zone(...) }}`, `{{ question_card(q) }}`).
+
+## Routes
+
+| Route | Template |
+|-------|----------|
+| `/` | `pages/index.j2` |
+| `/tutorials` | `pages/tutorials.j2` |
+| `/m3c-chatbot` | `pages/m3c-chatbot.j2` |
+| `/m3c-chatbot-history` | `pages/m3c-chatbot-history.j2` |
+| `/question-session` | `pages/question_session.j2` |
+| `/questions-management` | `pages/questions_management.j2` |
+| `/rag-visualization` | `pages/rag_visualization.j2` |
+| `/solr-search` | `pages/solr_search.j2` |
+| `/auth` | `pages/auth.j2` |
+| `/profile` | `pages/profile.j2` (via `app/profile/page_builder.py`) |
+| `/admin` | redirection vers `/admin/indexation` |
+| `/admin/indexation` | `pages/admin/indexation.j2` |
+| `/admin/questions-generation` | `pages/admin/questions_generation.j2` |
+| `/admin/knowledge-items-generation` | `pages/admin/knowledge_items_generation.j2` |
+| `/admin/message-evaluator` | `pages/admin/message_evaluator_admin.j2` |
+| `/admin/observations` | `pages/admin/observations_admin.j2` |
+| `/admin/chatbot` | alias de `/admin/indexation` |
 
 ## En-tête et barre de navigation unifiés
 
 Toutes les pages du portail sont listées **une seule fois** dans
-`macros/header_nav.html` (constante `ALL_PAGES`). La macro `header()` génère
-un en-tête complet : titre + sous-titre + barre de navigation (toutes les
-pages, avec la page courante marquée `active`) + zone profil.
+`macros/header_nav.html` (constante `ALL_PAGES`, href = route absolue).
+La macro `header()` génère un en-tête complet : titre + sous-titre + barre de
+navigation (avec la page courante marquée `active`) + zone profil.
 
 ```jinja
 {{ header(
     title='Chatbot RAG M3C',
     subtitle='Système de Questions/Réponses sur documents',
     title_icon='🤖',
-    page='m3c-chatbot.html',      # nom du fichier courant (pour le lien actif)
-    page_dir='root',              # 'root' ou 'admin' (ajuste les liens relatifs)
-    show_admin=false              # masquer les liens admin sur les pages user
+    page='/m3c-chatbot',     # route courante (pour le lien actif)
+    show_admin=false          # masquer les liens admin sur les pages user
 ) }}
 ```
 
-Pour les pages au layout centré (admin, question_session) :
+Pour les pages au layout centré (admin, questions_management) :
 `{{ header_centered(...) }}` (variante sans `.header-main`).
 
 ## Zone profil utilisateur
@@ -53,14 +84,13 @@ Pour les pages au layout centré (admin, question_session) :
 `header()`. Affiche :
 
 - **non connecté** : un mini-formulaire de connexion (utilisateur + mot de
-  passe) + lien « S'inscrire » ;
+  passe) + lien « S'inscrire » (route `/auth`) ;
 - **connecté** : le nom de l'utilisateur + lien vers la page de profil
-  (`auth.html`) + bouton Déconnexion.
+  (`/profile`) + bouton Déconnexion.
 
 La bascule est gérée côté client par `app/static/auth_widget.js`, qui s'appuie
-sur le cookie de session `m3c_api_key` (httpOnly, posé par `/api/auth/login` et
-`/api/auth/register`, lu par `/api/auth/me` à chaque chargement de page). La
-session reste ainsi cohérente avec `auth.html`.
+sur le cookie de session `m3c_api_key` (httpOnly, posé par `/api/auth/login`
+et `/api/auth/register`, lu par `/api/auth/me` à chaque chargement de page).
 
 Pour inclure le widget sur une page, rien à faire : `header()` l'ajoute.
 Pour l'exclure : `include_profile=false`.
@@ -72,7 +102,7 @@ Pour l'exclure : `include_profile=false`.
 | `header(...)` / `header_centered(...)` | En-tête + nav unifiée + profil |
 | `nav_bar(...)` | Barre de navigation seule |
 | `nav_link(href, label, active)` | Lien de navigation |
-| `profile_widget(page_dir)` | Zone profil |
+| `profile_widget()` | Zone profil |
 | `message(type, content)` | Bulle de message (`user`/`bot`/`info`/`error`) |
 | `chat_zone(container_id, welcome_type, welcome)` | Zone de chat + accueil |
 | `message_input(input_id, send_id, send_fn, placeholder)` | Saisie + bouton |
@@ -89,36 +119,19 @@ Pour l'exclure : `include_profile=false`.
 | `empty_state(title, hint)` | État vide |
 | `back_button(label, id)` | Bouton de retour |
 
-## Build : compilation en HTML statique
-
-Le portail est servi par `StaticFiles` (FastAPI) ; les pages sont donc des
-fichiers HTML statiques. Le script `app/build_templates.py` compile les
-templates `.j2` en `.html` dans `app/static/` (et `app/static/admin/`), en
-conservant les URLs existantes.
-
-```bash
-# Toutes les pages
-python3 app/build_templates.py
-
-# Une page précise
-python3 app/build_templates.py index.j2
-```
-
-`static_prefix` ('' à la racine, '../' pour les pages admin) est passé
-automatiquement au template pour résoudre correctement `style.css`,
-`auth_widget.js` et les liens relatifs.
-
-## Convertir une page existante
+## Ajouter une page
 
 1. Créer `app/templates/pages/<nom>.j2` (ou `admin/<nom>.j2`).
 2. `extends "base.html"` puis remplir les blocks `title`, `styles`,
    `head_scripts`, `body`, `scripts`.
-3. Remplacer le bloc en-tête/nav par `{{ header(...) }}` (ou
-   `header_centered`).
-4. Remplacer les zones répétitives par les macros (`chat_zone`,
-   `message_input`, `feature_card`, `question_card`, etc.).
-5. Ajouter la page à la liste `PAGES` dans `app/build_templates.py` si
-   nécessaire, puis lancer le build.
+3. Utiliser `{{ header(...) }}` (ou `header_centered`) pour l'en-tête, avec
+   `page='<route>'` pour marquer le lien actif.
+4. Ajouter la route dans `app/routers/pages.py` et l'entrée correspondante
+   dans `ALL_PAGES` (`macros/header_nav.html`) si elle doit apparaître dans la
+   navigation.
+5. Les assets statiques sont référencés via `{{ static_prefix }}<fichier>`
+   (préfixe `/static/`).
 
-Les fichiers HTML d'origine peuvent être conservés comme sauvegarde (le build
-les écrase).
+La page de profil (`/profile`) est rendue par `app/profile/page_builder.py`,
+qui réutilise l'environnement Jinja2 partagé (`routers.pages.get_templates`)
+et fournit le contexte utilisateur (statistiques, observations, connaissances).

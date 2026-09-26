@@ -2184,7 +2184,7 @@ async def record_document_reading_open_observation(
         L'ID de l'observation créée, ou None en cas d'erreur.
     """
     obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
-    context = {"page": "m3c-chatbot.html", "resource_id": resource_id}
+    context = {"page": "/m3c-chatbot", "resource_id": resource_id}
     if reading_session_id is not None:
         context["reading_session_id"] = reading_session_id
     if num_page is not None:
@@ -2320,7 +2320,7 @@ async def record_answer_evaluation_observation(
     """
     obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
     context = {
-        "page": "m3c-chatbot.html",
+        "page": "/m3c-chatbot",
         "session_id": session_id,
         "document_id": document_id,
         "question_id": question_id,
