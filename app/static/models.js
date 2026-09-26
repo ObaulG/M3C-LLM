@@ -94,7 +94,7 @@ async function loadModelsIntoSelect(selectEl, options = {}) {
 
   for (const group of buildOptionGroups(models, options.providerOrder)) {
     if (options.prefixProvider) {
-      for (const option of group.options) {
+      for (const option of group.querySelectorAll('option')) {
         option.value = group.dataset.provider + '/' + option.value;
       }
     }
