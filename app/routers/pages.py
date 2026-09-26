@@ -57,6 +57,11 @@ templates.env.globals.update(
 templates.env.globals["static_prefix"] = "/static/"
 
 
+def get_templates() -> Jinja2Templates:
+    """Retourne l'instance Jinja2Templates partagée pour toutes les pages."""
+    return templates
+
+
 def render(request: Request, template: str, page_title: str, **context) -> HTMLResponse:
     """Rend une page du portail avec le contexte commun à toutes les pages."""
     ctx = {
