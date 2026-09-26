@@ -70,7 +70,7 @@ from routers.sessions import router as sessions_router
 from routers.evaluations import router as evaluations_router
 from routers.models import router as models_router
 from routers.pages import router as pages_router
-
+from routers.questions_admin import router as questions_admin_router
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
 
@@ -186,6 +186,7 @@ app.include_router(question_answer_router)
 app.include_router(models_router)
 app.include_router(pages_router)
 
+app.include_router(questions_admin_router)
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
 app.add_middleware(

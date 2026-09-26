@@ -56,7 +56,7 @@ if system_prompt_generator is None:
     system_prompt_generator = _FALLBACK_PROMPT
 
 
-def get_qa_agent(model: str = "mistral-small", provider: str = "mistral", async_mode: bool = False):
+def get_qa_agent(model: str, provider: str, async_mode: bool = False):
     client = create_client(provider, model, async_mode=async_mode, instructor_mode=Mode.JSON)
     agent = AtomicAgent[QuestionRequestInput, QuestionAnswerList](
         config=AgentConfig(
