@@ -28,7 +28,7 @@ MISTRAL_MODELS = [
 #    "gemma-3-4b", "gemma-3-12b", "gemma-3-27b", "gemini-2.5-flash-live", "gemini-2.0-flash-live"
 #]
 GEMINI_MODELS = []
-OLLAMA_MODELS = ["ministral-3:3b",]
+OLLAMA_MODELS = ["ministral-3:3b","llama3.2:1b", "llama3.2:3b", "qwen3.5:0.8b", "qwen3.5:2b", "qwen3.5:4b"]
 
 class RetrievalResult(BaseModel):
     """Modèle Pydantic pour décrire le résultat d'une requête RAG."""
@@ -228,7 +228,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             List[RAGSource]: Liste de tuples (chunk, score) triés par pertinence.
         """
-        print(f"retrieve_top_k_chunks_from_db on document {specified_document_id}")
+        print(f"retrieve_top_k_chunks_from_db" + f"on document {specified_document_id}" if specified_document_id else "")
 
         # voir app/indexing/services.py, fonction process_pdf_indexing_job etape 5
         # TODO: est-ce qu'on va utiliser plusieurs collections, ou une seule ?
@@ -402,12 +402,16 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         
         # Si prompt est une liste (messages avec historique), l'utiliser directement
         # Sinon, traiter comme un simple prompt string
-        if isinstance(prompt, list):
-            answer = await self.dict_llm[model].ainvoke(prompt)
-        else:
-            answer = await self.dict_llm[model].ainvoke(prompt)
+        try :
+            if isinstance(prompt, list):
+                answer = await self.dict_llm[model].ainvoke(prompt)
+            else:
+                answer = await self.dict_llm[model].ainvoke(prompt)
+        except Exception as e:
+            print(e)
         
         elapsed_time = time.time() - start
+        print("finished in ", elapsed_time)
         if model in OLLAMA_MODELS:
             torch.cuda.synchronize()
             consumed_energy = (pynvml.nvmlDeviceGetTotalEnergyConsumption(handle) - start_energy)/(1000*3600)

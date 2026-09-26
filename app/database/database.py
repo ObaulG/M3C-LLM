@@ -173,7 +173,7 @@ async def get_top_k_similar_chunks_qdrant(
         Liste de dicts avec chunk_id, document_id, content, metadata, similarity
     """
     import asyncio
-    
+    print("get_top_k_similar_chunks_qdrant")
     # Filtre optionnel par document
     query_filter = None
     if specified_document_id:
