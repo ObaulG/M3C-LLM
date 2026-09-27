@@ -95,9 +95,14 @@ class KnowledgeGenerationFromQuestionsRequest(BaseModel):
         default=None,
         description="ID du document (text_documents.id) auquel appartient le chunk"
     )
+    question_id: Optional[int] = Field(
+        default=None,
+        description="ID de la question (text_questions.question_id) si la génération "
+                    "porte sur une seule question. Doit correspondre au qa_item fourni.",
+    )
     qa_items: List[QAItemRequestModel] = Field(
         ...,
-        description="Paires question/réponses à analyser",
+        description="Paires question/réponses à analyser (une seule si question_id est fourni)",
     )
     model: str = Field(
         default="mistral-medium",
@@ -110,6 +115,10 @@ class KnowledgeGenerationResponse(BaseModel):
     chunk_id: str = Field(..., description="ID du chunk analysé")
     document_id: Optional[int] = Field(default=None, description="ID du document")
     model: str = Field(..., description="Modèle LLM utilisé")
+    question_id: Optional[int] = Field(
+        default=None,
+        description="ID de la question si la génération porte sur une seule question",
+    )
     knowledge_items: List[KnowledgeItemModel] = Field(
         default_factory=list, description="knowledge_items extraits"
     )
@@ -129,6 +138,11 @@ class KnowledgeSaveRequest(BaseModel):
     document_id: Optional[int] = Field(
         default=None,
         description="ID du document source (text_documents.id)"
+    )
+    question_id: Optional[int] = Field(
+        default=None,
+        description="ID de la question (text_questions.question_id) à laquelle relier "
+                    "chaque knowledge_item sauvegardé (table knowledge_item_questions)",
     )
     resource_title: Optional[str] = Field(
         default=None,
