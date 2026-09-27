@@ -99,6 +99,20 @@ CREATE TABLE IF NOT EXISTS knowledge_sources (
     UNIQUE KEY uk_knowledge_resource_excerpt (knowledge_id, resource_id, excerpt(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 2.5 Relations connaissances <-> questions (lien direct question/élément de connaissance)
+-- Pas de FOREIGN KEY vers text_questions(question_id) : cette table est créée par
+-- create_user_question_tables.sql, indépendamment de ce script.
+CREATE TABLE IF NOT EXISTS knowledge_item_questions (
+    knowledge_id INT NOT NULL,
+    question_id INT NOT NULL,
+    relevance DECIMAL(5,4) DEFAULT 1.0 COMMENT 'Pertinence de la question pour cette connaissance (0-1)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création du lien',
+    PRIMARY KEY (knowledge_id, question_id),
+    FOREIGN KEY (knowledge_id) REFERENCES knowledge_items(id) ON DELETE CASCADE,
+    INDEX idx_kiq_knowledge (knowledge_id),
+    INDEX idx_kiq_question (question_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================================================
 -- SECTION 3: OBSERVATIONS
 -- ============================================================================

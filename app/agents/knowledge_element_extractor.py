@@ -511,7 +511,8 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                                          db_connection,
                                          resource_id: Optional[int] = None,
                                          document_id: Optional[int] = None,
-                                         author: Optional[str] = None) -> List[int]:
+                                         author: Optional[str] = None,
+                                         question_id: Optional[int] = None) -> List[int]:
     """
     Sauvegarde les candidats de connaissance dans la base de données MySQL.
     
@@ -523,6 +524,8 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
         resource_id: ID de la ressource dans knowledge_resources (si déjà existante)
         document_id: document_id à utiliser si resource_id n'est pas fourni
         author: Auteur par défaut pour les ressources créées
+        question_id: Si fourni, relie chaque knowledge_item sauvegardé à cette question
+            (table knowledge_item_questions)
     
     Returns:
         Liste des IDs des knowledge_items créés
@@ -654,6 +657,18 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                     print(f"Nouvelle connaissance créée: {knowledge_id}")
                 
                 knowledge_ids.append(knowledge_id)
+                
+                # 2.0 Lien direct knowledge_item <-> question
+                if question_id is not None:
+                    try:
+                        await cursor.execute(
+                            "INSERT IGNORE INTO knowledge_item_questions "
+                            "(knowledge_id, question_id, relevance, created_at) "
+                            "VALUES (%s, %s, %s, NOW())",
+                            (knowledge_id, question_id, candidate.confidence)
+                        )
+                    except Exception as e:
+                        print(f"Erreur relation knowledge-question: {e}")
                 
                 # 2.1 Créer les relations entités
                 for entity in candidate.entities:

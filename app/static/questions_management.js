@@ -1540,8 +1540,6 @@ function renderKnowledgeItems(questionId, items) {
         const themes = (item.themes || []).map(t =>
             `<span class="knowledge-badge knowledge-badge-theme">${escapeHtml(t.name)}</span>`
         ).join('');
-        const pageHtml = item.page != null ?
-            `<span class="knowledge-badge">page ${escapeHtml(String(item.page))}</span>` : '';
         const verifiedHtml = item.is_verified ?
             '<span class="knowledge-badge">✓ vérifié</span>' : '';
 
@@ -1551,7 +1549,6 @@ function renderKnowledgeItems(questionId, items) {
                 ${item.summary ? `<div class="knowledge-item-summary">"${escapeHtml(item.summary)}"</div>` : ''}
                 <div class="knowledge-item-meta">
                     ${verifiedHtml}
-                    ${pageHtml}
                     ${entities}
                     ${themes}
                 </div>
