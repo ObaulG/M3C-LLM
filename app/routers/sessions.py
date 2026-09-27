@@ -305,8 +305,7 @@ async def submit_question_session_message(request: QuestionSessionMessage,
             individual_evaluations = [
                 ev.model_dump(mode="json") for ev in (user_response.individual_evaluations or [])
             ]
-            conn = await get_db_connection()
-            try:
+            async with await get_db_connection() as conn:
                 await record_answer_evaluation_observation(
                     conn,
                     user_id=auth.user_id_from_token(http_request.cookies.get("m3c_api_key")),
@@ -326,8 +325,6 @@ async def submit_question_session_message(request: QuestionSessionMessage,
                         "origin": "question_session",
                     },
                 )
-            finally:
-                await conn.close()
         except Exception as e:
             logging.error(f"Erreur lors de l'enregistrement de l'observation d'évaluation : {e}")
     # Sauvegarder dans la base SQL
