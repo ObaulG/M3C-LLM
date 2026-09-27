@@ -280,6 +280,20 @@ async def generate_knowledge_items_from_questions_endpoint(request: KnowledgeGen
             detail="Aucune paire question/réponses fournie",
         )
 
+    # Si la génération porte sur une question précise, s'assurer qu'elle est bien
+    # parmi les qa_items fournis
+    if request.question_id is not None:
+        if len(request.qa_items) != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="question_id fourni : fournir exactement une paire question/réponses",
+            )
+        if request.qa_items[0].question_id != request.question_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="question_id fourni ne correspond pas au qa_item",
+            )
+
     # Récupérer les métadonnées du chunk (page, position) si un chunk_id est fourni
     page = None
     position_in_page = None
@@ -336,6 +350,7 @@ async def generate_knowledge_items_from_questions_endpoint(request: KnowledgeGen
         chunk_id=request.chunk_id,
         document_id=chunk_document_id,
         model=request.model,
+        question_id=request.question_id,
         knowledge_items=knowledge_items,
         count=len(knowledge_items),
         generation_time=round(generation_time, 3),
@@ -398,6 +413,7 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
                 conn,
                 resource_id=resource_id,
                 document_id=doc_id_for_source,
+                question_id=request.question_id,
             )
             print("a")
             # 3. Récupérer le détail par knowledge_item (entités/thèmes/sources liées)
@@ -414,14 +430,18 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
                     source_saved=source_saved,
                 ))
             print("a")
+        message = (f"{len(saved_ids)} knowledge_items sauvegardés pour la ressource "
+                   f"'{resource_title}' (resource_id={resource_id})")
+        if request.question_id is not None:
+            message += f" et liés à la question {request.question_id}"
+
         return KnowledgeSaveResponse(
             success=True,
             resource_id=resource_id,
             saved_ids=saved_ids,
             results=results,
             count=len(saved_ids),
-            message=f"{len(saved_ids)} knowledge_items sauvegardés pour la ressource "
-                    f"'{resource_title}' (resource_id={resource_id})",
+            message=message,
         )
     except HTTPException as e:
         print(f"Erreur lors de la sauvegarde des knowledge_items: {e}")
@@ -443,21 +463,19 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
     "/by-question/{question_id}",
     summary="Liste les knowledge_items associés à une question",
     description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) "
-                "associés à une question : éléments du document de la question, restreints "
-                "à la page du chunk source si elle est connue (lecture seule, aucun appel LLM).",
+                "directement liés à la question via knowledge_item_questions "
+                "(lecture seule, aucun appel LLM).",
 )
 async def list_knowledge_items_by_question(
     question_id: int,
-    same_page: bool = True,
     limit: int = Query(default=100, ge=1, le=500),
 ):
-    """Liste les knowledge_items existants associés à une question (lecture seule)."""
+    """Liste les knowledge_items existants directement liés à une question (lecture seule)."""
     try:
         async with await get_db_connection() as conn:
             items = await get_knowledge_items_by_question_id(
                 conn,
                 question_id=question_id,
-                same_page=same_page,
                 limit=limit,
             )
 

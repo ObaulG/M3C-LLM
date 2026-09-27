@@ -194,7 +194,7 @@
                             ✨ Générer depuis le chunk
                         </button>
                         <button class="btn btn-secondary" onclick="generateKnowledgeItemsFromQuestions()" id="generateFromQuestionsBtn">
-                            ✨ Générer depuis les questions
+                            ✨ Générer depuis la question sélectionnée
                         </button>
                     </div>
                 </div>
@@ -263,6 +263,7 @@
         let currentChunkId = null;
         let currentChunkContent = null;
         let currentChunkQuestions = [];
+        let currentQuestionId = null;
         let generatedItems = [];
         let generatedItemsFromQuestions = [];
 
@@ -384,6 +385,7 @@
 
         function resetChunkQuestions() {
             currentChunkQuestions = [];
+            currentQuestionId = null;
             document.getElementById('chunkQuestionsContainer').innerHTML =
                 '<p style="color:#888; font-size:13px;">Sélectionnez un chunk pour afficher les questions/réponses associées...</p>';
         }
@@ -415,7 +417,7 @@
                 return;
             }
 
-            let html = `<div style="font-size:13px; color:#666; margin-bottom:10px;">${count} question(s) associée(s) à ce chunk</div>`;
+            let html = `<div style="font-size:13px; color:#666; margin-bottom:10px;">${count} question(s) associée(s) à ce chunk — sélectionnez une question pour générer ses knowledge_items</div>`;
             html += questions.map(question => {
                 let badgeClass = 'q-badge-other';
                 if (question.status === 'validated') badgeClass = 'q-badge-validated';
@@ -438,6 +440,11 @@
 
                 return `
                     <div class="question-card">
+                        <label style="display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer;">
+                            <input type="radio" name="selectedQuestion" value="${question.question_id}"
+                                   onchange="selectQuestionForGeneration(${question.question_id})">
+                            <span style="font-size:13px; color:#0d7fa5;">Sélectionner cette question</span>
+                        </label>
                         <div class="q-content"><strong>Q:</strong> ${escapeHtml(question.content)}</div>
                         <div class="q-meta">
                             <span class="q-badge ${badgeClass}">${escapeHtml(question.status || 'inconnu')}</span>
@@ -455,6 +462,10 @@
                 `;
             }).join('');
             container.innerHTML = html;
+        }
+
+        function selectQuestionForGeneration(questionId) {
+            currentQuestionId = parseInt(questionId, 10);
         }
 
         function getDifficultyStars(level) {
@@ -525,21 +536,28 @@
                 showAlert('Veuillez sélectionner un document et un chunk.', 'error');
                 return;
             }
-            if (!currentChunkQuestions || currentChunkQuestions.length === 0) {
-                showAlert('Aucune question/réponse associée à ce chunk. Générez ou associez d\'abord des questions.', 'error');
+            if (!currentQuestionId) {
+                showAlert('Veuillez sélectionner une question dans la liste.', 'error');
                 return;
             }
 
-            const qaItems = currentChunkQuestions.map(q => ({
-                question_id: q.question_id,
-                question: q.content,
-                answers: (q.answers || []).map(a => a.content).filter(c => c),
-            }));
-
-            if (!qaItems.some(qa => qa.answers.length > 0)) {
-                showAlert('Aucune réponse enregistrée pour les questions de ce chunk.', 'error');
+            const question = currentChunkQuestions.find(q => q.question_id === currentQuestionId);
+            if (!question) {
+                showAlert('Question sélectionnée introuvable.', 'error');
                 return;
             }
+
+            const answers = (question.answers || []).map(a => a.content).filter(c => c);
+            if (answers.length === 0) {
+                showAlert('Aucune réponse enregistrée pour cette question.', 'error');
+                return;
+            }
+
+            const qaItem = {
+                question_id: question.question_id,
+                question: question.content,
+                answers: answers
+            };
 
             const model = document.getElementById('modelSelect').value;
             const generateBtn = document.getElementById('generateFromQuestionsBtn');
@@ -556,7 +574,8 @@
                     body: JSON.stringify({
                         chunk_id: currentChunkId,
                         document_id: currentDocumentId,
-                        qa_items: qaItems,
+                        question_id: currentQuestionId,
+                        qa_items: [qaItem],
                         model: model
                     })
                 });
@@ -569,23 +588,23 @@
                 generatedItemsFromQuestions = data.knowledge_items || [];
 
                 document.getElementById('questionsColMeta').textContent =
-                    `${data.count} item(s) — ${data.model} — ${data.generation_time}s`;
+                    `${data.count} item(s) — question #${currentQuestionId} — ${data.model} — ${data.generation_time}s`;
 
                 renderGeneratedItems(generatedItemsFromQuestions, 'knowledgeItemsFromQuestionsContainer');
                 document.getElementById('resultsSection').style.display = 'block';
                 updateColumnButtons();
 
                 if (generatedItemsFromQuestions.length === 0) {
-                    showAlert('Aucun knowledge_item extrait des questions/réponses.', 'error');
+                    showAlert('Aucun knowledge_item extrait de la question/réponse.', 'error');
                 } else {
-                    showAlert(`${generatedItemsFromQuestions.length} knowledge_items générés depuis les questions/réponses.`, 'success');
+                    showAlert(`${generatedItemsFromQuestions.length} knowledge_items générés pour la question #${currentQuestionId}.`, 'success');
                 }
             } catch (error) {
                 console.error('Erreur génération depuis questions:', error);
                 showAlert('Erreur lors de la génération : ' + error.message, 'error');
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.textContent = '✨ Générer depuis les questions';
+                generateBtn.textContent = '✨ Générer depuis la question sélectionnée';
                 document.getElementById('loadingIndicator').classList.remove('active');
             }
         }
@@ -682,16 +701,21 @@
             saveBtn.disabled = true;
             saveBtn.textContent = 'Sauvegarde en cours...';
 
+            const requestBody = {
+                knowledge_items: selectedItems,
+                chunk_id: currentChunkId,
+                document_id: currentDocumentId,
+                resource_type: mode === 'questions' ? 'questions' : 'chunk'
+            };
+            if (mode === 'questions' && currentQuestionId) {
+                requestBody.question_id = currentQuestionId;
+            }
+
             try {
                 const response = await fetch(KNOWLEDGE_API + '/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        knowledge_items: selectedItems,
-                        chunk_id: currentChunkId,
-                        document_id: currentDocumentId,
-                        resource_type: mode === 'questions' ? 'questions' : 'chunk'
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 if (!response.ok) {
