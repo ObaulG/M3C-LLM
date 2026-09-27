@@ -1680,6 +1680,131 @@ async def get_knowledge_items(
     return items
 
 
+async def get_knowledge_items_by_question_id(
+    conn,
+    question_id: int,
+    same_page: bool = True,
+    limit: int = 100,
+) -> List[Dict]:
+    """
+    Récupère les knowledge_items associés à une question (lecture seule).
+
+    Les knowledge_items ne sont pas liés directement aux questions en base :
+    ils sont rattachés à la ressource du document (knowledge_resources.title =
+    "Document {document_id}") avec la page du chunk source
+    (knowledge_sources.page). Les éléments retournés sont donc ceux du document
+    de la question, restreints à la page du chunk de la question si
+    same_page=True et que celle-ci est connue.
+
+    Args:
+        conn: Connexion à la base de données.
+        question_id: Identifiant de la question.
+        same_page: Si True et que la page du chunk de la question est connue,
+            ne retourne que les éléments dont la source est sur cette page.
+        limit: Nombre maximum de résultats.
+
+    Returns:
+        Liste de dicts {id, proposition, summary, is_verified, verification_notes,
+        created_at, updated_at, page, entities: [...], themes: [...]}.
+    """
+    async with conn.cursor() as cur:
+        # 1. Document et page du chunk de la question
+        await cur.execute(
+            """
+            SELECT tc.document_id, tc.num_page
+            FROM text_question_chunks qc
+            JOIN text_chunks tc ON tc.id = qc.chunk_id
+            WHERE qc.question_id = %s
+            LIMIT 1
+            """,
+            (question_id,),
+        )
+        row = await cur.fetchone()
+        if not row:
+            return []
+        document_id, num_page = row[0], row[1]
+
+        # 2. Ressources knowledge_resources du document
+        await cur.execute(
+            "SELECT id FROM knowledge_resources WHERE title = %s",
+            (f"Document {document_id}",),
+        )
+        resource_rows = await cur.fetchall()
+        if not resource_rows:
+            return []
+        resource_ids = [r[0] for r in resource_rows]
+
+        # 3. knowledge_items liés à ces ressources (filtrés sur la page si connue)
+        placeholders = ",".join(["%s"] * len(resource_ids))
+        params = list(resource_ids)
+        query = f"""
+            SELECT DISTINCT ki.id, ki.proposition, ki.summary, ki.is_verified,
+                   ki.verification_notes, ki.created_at, ki.updated_at, ks.page
+            FROM knowledge_items ki
+            JOIN knowledge_sources ks ON ks.knowledge_id = ki.id
+            WHERE ks.resource_id IN ({placeholders})
+        """
+        if same_page and num_page is not None:
+            query += " AND ks.page = %s"
+            params.append(str(num_page))
+        query += " ORDER BY ki.created_at DESC LIMIT %s"
+        params.append(limit)
+
+        await cur.execute(query, tuple(params))
+        rows = await cur.fetchall()
+
+        items = []
+        for row in rows:
+            kid = row[0]
+            # Entités liées
+            await cur.execute(
+                """
+                SELECT e.name, e.type, kie.relevance
+                FROM knowledge_item_entities kie
+                JOIN entities e ON e.id = kie.entity_id
+                WHERE kie.knowledge_id = %s
+                """,
+                (kid,),
+            )
+            entity_rows = await cur.fetchall()
+            entities = [
+                {"name": er[0], "type": er[1],
+                 "relevance": float(er[2]) if er[2] is not None else 1.0}
+                for er in entity_rows
+            ]
+
+            # Thèmes liés
+            await cur.execute(
+                """
+                SELECT t.name, kit.relevance
+                FROM knowledge_item_themes kit
+                JOIN themes t ON t.id = kit.theme_id
+                WHERE kit.knowledge_id = %s
+                """,
+                (kid,),
+            )
+            theme_rows = await cur.fetchall()
+            themes = [
+                {"name": tr[0],
+                 "relevance": float(tr[1]) if tr[1] is not None else 1.0}
+                for tr in theme_rows
+            ]
+
+            items.append({
+                "id": kid,
+                "proposition": row[1],
+                "summary": row[2],
+                "is_verified": bool(row[3]) if row[3] is not None else False,
+                "verification_notes": row[4],
+                "created_at": row[5].isoformat() if row[5] else None,
+                "updated_at": row[6].isoformat() if row[6] else None,
+                "page": row[7],
+                "entities": entities,
+                "themes": themes,
+            })
+    return items
+
+
 # ============================================================================
 # FONCTIONS DE MISE À JOUR DES QUESTIONS ET RÉPONSES
 # ============================================================================

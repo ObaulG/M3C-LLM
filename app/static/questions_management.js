@@ -6,6 +6,8 @@
 // Variables globales
 let currentDocumentId = null;
 let allDocuments = [];
+let currentQuestions = [];
+let knowledgeItemsByQuestion = {};
 
 /**
  * Initialise la page au chargement
@@ -469,12 +471,24 @@ function displayQuestions(questions, count) {
                     <button class="btn btn-edit-question" onclick="enableQuestionEditing(${question.question_id})">
                         ⚙️ Modifier
                     </button>
+                    <button class="btn btn-knowledge-items" onclick="getKnowledgeItemsForQuestion(${question.question_id})">
+                        🧠 Éléments de connaissance
+                    </button>
                     <button class="btn btn-save-changes" onclick="saveQuestionChanges(${question.question_id})" style="display: none;">
                         ✓ Sauvegarder les modifications
                     </button>
                     <button class="btn btn-secondary btn-cancel-edit" onclick="cancelQuestionEditing(${question.question_id})" style="display: none;">
                         × Annuler
                     </button>
+                </div>
+                
+                <!-- Section des éléments de connaissance associés -->
+                <div class="knowledge-items-section" id="knowledge-items-${question.question_id}" style="display: none;">
+                    <h4>🧠 Éléments de connaissance associés</h4>
+                    <div class="knowledge-items-container" id="knowledge-items-container-${question.question_id}">
+                        <p style="font-size: 13px; color: #666;">Cliquez sur le bouton pour afficher les éléments de connaissance de cette question.</p>
+                    </div>
+                    <div class="evaluation-status" id="knowledge-items-status-${question.question_id}"></div>
                 </div>
                 
                 ${evaluationSection}
@@ -509,6 +523,7 @@ function displayQuestions(questions, count) {
         `;
     }).join('');
 
+    currentQuestions = questions;
     contentElement.innerHTML = headerHtml + questionsHtml;
 }
 
@@ -1452,4 +1467,97 @@ async function saveQuestionChanges(questionId) {
         saveButton.innerHTML = originalButtonText;
         saveButton.disabled = false;
     }
+}
+
+async function getKnowledgeItemsForQuestion(questionId) {
+    const section = document.getElementById(`knowledge-items-${questionId}`);
+    const container = document.getElementById(`knowledge-items-container-${questionId}`);
+    const statusElement = document.getElementById(`knowledge-items-status-${questionId}`);
+    const generateButton = document.querySelector(`[onclick*="getKnowledgeItemsForQuestion(${questionId})"]`);
+
+    // Basculer l'affichage si la section est déjà visible et remplie
+    if (section.style.display === 'block' && knowledgeItemsByQuestion[questionId]) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = '<p style="font-size: 13px; color: #666;">Chargement des éléments de connaissance...</p>';
+    if (statusElement) statusElement.innerHTML = '';
+
+    const originalButtonText = generateButton ? generateButton.innerHTML : '🧠 Éléments de connaissance';
+    if (generateButton) {
+        generateButton.innerHTML = 'Chargement...';
+        generateButton.disabled = true;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/knowledge-items/by-question/${questionId}`);
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`HTTP ${response.status} : ${errText}`);
+        }
+
+        const data = await response.json();
+        knowledgeItemsByQuestion[questionId] = data.knowledge_items || [];
+
+        renderKnowledgeItems(questionId, knowledgeItemsByQuestion[questionId]);
+
+        if (statusElement) {
+            if (knowledgeItemsByQuestion[questionId].length === 0) {
+                statusElement.innerHTML = '<span style="color: #dc3545;">Aucun élément de connaissance en base pour cette question.</span>';
+            } else {
+                statusElement.innerHTML = `<span class="success-message">${knowledgeItemsByQuestion[questionId].length} élément(s) de connaissance trouvé(s) en base.</span>`;
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des éléments de connaissance:', error);
+        container.innerHTML = '';
+        if (statusElement) {
+            statusElement.innerHTML = `<span style="color: #dc3545;">Erreur: ${error.message}</span>`;
+        }
+    } finally {
+        if (generateButton) {
+            generateButton.innerHTML = originalButtonText;
+            generateButton.disabled = false;
+        }
+    }
+}
+
+function renderKnowledgeItems(questionId, items) {
+    const container = document.getElementById(`knowledge-items-container-${questionId}`);
+
+    if (!items || items.length === 0) {
+        container.innerHTML = '<p style="font-size: 13px; color: #666;">Aucun élément de connaissance en base pour cette question.</p>';
+        return;
+    }
+
+    const itemsHtml = items.map((item, index) => {
+        const entities = (item.entities || []).map(e =>
+            `<span class="knowledge-badge knowledge-badge-entity">${escapeHtml(e.name)} (${escapeHtml(e.type)})</span>`
+        ).join('');
+        const themes = (item.themes || []).map(t =>
+            `<span class="knowledge-badge knowledge-badge-theme">${escapeHtml(t.name)}</span>`
+        ).join('');
+        const pageHtml = item.page != null ?
+            `<span class="knowledge-badge">page ${escapeHtml(String(item.page))}</span>` : '';
+        const verifiedHtml = item.is_verified ?
+            '<span class="knowledge-badge">✓ vérifié</span>' : '';
+
+        return `
+            <div class="knowledge-item-card">
+                <div class="knowledge-item-proposition">${index + 1}. ${escapeHtml(item.proposition)}</div>
+                ${item.summary ? `<div class="knowledge-item-summary">"${escapeHtml(item.summary)}"</div>` : ''}
+                <div class="knowledge-item-meta">
+                    ${verifiedHtml}
+                    ${pageHtml}
+                    ${entities}
+                    ${themes}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = itemsHtml;
 }
