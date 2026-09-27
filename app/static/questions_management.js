@@ -486,12 +486,7 @@ function displayQuestions(questions, count) {
                 <div class="knowledge-items-section" id="knowledge-items-${question.question_id}" style="display: none;">
                     <h4>🧠 Éléments de connaissance associés</h4>
                     <div class="knowledge-items-container" id="knowledge-items-container-${question.question_id}">
-                        <p style="font-size: 13px; color: #666;">Cliquez sur le bouton pour récupérer les éléments de connaissance de cette question.</p>
-                    </div>
-                    <div class="knowledge-items-actions">
-                        <button class="btn btn-save" onclick="saveKnowledgeItemsForQuestion(${question.question_id})" style="display: none;">
-                            💾 Sauvegarder dans la base
-                        </button>
+                        <p style="font-size: 13px; color: #666;">Cliquez sur le bouton pour afficher les éléments de connaissance de cette question.</p>
                     </div>
                     <div class="evaluation-status" id="knowledge-items-status-${question.question_id}"></div>
                 </div>
@@ -1475,61 +1470,29 @@ async function saveQuestionChanges(questionId) {
 }
 
 async function getKnowledgeItemsForQuestion(questionId) {
-    const question = currentQuestions.find(q => q.question_id === questionId);
-    if (!question) {
-        alert('Question introuvable');
-        return;
-    }
-
-    const answers = (question.answers || []).map(a => a.content).filter(c => c && c.trim());
-    if (answers.length === 0) {
-        alert('Aucune réponse associée à cette question : impossible d\'extraire des éléments de connaissance.');
-        return;
-    }
-
     const section = document.getElementById(`knowledge-items-${questionId}`);
     const container = document.getElementById(`knowledge-items-container-${questionId}`);
     const statusElement = document.getElementById(`knowledge-items-status-${questionId}`);
-    const saveButton = section.querySelector('.knowledge-items-actions .btn-save');
     const generateButton = document.querySelector(`[onclick*="getKnowledgeItemsForQuestion(${questionId})"]`);
 
+    // Basculer l'affichage si la section est déjà visible et remplie
+    if (section.style.display === 'block' && knowledgeItemsByQuestion[questionId]) {
+        section.style.display = 'none';
+        return;
+    }
+
     section.style.display = 'block';
-    container.innerHTML = '<p style="font-size: 13px; color: #666;">Extraction des éléments de connaissance en cours...</p>';
-    if (saveButton) saveButton.style.display = 'none';
+    container.innerHTML = '<p style="font-size: 13px; color: #666;">Chargement des éléments de connaissance...</p>';
+    if (statusElement) statusElement.innerHTML = '';
 
     const originalButtonText = generateButton ? generateButton.innerHTML : '🧠 Éléments de connaissance';
     if (generateButton) {
-        generateButton.innerHTML = 'Extraction en cours...';
+        generateButton.innerHTML = 'Chargement...';
         generateButton.disabled = true;
     }
 
-    const modelSelect = document.getElementById('modelFilter');
-    let selectedModel = modelSelect ? modelSelect.value : '';
-    if (selectedModel && selectedModel.includes('/')) {
-        selectedModel = selectedModel.split('/')[1];
-    }
-
-    const requestBody = {
-        chunk_id: question.chunk_id || null,
-        document_id: currentDocumentId ? parseInt(currentDocumentId, 10) : null,
-        qa_items: [{
-            question_id: question.question_id,
-            question: question.content,
-            answers: answers
-        }]
-    };
-    if (selectedModel) {
-        requestBody.model = selectedModel;
-    }
-
     try {
-        const response = await fetch('/api/admin/knowledge-items/generate-from-questions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody)
-        });
+        const response = await fetch(`/api/admin/knowledge-items/by-question/${questionId}`);
 
         if (!response.ok) {
             const errText = await response.text();
@@ -1539,20 +1502,17 @@ async function getKnowledgeItemsForQuestion(questionId) {
         const data = await response.json();
         knowledgeItemsByQuestion[questionId] = data.knowledge_items || [];
 
-        renderKnowledgeItems(questionId, knowledgeItemsByQuestion[questionId], data.model, data.generation_time);
+        renderKnowledgeItems(questionId, knowledgeItemsByQuestion[questionId]);
 
-        if (knowledgeItemsByQuestion[questionId].length === 0) {
-            if (statusElement) {
-                statusElement.innerHTML = '<span style="color: #dc3545;">Aucun élément de connaissance extrait pour cette question.</span>';
-            }
-        } else {
-            if (saveButton) saveButton.style.display = 'inline-block';
-            if (statusElement) {
-                statusElement.innerHTML = `<span class="success-message">${knowledgeItemsByQuestion[questionId].length} élément(s) de connaissance extrait(s) avec ${escapeHtml(data.model || '')}.</span>`;
+        if (statusElement) {
+            if (knowledgeItemsByQuestion[questionId].length === 0) {
+                statusElement.innerHTML = '<span style="color: #dc3545;">Aucun élément de connaissance en base pour cette question.</span>';
+            } else {
+                statusElement.innerHTML = `<span class="success-message">${knowledgeItemsByQuestion[questionId].length} élément(s) de connaissance trouvé(s) en base.</span>`;
             }
         }
     } catch (error) {
-        console.error('Erreur lors de l\'extraction des éléments de connaissance:', error);
+        console.error('Erreur lors du chargement des éléments de connaissance:', error);
         container.innerHTML = '';
         if (statusElement) {
             statusElement.innerHTML = `<span style="color: #dc3545;">Erreur: ${error.message}</span>`;
@@ -1565,17 +1525,13 @@ async function getKnowledgeItemsForQuestion(questionId) {
     }
 }
 
-function renderKnowledgeItems(questionId, items, model, generationTime) {
+function renderKnowledgeItems(questionId, items) {
     const container = document.getElementById(`knowledge-items-container-${questionId}`);
 
     if (!items || items.length === 0) {
-        container.innerHTML = '<p style="font-size: 13px; color: #666;">Aucun élément de connaissance extrait.</p>';
+        container.innerHTML = '<p style="font-size: 13px; color: #666;">Aucun élément de connaissance en base pour cette question.</p>';
         return;
     }
-
-    const metaHtml = `<div style="font-size: 12px; color: #888; margin-bottom: 10px;">
-        ${items.length} élément(s) — modèle ${escapeHtml(model || '')} — ${generationTime || 0}s
-    </div>`;
 
     const itemsHtml = items.map((item, index) => {
         const entities = (item.entities || []).map(e =>
@@ -1584,83 +1540,24 @@ function renderKnowledgeItems(questionId, items, model, generationTime) {
         const themes = (item.themes || []).map(t =>
             `<span class="knowledge-badge knowledge-badge-theme">${escapeHtml(t.name)}</span>`
         ).join('');
-        const src = item.source_reference || {};
-        const sourceHtml = src.excerpt ?
-            `<div class="knowledge-item-source">📄 ${escapeHtml(src.excerpt.substring(0, 300))}${src.excerpt.length > 300 ? '...' : ''}</div>` : '';
+        const pageHtml = item.page != null ?
+            `<span class="knowledge-badge">page ${escapeHtml(String(item.page))}</span>` : '';
+        const verifiedHtml = item.is_verified ?
+            '<span class="knowledge-badge">✓ vérifié</span>' : '';
 
         return `
             <div class="knowledge-item-card">
                 <div class="knowledge-item-proposition">${index + 1}. ${escapeHtml(item.proposition)}</div>
                 ${item.summary ? `<div class="knowledge-item-summary">"${escapeHtml(item.summary)}"</div>` : ''}
                 <div class="knowledge-item-meta">
-                    <span class="knowledge-badge">confiance: ${item.confidence}</span>
+                    ${verifiedHtml}
+                    ${pageHtml}
                     ${entities}
                     ${themes}
                 </div>
-                ${sourceHtml}
             </div>
         `;
     }).join('');
 
-    container.innerHTML = metaHtml + itemsHtml;
-}
-
-async function saveKnowledgeItemsForQuestion(questionId) {
-    const items = knowledgeItemsByQuestion[questionId];
-    if (!items || items.length === 0) {
-        alert('Aucun élément de connaissance à sauvegarder. Extrayez-les d\'abord.');
-        return;
-    }
-
-    const question = currentQuestions.find(q => q.question_id === questionId);
-    const statusElement = document.getElementById(`knowledge-items-status-${questionId}`);
-    const saveButton = document.querySelector(`[onclick*="saveKnowledgeItemsForQuestion(${questionId})"]`);
-    const originalButtonText = saveButton ? saveButton.innerHTML : '💾 Sauvegarder dans la base';
-
-    if (saveButton) {
-        saveButton.innerHTML = 'Sauvegarde en cours...';
-        saveButton.disabled = true;
-    }
-
-    try {
-        const response = await fetch('/api/admin/knowledge-items/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                knowledge_items: items,
-                chunk_id: question ? question.chunk_id : null,
-                document_id: currentDocumentId ? parseInt(currentDocumentId, 10) : null,
-                resource_type: 'questions'
-            })
-        });
-
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`HTTP ${response.status} : ${errText}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-            if (statusElement) {
-                statusElement.innerHTML = `<span class="success-message">${data.count} élément(s) de connaissance sauvegardé(s) dans la base (ressource #${data.resource_id}).</span>`;
-            }
-        } else {
-            if (statusElement) {
-                statusElement.innerHTML = `<span style="color: #dc3545;">Échec de la sauvegarde: ${escapeHtml(data.message || '')}</span>`;
-            }
-        }
-    } catch (error) {
-        console.error('Erreur lors de la sauvegarde des éléments de connaissance:', error);
-        if (statusElement) {
-            statusElement.innerHTML = `<span style="color: #dc3545;">Erreur: ${error.message}</span>`;
-        }
-    } finally {
-        if (saveButton) {
-            saveButton.innerHTML = originalButtonText;
-            saveButton.disabled = false;
-        }
-    }
+    container.innerHTML = itemsHtml;
 }

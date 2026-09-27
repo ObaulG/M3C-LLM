@@ -25,6 +25,7 @@ from database.database import (
     get_valid_documents_with_metadata,
     get_or_create_knowledge_resource,
     get_knowledge_items,
+    get_knowledge_items_by_question_id,
     get_questions_by_chunk_id,
     DB_CONFIG,
     VALID_TEXT_RESOURCE_ID,
@@ -435,6 +436,41 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la sauvegarde: {str(e)}",
+        )
+
+
+@router.get(
+    "/by-question/{question_id}",
+    summary="Liste les knowledge_items associés à une question",
+    description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) "
+                "associés à une question : éléments du document de la question, restreints "
+                "à la page du chunk source si elle est connue (lecture seule, aucun appel LLM).",
+)
+async def list_knowledge_items_by_question(
+    question_id: int,
+    same_page: bool = True,
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    """Liste les knowledge_items existants associés à une question (lecture seule)."""
+    try:
+        async with await get_db_connection() as conn:
+            items = await get_knowledge_items_by_question_id(
+                conn,
+                question_id=question_id,
+                same_page=same_page,
+                limit=limit,
+            )
+
+            return JSONResponse(content={
+                "question_id": question_id,
+                "knowledge_items": items,
+                "count": len(items),
+            })
+    except Exception as e:
+        print(f"Erreur lors de la liste des knowledge_items de la question: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération: {str(e)}",
         )
 
 
