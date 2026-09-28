@@ -109,7 +109,7 @@ async def get_profile_stats(user_id: str, conn) -> ProfileStats:
             COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'resource_view' THEN o.id END) AS total_resource_views,
             COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'theme_view' THEN o.id END) AS total_theme_views,
             COUNT(DISTINCT CASE WHEN o.observation_type = 'evaluative' THEN o.id END) AS total_evaluations,
-            COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'resource_view' THEN ot_resource.target_id END) AS total_resources_visited,
+            COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'resource_view' THEN ot_chunk.target_id END) AS total_resources_visited,
             COUNT(DISTINCT ot_theme.target_id) AS total_themes_explored,
             COUNT(DISTINCT ot_knowledge.target_id) AS total_knowledge_items_encountered,
             COUNT(DISTINCT CASE WHEN uks.status = 'demonstrated' THEN uks.knowledge_id END) AS total_knowledge_demonstrated,
@@ -123,7 +123,7 @@ async def get_profile_stats(user_id: str, conn) -> ProfileStats:
         FROM user_profiles up
         LEFT JOIN observations o ON up.user_id = o.user_id
         LEFT JOIN observation_targets ot_knowledge ON o.id = ot_knowledge.observation_id AND ot_knowledge.target_type = 'knowledge'
-        LEFT JOIN observation_targets ot_resource ON o.id = ot_resource.observation_id AND ot_resource.target_type = 'entity'
+        LEFT JOIN observation_targets ot_chunk ON o.id = ot_chunk.observation_id AND ot_chunk.target_type = 'chunk'
         LEFT JOIN observation_targets ot_theme ON o.id = ot_theme.observation_id AND ot_theme.target_type = 'theme'
         LEFT JOIN user_knowledge_states uks ON up.user_id = uks.user_id AND uks.knowledge_id = ot_knowledge.target_id
         WHERE up.user_id = %s
@@ -176,23 +176,22 @@ async def get_visited_resources(user_id: str, conn, limit: int = 100) -> List[Vi
     """
     query = """
         SELECT 
-            kr.id AS resource_id,
-            kr.title AS resource_title,
-            kr.uri AS resource_uri,
-            kr.resource_type,
-            kr.author,
-            kr.publication_date,
+            tc.id AS chunk_id,
+            tc.document_id,
+            td.source_type AS resource_type,
+            tc.num_page,
             COUNT(DISTINCT o.id) AS view_count,
             MAX(o.timestamp) AS last_viewed_at,
             MIN(o.timestamp) AS first_viewed_at,
             AVG(o.confidence) AS avg_confidence
         FROM observations o
-        JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'entity'
-        JOIN knowledge_resources kr ON ot.target_id = kr.id
+        JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'chunk'
+        JOIN text_chunks tc ON ot.target_id = tc.id
+        LEFT JOIN text_documents td ON tc.document_id = td.id
         WHERE o.user_id = %s 
             AND o.observation_type = 'behavioral' 
             AND o.specific_type = 'resource_view'
-        GROUP BY kr.id, kr.title, kr.uri, kr.resource_type, kr.author, kr.publication_date
+        GROUP BY tc.id, tc.document_id, td.source_type, tc.num_page
         ORDER BY last_viewed_at DESC
         LIMIT %s
     """
@@ -204,12 +203,10 @@ async def get_visited_resources(user_id: str, conn, limit: int = 100) -> List[Vi
     visited_resources = []
     for row in results:
         visited_resources.append(VisitedResource(
-            resource_id=row["resource_id"],
-            resource_title=row["resource_title"],
-            resource_uri=row["resource_uri"],
+            chunk_id=row["chunk_id"],
+            document_id=row["document_id"],
             resource_type=row["resource_type"],
-            author=row["author"],
-            publication_date=row["publication_date"],
+            num_page=row["num_page"],
             view_count=row["view_count"] or 0,
             last_viewed_at=row["last_viewed_at"],
             first_viewed_at=row["first_viewed_at"],
@@ -345,7 +342,7 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
             (
                 SELECT JSON_ARRAYAGG(
                     JSON_OBJECT(
-                        'source_id', ks.resource_id,
+                        'chunk_id', ks.chunk_id,
                         'excerpt', ks.excerpt,
                         'page', ks.page,
                         'confidence', ks.confidence
@@ -389,11 +386,10 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
             sources_data = json.loads(row["sources_json"])
             for s in sources_data:
                 sources.append(SourceInfo(
-                    source_id=s.get("source_id"),
+                    chunk_id=s.get("chunk_id"),
                     excerpt=s.get("excerpt"),
                     page=s.get("page"),
                     confidence=s.get("confidence", 1.0),
-                    resource_title=None  # Peut être enrichi avec une requête supplémentaire si besoin
                 ))
         
         knowledge_item = KnowledgeItem(

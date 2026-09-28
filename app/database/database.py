@@ -1541,61 +1541,19 @@ async def get_valid_documents_with_metadata(conn) -> List[Dict]:
     return documents_info
 
 
-async def get_or_create_knowledge_resource(
-    conn,
-    title: str,
-    uri: Optional[str] = None,
-    resource_type: str = "chunk",
-) -> int:
-    """
-    Récupère ou crée une ressource dans knowledge_resources.
-
-    Args:
-        conn: Connexion MySQL (de préférence avec DictCursor pour la cohérence,
-              mais fonctionne aussi avec un curseur tuple).
-        title: Titre de la ressource (knowledge_resources.title).
-        uri: URI optionnelle.
-        resource_type: Type de ressource (knowledge_resources.resource_type).
-
-    Returns:
-        L'ID de la ressource (knowledge_resources.id).
-    """
-    async with conn.cursor() as cur:
-        await cur.execute(
-            "SELECT id FROM knowledge_resources WHERE title = %s ORDER BY id DESC LIMIT 1",
-            (title[:500],),
-        )
-        row = await cur.fetchone()
-        if row:
-            # row peut être un tuple (curseur tuple) ou un dict (DictCursor)
-            return row["id"] if isinstance(row, dict) else row[0]
-
-        await cur.execute(
-            "INSERT INTO knowledge_resources (title, uri, resource_type, created_at) "
-            "VALUES (%s, %s, %s, NOW())",
-            (
-                title[:500],
-                uri[:1000] if uri else None,
-                resource_type[:100],
-            ),
-        )
-        await conn.commit()
-        return cur.lastrowid
-
-
 async def get_knowledge_items(
     conn,
-    resource_id: Optional[int] = None,
+    chunk_id: Optional[str] = None,
     limit: int = 100,
 ) -> List[Dict]:
     """
     Récupère les knowledge_items en base avec leurs entités et thèmes associés.
 
-    Filtrable par resource_id (knowledge_sources.resource_id).
+    Filtrable par chunk_id (knowledge_sources.chunk_id).
 
     Args:
         conn: Connexion à la base de données.
-        resource_id: Si fourni, ne retourne que les knowledge_items liés à cette ressource.
+        chunk_id: Si fourni, ne retourne que les knowledge_items liés à ce chunk.
         limit: Nombre maximum de résultats.
 
     Returns:
@@ -1603,18 +1561,18 @@ async def get_knowledge_items(
         created_at, updated_at, entities: [...], themes: [...]}.
     """
     async with conn.cursor() as cur:
-        if resource_id is not None:
+        if chunk_id is not None:
             await cur.execute(
                 """
                 SELECT DISTINCT ki.id, ki.proposition, ki.summary, ki.is_verified,
                        ki.verification_notes, ki.created_at, ki.updated_at
                 FROM knowledge_items ki
                 LEFT JOIN knowledge_sources ks ON ks.knowledge_id = ki.id
-                WHERE ks.resource_id = %s
+                WHERE ks.chunk_id = %s
                 ORDER BY ki.created_at DESC
                 LIMIT %s
                 """,
-                (resource_id, limit),
+                (chunk_id, limit),
             )
         else:
             await cur.execute(
@@ -2003,19 +1961,19 @@ async def get_observation_target_options(conn, target_type: str, search: Optiona
     ]
 
 
-async def get_observation_resource_options(conn, search: Optional[str] = None, limit: int = 100) -> List[Dict]:
+async def get_observation_chunk_options(conn, search: Optional[str] = None, limit: int = 100) -> List[Dict]:
     """
-    Liste les ressources documentaires (knowledge_resources) pour le contexte d'une observation.
+    Liste les chunks (text_chunks) pour le contexte d'une observation.
 
     Returns:
-        Liste de dicts {id, title, uri, resource_type}.
+        Liste de dicts {id, document_id, content, num_page}.
     """
-    query = "SELECT id, title, uri, resource_type FROM knowledge_resources"
+    query = "SELECT id, document_id, content, num_page FROM text_chunks"
     params: list = []
     if search:
-        query += " WHERE title LIKE %s"
+        query += " WHERE content LIKE %s"
         params.append(f"%{search}%")
-    query += " ORDER BY title LIMIT %s"
+    query += " ORDER BY document_id, id LIMIT %s"
     params.append(limit)
 
     async with conn.cursor() as cur:
@@ -2023,7 +1981,7 @@ async def get_observation_resource_options(conn, search: Optional[str] = None, l
         rows = await cur.fetchall()
 
     return [
-        {"id": row[0], "title": (row[1] or "")[:200], "uri": row[2], "resource_type": row[3]}
+        {"id": row[0], "document_id": row[1], "content": (row[2] or "")[:200], "num_page": row[3]}
         for row in rows
     ]
 
@@ -2054,7 +2012,7 @@ async def create_manual_observation(
         is_raw: Vrai si l'observation est une donnée brute.
         payload: Donnée brute ou structurée (payload_type='structured').
         targets: Liste de {target_type, target_id, weight} avec target_type
-                  parmi 'knowledge', 'theme', 'entity'.
+                  parmi 'knowledge', 'theme', 'entity' ou 'chunk'.
 
     Returns:
         Dict {observation_id, targets_count, payload_saved} ou None en cas d'erreur.

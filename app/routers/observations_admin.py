@@ -8,7 +8,7 @@ observation_targets), puis de les consulter.
 Routes :
 - GET  /api/observations-admin/users      (utilisateurs observables)
 - GET  /api/observations-admin/targets    (connaissances, thèmes, entités)
-- GET  /api/observations-admin/resources  (ressources pour le contexte)
+- GET  /api/observations-admin/chunks     (chunks pour le contexte)
 - POST /api/observations-admin/observations (création manuelle)
 - GET  /api/observations-admin/observations (consultation filtrée)
 """
@@ -21,7 +21,7 @@ from database.database import (
     get_db_connection,
     get_observation_users,
     get_observation_target_options,
-    get_observation_resource_options,
+    get_observation_chunk_options,
     create_manual_observation,
     get_manual_observations,
 )
@@ -29,7 +29,7 @@ from database.database import (
 router = APIRouter(prefix="/api/observations-admin", tags=["Observations Admin"])
 
 ObservationType = Literal["declarative", "behavioral", "evaluative"]
-TargetType = Literal["knowledge", "theme", "entity"]
+TargetType = Literal["knowledge", "theme", "entity", "chunk"]
 
 
 class ObservationUser(BaseModel):
@@ -46,18 +46,18 @@ class ObservationTargetOption(BaseModel):
     extra: Optional[str] = Field(None, description="Information complémentaire (summary, type...)")
 
 
-class ObservationResourceOption(BaseModel):
-    """Une ressource documentaire pour le contexte d'une observation"""
-    id: int = Field(..., description="knowledge_resources.id")
-    title: str = Field(..., description="Titre de la ressource")
-    uri: Optional[str] = Field(None, description="URI de la ressource")
-    resource_type: Optional[str] = Field(None, description="Type de ressource")
+class ObservationChunkOption(BaseModel):
+    """Un chunk pour le contexte d'une observation"""
+    id: str = Field(..., description="text_chunks.id")
+    document_id: Optional[int] = Field(None, description="text_documents.id")
+    content: str = Field(..., description="Extrait du contenu du chunk")
+    num_page: Optional[int] = Field(None, description="Numéro de page")
 
 
 class ObservationTargetRequest(BaseModel):
     """Lien entre une observation et un élément de connaissance, thème ou entité"""
-    target_type: TargetType = Field(..., description="Type de cible : knowledge, theme ou entity")
-    target_id: int = Field(..., description="ID de la cible (knowledge_items.id, themes.id ou entities.id)", ge=1)
+    target_type: TargetType = Field(..., description="Type de cible : knowledge, theme, entity ou chunk")
+    target_id: str = Field(..., description="ID de la cible (knowledge_items.id, themes.id, entities.id ou text_chunks.id)")
     weight: float = Field(1.0, description="Poids de cette cible pour l'observation (0-1)", ge=0, le=1)
 
 
@@ -91,7 +91,7 @@ class ObservationPayloadInfo(BaseModel):
 
 class ObservationTargetInfo(BaseModel):
     """Cible affichée d'une observation"""
-    target_type: str = Field(..., description="knowledge, theme ou entity")
+    target_type: str = Field(..., description="knowledge, theme, entity ou chunk")
     target_id: int = Field(..., description="ID de la cible")
     weight: float = Field(..., description="Poids de la cible")
     label: Optional[str] = Field(None, description="Libellé de la cible si connue")
@@ -138,7 +138,7 @@ async def list_observation_users():
 
 @router.get("/targets", response_model=List[ObservationTargetOption])
 async def list_observation_targets(
-    target_type: TargetType = Query(..., description="Type de cible : knowledge, theme ou entity"),
+    target_type: TargetType = Query(..., description="Type de cible : knowledge, theme, entity ou chunk"),
     search: Optional[str] = Query(None, description="Filtre sur le libellé"),
     limit: int = Query(200, description="Nombre maximum de résultats", ge=1, le=1000),
 ):
@@ -159,23 +159,23 @@ async def list_observation_targets(
         await conn.close()
 
 
-@router.get("/resources", response_model=List[ObservationResourceOption])
-async def list_observation_resources(
-    search: Optional[str] = Query(None, description="Filtre sur le titre"),
+@router.get("/chunks", response_model=List[ObservationChunkOption])
+async def list_observation_chunks(
+    search: Optional[str] = Query(None, description="Filtre sur le contenu"),
     limit: int = Query(100, description="Nombre maximum de résultats", ge=1, le=500),
 ):
     """
-    Liste les ressources documentaires (knowledge_resources) pour renseigner
+    Liste les chunks (text_chunks) pour renseigner
     le contexte d'une observation.
     """
     conn = await get_db_connection()
     try:
-        return await get_observation_resource_options(conn, search, limit)
+        return await get_observation_chunk_options(conn, search, limit)
     except Exception as e:
-        print(f"Erreur list_observation_resources: {e}")
+        print(f"Erreur list_observation_chunks: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur lors de la récupération des ressources.",
+            detail="Erreur lors de la récupération des chunks.",
         )
     finally:
         await conn.close()

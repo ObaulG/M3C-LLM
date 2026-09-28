@@ -70,7 +70,7 @@ Les modèles Pydantic définis dans `models.py` :
 
 - **`UserProfile`** : Informations de base de l'utilisateur (langues, objectif de visite, niveau de détail, etc.)
 - **`ProfileStats`** : Statistiques globales (nombre d'observations, ressources, thèmes, connaissances par statut)
-- **`VisitedResource`** : Une ressource consultée (titre, URI, type, auteur, dates, nombre de consultations)
+- **`VisitedResource`** : Un chunk consulté (chunk_id, document, type, page, dates, nombre de consultations)
 - **`ThemeStats`** : Statistiques pour un thème (poids d'intérêt, confiance, comptes par type d'observation, comptes par statut de connaissance)
 - **`KnowledgeItem`** : Un élément de connaissance avec métadonnées (proposition, résumé, statut, score, confiance, entités, sources)
 - **`EntityInfo`** : Information sur une entité liée à une connaissance

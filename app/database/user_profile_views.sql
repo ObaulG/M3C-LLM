@@ -15,7 +15,7 @@ SELECT
     COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'resource_view' THEN o.id END) AS total_resource_views,
     COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' AND o.specific_type = 'theme_view' THEN o.id END) AS total_theme_views,
     COUNT(DISTINCT CASE WHEN o.observation_type = 'evaluative' THEN o.id END) AS total_evaluations,
-    COUNT(DISTINCT kr.id) AS total_resources_visited,
+    COUNT(DISTINCT tc.id) AS total_resources_visited,
     COUNT(DISTINCT t.id) AS total_themes_explored,
     COUNT(DISTINCT ki.id) AS total_knowledge_items_encountered,
     COUNT(DISTINCT CASE WHEN uks.status = 'demonstrated' THEN uks.knowledge_id END) AS total_knowledge_demonstrated,
@@ -30,8 +30,8 @@ FROM user_profiles up
 LEFT JOIN observations o ON up.user_id = o.user_id
 LEFT JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'knowledge'
 LEFT JOIN knowledge_items ki ON ot.target_id = ki.id
-LEFT JOIN observation_targets ot_resource ON o.id = ot_resource.observation_id AND ot_resource.target_type = 'entity'
-LEFT JOIN knowledge_resources kr ON kr.id = ot_resource.target_id
+LEFT JOIN observation_targets ot_chunk ON o.id = ot_chunk.observation_id AND ot_chunk.target_type = 'chunk'
+LEFT JOIN text_chunks tc ON tc.id = ot_chunk.target_id
 LEFT JOIN knowledge_item_themes kit ON ki.id = kit.knowledge_id
 LEFT JOIN themes t ON kit.theme_id = t.id
 LEFT JOIN user_knowledge_states uks ON up.user_id = uks.user_id AND uks.knowledge_id = ki.id
@@ -45,22 +45,21 @@ GROUP BY up.user_id, up.created_at, up.last_activity_at;
 CREATE OR REPLACE VIEW user_visited_resources AS
 SELECT 
     o.user_id,
-    kr.id AS resource_id,
-    kr.title AS resource_title,
-    kr.uri AS resource_uri,
-    kr.resource_type,
-    kr.author,
-    kr.publication_date,
+    tc.id AS chunk_id,
+    tc.document_id AS resource_id,
+    td.source_type AS resource_type,
+    tc.num_page,
     COUNT(DISTINCT o.id) AS view_count,
     MAX(o.timestamp) AS last_viewed_at,
     MIN(o.timestamp) AS first_viewed_at,
     AVG(o.confidence) AS avg_confidence
 FROM observations o
-JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'entity'
-JOIN knowledge_resources kr ON ot.target_id = kr.id
+JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'chunk'
+JOIN text_chunks tc ON ot.target_id = tc.id
+LEFT JOIN text_documents td ON tc.document_id = td.id
 WHERE o.observation_type = 'behavioral' 
     AND o.specific_type = 'resource_view'
-GROUP BY o.user_id, kr.id, kr.title, kr.uri, kr.resource_type, kr.author, kr.publication_date
+GROUP BY o.user_id, tc.id, tc.document_id, td.source_type, tc.num_page
 ORDER BY o.user_id, last_viewed_at DESC;
 
 -- ============================================================================
@@ -159,7 +158,7 @@ SELECT
     (
         SELECT JSON_ARRAYAGG(
             JSON_OBJECT(
-                'source_id', ks.resource_id,
+                'chunk_id', ks.chunk_id,
                 'excerpt', ks.excerpt,
                 'page', ks.page,
                 'confidence', ks.confidence
@@ -221,13 +220,11 @@ SELECT
     (
         SELECT JSON_ARRAYAGG(
             JSON_OBJECT(
-                'resource_id', ks.resource_id,
-                'resource_title', kr.title,
+                'chunk_id', ks.chunk_id,
                 'excerpt', ks.excerpt
             )
         )
         FROM knowledge_sources ks
-        JOIN knowledge_resources kr ON ks.resource_id = kr.id
         WHERE ks.knowledge_id = ki.id
     ) AS sources
 FROM user_knowledge_states uks

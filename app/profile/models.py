@@ -88,13 +88,11 @@ class ProfileStats(BaseModel):
 # ============================================================================
 
 class VisitedResource(BaseModel):
-    """Une ressource consultée par l'utilisateur."""
-    resource_id: int = Field(..., description="ID de la ressource")
-    resource_title: str = Field(..., description="Titre de la ressource")
-    resource_uri: Optional[str] = Field(default=None, description="URI de la ressource")
-    resource_type: Optional[str] = Field(default=None, description="Type de ressource (pdf, web, book, etc.)")
-    author: Optional[str] = Field(default=None, description="Auteur de la ressource")
-    publication_date: Optional[str] = Field(default=None, description="Date de publication")
+    """Un chunk consulté par l'utilisateur."""
+    chunk_id: str = Field(..., description="ID du chunk (text_chunks.id)")
+    document_id: Optional[int] = Field(default=None, description="ID du document (text_documents.id)")
+    resource_type: Optional[str] = Field(default=None, description="Type de source (pdf, web, etc.)")
+    num_page: Optional[int] = Field(default=None, description="Numéro de page du chunk")
     view_count: int = Field(default=0, description="Nombre de consultations")
     last_viewed_at: Optional[datetime] = Field(default=None, description="Date de dernière consultation")
     first_viewed_at: Optional[datetime] = Field(default=None, description="Date de première consultation")
@@ -138,11 +136,10 @@ class EntityInfo(BaseModel):
 
 class SourceInfo(BaseModel):
     """Information sur une source d'une connaissance."""
-    source_id: Optional[int] = Field(default=None, description="ID de la ressource source")
+    chunk_id: Optional[str] = Field(default=None, description="ID du chunk source (text_chunks.id)")
     excerpt: Optional[str] = Field(default=None, description="Extrait de la source")
     page: Optional[str] = Field(default=None, description="Page ou section dans la source")
     confidence: float = Field(default=1.0, description="Confiance dans cette source (0-1)")
-    resource_title: Optional[str] = Field(default=None, description="Titre de la ressource")
 
 
 class KnowledgeItem(BaseModel):

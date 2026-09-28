@@ -6,7 +6,7 @@ Ce router permet de :
   (agents.knowledge_item_agent.generate_knowledge_items_from_chunk),
 - sauvegarder les knowledge_items générés dans le schéma user_knowledge_model.sql
   (knowledge_items, knowledge_item_entities, knowledge_item_themes, knowledge_sources,
-  et les tables de référence entities / themes / knowledge_resources).
+  et les tables de référence entities / themes).
 
 La persistance s'appuie sur la fonction existante
 save_knowledge_candidates_to_db du module agents.knowledge_element_extractor.
@@ -23,7 +23,6 @@ from database.database import (
     get_db_connection,
     get_chunk_by_id,
     get_valid_documents_with_metadata,
-    get_or_create_knowledge_resource,
     get_knowledge_items,
     get_knowledge_items_by_question_id,
     get_questions_by_chunk_id,
@@ -362,8 +361,9 @@ async def generate_knowledge_items_from_questions_endpoint(request: KnowledgeGen
     response_model=KnowledgeSaveResponse,
     summary="Sauvegarde des knowledge_items en base",
     description="Sauvegarde les knowledge_items fournis dans le schéma user_knowledge_model.sql : "
-                "création/récupération des entités, thèmes et ressource, insertion dans "
-                "knowledge_items, knowledge_item_entities, knowledge_item_themes et knowledge_sources.",
+                "création/récupération des entités et thèmes, insertion dans "
+                "knowledge_items, knowledge_item_entities, knowledge_item_themes et knowledge_sources "
+                "(référence directe au chunk source).",
 )
 async def save_knowledge_items(request: KnowledgeSaveRequest):
     """Sauvegarde les knowledge_items générés dans la base MySQL."""
@@ -373,49 +373,23 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
             detail="Aucun knowledge_item à sauvegarder",
         )
 
-    # Construire le titre de la ressource si non fourni
-    resource_title = request.resource_title
-    if not resource_title:
-        if request.document_id is not None:
-            resource_title = f"Document {request.document_id}"
-        elif request.chunk_id is not None:
-            resource_title = f"Chunk {request.chunk_id}"
-        else:
-            resource_title = "Document inconnu"
-
     # Convertir les modèles Pydantic en KnowledgeItemCandidate
     candidates = [_model_to_candidate(item) for item in request.knowledge_items]
 
-    # Forcer le document_id des source_references pour la cohérence
-    doc_id_for_source = int(request.document_id) if request.document_id is not None else None
+    # Forcer le chunk_id des source_references pour la cohérence
     for c in candidates:
-        if not c.source_reference.document_id:
-            c.source_reference.document_id = doc_id_for_source
         if not c.source_reference.chunk_id and request.chunk_id is not None:
             c.source_reference.chunk_id = str(request.chunk_id)
 
-
-
     try:
-        async with await get_db_connection() as conn :
-            # 1. Créer / récupérer la ressource knowledge_resources
-            resource_id = await get_or_create_knowledge_resource(
-                conn,
-                title=resource_title,
-                uri=request.resource_uri,
-                resource_type=request.resource_type,
-            )
-            print("a")
-
-            # 2. Sauvegarder les candidats (knowledge_items + relations)
+        async with await _get_dict_cursor_connection() as conn:
+            # 1. Sauvegarder les candidats (knowledge_items + relations)
             saved_ids = await save_knowledge_candidates_to_db(
                 candidates,
                 conn,
-                resource_id=resource_id,
-                document_id=doc_id_for_source,
+                chunk_id=str(request.chunk_id) if request.chunk_id is not None else None,
                 question_id=request.question_id,
             )
-            print("a")
             # 3. Récupérer le détail par knowledge_item (entités/thèmes/sources liées)
             results: List[KnowledgeSaveResult] = []
             for kid, candidate in zip(saved_ids, candidates):
@@ -430,14 +404,14 @@ async def save_knowledge_items(request: KnowledgeSaveRequest):
                     source_saved=source_saved,
                 ))
             print("a")
-        message = (f"{len(saved_ids)} knowledge_items sauvegardés pour la ressource "
-                   f"'{resource_title}' (resource_id={resource_id})")
+        message = f"{len(saved_ids)} knowledge_items sauvegardés"
+        if request.chunk_id is not None:
+            message += f" pour le chunk '{request.chunk_id}'"
         if request.question_id is not None:
             message += f" et liés à la question {request.question_id}"
 
         return KnowledgeSaveResponse(
             success=True,
-            resource_id=resource_id,
             saved_ids=saved_ids,
             results=results,
             count=len(saved_ids),
@@ -495,21 +469,21 @@ async def list_knowledge_items_by_question(
 @router.get(
     "/items",
     summary="Liste les knowledge_items en base",
-    description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) avec leurs entités et thèmes associés, filtrables par resource_id (knowledge_sources).",
+    description="Retourne les knowledge_items déjà sauvegardés (table knowledge_items) avec leurs entités et thèmes associés, filtrables par chunk_id (knowledge_sources).",
 )
 async def list_knowledge_items(
-    resource_id: Optional[int] = None,
+    chunk_id: Optional[str] = None,
     limit: int = Query(default=100, ge=1, le=500),
 ):
 
     try:
         async with await get_db_connection() as conn:
-            items = await get_knowledge_items(conn, resource_id=resource_id, limit=limit)
+            items = await get_knowledge_items(conn, chunk_id=chunk_id, limit=limit)
 
             return JSONResponse(content={
                 "knowledge_items": items,
                 "count": len(items),
-                "resource_id_filter": resource_id,
+                "chunk_id_filter": chunk_id,
             })
     except Exception as e:
         print(f"Erreur lors de la liste des knowledge_items: {e}")
