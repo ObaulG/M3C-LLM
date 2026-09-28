@@ -2396,3 +2396,162 @@ async def record_answer_evaluation_observation(
         targets=None,
     )
     return result["observation_id"] if result else None
+
+async def record_knowledge_items_evaluation_observations(
+    conn,
+    user_id: Optional[int],
+    anonymous_id: Optional[str],
+    session_id: str,
+    document_id: int,
+    question_id: int,
+    question_text: str,
+    user_answer: str,
+    message_type: str,
+    score: Optional[int] = None,
+    feedback: Optional[str] = None,
+    evaluator_models: Optional[list] = None,
+    individual_evaluations: Optional[list] = None,
+    metadata: Optional[dict] = None,
+) -> List[int]:
+    """
+    Pour chaque élément de connaissance lié à la question (table
+    knowledge_item_questions), crée une observation évaluative ciblée
+    (observation_targets de type 'knowledge') portant le score de maîtrise
+    dérivé de la note attribuée à la réponse, puis met à jour l'état de
+    connaissance de l'utilisateur pour cet élément (user_knowledge_states).
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: user_id (int) de l'utilisateur connecté, sinon None.
+        anonymous_id: Identifiant anonyme persistant (localStorage) si non connecté.
+        session_id: Identifiant de la session de questions/réponses.
+        document_id: Identifiant du document sur lequel porte la session.
+        question_id: Identifiant de la question posée.
+        question_text: Texte de la question posée.
+        user_answer: Réponse envoyée par l'utilisateur.
+        message_type: Type de message calculé (reponse, demande_renseignement,
+                      hors_sujet, autre).
+        score: Note finale attribuée à la réponse (si évaluée).
+        feedback: Commentaire final retourné à l'utilisateur (si évalué).
+        evaluator_models: Liste des modèles évaluateurs utilisés.
+        individual_evaluations: Évaluations individuelles des évaluateurs.
+        metadata: Métadonnées supplémentaires (page d'origine, etc.).
+
+    Returns:
+        Liste des IDs des observations créées (une par élément de connaissance),
+        vide en cas d'erreur ou si aucun élément n'est lié à la question.
+    """
+    obs_user_id = str(user_id) if user_id is not None else (anonymous_id or "anonymous")
+
+    knowledge_items = await get_knowledge_items_by_question_id(conn, question_id)
+    if not knowledge_items:
+        return []
+
+    if metadata:
+        context = dict(metadata)
+    else:
+        context = {}
+    context.update({
+        "page": "m3c-chatbot.html",
+        "session_id": session_id,
+        "document_id": document_id,
+        "question_id": question_id,
+    })
+
+    created_observation_ids: List[int] = []
+    try:
+        async with conn.cursor() as cur:
+            for item in knowledge_items:
+                knowledge_id = item["id"]
+                relevance = float(item.get("relevance", 1.0) or 1.0)
+                # score de maîtrise (0-1) dérivé de la note sur 10
+                mastery_score = (max(0.0, min(10.0, float(score))) / 10.0) if score is not None else 0.0
+                # état de connaissance dérivé du score de maîtrise
+                if mastery_score >= 0.8:
+                    status = "demonstrated"
+                elif mastery_score >= 0.5:
+                    status = "developing"
+                else:
+                    status = "encountered"
+
+                await cur.execute(
+                    """
+                    INSERT INTO observations
+                        (user_id, observation_type, specific_type, timestamp, context, confidence, is_raw)
+                    VALUES (%s, 'evaluative', 'knowledge_item_evaluation', CURRENT_TIMESTAMP, %s, %s, TRUE)
+                    """,
+                    (
+                        obs_user_id[:100],
+                        json.dumps(context),
+                        relevance,
+                    ),
+                )
+                observation_id = cur.lastrowid
+                created_observation_ids.append(observation_id)
+
+                payload = {
+                    "event": "knowledge_item_evaluation",
+                    "session_id": session_id,
+                    "document_id": document_id,
+                    "question_id": question_id,
+                    "question_text": question_text,
+                    "user_answer": user_answer,
+                    "message_type": message_type,
+                    "knowledge_id": knowledge_id,
+                    "knowledge_proposition": item.get("proposition"),
+                    "question_relevance": relevance,
+                    "mastery_score": mastery_score,
+                    "knowledge_status": status,
+                    "score": score,
+                    "feedback": feedback,
+                    "evaluator_models": evaluator_models,
+                    "individual_evaluations": individual_evaluations,
+                }
+                await cur.execute(
+                    """
+                    INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                    VALUES (%s, 'structured', %s, %s)
+                    """,
+                    (
+                        observation_id,
+                        json.dumps(payload),
+                        json.dumps({"origin": "question_session"}),
+                    ),
+                )
+
+                # Lien observation -> élément de connaissance
+                await cur.execute(
+                    """
+                    INSERT IGNORE INTO observation_targets (observation_id, target_type, target_id, weight)
+                    VALUES (%s, 'knowledge', %s, %s)
+                    """,
+                    (observation_id, str(knowledge_id), relevance),
+                )
+
+                # Mise à jour de l'état de connaissance de l'utilisateur
+                # (user_knowledge_states). En cas de mise à jour, on conserve
+                # le meilleur score atteint et le meilleur état associé.
+                await cur.execute(
+                    """
+                    INSERT INTO user_knowledge_states
+                        (user_id, knowledge_id, status, score, confidence, last_interaction_at)
+                    VALUES (%s, %s, %s, %s, 1.0, CURRENT_TIMESTAMP)
+                    ON DUPLICATE KEY UPDATE
+                        score = GREATEST(score, VALUES(score)),
+                        status = IF(VALUES(score) > score,
+                                    VALUES(status),
+                                    IF(status = 'demonstrated' OR (status = 'developing' AND VALUES(status) = 'encountered'),
+                                         status,
+                                         VALUES(status))),
+                        confidence = 1.0,
+                        last_interaction_at = CURRENT_TIMESTAMP
+                    """,
+                    (obs_user_id, knowledge_id, status, mastery_score),
+                )
+        await conn.commit()
+    except Exception as e:
+        print(f"Erreur lors de l'enregistrement des évaluations des éléments de connaissance "
+              f"pour question_id={question_id}: {e}")
+        await conn.rollback()
+        return []
+    return created_observation_ids
