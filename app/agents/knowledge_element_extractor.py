@@ -509,9 +509,7 @@ async def extract_knowledge_fallback(text: str,
 
 async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidate],
                                          db_connection,
-                                         resource_id: Optional[int] = None,
-                                         document_id: Optional[int] = None,
-                                         author: Optional[str] = None,
+                                         chunk_id: Optional[str] = None,
                                          question_id: Optional[int] = None) -> List[int]:
     """
     Sauvegarde les candidats de connaissance dans la base de données MySQL.
@@ -521,9 +519,8 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
     Args:
         candidates: Liste de KnowledgeItemCandidate à sauvegarder
         db_connection: Connexion MySQL (aiomysql ou autre compatible async)
-        resource_id: ID de la ressource dans knowledge_resources (si déjà existante)
-        document_id: document_id à utiliser si resource_id n'est pas fourni
-        author: Auteur par défaut pour les ressources créées
+        chunk_id: ID du chunk source (text_chunks.id) utilisé si un candidat
+            n'a pas de source_reference.chunk_id
         question_id: Si fourni, relie chaque knowledge_item sauvegardé à cette question
             (table knowledge_item_questions)
     
@@ -539,7 +536,6 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
         # 1. Créer ou récupérer les entités
         entity_map = {}  # nom -> id
         theme_map = {}   # nom -> id
-        resource_map = {}  # document_id -> resource_id
         
         # D'abord, collecter toutes les entités et thèmes uniques
         all_entity_names = set()
@@ -596,33 +592,6 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                 theme_map[theme_name] = cursor.lastrowid
         
         print(f"Entités pris en charge: {len(entity_map)}, Thèmes pris en charge: {len(theme_map)}")
-        
-        # 1.3 Gérer la ressource si nécessaire
-        if resource_id:
-            resource_map[document_id or "default"] = resource_id
-        else:
-            for candidate in candidates:
-                doc_id = candidate.source_reference.document_id or document_id
-                if doc_id and doc_id not in resource_map:
-                    # Créer une nouvelle ressource
-                    title = f"Document {doc_id}" if doc_id else "Document inconnu"
-                    try:
-                        await cursor.execute(
-                            "INSERT INTO knowledge_resources (title, uri, resource_type, author, created_at) "
-                            "VALUES (%s, %s, %s, %s, NOW())",
-                            (title[:500], None, "chunk", author[:255] if author else None)
-                        )
-                        resource_map[doc_id] = cursor.lastrowid
-                    except Exception as e:
-                        print(f"Erreur lors de la création de la ressource {doc_id}: {e}")
-                        # Essayer de récupérer l'ID existant
-                        await cursor.execute(
-                            "SELECT id FROM knowledge_resources WHERE title = %s",
-                            (title[:500],)
-                        )
-                        result = await cursor.fetchone()
-                        if result:
-                            resource_map[doc_id] = result['id']
         
         # 2. Créer les knowledge_items et leurs relations
         print(f"Traitement de {len(candidates)} candidats de connaissance")
@@ -699,18 +668,17 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                             print(f"Erreur relation knowledge-theme: {e}")
                 
                 # 2.3 Créer les sources
-                doc_id = candidate.source_reference.document_id or document_id
-                if doc_id in resource_map:
-                    resource_id_for_source = resource_map[doc_id]
+                source_chunk_id = candidate.source_reference.chunk_id or chunk_id
+                if source_chunk_id:
                     try:
                         excerpt = candidate.source_reference.excerpt[:500]  # Limiter la taille
                         await cursor.execute(
                             "INSERT IGNORE INTO knowledge_sources "
-                            "(knowledge_id, resource_id, excerpt, page, uri, confidence, created_at) "
+                            "(knowledge_id, chunk_id, excerpt, page, uri, confidence, created_at) "
                             "VALUES (%s, %s, %s, %s, %s, %s, NOW())",
                             (
                                 knowledge_id,
-                                resource_id_for_source,
+                                str(source_chunk_id)[:255],
                                 excerpt,
                                 candidate.source_reference.page,
                                 candidate.source_reference.uri[:1000] if candidate.source_reference.uri else None,
@@ -731,61 +699,24 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
     return knowledge_ids
 
 
-async def save_candidates_with_new_resource(candidates: List[KnowledgeItemCandidate],
-                                           db_connection,
-                                           resource_title: str,
-                                           resource_uri: Optional[str] = None,
-                                           resource_type: str = "chunk") -> List[int]:
-    """
-    Sauvegarde les candidats avec création automatique d'une nouvelle ressource.
-    
-    Args:
-        candidates: Liste de candidats à sauvegarder
-        db_connection: Connexion à la base de données
-        resource_title: Titre pour la nouvelle ressource
-        resource_uri: URI optionnelle pour la ressource
-        resource_type: Type de ressource (par défaut: "chunk")
-    
-    Returns:
-        Liste des IDs des knowledge_items créés
-    """
-    async with db_connection.cursor() as cursor:
-        # Créer une nouvelle ressource
-        await cursor.execute(
-            "INSERT INTO knowledge_resources (title, uri, resource_type, created_at) "
-            "VALUES (%s, %s, %s, NOW())",
-            (resource_title[:500], resource_uri[:1000] if resource_uri else None, resource_type[:100])
-        )
-        resource_id = cursor.lastrowid
-        await db_connection.commit()
-        
-        # Sauvegarder les candidats avec cette ressource
-        return await save_knowledge_candidates_to_db(
-            candidates, db_connection, resource_id
-        )
-
-
 # ============================================================================
 # UTILITAIRES D'EXTRACTION EN BATCH
 # ============================================================================
 
 async def extract_and_save_from_chunks(chunks: List[Dict[str, Any]],
                                       db_connection,
-                                      resource_title: str,
-                                      resource_type: str = "document") -> int:
+                                      document_id: Optional[str] = None) -> int:
     """
     Extrait et sauvegarde les connaissances depuis une liste de chunks.
     
     Args:
         chunks: Liste de chunks avec 'content', 'chunk_id', 'page', etc.
         db_connection: Connexion à la base de données
-        resource_title: Titre de la ressource
-        resource_type: Type de ressource
+        document_id: Identifiant du document d'origine (informationnel)
     
     Returns:
         Nombre total de connaissances sauvegardées
     """
-    all_candidates = []
     total_saved = 0
     
     for i, chunk in enumerate(chunks):
@@ -799,21 +730,18 @@ async def extract_and_save_from_chunks(chunks: List[Dict[str, Any]],
             candidates = await extract_knowledge_elements(
                 text=text,
                 chunk_id=chunk_id,
-                document_id=resource_title,
+                document_id=document_id,
                 page=page,
                 position_in_page=position_in_page
             )
-            all_candidates.extend(candidates)
+            if candidates:
+                saved_ids = await save_knowledge_candidates_to_db(
+                    candidates, db_connection, chunk_id=str(chunk_id)
+                )
+                total_saved += len(saved_ids)
             print(f"  -> {len(candidates)} connaissances extraites")
     
-    if all_candidates:
-        # Sauvegarder tous les candidats avec une nouvelle ressource
-        saved_ids = await save_candidates_with_new_resource(
-            all_candidates, db_connection, resource_title, resource_type=resource_type
-        )
-        return len(saved_ids)
-    
-    return 0
+    return total_saved
 
 
 # ============================================================================
@@ -856,9 +784,8 @@ async def demo_extraction_and_save():
         print("\n=== Tentative de sauvegarde en base de données ===")
         db = await get_db_connection()
         
-        # Sauvegarder avec une nouvelle ressource
-        saved_ids = await save_candidates_with_new_resource(
-            candidates, db, "Démonstration Léonard de Vinci"
+        saved_ids = await save_knowledge_candidates_to_db(
+            candidates, db, chunk_id="demo_chunk_1"
         )
         print(f"Enregistrements sauvegardés: {len(saved_ids)}")
         

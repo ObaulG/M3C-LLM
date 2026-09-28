@@ -245,14 +245,14 @@ async def generate_profile_csv(user_id: str) -> str:
     
     # Ressources consultées
     writer.writerow(["RESSOURCES CONSULTÉES"])
-    writer.writerow(["Titre", "Type", "Auteur", "Date publication", "Nb consultations", "Dernière visite"])
+    writer.writerow(["Chunk", "Document", "Type", "Page", "Nb consultations", "Dernière visite"])
     for resource in profile_data.visited_resources:
         last_view = resource.last_viewed_at.strftime('%d/%m/%Y') if resource.last_viewed_at else 'N/A'
         writer.writerow([
-            resource.resource_title or '',
+            resource.chunk_id,
+            resource.document_id if resource.document_id is not None else '',
             resource.resource_type or '',
-            resource.author or '',
-            resource.publication_date or '',
+            resource.num_page if resource.num_page is not None else '',
             resource.view_count,
             last_view
         ])

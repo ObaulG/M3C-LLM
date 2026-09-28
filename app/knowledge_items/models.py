@@ -2,7 +2,7 @@
 
 Conforme au schéma défini dans app/database/user_knowledge_model.sql
 (section 2 : knowledge_items, knowledge_item_entities, knowledge_item_themes,
-knowledge_sources, et tables de référence entities / themes / knowledge_resources).
+knowledge_sources, et tables de référence entities / themes).
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -133,7 +133,7 @@ class KnowledgeSaveRequest(BaseModel):
     )
     chunk_id: Optional[str] = Field(
         default=None,
-        description="ID du chunk source, pour constituer le titre de la ressource"
+        description="ID du chunk source (text_chunks.id), utilisé pour knowledge_sources"
     )
     document_id: Optional[int] = Field(
         default=None,
@@ -143,15 +143,6 @@ class KnowledgeSaveRequest(BaseModel):
         default=None,
         description="ID de la question (text_questions.question_id) à laquelle relier "
                     "chaque knowledge_item sauvegardé (table knowledge_item_questions)",
-    )
-    resource_title: Optional[str] = Field(
-        default=None,
-        description="Titre de la ressource knowledge_resources. Si None, construit à partir du document."
-    )
-    resource_uri: Optional[str] = Field(default=None, description="URI optionnelle de la ressource")
-    resource_type: str = Field(
-        default="chunk",
-        description="Type de ressource (knowledge_resources.resource_type)"
     )
 
 
@@ -167,9 +158,6 @@ class KnowledgeSaveResult(BaseModel):
 class KnowledgeSaveResponse(BaseModel):
     """Réponse de la sauvegarde de knowledge_items."""
     success: bool = Field(..., description="Succès de l'opération")
-    resource_id: Optional[int] = Field(
-        default=None, description="ID de la ressource knowledge_resources créée/récupérée"
-    )
     saved_ids: List[int] = Field(
         default_factory=list, description="IDs des knowledge_items sauvegardés"
     )

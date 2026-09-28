@@ -4,7 +4,7 @@
 -- MySQL 8.0+ compatible (utilise JSON, ENUM, etc.)
 
 -- ============================================================================
--- SECTION 1: TABLES DE RéFéRENCE (ENTITéS, THèMES, RESSOURCES)
+-- SECTION 1: TABLES DE RéFéRENCE (ENTITéS, THèMES)
 -- ============================================================================
 
 -- 1.1 Entités : personnes, lieux, œuvres, événements, pratiques
@@ -29,19 +29,9 @@ CREATE TABLE IF NOT EXISTS themes (
     INDEX idx_themes_parent (parent_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1.3 Ressources documentaires
-CREATE TABLE IF NOT EXISTS knowledge_resources (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(500) NOT NULL COMMENT 'Titre de la ressource',
-    uri VARCHAR(1000) COMMENT 'URI/URL de la ressource',
-    resource_type VARCHAR(100) COMMENT 'Type de ressource (pdf, web, book, etc.)',
-    author VARCHAR(255) COMMENT 'Auteur de la ressource',
-    publication_date DATE COMMENT 'Date de publication',
-    description TEXT COMMENT 'Description de la ressource',
-    metadata JSON COMMENT 'Métadonnées supplémentaires en JSON',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Date d\'ajout dans le système',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Dernière mise à jour'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Note : les ressources documentaires ne sont pas dupliquées ici. Les documents et
+-- chunks existent déjà (tables documents / text_documents / text_chunks du schéma
+-- chunks.sql) ; les sources référencent directement les chunks.
 
 -- ============================================================================
 -- SECTION 2: CONNAISSANCES (Knowledge Items)
@@ -82,21 +72,22 @@ CREATE TABLE IF NOT EXISTS knowledge_item_themes (
     INDEX idx_kit_theme (theme_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2.4 Sources des connaissances (une connaissance peut venir de plusieurs ressources)
+-- 2.4 Sources des connaissances (une connaissance peut venir de plusieurs chunks)
+-- Pas de FOREIGN KEY vers text_chunks(id) : cette table est créée par chunks.sql,
+-- indépendamment de ce script.
 CREATE TABLE IF NOT EXISTS knowledge_sources (
     id INT AUTO_INCREMENT PRIMARY KEY,
     knowledge_id INT NOT NULL,
-    resource_id INT NOT NULL,
+    chunk_id VARCHAR(255) NOT NULL COMMENT 'ID du chunk source (text_chunks.id)',
     excerpt TEXT COMMENT 'Extrait exact de la source',
     page VARCHAR(100) COMMENT 'Page ou section dans la source',
-    uri VARCHAR(1000) COMMENT 'URI spécifique si différent de la ressource',
+    uri VARCHAR(1000) COMMENT 'URI spécifique si différente du chunk',
     confidence DECIMAL(3,2) DEFAULT 1.0 COMMENT 'Confiance dans cette source pour cette connaissance (0-1)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Date d\'ajout',
     FOREIGN KEY (knowledge_id) REFERENCES knowledge_items(id) ON DELETE CASCADE,
-    FOREIGN KEY (resource_id) REFERENCES knowledge_resources(id) ON DELETE CASCADE,
     INDEX idx_ks_knowledge (knowledge_id),
-    INDEX idx_ks_resource (resource_id),
-    UNIQUE KEY uk_knowledge_resource_excerpt (knowledge_id, resource_id, excerpt(255))
+    INDEX idx_ks_chunk (chunk_id),
+    UNIQUE KEY uk_knowledge_chunk_excerpt (knowledge_id, chunk_id, excerpt(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2.5 Relations connaissances <-> questions (lien direct question/élément de connaissance)
@@ -148,8 +139,8 @@ CREATE TABLE IF NOT EXISTS observation_payloads (
 -- 3.3 Cibles des observations (liens vers connaissances, thèmes, entités concernés)
 CREATE TABLE IF NOT EXISTS observation_targets (
     observation_id BIGINT NOT NULL,
-    target_type ENUM('knowledge', 'theme', 'entity') NOT NULL COMMENT 'Type de cible',
-    target_id INT NOT NULL COMMENT 'ID de la cible (knowledge_items.id, themes.id, ou entities.id)',
+    target_type ENUM('knowledge', 'theme', 'entity', 'chunk') NOT NULL COMMENT 'Type de cible',
+    target_id VARCHAR(255) NOT NULL COMMENT 'ID de la cible (knowledge_items.id, themes.id, entities.id ou text_chunks.id pour un chunk)',
     weight DECIMAL(5,4) DEFAULT 1.0 COMMENT 'Poids/Pertinence de cette cible pour l\'observation',
     PRIMARY KEY (observation_id, target_type, target_id),
     FOREIGN KEY (observation_id) REFERENCES observations(id) ON DELETE CASCADE,
@@ -435,7 +426,7 @@ SELECT
     (
         SELECT JSON_ARRAYAGG(
             JSON_OBJECT(
-                'source_id', ks.resource_id,
+                'chunk_id', ks.chunk_id,
                 'excerpt', ks.excerpt,
                 'page', ks.page,
                 'confidence', ks.confidence

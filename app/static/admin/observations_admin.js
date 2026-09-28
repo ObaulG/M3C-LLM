@@ -132,7 +132,7 @@ function collectTargets() {
         const targetId = row.querySelector('.target-id').value;
         const weight = parseFloat(row.querySelector('.target-weight').value);
         if (targetId) {
-            targets.push({ target_type: targetType, target_id: parseInt(targetId, 10), weight: isNaN(weight) ? 1.0 : weight });
+            targets.push({ target_type: targetType, target_id: targetId, weight: isNaN(weight) ? 1.0 : weight });
         }
     }
     return targets;
