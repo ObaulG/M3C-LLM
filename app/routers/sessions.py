@@ -41,6 +41,7 @@ from database.database import (
     get_chunks_by_question_ids,
     insert_session,
     record_answer_evaluation_observation,
+    record_knowledge_items_evaluation_observations,
 )
 import auth
 
@@ -307,6 +308,28 @@ async def submit_question_session_message(request: QuestionSessionMessage,
             ]
             async with await get_db_connection() as conn:
                 await record_answer_evaluation_observation(
+                    conn,
+                    user_id=auth.user_id_from_token(http_request.cookies.get("m3c_api_key")),
+                    anonymous_id=request.anonymous_id,
+                    session_id=session_id,
+                    document_id=session["document_id"],
+                    question_id=current_question_id,
+                    question_text=question["content"],
+                    user_answer=user_message,
+                    message_type=message_type,
+                    score=evaluation.score,
+                    feedback=evaluation.feedback,
+                    evaluator_models=[m[0] for m in models_evaluator],
+                    individual_evaluations=individual_evaluations,
+                    metadata={
+                        "page": "m3c-chatbot.html",
+                        "origin": "question_session",
+                    },
+                )
+                # Recenser une observation évaluative par élément de connaissance
+                # lié à la question (knowledge_item_questions), avec mise à jour
+                # de l'état de connaissance du visiteur (user_knowledge_states)
+                await record_knowledge_items_evaluation_observations(
                     conn,
                     user_id=auth.user_id_from_token(http_request.cookies.get("m3c_api_key")),
                     anonymous_id=request.anonymous_id,
