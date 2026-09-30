@@ -158,7 +158,7 @@ class KnowledgeItem(BaseModel):
 
 class ThemeKnowledgeGroup(BaseModel):
     """Groupe de connaissances pour un thème."""
-    theme_id: int = Field(..., description="ID du thème")
+    theme_id: Optional[int] = Field(None, description="ID du thème (None si l'élément n'est lié à aucun thème)")
     theme_name: str = Field(..., description="Nom du thème")
     knowledge_items: List[KnowledgeItem] = Field(default_factory=list, description="Liste des éléments de connaissance pour ce thème")
 
