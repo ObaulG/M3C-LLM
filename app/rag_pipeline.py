@@ -147,7 +147,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             final_prompt, sources = await self.rag_preprocess(prompt, reranking, k, specified_document_id)
             print("preprocess done")
         answer, total_time, consumed_energy_Wh = await self.query_simple(final_prompt, model, **kwargs)
-
+        print(answer)
         return answer, sources, total_time, consumed_energy_Wh
 
 
@@ -278,7 +278,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 resource_id = await get_resource_id_from_document_id(conn, metadata["document_id"])
                 document_data_dict = await get_resource_basic_metadata(conn, resource_id)
                 metadata.update(document_data_dict)
-
+                metadata["resource_id"] = resource_id
+                
             rag_source = RAGSource(
                 content=row["content"],
                 score_cossim=row["similarity"],

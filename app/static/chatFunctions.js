@@ -293,7 +293,7 @@ function createSourceItem(source, index) {
  */
 function createResponseContent(response) {
     console.log("Création de la zone de contenu pour la réponse");
-
+    console.log(response);
     const content = createDivWithClass('bot-response-content');
 
     // selon la route, le message est contenu dans un de ces deux attributs

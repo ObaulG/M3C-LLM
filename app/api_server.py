@@ -235,7 +235,7 @@ async def initialize_database(app: FastAPI):
     serait absente
     """
 
-    sql_file_path = Path("app/database/user_knowledge_model.sql")
+    sql_file_path = Path("app/database/sql_tables_scripts/user_knowledge_model.sql")
     sql = sql_file_path.read_text(encoding="utf-8")
     async with await get_db_connection() as conn:
         async with conn.cursor() as cursor:
