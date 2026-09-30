@@ -324,7 +324,7 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
             uks.last_interaction_at,
             uks.created_at,
             t.id AS theme_id,
-            t.name AS theme_name,
+            COALESCE(t.name, 'Sans thème') AS theme_name,
             kit.relevance AS theme_relevance,
             (
                 SELECT JSON_ARRAYAGG(
@@ -353,8 +353,8 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
             ) AS sources_json
         FROM user_knowledge_states uks
         JOIN knowledge_items ki ON uks.knowledge_id = ki.id
-        JOIN knowledge_item_themes kit ON ki.id = kit.knowledge_id
-        JOIN themes t ON kit.theme_id = t.id
+        LEFT JOIN knowledge_item_themes kit ON ki.id = kit.knowledge_id
+        LEFT JOIN themes t ON kit.theme_id = t.id
         WHERE uks.user_id = %s
         ORDER BY t.name, kit.relevance DESC, uks.score DESC
     """
