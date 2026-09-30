@@ -646,8 +646,8 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                         try:
                             await cursor.execute(
                                 "INSERT IGNORE INTO knowledge_item_entities "
-                                "(knowledge_id, entity_id, relevance, created_at) "
-                                "VALUES (%s, %s, %s, NOW())",
+                                "(knowledge_id, entity_id, relevance) "
+                                "VALUES (%s, %s, %s)",
                                 (knowledge_id, entity_map[clean_name], entity.confidence)
                             )
                         except Exception as e:
@@ -660,8 +660,8 @@ async def save_knowledge_candidates_to_db(candidates: List[KnowledgeItemCandidat
                         try:
                             await cursor.execute(
                                 "INSERT IGNORE INTO knowledge_item_themes "
-                                "(knowledge_id, theme_id, relevance, created_at) "
-                                "VALUES (%s, %s, %s, NOW())",
+                                "(knowledge_id, theme_id, relevance) "
+                                "VALUES (%s, %s, %s)",
                                 (knowledge_id, theme_map[clean_name], theme.confidence)
                             )
                         except Exception as e:

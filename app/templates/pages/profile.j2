@@ -208,6 +208,8 @@
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         overflow-x: auto;
+        overflow-y: auto;
+        max-height: 320px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -226,6 +228,9 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
 
     .observations-table td {
