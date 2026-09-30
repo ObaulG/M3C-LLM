@@ -408,7 +408,7 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
         # Créer ou mettre à jour le groupe de thème
         if theme_name not in knowledge_by_theme:
             knowledge_by_theme[theme_name] = ThemeKnowledgeGroup(
-                theme_id=row["theme_id"],
+                theme_id=row["theme_id"] if row["theme_id"] is not None else row["knowledge_id"],
                 theme_name=theme_name,
                 knowledge_items=[],
             )
