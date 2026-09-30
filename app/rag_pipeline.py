@@ -279,7 +279,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 document_data_dict = await get_resource_basic_metadata(conn, resource_id)
                 metadata.update(document_data_dict)
                 metadata["resource_id"] = resource_id
-                
+
             rag_source = RAGSource(
                 content=row["content"],
                 score_cossim=row["similarity"],
