@@ -135,9 +135,10 @@ let currentReadingSession = null;
 
 async function recordDocumentOpen(resourceId, numPage) {
     try {
+        const numPageSafe = Number.isInteger(numPage) && numPage >= 1 ? numPage : null;
         const body = JSON.stringify({
             resource_id: resourceId,
-            num_page: numPage,
+            num_page: numPageSafe,
             anonymous_id: getAnonymousUserId(),
             metadata: {page: 'm3c-chatbot.html'},
         });
@@ -213,6 +214,7 @@ function createShowPdfButton(source) {
         const resource_id = source.metadata.resource_id
         if (!resource_id) {
             alert("L'identifiant permettant de récupérer le pdf est absent.");
+            return;
         }
 
         // Si un autre document est déjà ouvert, enregistrer sa fermeture (changement de document)
@@ -233,6 +235,8 @@ function createShowPdfButton(source) {
         }
 
         const numPage = source.metadata.num_page;
+        const resourceIdInt = Number(resource_id);
+        const numPageInt = (numPage !== undefined && numPage !== null) ? Number(numPage) : null;
         const serverUrl = "http://localhost:8000";
 
         // route vers la requête
@@ -248,7 +252,7 @@ function createShowPdfButton(source) {
         pdfIframe.style.border = 'none';
         divIframe.style.display = "flex";
 
-        await recordDocumentOpen(resource_id, numPage);
+        await recordDocumentOpen(resourceIdInt, numPageInt);
     };
     return showPdfButton;
 }

@@ -276,8 +276,10 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             async with await get_db_connection() as conn:
                 # il faut d'abord récupérer le resource id correspondant à ce document_id
                 resource_id = await get_resource_id_from_document_id(conn, metadata["document_id"])
-                document_data_dict = await get_resource_basic_metadata(conn, resource_id)
-                metadata.update(document_data_dict)
+                if resource_id is not None:
+                    metadata["resource_id"] = resource_id
+                    document_data_dict = await get_resource_basic_metadata(conn, resource_id)
+                    metadata.update(document_data_dict)
 
             rag_source = RAGSource(
                 content=row["content"],
