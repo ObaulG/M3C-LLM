@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Chatbot RAG v3 - Interface de test{% endblock %}
+
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}m3c-chatbot.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="main_container">
+    <div class="container">
+        {{ header(
+            title='Chatbot RAG M3C',
+            subtitle='Système de Questions/Réponses sur documents',
+            title_icon='🤖',
+            page='m3c-chatbot-history.html',
+            page_dir='root',
+            show_admin=true
+        ) }}
+
+        <div class="settings">
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label class="setting-checkbox">
+                        <input type="checkbox" id="useRAG" checked>
+                        <span class="setting-label">RAG</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="setting-checkbox">
+                        <input type="checkbox" id="useReranking" checked>
+                        <span class="setting-label">Reranking</span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">
+                        Nb sources:
+                        <input type="number" id="numSources" value="3" min="1" max="10" class="setting-input">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Sélecteur de document pour RAG -->
+            <div class="document-selector-container">
+                <label class="setting-label">
+                    <input type="checkbox" id="useSingleDocument" onchange="toggleDocumentSelector()">
+                    <span>RAG sur un document spécifique</span>
+                </label>
+                <div id="documentSelector" style="display: none; margin-top: 10px;">
+                    <select id="selectedDocumentRAG" class="document-select">
+                        <option value="">Chargement des documents...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="model-selector">
+                <label for="model-select" class="model-selector-label">Modèle de langage</label>
+                <div class="model-select-container">
+                    <select id="model-select" name="models" multiple class="model-select"></select>
+                    <div class="selected-models" id="selectedModels">
+                        <span class="selected-model-badge">Aucun modèle sélectionné</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ chat_zone(
+            container_id='chatContainer',
+            welcome_type='bot',
+            welcome='👋 Bonjour ! Je suis votre assistant M3C. Veuillez écrire votre requête<br><br>'
+        ) }}
+
+        {{ loading(label='Recherche en cours...') }}
+
+        {{ message_input(
+            input_id='questionInput',
+            send_id='sendButton',
+            send_fn='sendQuestion()',
+            placeholder='Posez votre question ici...'
+        ) }}
+    </div>
+
+    <div class="pdf-display" id="pdf-display">
+        <iframe></iframe>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModelsIntoSelect(document.getElementById("model-select"));
+  });
+</script>
+{% endblock %}

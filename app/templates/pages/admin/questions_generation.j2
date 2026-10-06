@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+{% block title %}Administration - Génération de Questions{% endblock %}
+
+{% block head_scripts %}
+<link rel="stylesheet" href="{{ static_prefix }}admin/admin.css">
+{% endblock %}
+
+{% block styles %}
+<style>
+    .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    #documentSelect { min-width: 300px; max-width: 500px; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
+    .job-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .job-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .job-id { font-weight: 600; color: #b74420; font-size: 14px; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-running { background: #cce5ff; color: #004085; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-failed { background: #f8d7da; color: #721c24; }
+    .status-completed_with_errors { background: #ffeeba; color: #856404; }
+    .status-cancelled { background: #e2e3e5; color: #383d41; }
+    .job-meta { font-size: 12px; color: #666; }
+    .job-parameters { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px; }
+    .job-parameters span { margin-right: 15px; }
+    .job-parameters strong { color: #b74420; }
+    .document-list { margin-top: 15px; }
+    .document-item { padding: 10px; margin: 5px 0; border-left: 3px solid #e0e0e0; background: #f8f9fa; border-radius: 4px; }
+    .document-item.completed { border-left-color: #28a745; }
+    .document-item.failed { border-left-color: #dc3545; }
+    .document-item.pending { border-left-color: #ffc107; }
+    .document-item .doc-id { font-weight: 600; color: #333; }
+    .document-item .doc-stats { font-size: 12px; color: #666; margin-top: 5px; }
+    .document-item .doc-error { color: #dc3545; font-size: 12px; margin-top: 5px; }
+    .valid-documents-info { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3; }
+    .valid-documents-info h4 { color: #1976D2; margin-bottom: 10px; }
+    .valid-documents-list { font-size: 13px; color: #555; line-height: 1.8; }
+    .valid-documents-list span { display: inline-block; margin: 2px 0; }
+    .chunk-content-display {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .question-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+    }
+    .question-card .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .question-card .question-text {
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    .question-card .answer-text {
+        color: #555;
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-top: 8px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .question-card .validate-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: opacity 0.2s;
+    }
+    .question-card .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: opacity 0.2s;
+        margin-left: 8px;
+    }
+    .question-card .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .question-card textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        resize: vertical;
+        margin-top: 8px;
+        font-family: inherit;
+    }
+    .question-meta {
+        font-size: 11px;
+        color: #666;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #eee;
+    }
+    .questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="main_container">
+    <div class="sidebar">
+        <h3>Administration</h3>
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="label">Documents validés</div>
+                <div class="value" id="validDocsCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Jobs totaux</div>
+                <div class="value" id="totalJobsCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Dernier job</div>
+                <div class="value" id="lastJobStatus">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        {{ header_centered(
+            title='📝 Administration - Génération de Questions',
+            subtitle='Générez des questions à partir des documents validés (VALID_TEXT_RESOURCE_ID)',
+            page='questions_generation.html',
+            page_dir='admin'
+        ) }}
+
+        <div class="admin-content">
+            <h2 class="section-title">Génération de Questions sur Documents Validés</h2>
+            
+            <div class="valid-documents-info">
+                <h4>📋 Documents Validés (VALID_TEXT_RESOURCE_ID)</h4>
+                <div class="valid-documents-list" id="validDocumentsList">
+                    Chargement...
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Paramètres de Génération</h3>
+                
+                <div class="form-group">
+                    <label for="numQuestions">Nombre de questions par document</label>
+                    <input type="number" id="numQuestions" value="3" min="1" max="10" placeholder="Nombre de questions">
+                    <div class="description">Nombre de questions Q/R à générer pour chaque document validé</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
+                    <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
+                    <div class="description">Nombre de réponses à générer pour chaque question</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modelSelect">Modèle LLM</label>
+                    <select id="modelSelect"></select>
+                    <div class="description">Modèle à utiliser pour la génération des questions</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="documentSelect">Document spécifique (optionnel)</label>
+                    <select id="documentSelect">
+                        <option value="">Tous les documents validés</option>
+                    </select>
+                    <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="chunkSelect">Chunk spécifique (optionnel)</label>
+                    <select id="chunkSelect" disabled>
+                        <option value="">Sélectionnez un document d'abord</option>
+                    </select>
+                    <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contenu du chunk sélectionné</label>
+                    <div id="chunkContentDisplay" class="chunk-content-display">
+                        Sélectionnez un chunk pour afficher son contenu...
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Questions Existantes pour ce Chunk</h3>
+                    <div id="existingQuestionsContainer">
+                        <p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="startQuestionGeneration()" id="generateBtn">
+                    ✨ Générer des Questions
+                </button>
+                <button class="btn" onclick="refreshJobs()" id="refreshBtn" style="margin-left: 10px;">
+                    🔄 Rafraîchir
+                </button>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Questions Générées (En Attente de Validation)</h3>
+                <div id="generatedQuestionsContainer">
+                    <p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>
+                </div>
+                <button class="btn" onclick="validateAllQuestions()" id="validateAllBtn" style="margin-top: 10px; display: none;">
+                    ✅ Valider Toutes les Questions
+                </button>
+                <button class="btn" onclick="exportActionsLogToCSV()" id="exportLogBtn" style="margin-top: 10px; display: none;">
+                    📥 Exporter le Journal CSV
+                </button>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Génération en cours, veuillez patienter...</p>
+                <div class="progress-container">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Historique des Jobs</h3>
+                <div id="jobsContainer">
+                    <p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Configuration de l'API
+    const API_BASE = window.location.origin || window.location.protocol + '//' + window.location.host;
+    const QUESTIONS_API = API_BASE + '/api/admin/questions';
+    const DOCUMENTS_API = API_BASE + '/api/documents';
+    
+    // Variables globales
+    let currentJobId = null;
+    let refreshInterval = null;
+    let currentDocumentId = null;
+    
+    // Fonction pour rafraîchir les statistiques
+    async function refreshStats() {
+        try {
+            const response = await fetch(QUESTIONS_API + '/valid-documents');
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Erreur API valid-documents:', response.status, errorText);
+                alert('Erreur lors du chargement des documents. Voir la console pour plus de détails.');
+                return;
+            }
+            
+            const data = await response.json();
+            
+            if (!data || !data.documents) {
+                console.error('Aucune donnée de documents reçue:', data);
+                alert('Aucun document validé trouvé.');
+                return;
+            }
+            
+            document.getElementById('validDocsCount').textContent = data.count;
+            
+            const docsList = document.getElementById('validDocumentsList');
+            if (data.documents.length === 0) {
+                docsList.innerHTML = '<span>Aucun document validé</span>';
+            } else {
+                docsList.innerHTML = data.documents.map(doc => 
+                    `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`
+                ).join('');
+            }
+            
+            const docSelect = document.getElementById('documentSelect');
+            let selectOptions = '<option value="">Tous les documents validés</option>';
+            
+            data.documents.forEach(doc => {
+                selectOptions += `<option value="${doc.document_id}">${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</option>`;
+            });
+            
+            docSelect.innerHTML = selectOptions;
+            
+            docSelect.onchange = async function() {
+                const selectedValue = this.value;
+                currentDocumentId = selectedValue ? parseInt(selectedValue) : null;
+                await loadChunksForDocument(currentDocumentId);
+            };
+            
+            resetChunkSelector();
+            
+            console.log('Documents chargés avec succès:', data.documents.length, 'documents');
+        } catch (error) {
+            console.error('Erreur lors du chargement des documents validés:', error);
+            alert('Erreur lors du chargement des documents. Vérifiez la console pour plus de détails: ' + error.message);
+        }
+    }
+    
+    async function loadChunksForDocument(documentId) {
+        const chunkSelect = document.getElementById('chunkSelect');
+        const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+        
+        if (!documentId) {
+            resetChunkSelector();
+            return;
+        }
+        
+        try {
+            chunkSelect.disabled = true;
+            chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
+            chunkContentDisplay.textContent = 'Chargement des chunks...';
+            
+            const response = await fetch(`${DOCUMENTS_API}/${documentId}/chunks`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.chunks && data.chunks.length > 0) {
+                let options = '<option value="">Tous les chunks du document</option>';
+                
+                data.chunks.forEach(chunk => {
+                    const preview = chunk.content.substring(0, 80).replace(/\s+/g, ' ');
+                    const displayText = `Chunk ${chunk.id} - Page ${chunk.num_page || 'N/A'} - ${preview}...`;
+                    const encodedContent = encodeURIComponent(chunk.content);
+                    
+                    options += `<option value="${chunk.id}" data-content="${encodedContent}" data-preview="${displayText}">
+                        ${displayText}
+                    </option>`;
+                });
+                
+                chunkSelect.innerHTML = options;
+                chunkSelect.disabled = false;
+                chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                
+                chunkSelect.onchange = async function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const content = selectedOption.dataset.content;
+                    const chunkId = this.value;
+                    
+                    if (content) {
+                        chunkContentDisplay.textContent = decodeURIComponent(content);
+                    } else {
+                        chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                    }
+                    
+                    if (chunkId) {
+                        await loadExistingQuestionsForChunk(chunkId);
+                    } else {
+                        document.getElementById('existingQuestionsContainer').innerHTML = 
+                            '<p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>';
+                    }
+                };
+            } else {
+                chunkSelect.innerHTML = '<option value="">Aucun chunk disponible</option>';
+                chunkSelect.disabled = true;
+                chunkContentDisplay.textContent = 'Aucun chunk trouvé pour ce document.';
+            }
+            
+        } catch (error) {
+            console.error('Erreur lors du chargement des chunks:', error);
+            chunkSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            chunkSelect.disabled = true;
+            chunkContentDisplay.textContent = 'Erreur lors du chargement des chunks.';
+        }
+    }
+    
+    function resetChunkSelector() {
+        const chunkSelect = document.getElementById('chunkSelect');
+        const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+        
+        chunkSelect.innerHTML = '<option value="">Sélectionnez un document d\'abord</option>';
+        chunkSelect.disabled = true;
+        chunkContentDisplay.textContent = 'Sélectionnez un document puis un chunk...';
+        
+        chunkSelect.onchange = null;
+    }
+    
+    async function refreshJobs() {
+        try {
+            const response = await fetch(QUESTIONS_API + '/jobs');
+            const data = await response.json();
+            
+            document.getElementById('totalJobsCount').textContent = data.count;
+            
+            if (data.jobs.length === 0) {
+                document.getElementById('jobsContainer').innerHTML = 
+                    '<p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>';
+                document.getElementById('lastJobStatus').textContent = 'Aucun';
+                return;
+            }
+            
+            const latestJob = data.jobs[0];
+            document.getElementById('lastJobStatus').textContent = getStatusText(latestJob.status);
+            
+            let html = '';
+            data.jobs.forEach(job => {
+                html += renderJobCard(job);
+            });
+            
+            document.getElementById('jobsContainer').innerHTML = html;
+            
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement des jobs:', error);
+        }
+    }
+    
+    function getStatusText(status) {
+        const statusMap = {
+            'pending': 'En attente',
+            'running': 'En cours',
+            'completed': 'Terminé',
+            'completed_with_errors': 'Terminé (avec erreurs)',
+            'failed': 'Échoué',
+            'cancelled': 'Annulé'
+        };
+        return statusMap[status] || status;
+    }
+    
+    function getStatusClass(status) {
+        const classMap = {
+            'pending': 'status-pending',
+            'running': 'status-running',
+            'completed': 'status-completed',
+            'completed_with_errors': 'status-completed_with_errors',
+            'failed': 'status-failed',
+            'cancelled': 'status-cancelled'
+        };
+        return classMap[status] || 'status-pending';
+    }
+    
+    function renderJobCard(job) {
+        const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
+        const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
+        const statusText = getStatusText(job.status);
+        const statusClass = getStatusClass(job.status);
+        
+        let parametersHtml = '';
+        if (job.parameters && Object.keys(job.parameters).length > 0) {
+            parametersHtml = '<div class="job-parameters"><strong>Paramètres:</strong>';
+            parametersHtml += `<span><strong>Questions/doc:</strong> ${job.parameters.num_questions_per_doc || 'N/A'}</span>`;
+            parametersHtml += `<span><strong>Modèle:</strong> ${job.parameters.model_name || 'N/A'}</span>`;
+            parametersHtml += '</div>';
+        }
+        
+        let progressHtml = '';
+        if (job.progress && Object.keys(job.progress).length > 0) {
+            progressHtml = '<div class="document-list"><strong>Documents:</strong>';
+            for (const [docId, progress] of Object.entries(job.progress)) {
+                const docClass = progress.status === 'completed' ? 'completed' : progress.status === 'failed' ? 'failed' : 'pending';
+                progressHtml += `
+                    <div class="document-item ${docClass}">
+                        <div class="doc-id">Document ID: ${progress.resource_id}</div>
+                        <div class="doc-stats">
+                            ✓ ${progress.questions_generated || 0} générées | 
+                            💾 ${progress.questions_saved || 0} sauvegardées
+                        </div>
+                        ${progress.error ? `<div class="doc-error">❌ ${progress.error}</div>` : ''}
+                    </div>
+                `;
+            }
+            progressHtml += '</div>';
+        }
+        
+        return `
+            <div class="job-card">
+                <div class="job-header">
+                    <span class="job-id">Job: ${job.job_id.substring(0, 8)}...</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="job-meta">
+                    Créé: ${createdDate} | Mis à jour: ${updatedDate} | 
+                    ${job.processed_documents || 0}/${job.total_documents || 0} documents
+                </div>
+                ${parametersHtml}
+                ${progressHtml}
+                ${job.status === 'running' ? 
+                    '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitement en cours...</div>' : ''}
+            </div>
+        `;
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        refreshStats();
+        refreshJobs();
+    });
+</script>
+{% endblock %}

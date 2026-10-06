@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Administration - Test message_evaluator_agent{% endblock %}
+
+{% block head_scripts %}
+<link rel="stylesheet" href="{{ static_prefix }}admin/admin.css">
+{% endblock %}
+
+{% block styles %}
+<style>
+    .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
+    .question-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .question-id { font-weight: 600; color: #b74420; font-size: 14px; }
+    .question-text { font-size: 15px; color: #333; margin-bottom: 15px; line-height: 1.6; }
+    .answer-section { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; }
+    .answer-textarea { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 100px; }
+    .evaluation-result { margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 6px; border-left: 4px solid #2196F3; }
+    .evaluation-result .result-label { font-weight: 600; color: #1976D2; margin-bottom: 8px; }
+    .evaluation-result .result-value { font-size: 14px; color: #333; }
+    .manual-eval-section { margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107; }
+    .radio-group { display: flex; gap: 15px; margin-top: 10px; }
+    .radio-option { display: flex; align-items: center; gap: 5px; }
+    .radio-option input { margin: 0; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-in-context { background: #d4edda; color: #155724; }
+    .status-out-of-context { background: #f8d7da; color: #721c24; }
+    .status-not-evaluated { background: #e2e3e5; color: #383d41; }
+    .action-buttons { display: flex; gap: 10px; margin-top: 15px; }
+    .session-info { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .session-info h3 { color: #1976D2; margin-bottom: 10px; }
+    .session-info-item { margin: 5px 0; font-size: 14px; }
+    .session-info-label { font-weight: 600; color: #666; }
+    .document-selector { margin-bottom: 20px; }
+    .csv-download { margin-top: 20px; padding: 10px; background: #d4edda; border-radius: 6px; text-align: center; }
+    .csv-download a { color: #155724; text-decoration: none; font-weight: 600; }
+    .csv-download a:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="main_container">
+    <div class="sidebar">
+        <h3>Administration</h3>
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="label">Sessions évaluées</div>
+                <div class="value" id="evaluatedSessionsCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Réponses testées</div>
+                <div class="value" id="testedAnswersCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Fichier CSV</div>
+                <div class="value" id="csvStatus">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        {{ header_centered(
+            title='🎯 Test message_evaluator_agent',
+            subtitle='Évaluez la précision de l\'agent message_evaluator_agent sur des sessions de questions/réponses',
+            page='message_evaluator_admin.html',
+            page_dir='admin'
+        ) }}
+
+        <div class="admin-content">
+            <h2 class="section-title">Test de l'agent message_evaluator_agent</h2>
+
+            <div class="form-section">
+                <h3>Sélection de session</h3>
+                
+                <div class="document-selector">
+                    <div class="form-group">
+                        <label for="documentSelect">Document (depuis PREMADE_QUESTIONS_BY_DOCUMENT_ID)</label>
+                        <select id="documentSelect" onchange="updateSessionInfo()">
+                            <option value="">-- Sélectionnez un document --</option>
+                        </select>
+                        <div class="description">Sélectionnez un document pour charger une session de questions prédéfinies</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sessionIdInput">Ou entrez un Session ID existant</label>
+                        <input type="text" id="sessionIdInput" placeholder="ID de la session">
+                        <div class="description">Entrez l'ID d'une session existante pour charger ses questions/réponses</div>
+                    </div>
+
+                    <button class="btn" onclick="loadSession()" id="loadSessionBtn">
+                        🔍 Charger la session
+                    </button>
+                </div>
+            </div>
+
+            <div class="session-info" id="sessionInfo" style="display: none;">
+                <h3>ℹ️ Informations de la session</h3>
+                <div class="session-info-item">
+                    <span class="session-info-label">Document ID:</span>
+                    <span id="sessionDocumentId">-</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Session ID:</span>
+                    <span id="sessionIdDisplay">-</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Nombre de questions:</span>
+                    <span id="sessionQuestionCount">-</span>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Chargement de la session en cours...</p>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Questions et évaluations</h3>
+                <div id="questionsContainer">
+                    <p style="text-align: center; color: #666; padding: 40px;">
+                        Sélectionnez un document ou entrez un Session ID pour commencer.
+                    </p>
+                </div>
+            </div>
+
+            <div class="csv-download" id="csvDownload" style="display: none;">
+                <p>✅ Résultats sauvegardés dans: <a href="" id="csvFileLink">message_evaluator_results.csv</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_prefix }}message_evaluator_admin.js"></script>
+{% endblock %}

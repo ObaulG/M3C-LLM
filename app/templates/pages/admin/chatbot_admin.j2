@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Redirection...{% endblock %}
+{% block head_scripts %}
+<meta http-equiv="refresh" content="0; url=indexation.html">
+{% endblock %}
+{% block body %}
+<p>Redirection vers la page d'administration...</p>
+<p><a href="{{ static_prefix }}indexation.html">Cliquez ici si vous n'êtes pas redirigé automatiquement</a></p>
+{% endblock %}

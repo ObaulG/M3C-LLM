@@ -171,32 +171,6 @@
             background: #d16b3f;
         }
 
-        .filter-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .filter-chip {
-            padding: 5px 12px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .filter-chip:hover {
-            background: #b74420;
-            color: white;
-        }
-
-        .filter-chip.active {
-            background: #b74420;
-            color: white;
-        }
-
         /* Styles pour la section d'évaluation */
         .evaluation-section {
             margin-top: 20px;
@@ -422,12 +396,6 @@
         .knowledge-badge-theme {
             background: #e8f5e9;
             color: #2e7d32;
-        }
-
-        .knowledge-item-source {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #888;
         }
 
         .btn-knowledge-items {

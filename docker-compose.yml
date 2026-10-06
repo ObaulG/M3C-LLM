@@ -45,6 +45,26 @@ services:
     networks:
       - llmagents-network
 
+  # Service d'initialisation Qdrant (one-shot)
+  # Crée les collections Qdrant au démarrage, après que Qdrant soit sain.
+  # Équivalent du docker/mysql/init.sql mais pour Qdrant (qui n'a pas de
+  # mécanisme natif de scripts d'init).
+  qdrant-init:
+    image: curlimages/curl:latest
+    container_name: llmagents-qdrant-init
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+    volumes:
+      - ./docker/qdrant/init.sh:/init.sh:ro
+    entrypoint: ["/bin/sh", "/init.sh"]
+    restart: "no"
+    networks:
+      - llmagents-network
+
   # Service Application FastAPI
   app:
     build:
@@ -57,6 +77,8 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
+      qdrant-init:
+        condition: service_completed_successfully
     environment:
       # Configuration MySQL
       DB_HOST: mysql

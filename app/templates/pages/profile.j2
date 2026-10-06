@@ -484,14 +484,14 @@
 <div class="main_container">
     <div class="container">
         {# En-tête de la page #}
-        {% call header(
+        {{ header(
             title=page_title|default("Mon Profil"),
             subtitle='Statistiques de visite, ressources consultées, thèmes et éléments de connaissance',
             title_icon='👤',
-            page='profile.j2',
+            page='profile.html',
             page_dir='root',
             show_admin=false
-        ) %}{% endcall %}
+        ) }}
 
         <div class="profile-container">
             {# ================================================================

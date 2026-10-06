@@ -97,7 +97,9 @@ def render_page(env: Environment, template_name: str, out_subdir: str, static_pr
     )
     out_dir = STATIC_DIR / out_subdir
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_name = template_name[:-3] if template_name.endswith(".j2") else template_name
+    out_name = template_name.rsplit('/', 1)[-1]
+    if out_name.endswith(".j2"):
+        out_name = out_name[:-3]
     if not out_name.endswith(".html"):
         out_name += ".html"
     out_path = out_dir / out_name

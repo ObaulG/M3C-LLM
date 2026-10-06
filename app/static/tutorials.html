@@ -1,47 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLMAgents - Tutoriels</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="rag_visualization.css">
-    <script src="https://cdn.plot.ly/plotly-3.7.0.min.js" charset="utf-8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Style CSS pour la zone de texte -->
-    <style>
-      .prompt-container {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
+<style>
+  .prompt-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-      .prompt-input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-family: inherit;
-        font-size: 16px;
-        resize: vertical;
-      }
+  .prompt-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 16px;
+    resize: vertical;
+  }
 
-      .submit-button {
-        padding: 10px 15px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        align-self: flex-start;
-      }
+  .submit-button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: flex-start;
+  }
 
-      .submit-button:hover {
-        background-color: #0056b3;
-      }
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
 
-      /* Style des tooltips */
+  /* Style des tooltips */
   .tooltip {
     display: inline-block;
     cursor: help;
@@ -145,38 +141,6 @@
     font-size: 12px;
   }
 
-  /* Style du bouton et de la zone de texte */
-  .prompt-container {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .prompt-input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: inherit;
-    font-size: 16px;
-    resize: vertical;
-  }
-
-  .submit-button {
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    align-self: flex-start;
-  }
-
-  .submit-button:hover {
-    background-color: #0056b3;
-  }
-
   .loading-spinner {
     width: 20px;
     height: 20px;
@@ -190,46 +154,39 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-    </style>
-    <script src="chatFunctions.js"></script>
-    <script src="models.js"></script>
+</style>
+<link rel="stylesheet" href="rag_visualization.css">
+<script src="https://cdn.plot.ly/plotly-3.7.0.min.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="chatFunctions.js"></script>
+<script src="models.js"></script>
 <script src="rag_tutorial.js"></script>
 </head>
 <body>
 <div class="main_container">
   <div class="container">
-      <!-- Header -->
       <div class="header">
-          <div class="header-main">
-              <h1>🏠 LLMAgents - Tutoriels</h1>
-          </div>
-          <div class="nav-links">
-              <a href="index.html" class="nav-link">Index</a>
-              <a href="tutorials.html" class="nav-link active">Explications</a>
-              <a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
-              <a href="question_session.html" class="nav-link">Chatbot Inversé</a>
-              <a href="rag_visualization.html" class="nav-link">Visualisation RAG</a>
-              <a href="questions_management.html" class="nav-link">Gestion Q/R</a>
-          </div>
-          <div class="profile-widget" id="profileWidget">
-        <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
-            <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
-                   autocomplete="username" required />
-            <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
-                   autocomplete="current-password" required />
-            <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
-            <span class="profile-message" id="profileMessage"></span>
-            <a href="auth.html" class="profile-register-link">S'inscrire</a>
-        </form>
-        <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
-            <a href="profile.html" class="profile-user-link" id="profileUserLink">
-                <span class="profile-avatar">&#128100;</span>
-                <span class="profile-username" id="profileUsernameDisplay">&mdash;</span>
-            </a>
-            <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">D&eacute;connexion</button>
-        </div>
+    <div class="header-main">
+        <h1>🏠 LLMAgents - Tutoriels</h1></div>
+    <div class="header-nav"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link active">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="admin/indexation.html" class="nav-link">Indexation</a><span class="nav-separator">|</span><a href="admin/questions_generation.html" class="nav-link">Génération Questions</a><span class="nav-separator">|</span><a href="admin/knowledge_items_generation.html" class="nav-link">Knowledge Items</a><span class="nav-separator">|</span><a href="admin/message_evaluator_admin.html" class="nav-link">Test Message Evaluator</a><span class="nav-separator">|</span><a href="admin/chatbot_admin.html" class="nav-link">Admin Chatbot</a></div>    <div class="profile-widget" id="profileWidget">
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="auth.html" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="profile.html" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
     </div>
-</div>
+</div></div>
 
       <div class="section" id="accueil">
         <h2 class="section-title">📚 Le fondement des IA génératives</h2>
@@ -398,7 +355,7 @@
 </p>
 
 <p>
-    Les réseaux de neurones s'inspirent du fonctionnement du cerveau, en modélisant des neurones artificiels. Un neurone artificiel prend en entrée un vecteur de nombres <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>x</mi><mn>1</mn></msub>, <msub><mi>x</mi><mn>2</mn></msub>, ..., <msub><mi>x</mi><mi>n</mi></msub></math> et produit une sortie selon les étapes suivantes (voir figure ci-dessous) :
+    Les réseaux de neurones s'inspirent du fonctionnement du cerveau, en modélisant des neurones artificiels. Un neurone artificiel prend en entrée un vecteur de nombres <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>x</mi><mn>1</mn></msub>, <msub><mi>x</mi><mn>2</mn></msub>, ..., <msub><mi>x</mi><mn>n</mn></msub></math> et produit une sortie selon les étapes suivantes (voir figure ci-dessous) :
 </p>
 
 <ul>
@@ -672,11 +629,13 @@
     </div>
 </div>
 </div>
-<script src="auth_widget.js"></script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("model-select"));
   });
 </script>
+
+<script src="auth_widget.js"></script>
 </body>
 </html>

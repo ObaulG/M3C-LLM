@@ -48,6 +48,7 @@ docker-compose.yml
 # Ignorer les scripts d'initialisation Docker
 docker/
 !docker/app/entrypoint.sh
+!docker/qdrant/init.sh
 
 # Ignorer les fichiers de configuration IDE
 .vscode/
