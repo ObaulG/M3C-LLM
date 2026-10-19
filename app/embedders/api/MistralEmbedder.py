@@ -2,7 +2,7 @@
 from app.embedders.BaseEmbedder import BaseEmbedder
 from typing import List
 import os
-from mistralai.client import Mistral
+from mistralai import Mistral
 
 # Note: il n'est pas possible de donner une dimension lors d'un appel embeddings.create...
 

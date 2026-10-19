@@ -2,7 +2,7 @@ import os
 from typing import Union, Literal, Optional
 import instructor
 from instructor import Instructor, AsyncInstructor
-from mistralai.client import Mistral
+from mistralai import Mistral
 from fastapi import HTTPException
 from openai import OpenAI, AsyncOpenAI
 from google import genai

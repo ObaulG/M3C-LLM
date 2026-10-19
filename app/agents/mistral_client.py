@@ -1,7 +1,7 @@
 # dependencies.py
 import os
 import instructor
-from mistralai.client import Mistral
+from mistralai import Mistral
 from fastapi import Depends, HTTPException
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
