@@ -20,7 +20,7 @@ from embedders import get_embedder_instance
 
 # Listes des modèles (déjà définies)
 MISTRAL_MODELS = [
-    "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
+    "ministral-3b-2410", "ministral-8b-2410", "ministral-3b-2512", "ministral-8b-2512", "open-mistral-7b", "open-mistral-nemo",
     "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
 ]
 #GEMINI_MODELS = [
@@ -408,8 +408,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 answer = await self.dict_llm[model].ainvoke(prompt)
             else:
                 answer = await self.dict_llm[model].ainvoke(prompt)
+            print(answer)
         except Exception as e:
-            print(e)
+            print("Exception:", e)
         
         elapsed_time = time.time() - start
         print("finished in ", elapsed_time)

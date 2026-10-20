@@ -240,6 +240,7 @@ async function sendQuestion() {
 		use_ontology_enrichment: false,
 		rag_monodocument_id: rag_monodocument_id,
 		session_id: rag_monodocument_id ? (sessions[rag_monodocument_id] || localStorage.getItem(`rag_session_${rag_monodocument_id}`)) : null,
+		anonymous_id: getAnonymousUserId(),
 	};
 
 	if (params.models.length > 1) {

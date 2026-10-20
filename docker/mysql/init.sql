@@ -504,3 +504,62 @@ CREATE TABLE IF NOT EXISTS user_model_history (
     INDEX idx_umh_created (created_at),
     INDEX idx_umh_trigger_obs (trigger_observation_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =============================================================================
+-- TABLES DE FEEDBACK CHATBOT
+-- (source : app/database/sql_tables_scripts/chatbot_feedback.sql)
+-- =============================================================================
+
+-- Une ligne par reponse generee par un LLM, avec la requete utilisateur en amont
+-- et les metadonnees de generation (modele, k, temps, tokens, energie...).
+CREATE TABLE IF NOT EXISTS chatbot_messages (
+    message_id          VARCHAR(64) PRIMARY KEY,
+    user_id             VARCHAR(100) NULL,
+    session_id          VARCHAR(100) NULL,
+    question            TEXT NOT NULL,
+    answer              TEXT NOT NULL,
+    model               VARCHAR(100) NOT NULL,
+    use_rag             BOOLEAN DEFAULT FALSE,
+    use_reranking       BOOLEAN DEFAULT FALSE,
+    k                   INT NULL,
+    total_time          FLOAT NULL,
+    consumed_energy_Wh  FLOAT NULL,
+    token_usage         JSON NULL,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cbm_user (user_id, created_at),
+    INDEX idx_cbm_session (session_id),
+    INDEX idx_cbm_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- IDs de chunks utilises quand le RAG est actif
+CREATE TABLE IF NOT EXISTS chatbot_message_chunks (
+    message_id          VARCHAR(64) NOT NULL,
+    chunk_id            VARCHAR(255) NOT NULL,
+    position            INT NOT NULL,
+    score_cossim        FLOAT NULL,
+    score_bm25          FLOAT NULL,
+    PRIMARY KEY (message_id, chunk_id),
+    FOREIGN KEY (message_id) REFERENCES chatbot_messages(message_id) ON DELETE CASCADE,
+    INDEX idx_cbmc_message (message_id),
+    INDEX idx_cbmc_chunk (chunk_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Retour utilisateur (echelles 1-5 + commentaire libre) rattache a un message.
+-- Un seul feedback par message (UNIQUE(message_id)).
+CREATE TABLE IF NOT EXISTS chatbot_feedbacks (
+    feedback_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message_id          VARCHAR(64) NOT NULL,
+    user_id             VARCHAR(100) NULL,
+    rating_response     TINYINT NULL,
+    rating_relevance    TINYINT NULL,
+    rating_formulation  TINYINT NULL,
+    comment             TEXT NULL,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_cbf_message (message_id),
+    FOREIGN KEY (message_id) REFERENCES chatbot_messages(message_id) ON DELETE CASCADE,
+    INDEX idx_cbf_user (user_id, created_at),
+    INDEX idx_cbf_created (created_at),
+    CONSTRAINT chk_cbf_rating_response    CHECK (rating_response    IS NULL OR rating_response    BETWEEN 1 AND 5),
+    CONSTRAINT chk_cbf_rating_relevance   CHECK (rating_relevance   IS NULL OR rating_relevance   BETWEEN 1 AND 5),
+    CONSTRAINT chk_cbf_rating_formulation CHECK (rating_formulation IS NULL OR rating_formulation BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

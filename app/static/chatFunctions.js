@@ -287,6 +287,26 @@ function createSourceItem(source, index) {
 }
 
 /**
+ * Crée le bouton permettant d'ouvrir le widget de retours pour une réponse.
+ * @param {Object} response - Réponse d'un modèle LLM (contient metadata.message_id)
+ * @returns {HTMLElement}
+ */
+function createFeedbackButton(response) {
+    const messageId = response.metadata?.message_id;
+    const btn = createDivWithClass('feedback-button');
+    btn.textContent = '★ Donner un retour';
+    btn.setAttribute('role', 'button');
+    if (!messageId) {
+        btn.classList.add('feedback-button-disabled');
+        btn.title = "Aucun identifiant de message : le retour n'est pas disponible pour cette réponse.";
+        return btn;
+    }
+    btn.title = 'Ouvrir le formulaire de retours';
+    btn.onclick = () => openFeedbackPanel(messageId);
+    return btn;
+}
+
+/**
  * Crée le contenu principal d'une réponse LLM avec support Markdown
  * @param {Object} response - Réponse d'un modèle LLM
  * @returns {HTMLElement}
@@ -383,9 +403,11 @@ function createTabContent(response) {
 
     const header = createResponseHeader(response);
     const content = createResponseContent(response);
+    const feedbackBtn = createFeedbackButton(response);
 
     tabContent.appendChild(header);
     tabContent.appendChild(content);
+    tabContent.appendChild(feedbackBtn);
 
     return tabContent;
 }
@@ -445,6 +467,9 @@ function createBotResponse(data) {
     const content = createResponseContent(data);
     contentDiv.appendChild(content);
 
+    const feedbackBtn = createFeedbackButton(data);
+    contentDiv.appendChild(feedbackBtn);
+
     messageDiv.appendChild(contentDiv);
 
     return messageDiv;
@@ -472,4 +497,4 @@ function createLLMResponsesTabs(responses, chatContainer) {
 
 
 
-}
+}

@@ -9,8 +9,10 @@ echo "Démarrage de l'application LLMAgents"
 echo "=========================================="
 
 # Attendre que les dépendances soient prêtes
-echo "Attente de la disponibilité de MySQL..."
-until nc -z -v -w30 mysql 3306; do
+# MySQL est une base externe (serveurs M3C) : on utilise DB_HOST/DB_PORT
+# depuis l'environnement plutôt que le nom de service Docker.
+echo "Attente de la disponibilité de MySQL (${DB_HOST}:${DB_PORT})..."
+until nc -z -v -w30 "${DB_HOST}" "${DB_PORT}"; do
   echo "MySQL n'est pas encore prêt - attente..."
   sleep 5
 done

@@ -315,10 +315,69 @@ figcaption {
 }
 
 .settings {
-    padding: 10px 15px;
+    padding: 0;
     background: #f8f9fa;
     border-top: 1px solid #e0e0e0;
     font-size: 13px;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 15px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    background: #f0f1f3;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.settings-header:hover {
+    background: #e9ebee;
+}
+
+.settings-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.settings-header-summary {
+    font-weight: 400;
+    font-size: 12px;
+    color: #666;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-toggle-icon {
+    transition: transform 0.2s;
+    font-size: 12px;
+    color: #666;
+}
+
+.settings.collapsed .settings-toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 15px;
+}
+
+.settings.collapsed .settings-content {
+    display: none;
 }
 
 .settings label {
@@ -341,7 +400,142 @@ figcaption {
 }
 
 .settings-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    align-items: center;
+}
+
+.setting-item {
     display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.setting-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.setting-label {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.setting-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+/* Selecteur de document pour RAG monodocument */
+.document-selector-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.document-select {
+    flex: 1 1 250px;
+    min-width: 200px;
+    padding: 6px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 13px;
+    background: white;
+}
+
+/* Selecteur de modeles : grille de cases a cocher occupant la largeur */
+.model-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model-selector-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.model-select-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model-select[hidden] {
+    display: none;
+}
+
+.model-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px 12px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.model-checkbox-group-label {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #b74420;
+    margin-top: 4px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #f0d9cf;
+}
+
+.model-checkbox-group-label:first-child {
+    margin-top: 0;
+}
+
+.model-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+}
+
+.model-checkbox-item:hover {
+    background: #f8f9fa;
+}
+
+.model-checkbox-item input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.model-checkbox-label {
+    user-select: none;
+}
+
+.selected-models {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 24px;
+}
+
+.selected-model-badge {
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
 }
 
 .tab-container {
@@ -509,4 +703,278 @@ figcaption {
 
 .pdf-close-button:hover {
     background: rgba(0, 0, 0, 0.8);
+}
+
+/* ===== Widget flottant des parametres (marge droite) ===== */
+/* Bouton icone flottant qui ouvre/ferme le panneau */
+.settings-fab {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.settings-fab:hover {
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.settings-fab.open {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+.settings-fab.open:hover {
+    transform: translateY(-50%) rotate(90deg) scale(1.08);
+}
+
+/* Panneau flottant a droite, hors du flux du chatbot */
+.settings-panel {
+    position: fixed;
+    right: 72px;
+    top: 50%;
+    transform: translateY(-50%) translateX(20px);
+    z-index: 999;
+    width: 320px;
+    max-width: calc(100vw - 90px);
+    max-height: 85vh;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+}
+
+.settings-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+}
+
+.settings-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: #b74420;
+}
+
+.settings-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px 15px 15px;
+}
+
+/* Sur petits ecrans (mobile), le panneau prend la largeur disponible
+   et s'ancre a droite sans deborder */
+@media (max-width: 600px) {
+    .settings-panel {
+        right: 8px;
+        left: 8px;
+        width: auto;
+        max-width: none;
+    }
+    .settings-fab {
+        right: 12px;
+    }
+}
+
+/* ============================================================
+   Widget de retours utilisateurs sur les réponses du chatbot
+   ============================================================ */
+
+/* Bouton par réponse */
+.feedback-button {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    font-size: 0.85em;
+    color: #6b7280;
+    background: transparent;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.feedback-button:hover {
+    background: #f3f4f6;
+    color: #111827;
+    border-color: #9ca3af;
+}
+
+.feedback-button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.feedback-button-disabled:hover {
+    background: transparent;
+    color: #6b7280;
+    border-color: #d1d5db;
+}
+
+/* Overlay derrière le panneau (affiché quand le panneau est ouvert) */
+.feedback-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+}
+
+.feedback-panel.open ~ .feedback-overlay {
+    display: block;
+}
+
+/* Panneau latéral gauche */
+.feedback-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 360px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    font-family: inherit;
+}
+
+.feedback-panel.open {
+    transform: translateX(0);
+}
+
+.feedback-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: 1.05em;
+}
+
+.feedback-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0 4px;
+}
+
+.feedback-close-btn:hover {
+    color: #111827;
+}
+
+.feedback-panel-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.feedback-scale-group {
+    margin-bottom: 18px;
+}
+
+.feedback-scale-label {
+    font-size: 0.95em;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.feedback-stars {
+    display: flex;
+    gap: 4px;
+}
+
+.feedback-star {
+    background: transparent;
+    border: none;
+    font-size: 1.6em;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.1s;
+}
+
+.feedback-star:hover,
+.feedback-star.selected {
+    color: #f59e0b;
+}
+
+.feedback-star:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.feedback-comment-label {
+    display: block;
+    font-size: 0.95em;
+    margin: 8px 0 4px;
+    color: #374151;
+}
+
+.feedback-comment {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95em;
+    resize: vertical;
+}
+
+.feedback-message {
+    margin-top: 12px;
+    font-size: 0.9em;
+    min-height: 1.2em;
+}
+
+.feedback-message-success {
+    color: #047857;
+}
+
+.feedback-message-error {
+    color: #b91c1c;
+}
+
+.feedback-message-info {
+    color: #1d4ed8;
+}
+
+.feedback-submit-btn {
+    margin-top: 16px;
+    width: 100%;
 }

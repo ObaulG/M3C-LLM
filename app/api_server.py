@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, status, Response, Cookie
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -22,6 +22,10 @@ from dependencies import RagPipelineDep
 from agents.answer_evaluator_agent import get_evaluator_agent
 from agents.instructor_factory import MISTRAL_MODELS, GOOGLE_MODELS
 from agents.message_evaluator_agent import get_message_type_agent
+from database.chatbot_feedback_db import (
+    insert_chatbot_message,
+    insert_chatbot_message_chunks,
+)
 from database.database import (get_db_connection,
                                get_document_id_from_resource_id,
                                M3C_BASE_URL, get_pdf_name_from_resource_id)
@@ -39,6 +43,7 @@ from app.embedders import create_mistral_embedder, get_default_embedder
 from app.embedders.router import router as embedders_router
 
 import json
+import uuid
 from datetime import datetime
 
 # Import du router d'indexing
@@ -57,7 +62,12 @@ from knowledge_items.router import router as knowledge_items_router
 from question_answer.generation_services import recommend_questions_for_document
 
 # Import du router Solr
-from solr.router import router as solr_router
+# Solr n'est pas deploye dans le conteneur Docker : import et inclusion du
+# router desactives par defaut pour eviter l'import de pysolr au demarrage.
+# Reactiver en passant SOLR_ENABLED=1 dans l'environnement.
+SOLR_ENABLED = os.getenv("SOLR_ENABLED", "0") == "1"
+if SOLR_ENABLED:
+    from solr.router import router as solr_router
 
 # Import du router de consultation des documents et de leurs chunks
 from documents.router import router as documents_router
@@ -70,6 +80,7 @@ from routers.sessions import router as sessions_router
 from routers.evaluations import router as evaluations_router
 from routers.models import router as models_router
 from routers.questions_admin import router as questions_admin_router
+from routers.feedback import router as feedback_router
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
 
@@ -87,6 +98,7 @@ class QueryRequest(BaseModel):
     use_reranking: bool = Field(False, description="Utiliser le reranking pour améliorer les résultats")
     include_quantitative: Optional[bool] = Field(True, description="Inclure les données quantitatives")
     session_id: Optional[str] = Field(None, description="ID de session pour récupérer l'historique des messages")
+    anonymous_id: Optional[str] = Field(None, description="Identifiant anonyme persistant (localStorage) pour les visiteurs non connectés, utilisé pour associer les retours aux messages")
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -174,7 +186,8 @@ app.include_router(embedders_router)
 app.include_router(question_answer_router)
 app.include_router(message_evaluator_router)
 app.include_router(knowledge_items_router)
-app.include_router(solr_router)
+if SOLR_ENABLED:
+    app.include_router(solr_router)
 app.include_router(documents_router)
 app.include_router(profile_router)
 app.include_router(auth_router)
@@ -186,6 +199,7 @@ app.include_router(question_answer_router)
 app.include_router(models_router)
 
 app.include_router(questions_admin_router)
+app.include_router(feedback_router)
 # === CONFIGURATION CORS ===
 # TODO: spécifier les domaines autorisés
 app.add_middleware(
@@ -243,6 +257,15 @@ async def initialize_database(app: FastAPI):
             while await cursor.nextset():
                 pass
 
+        await conn.commit()
+    # Tables des retours utilisateurs sur les réponses du chatbot
+    feedback_sql_path = Path("app/database/sql_tables_scripts/chatbot_feedback.sql")
+    feedback_sql = feedback_sql_path.read_text(encoding="utf-8")
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cursor:
+            await cursor.execute(feedback_sql)
+            while await cursor.nextset():
+                pass
         await conn.commit()
     print("Tables vérifiées")
 # === ENDPOINTS ===
@@ -309,7 +332,8 @@ async def health_check():
 @app.post("/api/query/simple",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep):
+async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
+                      m3c_api_key: Optional[str] = Cookie(default=None)):
     if not request.models:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -322,7 +346,8 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep):
             model=request.models[0]
         )
         # Construire la réponse
-        response = _build_query_simple_response(request, answer, total_time, consumed_energy_Wh)
+        user_id = auth.user_id_from_token(m3c_api_key)
+        response = await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, user_id)
         print(f"[{datetime.now().isoformat()}] Réponse générée")
         return response
     except Exception as e:
@@ -334,7 +359,8 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep):
 @app.post("/api/query/rag",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
+async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
+                   m3c_api_key: Optional[str] = Cookie(default=None)):
     """
     Pose une question au système et retourne la réponse en fournissant les sources
     Args:
@@ -367,13 +393,15 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
-    response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
+    user_id = auth.user_id_from_token(m3c_api_key)
+    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, user_id)
     return response
 
 @app.post("/api/query/rag/tutorial",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep):
+async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep,
+                             m3c_api_key: Optional[str] = Cookie(default=None)):
     """
     Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
     permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
@@ -389,7 +417,7 @@ async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep
 
         # On calcule normalement la réponse du RAG
         # QueryResponse
-        response = await query_rag(request, rag_pipeline)
+        response = await query_rag(request, rag_pipeline, m3c_api_key)
 
         prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question)
         best_50_chunks = await database.get_top_k_similar_chunks_qdrant(
@@ -497,7 +525,8 @@ async def api_recommend_questions(
 @app.post("/api/query/compare",
           response_model=QueryCompareResponse,
           tags=["Query"])
-async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep):
+async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
+                       m3c_api_key: Optional[str] = Cookie(default=None)):
     """
     Note: can be done with or without RAG
     """
@@ -524,15 +553,16 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep):
     # request contains all the models used and
     # _build_query_simple_response takes request.models[0]
     # so we duplicate the models list to keep the list
+    user_id = auth.user_id_from_token(m3c_api_key)
     responses_list = []
     model_temp_list = request.models[::]
     for i, (answer, total_time, consumed_energy_Wh) in enumerate(answers):
         # and assign a list with 1 element
         request.models = [model_temp_list[i]]
         if request.use_rag:
-            responses_list.append(_build_query_rag_response(request, answer, best_documents, total_time, consumed_energy_Wh))
+            responses_list.append(await _build_query_rag_response(request, answer, best_documents, total_time, consumed_energy_Wh, user_id))
         else:
-            responses_list.append(_build_query_simple_response(request, answer, total_time, consumed_energy_Wh))
+            responses_list.append(await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, user_id))
     print(f"[{datetime.now().isoformat()}] Réponses générées pour tous les modÃ¨les")
     return QueryCompareResponse(
         responses=responses_list,
@@ -543,7 +573,8 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep):
 @app.post("/api/query/single-doc-rag",
           response_model=QueryResponse,
           tags=["Query"])
-async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineDep):
+async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
+                              m3c_api_key: Optional[str] = Cookie(default=None)):
     """
     Pose une question au systÃ¨me en utilisant le RAG sur un seul document spécifique.
     Sauvegarde également l'historique d'une session utilisateur
@@ -604,7 +635,8 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
         consumed_energy_Wh=consumed_energy_Wh)
     sessions_router.rag_session_manager.add_interaction(session_id=request.session_id,
                                                         interaction=rag_interaction)
-    response = _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh)
+    user_id = auth.user_id_from_token(m3c_api_key)
+    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, user_id)
     return response
 
 
@@ -660,10 +692,63 @@ async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
                                                                 request.use_reranking,
                                                                          request.k)
     return final_prompt, best_documents
-def _build_query_simple_response(request: QueryRequest,
+
+
+async def _persist_chatbot_message_async(request: QueryRequest,
+                                          answer: BaseMessage,
+                                          total_time: float,
+                                          consumed_energy_Wh: float,
+                                          user_id: Optional[int],
+                                          retrieval_results: Optional[list[RAGSource]] = None) -> Optional[str]:
+    """
+    Insère la réponse dans chatbot_messages et, si retrieval_results est fourni,
+    les chunks associés dans chatbot_message_chunks. Retourne le message_id
+    généré, ou None si l'insertion a échoué (non bloquant : la réponse est quand
+    même renvoyée à l'utilisateur, sans message_id donc sans feedback possible).
+    """
+    message_id = str(uuid.uuid4())
+    persisted_user_id = str(user_id) if user_id is not None else request.anonymous_id
+    token_usage = answer.usage_metadata if hasattr(answer, "usage_metadata") else None
+    inserted = await insert_chatbot_message(
+        message_id=message_id,
+        user_id=persisted_user_id,
+        session_id=request.session_id,
+        question=request.question,
+        answer=answer.content,
+        model=request.models[0],
+        use_rag=bool(retrieval_results is not None),
+        use_reranking=request.use_reranking,
+        k=request.k,
+        total_time=total_time,
+        consumed_energy_Wh=consumed_energy_Wh if consumed_energy_Wh else None,
+        token_usage=token_usage,
+    )
+    if not inserted:
+        return None
+    if retrieval_results:
+        chunks = []
+        for src in retrieval_results:
+            chunk_id = src.metadata.get("chunk_id") if src.metadata else None
+            if not chunk_id:
+                continue
+            chunks.append({
+                "chunk_id": chunk_id,
+                "score_cossim": src.score_cossim,
+                "score_bm25": src.score_bm25,
+            })
+        await insert_chatbot_message_chunks(message_id, chunks)
+    return message_id
+
+
+async def _build_query_simple_response(request: QueryRequest,
                                  answer: BaseMessage,
                                  total_time: float,
-                                 consumed_energy_Wh: float) -> QueryResponse:
+                                 consumed_energy_Wh: float,
+                                 user_id: Optional[int] = None) -> QueryResponse:
+    # Persister la réponse en BDD avant de la renvoyer (non bloquant)
+    message_id = await _persist_chatbot_message_async(
+        request, answer, total_time, consumed_energy_Wh, user_id, retrieval_results=None
+    )
     response = QueryResponse(
         answer=answer.content,
         total_time=total_time,
@@ -671,17 +756,19 @@ def _build_query_simple_response(request: QueryRequest,
             "model": request.models[0],
             "k": request.k,
             "token_usage": answer.usage_metadata,
-            "consumed_energy_Wh": consumed_energy_Wh
+            "consumed_energy_Wh": consumed_energy_Wh,
+            "message_id": message_id
         },
         timestamp=datetime.now().isoformat()
     )
     print(f"[{datetime.now().isoformat()}] Réponse générée")
     return response
-def _build_query_rag_response(request: QueryRequest,
+async def _build_query_rag_response(request: QueryRequest,
                               answer: BaseMessage,
                               retrieval_results: list[RAGSource],
                               total_time: float,
-                              consumed_energy_Wh: float) -> QueryResponse:
+                              consumed_energy_Wh: float,
+                              user_id: Optional[int] = None) -> QueryResponse:
     # useful data :
     # response_metadata={
     # 'token_usage': {'prompt_tokens': 944,
@@ -696,6 +783,10 @@ def _build_query_rag_response(request: QueryRequest,
     #                 'total_tokens': 1630}
     # Convertir les résultats en format API
     print("_build_query_rag_response")
+    # Persister la réponse et ses chunks en BDD avant de la renvoyer (non bloquant)
+    message_id = await _persist_chatbot_message_async(
+        request, answer, total_time, consumed_energy_Wh, user_id, retrieval_results=retrieval_results
+    )
     # Construire la réponse
     response = QueryResponse(
         answer=answer.content,
@@ -708,7 +799,8 @@ def _build_query_rag_response(request: QueryRequest,
             "include_quantitative": request.include_quantitative,
             "num_sources": len(retrieval_results),
             "token_usage": answer.usage_metadata,
-            "consumed_energy_Wh": consumed_energy_Wh
+            "consumed_energy_Wh": consumed_energy_Wh,
+            "message_id": message_id
         },
         timestamp=datetime.now().isoformat()
     )

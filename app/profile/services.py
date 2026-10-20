@@ -404,8 +404,10 @@ async def get_knowledge_by_theme(user_id: str, conn, limit_per_theme: int = 20) 
             entities=entities,
             sources=sources,
         )
-        
+        print(row)
         # Créer ou mettre à jour le groupe de thème
+        # TODO : theme_id
+        #   Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
         if theme_name not in knowledge_by_theme:
             knowledge_by_theme[theme_name] = ThemeKnowledgeGroup(
                 theme_id=row["theme_id"],
