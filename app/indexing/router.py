@@ -49,6 +49,7 @@ async def index_existing_documents(request: IndexDocumentsRequest):
 
     Selon le type d'indexation:
     - 'metadata-only': Indexe uniquement les métadonnées des items (titre, auteur, mots-clés, etc.)
+    - 'selected-metadata': Indexe les métadonnées des documents spécifiés via resource_ids
     - 'all-metadata': Indexe uniquement les métadonnées des documents (file_name, file_path, etc.)
     - 'all-with-text': Découpe le contenu extrait (extracted_text) en chunks et indexe chaque chunk
     - 'pdf-from-m3c': Télécharge les PDFs depuis M3C, découpe et indexe (via job asynchrone)
@@ -71,14 +72,23 @@ async def index_existing_documents(request: IndexDocumentsRequest):
         exclude_status=["completed", "cancelled"]
     )
 
+    if request.indexation_type == "selected-metadata" and not request.resource_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le type 'selected-metadata' requiert une liste non vide de resource_ids"
+        )
+
     if not current_job:
+        parameters = {
+            "chunk_size": request.chunk_size,
+            "chunk_overlap": request.chunk_overlap,
+            "embedder_name": request.embedder_name,
+        }
+        if request.indexation_type == "selected-metadata":
+            parameters["resource_ids"] = request.resource_ids
         current_job_id = create_indexing_job(
             job_type=request.indexation_type,
-            parameters={
-                "chunk_size": request.chunk_size,
-                "chunk_overlap": request.chunk_overlap,
-                "embedder_name": request.embedder_name,
-            }
+            parameters=parameters
         )
         current_job = get_indexing_job(current_job_id)
     current_job_id = current_job["job_id"]
@@ -96,13 +106,12 @@ async def index_existing_documents(request: IndexDocumentsRequest):
                 request.chunk_overlap,
                 request.embedder_name,
             ))
-        elif request.indexation_type == "metadata-only":
+        elif request.indexation_type in ("metadata-only", "selected-metadata", "all-metadata"):
             asyncio_mod.create_task(process_metadata_indexing_job(
                 current_job_id,
                 request.embedder_name,
+                resource_ids=request.resource_ids if request.indexation_type == "selected-metadata" else None,
             ))
-        elif request.indexation_type == "all-metadata":
-            raise NotImplementedError
         elif request.indexation_type == "all-with-text":
             raise NotImplementedError
         else:
@@ -216,7 +225,8 @@ async def start_indexing_job_endpoint(request: IndexJobRequest):
           summary="Démarrer un job d'indexation des métadonnées")
 async def start_metadata_indexing_job(request: IndexJobRequest):
     """
-    Démarre un nouveau job d'indexation des métadonnées pour tous les resource_id valides.
+    Démarre un nouveau job d'indexation des métadonnées pour tous les resource_id valides,
+    ou pour une sélection de documents si indexation_type est 'selected-metadata'.
     """
     from database.database import VALID_TEXT_RESOURCE_ID
     from .services import (
@@ -227,10 +237,19 @@ async def start_metadata_indexing_job(request: IndexJobRequest):
         get_indexing_job
     )
     
+    job_type = request.indexation_type if request.indexation_type in ("metadata-only", "selected-metadata") else "metadata-only"
+    selected_resource_ids = request.resource_ids if job_type == "selected-metadata" else None
+
+    if job_type == "selected-metadata" and not selected_resource_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le type 'selected-metadata' requiert une liste non vide de resource_ids"
+        )
+
     try:
         # Vérifier s'il existe un job metadata en cours
         existing_job = get_latest_job_by_type(
-            "metadata-only",
+            job_type,
             exclude_status=["completed", "cancelled"]
         )
         
@@ -249,28 +268,30 @@ async def start_metadata_indexing_job(request: IndexJobRequest):
                 error_message="Redémarré manuellement par l'utilisateur"
             )
         
+        parameters = {"embedder_name": request.embedder_name}
+        if selected_resource_ids:
+            parameters["resource_ids"] = selected_resource_ids
         job_id = create_indexing_job(
-            job_type="metadata-only",
-            parameters={
-                "embedder_name": request.embedder_name,
-            }
+            job_type=job_type,
+            parameters=parameters
         )
         print("metadata job_id: ", job_id)
         asyncio.create_task(process_metadata_indexing_job(
             job_id,
-            request.embedder_name
+            request.embedder_name,
+            resource_ids=selected_resource_ids
         ))
         
         # Récupérer le job pour construire le job_status
         job = get_indexing_job(job_id)
         job_status = IndexJobStatusResponse(**job) if job else IndexJobStatusResponse(
             job_id=job_id,
-            job_type="metadata-only",
+            job_type=job_type,
             status="pending",
-            total_items=len(VALID_TEXT_RESOURCE_ID),
+            total_items=len(selected_resource_ids) if selected_resource_ids else len(VALID_TEXT_RESOURCE_ID),
             processed_items=0,
             progress={},
-            parameters={"embedder_name": request.embedder_name},
+            parameters=parameters,
             created_at=datetime.now().isoformat(),
             updated_at=datetime.now().isoformat(),
             error_message=None

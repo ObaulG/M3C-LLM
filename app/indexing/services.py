@@ -405,7 +405,7 @@ def build_metadata_string(metadata: dict) -> str:
     return "\n".join(lines)
 
 
-async def process_metadata_indexing_job(job_id: str, embedder_name: str):
+async def process_metadata_indexing_job(job_id: str, embedder_name: str, resource_ids: Optional[List[int]] = None):
     """
     Traite un job d'indexation (création d'embeddings) des métadonnées de chaque item.
     
@@ -415,6 +415,7 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str):
     Args:
         job_id: L'ID du job à traiter
         embedder_name: Le nom de l'embedding model à utiliser
+        resource_ids: Liste optionnelle de resource_ids à traiter. Si None, traite tous les VALID_TEXT_RESOURCE_ID.
         
     Returns:
         Dict avec le résultat du traitement
@@ -442,6 +443,17 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str):
     errors = []
     all_missing_embeddings = []
 
+    # Liste des resource_ids à traiter : sélection explicite ou tous les VALID_TEXT_RESOURCE_ID
+    if resource_ids is None:
+        selected_resource_ids = list(VALID_TEXT_RESOURCE_ID)
+    else:
+        valid_set = set(VALID_TEXT_RESOURCE_ID)
+        known = [rid for rid in VALID_TEXT_RESOURCE_ID if rid in set(resource_ids)]
+        unknown = [rid for rid in resource_ids if rid not in valid_set]
+        selected_resource_ids = known + unknown
+
+    total_resources = len(selected_resource_ids)
+
     # récupérer l'embedder
     try:
         embedder = get_embedder_instance(embedder_name)
@@ -451,9 +463,9 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str):
 
     model_name = embedder.name
 
-    for i, resource_id in enumerate(VALID_TEXT_RESOURCE_ID):
+    for i, resource_id in enumerate(selected_resource_ids):
         resource_id_str = str(resource_id)
-        print(f"Métadonnées {i+1}/{len(VALID_TEXT_RESOURCE_ID)} - resource_id {resource_id_str}")
+        print(f"Métadonnées {i+1}/{total_resources} - resource_id {resource_id_str}")
 
         # Vérifier si déjà complété
         doc_progress = progress.get(resource_id_str, {})
@@ -535,7 +547,7 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str):
                 processed_items=processed_count
             )
 
-    total_resources = len(VALID_TEXT_RESOURCE_ID)
+    total_resources = len(selected_resource_ids)
     status = "completed" if processed_count == total_resources and not errors else "failed"
     error_msg = "; ".join(errors) if errors else None
 
