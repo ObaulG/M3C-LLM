@@ -38,13 +38,44 @@ VERDICT_WEIGHTS = {
     "absent": 0.0,
 }
 
+IMPORTANCE_WEIGHTS = {
+    "essential": 3.0,
+    "optional": 1.0,
+}
 
-def score_from_judgements(judgements) -> float:
-    """Score agrégé sur 10 : moyenne pondérée des verdicts."""
+
+def score_from_judgements(facts: List[Dict], judgements) -> float:
+    """Score agrégé sur 10 : moyenne pondérée par verdict ET par importance.
+
+    Un fait essentiel pèse 3 fois plus qu'un fait facultatif : son absence
+    pénalise fortement le score, tandis que les faits facultatifs présents
+    le consolident sans être requis.
+    """
     if not judgements:
         return 0.0
-    total = sum(VERDICT_WEIGHTS.get(j.verdict, 0.0) for j in judgements)
-    return round(10.0 * total / len(judgements), 2)
+    by_index = {j.fact_index: j for j in judgements}
+    total = 0.0
+    weight_sum = 0.0
+    for i, fact in enumerate(facts):
+        j = by_index.get(i)
+        verdict = j.verdict if j else "absent"
+        weight = IMPORTANCE_WEIGHTS.get(fact.get("importance", "essential"), IMPORTANCE_WEIGHTS["essential"])
+        total += VERDICT_WEIGHTS.get(verdict, 0.0) * weight
+        weight_sum += weight
+    if weight_sum == 0:
+        return 0.0
+    return round(10.0 * total / weight_sum, 2)
+
+
+def score_essential_coverage(facts: List[Dict], judgements) -> float:
+    """Taux de couverture des faits essentiels uniquement (0-100%)."""
+    by_index = {j.fact_index: j for j in judgements}
+    essentials = [(i, f) for i, f in enumerate(facts) if f.get("importance", "essential") == "essential"]
+    if not essentials:
+        return ""
+    total = sum(VERDICT_WEIGHTS.get(by_index[i].verdict if i in by_index else "absent", 0.0)
+                for i, _ in essentials)
+    return round(100.0 * total / len(essentials), 1)
 
 
 async def evaluate_answer(agent, facts: List[Dict], user_answer: str) -> FactPresenceOutput:
@@ -102,10 +133,12 @@ async def main():
                 "question_id": question_id,
                 "reponse": row["reponse"],
                 "nb_faits": 0,
+                "nb_essentiels": 0,
                 "nb_present": 0,
                 "nb_partial": 0,
                 "nb_absent": 0,
                 "score": "",
+                "couverture_essentiels": "",
                 "details": "aucun fait stocké",
             })
             continue
@@ -128,22 +161,28 @@ async def main():
                 verdict = "absent"
             nb[verdict] += 1
             details.append({"fact_id": fact["fact_id"], "fact": fact["content"],
+                            "importance": fact.get("importance", "essential"),
                             "verdict": verdict,
                             "justification": j.justification if j else ""})
 
-        score = score_from_judgements(judgements)
+        score = score_from_judgements(facts, judgements)
+        essential_coverage = score_essential_coverage(facts, judgements)
+        nb_essential = sum(1 for f in facts if f.get("importance", "essential") == "essential")
         results.append({
             "question_id": question_id,
             "reponse": row["reponse"],
             "nb_faits": len(facts),
+            "nb_essentiels": nb_essential,
             "nb_present": nb["present"],
             "nb_partial": nb["partial"],
             "nb_absent": nb["absent"],
             "score": score,
+            "couverture_essentiels": essential_coverage,
             "details": json.dumps(details, ensure_ascii=False),
         })
         print(f"[OK] question {question_id} : {nb['present']} present / {nb['partial']} partial / "
-              f"{nb['absent']} absent -> score {score}/10")
+              f"{nb['absent']} absent -> score {score}/10 "
+              f"(couverture essentiels: {essential_coverage}%)")
 
     # 4. Export des résultats
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -152,8 +191,8 @@ async def main():
     out_path = Path(args.output) if args.output else results_dir / f"facts_presence_results_{timestamp}.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[
-            "question_id", "reponse", "nb_faits", "nb_present", "nb_partial", "nb_absent",
-            "score", "details",
+            "question_id", "reponse", "nb_faits", "nb_essentiels", "nb_present", "nb_partial", "nb_absent",
+            "score", "couverture_essentiels", "details",
         ])
         writer.writeheader()
         writer.writerows(results)

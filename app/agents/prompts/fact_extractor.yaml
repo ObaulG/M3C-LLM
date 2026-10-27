@@ -106,3 +106,20 @@ fact_presence:
     - "Le JSON doit contenir une liste \"judgements\" avec EXACTEMENT une entrée par affirmation, dans l'ordre de la liste fournie."
     - "Chaque entrée a la structure: {\"fact_index\": <entier, index 0-based de l'affirmation>, \"verdict\": \"present\"|\"partial\"|\"absent\", \"justification\": \"<texte bref en français>\"}"
     - "Ne saute aucune affirmation, n'en ajoute pas, ne modifie pas leur ordre."
+
+# Décomposition d'une réponse de référence en affirmations avec niveau d'importance
+answer_facts:
+  background:
+    - "Tu es un agent spécialisé dans la décomposition d'une réponse de référence en affirmations atomiques, avec leur niveau d'importance."
+    - "Tu travailles en FRANÇAIS sur des questions de compréhension liées à la culture corse."
+  steps:
+    - "Analyse la réponse et identifie toutes les affirmations factuelles qu'elle contient."
+    - "Pour chaque affirmation, détermine son importance :"
+    - "  - \"essential\" : information indispensable pour que la réponse soit correcte ou complète."
+    - "  - \"optional\" : information secondaire qui apporte de la consistance à un fait principal, ou fait d'une énumération au même niveau d'importance que les autres."
+    - "Rédige chaque affirmation sous forme de phrase courte, claire et autonome."
+  output_instructions:
+    - "Retourne uniquement un JSON avec une liste \"facts\"."
+    - "Chaque entrée: {\"content\": \"<affirmation>\", \"importance\": \"essential\"|\"optional\"}"
+    - "Une réponse peut contenir plusieurs faits essentiels (ex: une énumération où tous les éléments ont le même niveau d'importance)."
+    - "Ne pas ajouter de commentaire ni d'interprétation."

@@ -4,6 +4,24 @@ from atomic_agents.context import SystemPromptGenerator, ChatHistory
 from .mistral_client import get_mistral_client
 from .prompt_loader import get_prompt
 
+class AnswerFact(BaseIOSchema):
+    """
+    A single fact from a reference answer, with its importance.
+    importance: "essential" (indispensable à la réponse) ou "optional"
+    (information secondaire qui consolide un fait principal, ou fait
+    d'une énumération au même niveau d'importance).
+    """
+    content: str
+    importance: str
+
+
+class AnswerFactsExtractionOutput(BaseIOSchema):
+    """
+    The result of the answer decomposition into facts with importance.
+    """
+    facts: list[AnswerFact]
+
+
 class FactExtractionInput(BaseIOSchema):
     """
     This schema represents the input for the fact extraction agent.
@@ -108,6 +126,42 @@ def get_fact_presence_agent(model: str = "mistral-medium"):
             model=model,
             history=None,
             system_prompt_generator=_fact_presence_prompt,
+        )
+    )
+    return agent
+
+
+_FALLBACK_ANSWER_FACTS_PROMPT = SystemPromptGenerator(
+    background=[
+        "Tu es un agent spécialisé dans la décomposition d'une réponse de référence en affirmations atomiques, avec leur niveau d'importance.",
+    ],
+    steps=[
+        "Analyse la réponse et identifie toutes les affirmations factuelles qu'elle contient.",
+        "Pour chaque affirmation, détermine son importance : \"essential\" si l'information est indispensable pour que la réponse soit correcte ou complète, \"optional\" s'il s'agit d'une information secondaire qui apporte de la consistance à un fait principal, ou d'un fait d'une énumération au même niveau d'importance que les autres.",
+        "Rédige chaque affirmation sous forme de phrase courte, claire et autonome.",
+    ],
+    output_instructions=[
+        "Retourne uniquement un JSON avec une liste \"facts\".",
+        "Chaque entrée: {\"content\": \"<affirmation>\", \"importance\": \"essential\"|\"optional\"}",
+        "Une réponse peut contenir plusieurs faits essentiels (ex: une énumération où tous les éléments ont le même niveau d'importance).",
+        "Ne pas ajouter de commentaire ni d'interprétation.",
+        "Écris en français.",
+    ],
+)
+
+_answer_facts_prompt = get_prompt("fact_extractor", "answer_facts")
+if _answer_facts_prompt is None:
+    _answer_facts_prompt = _FALLBACK_ANSWER_FACTS_PROMPT
+
+
+def get_answer_facts_agent(model: str = "mistral-medium"):
+    client = get_mistral_client()
+    agent = AtomicAgent[FactExtractionInput, AnswerFactsExtractionOutput](
+        config=AgentConfig(
+            client=client,
+            model=model,
+            history=None,
+            system_prompt_generator=_answer_facts_prompt,
         )
     )
     return agent

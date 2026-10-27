@@ -979,7 +979,7 @@ async def save_question_to_db(
 
 async def insert_answer_facts(
     answer_id: int,
-    facts: List[str],
+    facts: List[Dict],
     conn,
     model: Optional[str] = None,
 ) -> List[int]:
@@ -988,7 +988,9 @@ async def insert_answer_facts(
 
     Args:
         answer_id (int): L'identifiant de la réponse dans text_question_answers.
-        facts (List[str]): Liste des affirmations constituant la réponse, dans l'ordre.
+        facts (List[Dict]): Liste des affirmations constituant la réponse, dans l'ordre.
+            Chaque fait est un dict avec les clés "content" (str) et "importance"
+            ("essential" ou "optional", défaut: "essential").
         conn: Connexion à la base de données.
         model (Optional[str]): Modèle ayant généré l'extraction des faits.
 
@@ -998,10 +1000,13 @@ async def insert_answer_facts(
     fact_ids = []
     async with conn.cursor() as cur:
         for position, fact in enumerate(facts):
+            content = fact["content"] if isinstance(fact, dict) else fact
+            importance = (fact.get("importance", "essential") if isinstance(fact, dict)
+                          else "essential")
             await cur.execute("""
-                INSERT INTO text_answer_facts (answer_id, content, position, model)
-                VALUES (%s, %s, %s, %s)
-            """, (answer_id, fact, position, model))
+                INSERT INTO text_answer_facts (answer_id, content, position, importance, model)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (answer_id, content, position, importance, model))
             fact_ids.append(cur.lastrowid)
         await conn.commit()
     return fact_ids
@@ -1020,13 +1025,13 @@ async def get_facts_by_answer_ids(
 
     Returns:
         Dict[int, List[Dict]]: Mapping answer_id -> liste de faits triés par position
-        (champs: fact_id, content, position, model).
+        (champs: fact_id, content, position, importance, model).
     """
     if not answer_ids:
         return {}
     placeholders = ",".join(["%s"] * len(answer_ids))
     query = f"""
-        SELECT answer_id, fact_id, content, position, model
+        SELECT answer_id, fact_id, content, position, importance, model
         FROM text_answer_facts
         WHERE answer_id IN ({placeholders})
         ORDER BY answer_id, position
@@ -1036,11 +1041,12 @@ async def get_facts_by_answer_ids(
         rows = await cur.fetchall()
 
     facts_by_answer: Dict[int, List[Dict]] = {aid: [] for aid in answer_ids}
-    for answer_id, fact_id, content, position, model in rows:
+    for answer_id, fact_id, content, position, importance, model in rows:
         facts_by_answer[answer_id].append({
             "fact_id": fact_id,
             "content": content,
             "position": position,
+            "importance": importance,
             "model": model,
         })
     return facts_by_answer
@@ -1065,7 +1071,7 @@ async def get_facts_by_question_ids(
         return {}
     placeholders = ",".join(["%s"] * len(question_ids))
     query = f"""
-        SELECT a.question_id, f.fact_id, f.answer_id, f.content, f.position, f.model
+        SELECT a.question_id, f.fact_id, f.answer_id, f.content, f.position, f.importance, f.model
         FROM text_answer_facts f
         JOIN text_question_answers a ON f.answer_id = a.answer_id
         WHERE a.question_id IN ({placeholders})
@@ -1076,12 +1082,13 @@ async def get_facts_by_question_ids(
         rows = await cur.fetchall()
 
     facts_by_question: Dict[int, List[Dict]] = {qid: [] for qid in question_ids}
-    for question_id, fact_id, answer_id, content, position, model in rows:
+    for question_id, fact_id, answer_id, content, position, importance, model in rows:
         facts_by_question[question_id].append({
             "fact_id": fact_id,
             "answer_id": answer_id,
             "content": content,
             "position": position,
+            "importance": importance,
             "model": model,
         })
     return facts_by_question

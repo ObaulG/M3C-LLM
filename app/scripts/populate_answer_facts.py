@@ -32,7 +32,7 @@ from database.database import (
     insert_answer_facts,
     get_answer_ids_with_facts,
 )
-from agents.fact_extractor import get_fact_analyser_agent, FactExtractionInput
+from agents.fact_extractor import get_answer_facts_agent, FactExtractionInput
 
 
 async def pick_questions_for_document(conn, document_id: str, n: int) -> List[Dict]:
@@ -51,27 +51,32 @@ async def extract_and_insert_facts(questions: List[Dict], conn, model: str, extr
         List[Dict]: Liste des réponses couvertes
         (question_id, answer_id, answer_content), pour l'export CSV.
     """
-    agent = get_fact_analyser_agent(model=extraction_model)
+    agent = get_answer_facts_agent(model=extraction_model)
     covered = []
     for question in questions:
         for answer in question["answers"]:
             try:
                 input_data = FactExtractionInput(paragraph=answer["content"])
                 output = agent.run(input_data)
-                facts = output.facts
+                facts = [
+                    {"content": f.content, "importance": f.importance if f.importance in ("essential", "optional") else "essential"}
+                    for f in output.facts
+                ]
             except Exception as e:
                 print(f"[ERREUR] Extraction impossible pour answer_id={answer['answer_id']}: {e}")
                 continue
             if not facts:
                 print(f"[ATTENTION] Aucune affirmation extraite pour answer_id={answer['answer_id']}")
                 continue
-            await insert_answer_facts(answer["answer_id"], list(facts), conn, model=extraction_model)
+            await insert_answer_facts(answer["answer_id"], facts, conn, model=extraction_model)
+            nb_essential = sum(1 for f in facts if f["importance"] == "essential")
             covered.append({
                 "question_id": question["question_id"],
                 "answer_id": answer["answer_id"],
                 "reponse": answer["content"],
             })
-            print(f"[OK] question {question['question_id']} / réponse {answer['answer_id']} : {len(facts)} affirmations insérées")
+            print(f"[OK] question {question['question_id']} / réponse {answer['answer_id']} : "
+                  f"{len(facts)} affirmations insérées ({nb_essential} essentielles, {len(facts) - nb_essential} facultatives)")
     return covered
 
 
