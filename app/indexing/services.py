@@ -485,7 +485,7 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
             # Récupérer les métadonnées
             conn = await get_db_connection()
             metadata = await get_resource_full_metadata(conn, resource_id)
-            await conn.close()
+            conn.close()
 
             if not metadata or all(v is None or v == [] for k, v in metadata.items()):
                 raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
@@ -899,7 +899,7 @@ async def get_indexed_documents_overview() -> dict:
             """)
             doc_rows = await cur.fetchall()
     finally:
-        await conn.close()
+        conn.close()
 
     # Documents avec chunks en MySQL (contenu indexé)
     docs_with_chunks = {}
@@ -980,7 +980,7 @@ async def get_indexed_documents_overview() -> dict:
                 "metadata_indexed": bool(md_embedders_by_resource.get(resource_id)),
             }
     finally:
-        await conn.close()
+        conn.close()
 
     return {
         "documents": overview,
