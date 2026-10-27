@@ -3,8 +3,9 @@
 
 Pour chaque document demandé, pioche n questions/réponses existantes dans la
 base de données, génère pour chaque réponse de référence la liste des
-affirmations qui la constituent via un LLM, puis insère le tout dans
-qa_statements.json.
+affirmations qui la constituent via un LLM, classées selon le barème à trois
+catégories (nécessaires / compléments facultatifs / erreurs ou
+contradictions), puis insère le tout dans qa_statements.json.
 
 Usage (depuis la racine du dépôt) :
     python -m app.qa_statements.build_dataset --documents 21 34 --num-questions 3
@@ -39,32 +40,65 @@ def get_statement_extraction_client(provider: str, model: Optional[str]):
 async def extract_statements(
     client,
     model: str,
+    question_text: str,
     answer_content: str,
-) -> List[str]:
-    """Demande au LLM la liste des affirmations qui constituent la réponse."""
-    from pydantic import BaseModel
+) -> Dict:
+    """Décompose la réponse en affirmations selon le barème à trois catégories.
 
-    class StatementsExtraction(BaseModel):
-        """Liste des affirmations (propositions) contenues dans la réponse."""
-        statements: List[str]
+    Catégories :
+    - "necessary": leur expression permet de satisfaire la demande de la
+      question ; une reformulation ou une information déjà fournie par la
+      question suffit à les satisfaire.
+    - "optional": compléments qui enrichissent la réponse ; leur absence ne
+      réduit pas le résultat.
+    - "errors": erreurs ou contradictions pertinentes, susceptibles de
+      remettre en cause la validité de la réponse.
+    """
+    from pydantic import BaseModel, Field
+
+    class CategorizedStatements(BaseModel):
+        """Affirmations d'une réponse de référence, classées par catégorie."""
+        necessary: List[str] = Field(
+            default_factory=list,
+            description="Affirmations dont l'expression satisfait la demande",
+        )
+        optional: List[str] = Field(
+            default_factory=list,
+            description="Compléments facultatifs, dont l'absence ne pénalise pas",
+        )
+        errors: List[str] = Field(
+            default_factory=list,
+            description="Erreurs ou contradictions qui invalident la réponse",
+        )
 
     extraction = client.chat.completions.create(
         model=model,
-        response_model=StatementsExtraction,
+        response_model=CategorizedStatements,
         messages=[
             {
                 "role": "user",
                 "content": (
-                    "Décompose la réponse suivante en la liste ordonnée des "
-                    "affirmations (propositions) qu'elle contient. Chaque "
-                    "affirmation doit être autonome, vérifiable et formulée "
-                    "en français, sans commentaire ni interprétation.\n\n"
-                    f"Réponse : {answer_content}"
+                    "Question posée au visiteur :\n"
+                    f"{question_text}\n\n"
+                    "Réponse de référence :\n"
+                    f"{answer_content}\n\n"
+                    "Décompose cette réponse en affirmations autonomes, "
+                    "vérifiables, formulées en français, et classe-les en trois "
+                    "catégories :\n"
+                    "1. necessary : leur expression permet de satisfaire la "
+                    "demande de la question ;\n"
+                    "2. optional : compléments qui enrichissent la réponse, "
+                    "leur absence ne réduit pas le résultat ;\n"
+                    "3. errors : erreurs ou contradictions pertinentes qui "
+                    "peuvent remettre en cause la validité de la réponse.\n"
+                    "Une affirmation déjà fournie par l'énoncé de la question "
+                    "compte comme satisfaite par la seule réponse contextuelle. "
+                    "N'exige aucun détail facultatif comme nécessaire."
                 ),
             }
         ],
     )
-    return extraction.statements
+    return extraction.model_dump()
 
 
 async def build_dataset(
@@ -109,12 +143,14 @@ async def build_dataset(
             for question in picked:
                 answers = []
                 for answer in question.get("answers", []):
-                    statements = await extract_statements(client, model_name, answer["content"])
+                    categorized = await extract_statements(
+                        client, model_name, question["content"], answer["content"]
+                    )
                     answers.append({
                         "answer_id": answer["answer_id"],
                         "is_correct": answer["is_correct"],
                         "content": answer["content"],
-                        "statements": statements,
+                        "statements": categorized,
                     })
                 document_questions.append({
                     "question_id": question["question_id"],

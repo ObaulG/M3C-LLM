@@ -1,11 +1,24 @@
 #!/usr/bin/env python3
-"""Évaluation par vérification d'affirmations.
+"""Évaluation par vérification d'affirmations catégorisées.
 
-Pour chaque ligne du CSV de réponses (question_id, visitor_answer), regroupe les
-affirmations des réponses de référence correctes de la question, puis demande au
-LLM, pour chaque affirmation, si elle est présente dans la réponse du visiteur
-(booléen + justification). Le score d'une réponse est la proportion
-d'affirmations retrouvées.
+Barème à trois catégories pour chaque réponse de référence :
+- necessary : affirmations dont l'expression satisfait la demande ; seules
+  elles comptent dans le score de complétude. Les reformulations et les
+  informations déjà fournies par l'énoncé de la question sont acceptées.
+- optional : compléments facultatifs ; signalés s'ils sont présents, mais leur
+  absence ne réduit pas le score.
+- errors : erreurs ou contradictions pertinentes ; leur présence dans la
+  réponse du visiteur remet en cause sa validité.
+
+Pour chaque ligne du CSV (question_id, visitor_answer) :
+1. vérification de chaque affirmation nécessaire (présente ? + justification),
+2. signalement des compléments facultatifs retrouvés,
+3. détection des erreurs/contradictions dans la réponse du visiteur,
+4. score de complétude = proportion d'affirmations nécessaires retrouvées,
+   validité mise en cause si une erreur pertinente est détectée,
+5. feedback rédigé séparément, sur le ton et l'exigence uniquement (ne doit
+   pas exiger de détails facultatifs, ne pas répéter le contexte de la
+   question, rester constructif).
 
 Usage (depuis la racine du dépôt) :
     python -m app.qa_statements.evaluate_statements --input answers_input_template.csv
@@ -46,19 +59,40 @@ class StatementCheck(BaseModel):
     justification: str
 
 
+class FeedbackOutput(BaseModel):
+    """Feedback rédigé, indépendant du score de complétude."""
+    feedback: str
+    tone_appropriate: bool
+    tone_comment: str
+
+
 def reference_statements_by_question(data: Dict) -> Dict[int, Dict]:
-    """Indexe le JSON : question_id -> {question_text, statements (réponses correctes)}."""
+    """Indexe le JSON : question_id -> {question_text, necessary, optional, errors}.
+
+    Les affirmations sont regroupées par catégorie sur l'ensemble des réponses
+    de référence correctes de la question. Les anciens JSON avec une simple
+    liste « statements » sont rattachés à la catégorie necessary.
+    """
     index = {}
     for question in all_questions_flat(data):
-        statements = [
-            statement
-            for answer in question.get("answers", [])
-            if answer.get("is_correct", True)
-            for statement in answer.get("statements", [])
-        ]
+        necessary = []
+        optional = []
+        errors = []
+        for answer in question.get("answers", []):
+            if not answer.get("is_correct", True):
+                continue
+            statements = answer.get("statements", {})
+            if isinstance(statements, dict):
+                necessary.extend(statements.get("necessary", []))
+                optional.extend(statements.get("optional", []))
+                errors.extend(statements.get("errors", []))
+            else:
+                necessary.extend(statements)
         index[question["question_id"]] = {
             "question_text": question["question_text"],
-            "statements": statements,
+            "necessary": necessary,
+            "optional": optional,
+            "errors": errors,
         }
     return index
 
@@ -84,9 +118,54 @@ async def check_statement(
                     f"{visitor_answer}\n\n"
                     "Affirmation à vérifier :\n"
                     f"{statement}\n\n"
-                    "L'affirmation est-elle présente dans la réponse du visiteur, "
-                    "même reformulée ou implicite ? Réponds par un booléen et une "
-                    "justification courte en français."
+                    "L'affirmation est-elle présente dans la réponse du "
+                    "visiteur ? Accepte toute reformulation fidèle et les "
+                    "informations déjà fournies par l'énoncé de la question "
+                    "(leur répétition n'est pas exigée). Réponds par un "
+                    "booléen et une justification courte en français."
+                ),
+            }
+        ],
+    )
+
+
+async def generate_feedback(
+    client,
+    model: str,
+    question_text: str,
+    visitor_answer: str,
+    missing_necessary: List[str],
+    present_optional: List[str],
+) -> FeedbackOutput:
+    """Rédige un feedback séparé du score : complétude et ton.
+
+    Le feedback ne doit pas exiger les détails facultatifs, ne pas répéter le
+    contexte de la question et rester constructif ; le LLM auto-évalue aussi
+    son ton pour distinguer complétude et dureté du commentaire.
+    """
+    return client.chat.completions.create(
+        model=model,
+        response_model=FeedbackOutput,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    "Question posée au visiteur :\n"
+                    f"{question_text}\n\n"
+                    "Réponse du visiteur :\n"
+                    f"{visitor_answer}\n\n"
+                    "Affirmations nécessaires manquantes :\n"
+                    + ("\n".join(f"- {s}" for s in missing_necessary) or "- aucune")
+                    + "\n\nCompléments facultatifs présents :\n"
+                    + ("\n".join(f"- {s}" for s in present_optional) or "- aucun")
+                    + "\n\nRédige un feedback court en français à destination "
+                    "du visiteur. Règles strictes : ne mentionne que les "
+                    "affirmations nécessaires manquantes ; n'exige aucun "
+                    "complément facultatif ; ne demande pas de répéter des "
+                    "informations déjà données par la question ; reste "
+                    "constructif, sans dureté ni exigence inutile. Évalue "
+                    "ensuite honnêtement si ton propre feedback respecte ce "
+                    "ton (tone_appropriate) et justifie (tone_comment)."
                 ),
             }
         ],
@@ -100,7 +179,7 @@ async def evaluate_statements(
     json_path: Optional[Path] = None,
     results_dir: Path = RESULTS_DIR,
 ) -> Dict:
-    """Évalue les réponses du CSV en vérifiant chaque affirmation.
+    """Évalue les réponses du CSV en vérifiant chaque affirmation catégorisée.
 
     Args:
         input_csv: CSV avec les colonnes question_id,visitor_answer.
@@ -132,44 +211,90 @@ async def evaluate_statements(
             continue
 
         question = index[question_id]
-        statements = question["statements"]
-        if not statements:
-            logger.warning(f"Question {question_id} : aucune affirmation de référence")
+        necessary = question["necessary"]
+        optional = question["optional"]
+        errors = question["errors"]
+        if not necessary:
+            logger.warning(
+                f"Question {question_id} : aucune affirmation nécessaire de référence"
+            )
 
-        checks = []
-        for statement in statements:
+        necessary_checks = []
+        for statement in necessary:
             check = await check_statement(
                 client, model_name, statement, question["question_text"], visitor_answer
             )
-            checks.append(check.model_dump())
+            necessary_checks.append(check.model_dump())
             logger.info(
-                f"Question {question_id} - affirmation '{statement[:50]}...' : "
+                f"Question {question_id} - nécessaire '{statement[:50]}...' : "
                 f"{'présente' if check.present else 'absente'}"
             )
 
-        present_count = sum(1 for c in checks if c["present"])
-        score = round(present_count / len(checks), 3) if checks else None
+        optional_checks = []
+        for statement in optional:
+            check = await check_statement(
+                client, model_name, statement, question["question_text"], visitor_answer
+            )
+            optional_checks.append(check.model_dump())
+        present_optional = [c["statement"] for c in optional_checks if c["present"]]
+
+        error_checks = []
+        for statement in errors:
+            check = await check_statement(
+                client, model_name, statement, question["question_text"], visitor_answer
+            )
+            error_checks.append(check.model_dump())
+        found_errors = [c["statement"] for c in error_checks if c["present"]]
+
+        present_count = sum(1 for c in necessary_checks if c["present"])
+        completeness_score = (
+            round(present_count / len(necessary_checks), 3) if necessary_checks else None
+        )
+        valid = not found_errors
+
+        missing_necessary = [c["statement"] for c in necessary_checks if not c["present"]]
+        feedback = await generate_feedback(
+            client, model_name, question["question_text"], visitor_answer,
+            missing_necessary, present_optional,
+        )
+
         results.append({
             "question_id": question_id,
             "question_text": question["question_text"],
             "visitor_answer": visitor_answer,
             "model": model_name,
-            "statements_checks": checks,
-            "present_count": present_count,
-            "total_statements": len(checks),
-            "score": score,
+            "necessary_checks": necessary_checks,
+            "optional_checks": optional_checks,
+            "error_checks": error_checks,
+            "present_necessary_count": present_count,
+            "total_necessary": len(necessary_checks),
+            "present_optional": present_optional,
+            "found_errors": found_errors,
+            "completeness_score": completeness_score,
+            "valid": valid,
+            "feedback": feedback.feedback,
+            "tone_appropriate": feedback.tone_appropriate,
+            "tone_comment": feedback.tone_comment,
         })
+        logger.info(
+            f"Question {question_id} : complétude {completeness_score}, "
+            f"validité {valid}, ton {'OK' if feedback.tone_appropriate else 'à revoir'}"
+        )
 
-    evaluated_scores = [r["score"] for r in results if r["score"] is not None]
+    evaluated_scores = [
+        r["completeness_score"] for r in results if r["completeness_score"] is not None
+    ]
     report = {
         "input_csv": str(input_csv),
         "model": model_name,
         "results": results,
         "summary": {
             "nb_answers": len(results),
-            "average_score": round(sum(evaluated_scores) / len(evaluated_scores), 3)
-            if evaluated_scores
-            else None,
+            "average_completeness_score": round(
+                sum(evaluated_scores) / len(evaluated_scores), 3
+            ) if evaluated_scores else None,
+            "nb_valid": sum(1 for r in results if r["valid"]),
+            "nb_tone_appropriate": sum(1 for r in results if r["tone_appropriate"]),
         },
     }
 
@@ -194,48 +319,74 @@ def write_outputs(report: Dict, json_out: Path, csv_out: Path, md_out: Path) -> 
             fieldnames=[
                 "question_id",
                 "statement",
+                "category",
                 "present",
                 "justification",
-                "score",
+                "completeness_score",
             ],
         )
         writer.writeheader()
         for result in report["results"]:
-            for check in result["statements_checks"]:
-                writer.writerow({
-                    "question_id": result["question_id"],
-                    "statement": check["statement"],
-                    "present": check["present"],
-                    "justification": check["justification"],
-                    "score": result["score"],
-                })
+            for category, checks in [
+                ("necessary", result["necessary_checks"]),
+                ("optional", result["optional_checks"]),
+                ("error", result["error_checks"]),
+            ]:
+                for check in checks:
+                    writer.writerow({
+                        "question_id": result["question_id"],
+                        "statement": check["statement"],
+                        "category": category,
+                        "present": check["present"],
+                        "justification": check["justification"],
+                        "completeness_score": result["completeness_score"],
+                    })
 
     with open(md_out, "w", encoding="utf-8") as f:
-        f.write("# Évaluation par vérification d'affirmations\n\n")
+        f.write("# Évaluation par vérification d'affirmations catégorisées\n\n")
         f.write(f"- Modèle : {report['model']}\n")
         f.write(f"- CSV d'entrée : {report['input_csv']}\n")
         summary = report["summary"]
         f.write(f"- Réponses évaluées : {summary['nb_answers']}\n")
-        f.write(f"- Score moyen : {summary['average_score']}\n\n")
+        f.write(f"- Complétude moyenne : {summary['average_completeness_score']}\n")
+        f.write(f"- Réponses valides (sans erreur pertinente) : {summary['nb_valid']}\n")
+        f.write(f"- Feedbacks au ton approprié : {summary['nb_tone_appropriate']}\n\n")
         for result in report["results"]:
             f.write(f"## Question {result['question_id']}\n\n")
             f.write(f"> {result['question_text']}\n\n")
             f.write(f"**Réponse du visiteur** : {result['visitor_answer']}\n\n")
             f.write(
-                f"**Score** : {result['score']} "
-                f"({result['present_count']}/{result['total_statements']} affirmations)\n\n"
+                f"**Complétude** : {result['completeness_score']} "
+                f"({result['present_necessary_count']}/{result['total_necessary']} "
+                f"affirmations nécessaires)\n\n"
             )
-            for check in result["statements_checks"]:
+            f.write(f"**Validité** : {'oui' if result['valid'] else 'non'}\n\n")
+            f.write("### Affirmations nécessaires\n\n")
+            for check in result["necessary_checks"]:
                 marker = "x" if check["present"] else " "
                 f.write(f"- [{marker}] {check['statement']}\n")
                 f.write(f"      - {check['justification']}\n")
-            f.write("\n")
+            if result["optional_checks"]:
+                f.write("\n### Compléments facultatifs (hors score)\n\n")
+                for check in result["optional_checks"]:
+                    marker = "x" if check["present"] else " "
+                    f.write(f"- [{marker}] {check['statement']}\n")
+            if result["found_errors"]:
+                f.write("\n### Erreurs ou contradictions détectées\n\n")
+                for statement in result["found_errors"]:
+                    f.write(f"- {statement}\n")
+            f.write(f"\n### Feedback\n\n{result['feedback']}\n\n")
+            f.write(
+                f"**Ton du feedback** : "
+                f"{'approprié' if result['tone_appropriate'] else 'à revoir'} — "
+                f"{result['tone_comment']}\n\n"
+            )
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Évalue les réponses du visiteur en vérifiant chaque affirmation "
-        "de la réponse de référence."
+        description="Évalue les réponses du visiteur en vérifiant les affirmations "
+        "nécessaires, facultatives et les erreurs de la réponse de référence."
     )
     parser.add_argument(
         "--input",

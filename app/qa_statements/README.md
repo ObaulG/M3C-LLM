@@ -18,7 +18,7 @@ de la base de données (`app.database.database`) et de la fabrique de clients LL
 | `qa_statements.json` | Données : pour chaque document, les questions/réponses sélectionnées, chaque réponse étant accompagnée de la liste de ses affirmations |
 | `build_dataset.py` | Pioche n questions/réponses existantes pour k documents dans la base, génère les affirmations de chaque réponse via un LLM, et les insère dans `qa_statements.json` |
 | `export_answers_csv.py` | Écrit un CSV `question_id,visitor_answer` (une ligne par réponse de visiteur, plusieurs questions) destiné à l'évaluation |
-| `evaluate_statements.py` | Pour chaque ligne du CSV, vérifie si chaque affirmation de la réponse de référence est présente dans la réponse du visiteur, puis produit un score et un rapport |
+| `evaluate_statements.py` | Pour chaque ligne du CSV, vérifie si chaque affirmation de la réponse de référence est présente dans la réponse du visiteur, puis produit un score de complétude, une validité et un feedback séparé (ton) |
 
 ## Format de `qa_statements.json`
 
@@ -40,7 +40,11 @@ de la base de données (`app.database.database`) et de la fabrique de clients LL
               "answer_id": 1234,
               "is_correct": true,
               "content": "...",
-              "statements": ["affirmation 1", "affirmation 2"]
+              "statements": {
+                "necessary": ["affirmation nécessaire 1"],
+                "optional": ["complément facultatif 1"],
+                "errors": ["erreur ou contradiction 1"]
+              }
             }
           ]
         }
@@ -55,14 +59,38 @@ de la base de données (`app.database.database`) et de la fabrique de clients LL
 Colonnes : `question_id,visitor_answer`. Une ligne par réponse de visiteur,
 plusieurs questions possibles. Exemple : `answers_input_template.csv`.
 
+## Barème à trois catégories
+
+Pour chaque question, les affirmations des réponses de référence correctes sont
+classées en trois catégories :
+
+| Catégorie JSON | Fonction | Effet sur l'évaluation |
+|----------------|----------|------------------------|
+| `necessary` | Affirmations nécessaires : leur expression permet de satisfaire la demande | Seules elles comptent dans le score de complétude ; reformulations et informations déjà fournies par la question sont acceptées |
+| `optional` | Compléments facultatifs : ils enrichissent la réponse | Signalés s'ils sont présents, mais leur absence ne réduit pas le résultat |
+| `errors` | Erreurs ou contradictions pertinentes | Leur présence dans la réponse du visiteur remet en cause sa validité |
+
 ## Évaluation
 
 Pour chaque réponse visiteur, le script `evaluate_statements.py` regroupe les
-affirmations de toutes les réponses de référence correctes de la question, puis
-demande au LLM, pour chaque affirmation, si elle est présente dans la réponse du
-visiteur (booléen + justification). Le score final d'une réponse est la
-proportion d'affirmations retrouvées. Les résultats sont écrits dans
-`results/` (JSON + CSV + rapport Markdown).
+affirmations des réponses de référence correctes de la question, puis :
+
+1. vérifie chaque affirmation nécessaire (présente ? + justification), en
+   acceptant les reformulations et les informations déjà fournies par l'énoncé
+   de la question ;
+2. signale les compléments facultatifs retrouvés (hors score) ;
+3. détecte les erreurs ou contradictions pertinentes dans la réponse du
+   visiteur ;
+4. calcule un **score de complétude** (proportion d'affirmations nécessaires
+   retrouvées) et une **validité** (remise en cause si une erreur pertinente est
+   détectée) ;
+5. rédige un **feedback séparé** qui ne porte que sur la complétude, avec un ton
+   contrôlé : il ne doit exiger aucun détail facultatif, ne pas demander de
+   répéter le contexte de la question, et rester constructif. Le LLM
+   auto-évalue aussi le ton de son propre commentaire (`tone_appropriate`,
+   `tone_comment`), afin de distinguer complétude et dureté du feedback.
+
+Les résultats sont écrits dans `results/` (JSON + CSV + rapport Markdown).
 
 ## Utilisation
 
