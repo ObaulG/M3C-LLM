@@ -484,10 +484,9 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
 
         try:
             # Récupérer les métadonnées
-            conn = await get_db_connection()
-            metadata = await get_resource_full_metadata(conn, resource_id)
-            await conn.close()
-
+            async with await get_db_connection() as conn:
+                metadata = await get_resource_full_metadata(conn, resource_id)
+                doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
             if not metadata or all(v is None or v == [] for k, v in metadata.items()):
                 raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
 
@@ -521,7 +520,7 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
                 "status": "completed",
                 "chunks_count": 1,
                 "embeddings_count": 1,
-                "document_id": document_id,
+                "document_id": doc_id,
                 "processed_at": datetime.now().isoformat()
             }
             processed_count += 1

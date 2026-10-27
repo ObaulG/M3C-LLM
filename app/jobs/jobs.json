@@ -43019,5 +43019,462 @@
       "chunk a7d9f046-2a59-4a6f-8aa4-d47d3ca5bfd5 (doc: 21): 'NoneType' object has no attribute 'QA_list'",
       "chunk bc945047-d070-4b72-b94d-9552313cadaf (doc: 21): 'NoneType' object has no attribute 'QA_list'"
     ]
+  },
+  "35a4a75d-275c-4642-9bf8-60608648f260": {
+    "job_id": "35a4a75d-275c-4642-9bf8-60608648f260",
+    "job_type": "indexing",
+    "document_categories": [
+      "selected-metadata"
+    ],
+    "status": "completed",
+    "created_at": "2026-10-27T12:56:44.760439",
+    "updated_at": "2026-10-27T13:13:56.035228",
+    "parameters": {
+      "chunk_size": 2700,
+      "chunk_overlap": 400,
+      "embedder_name": "mistral-embed",
+      "resource_ids": [
+        317
+      ]
+    },
+    "progress": {
+      "317": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          64
+        ],
+        "processed_at": "2026-10-27T13:13:55.820097"
+      }
+    },
+    "error_message": "Resource 317: object NoneType can't be used in 'await' expression",
+    "total_items": 20,
+    "processed_items": 1,
+    "id_embeddings_missing": []
+  },
+  "5a0f7a13-45ec-41a0-a6fe-aac463b862bf": {
+    "job_id": "5a0f7a13-45ec-41a0-a6fe-aac463b862bf",
+    "job_type": "indexing",
+    "document_categories": [
+      "selected-metadata"
+    ],
+    "status": "completed",
+    "created_at": "2026-10-27T13:16:16.568036",
+    "updated_at": "2026-10-27T13:16:45.271335",
+    "parameters": {
+      "chunk_size": 2700,
+      "chunk_overlap": 400,
+      "embedder_name": "mistral-embed",
+      "resource_ids": [
+        317,
+        76715,
+        116719,
+        116721,
+        116723,
+        116725,
+        116727,
+        116729,
+        116732,
+        116734,
+        116735,
+        116737,
+        116738,
+        116781,
+        116782,
+        116787,
+        116789,
+        116795,
+        116805,
+        116806
+      ]
+    },
+    "progress": {
+      "317": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          64
+        ],
+        "processed_at": "2026-10-27T13:16:17.775500"
+      },
+      "116723": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          24
+        ],
+        "processed_at": "2026-10-27T13:16:20.571607"
+      },
+      "116789": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          25
+        ],
+        "processed_at": "2026-10-27T13:16:21.899957"
+      },
+      "116805": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          26
+        ],
+        "processed_at": "2026-10-27T13:16:23.003891"
+      },
+      "116729": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          27
+        ],
+        "processed_at": "2026-10-27T13:16:23.993182"
+      },
+      "116806": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          28
+        ],
+        "processed_at": "2026-10-27T13:16:25.048122"
+      },
+      "116781": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          29
+        ],
+        "processed_at": "2026-10-27T13:16:27.371302"
+      },
+      "116737": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          30
+        ],
+        "processed_at": "2026-10-27T13:16:28.397769"
+      },
+      "116732": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          31
+        ],
+        "processed_at": "2026-10-27T13:16:29.411907"
+      },
+      "116719": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          32
+        ],
+        "processed_at": "2026-10-27T13:16:30.541834"
+      },
+      "116721": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          33
+        ],
+        "processed_at": "2026-10-27T13:16:31.537986"
+      },
+      "116725": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          34
+        ],
+        "processed_at": "2026-10-27T13:16:32.670176"
+      },
+      "116735": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          35
+        ],
+        "processed_at": "2026-10-27T13:16:34.991959"
+      },
+      "116734": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          36
+        ],
+        "processed_at": "2026-10-27T13:16:36.031280"
+      },
+      "116782": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          23
+        ],
+        "processed_at": "2026-10-27T13:16:37.053011"
+      },
+      "76715": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          38
+        ],
+        "processed_at": "2026-10-27T13:16:39.898966"
+      },
+      "116727": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          39
+        ],
+        "processed_at": "2026-10-27T13:16:40.945897"
+      },
+      "116787": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          40
+        ],
+        "processed_at": "2026-10-27T13:16:42.062730"
+      },
+      "116738": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          21
+        ],
+        "processed_at": "2026-10-27T13:16:43.787829"
+      },
+      "116795": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          42
+        ],
+        "processed_at": "2026-10-27T13:16:45.251449"
+      }
+    },
+    "error_message": null,
+    "total_items": 20,
+    "processed_items": 20,
+    "id_embeddings_missing": []
+  },
+  "1a200f35-d4b2-4a26-bb90-2e60bc9a52d5": {
+    "job_id": "1a200f35-d4b2-4a26-bb90-2e60bc9a52d5",
+    "job_type": "indexing",
+    "document_categories": [
+      "all-metadata"
+    ],
+    "status": "completed",
+    "created_at": "2026-10-27T13:19:39.335450",
+    "updated_at": "2026-10-27T13:19:58.212010",
+    "parameters": {
+      "chunk_size": 2700,
+      "chunk_overlap": 400,
+      "embedder_name": "mistral-embed"
+    },
+    "progress": {
+      "317": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          64
+        ],
+        "processed_at": "2026-10-27T13:19:40.687249"
+      },
+      "116723": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          24
+        ],
+        "processed_at": "2026-10-27T13:19:41.779131"
+      },
+      "116789": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          25
+        ],
+        "processed_at": "2026-10-27T13:19:43.202775"
+      },
+      "116805": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          26
+        ],
+        "processed_at": "2026-10-27T13:19:43.964521"
+      },
+      "116729": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          27
+        ],
+        "processed_at": "2026-10-27T13:19:44.725879"
+      },
+      "116806": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          28
+        ],
+        "processed_at": "2026-10-27T13:19:45.463041"
+      },
+      "116781": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          29
+        ],
+        "processed_at": "2026-10-27T13:19:46.234491"
+      },
+      "116737": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          30
+        ],
+        "processed_at": "2026-10-27T13:19:46.917854"
+      },
+      "116732": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          31
+        ],
+        "processed_at": "2026-10-27T13:19:47.789875"
+      },
+      "116719": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          32
+        ],
+        "processed_at": "2026-10-27T13:19:48.585561"
+      },
+      "116721": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          33
+        ],
+        "processed_at": "2026-10-27T13:19:49.940066"
+      },
+      "116725": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          34
+        ],
+        "processed_at": "2026-10-27T13:19:50.972914"
+      },
+      "116735": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          35
+        ],
+        "processed_at": "2026-10-27T13:19:51.944123"
+      },
+      "116734": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          36
+        ],
+        "processed_at": "2026-10-27T13:19:52.692013"
+      },
+      "116782": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          23
+        ],
+        "processed_at": "2026-10-27T13:19:53.762082"
+      },
+      "76715": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          38
+        ],
+        "processed_at": "2026-10-27T13:19:54.876099"
+      },
+      "116727": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          39
+        ],
+        "processed_at": "2026-10-27T13:19:55.636850"
+      },
+      "116787": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          40
+        ],
+        "processed_at": "2026-10-27T13:19:56.353070"
+      },
+      "116738": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          21
+        ],
+        "processed_at": "2026-10-27T13:19:57.318121"
+      },
+      "116795": {
+        "status": "completed",
+        "chunks_count": 1,
+        "embeddings_count": 1,
+        "document_id": [
+          42
+        ],
+        "processed_at": "2026-10-27T13:19:58.201001"
+      }
+    },
+    "error_message": null,
+    "total_items": 20,
+    "processed_items": 20,
+    "id_embeddings_missing": []
   }
 }
