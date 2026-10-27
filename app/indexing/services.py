@@ -17,6 +17,7 @@ from database.database import (
     VALID_TEXT_RESOURCE_ID,
     insert_chunks,
     insert_chunk_embedding_qdrant,
+    insert_metadata_embedding_qdrant,
     insert_chunk_embeddings_batch_qdrant,
     get_pdf_url_for_resource,
     insert_text_document,
@@ -506,18 +507,12 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
             
             await ensure_qdrant_collection(collection_name, vector_size)
 
-            # Créer un document_id unique pour les métadonnées
-            document_id = f"metadata-{resource_id}"
-            chunk_id = f"{document_id}-metadata"
-
             # Insérer dans Qdrant
-            result = await insert_chunk_embedding_qdrant(
-                chunk_id=chunk_id,
-                document_id=document_id,
+            result = await insert_metadata_embedding_qdrant(
+                resource_id=resource_id,
                 model_name=model_name,
                 embedding=embedding,
                 content=metadata_string,
-                metadata={"resource_id": resource_id, "source": "metadata"},
                 collection_name=collection_name
             )
             print(f"Embedding sauvegardé - operation_id: {result.operation_id}")
