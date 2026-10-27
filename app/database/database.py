@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import aiomysql
+import uuid
 from qdrant_client import QdrantClient, models
 
 # Configuration de la base de données MySQL (via variables d'environnement)
@@ -93,6 +94,48 @@ async def insert_chunk_embedding_qdrant(
         points=[
             models.PointStruct(
                 id=str(chunk_id),
+                vector=embedding,
+                payload=payload
+            )
+        ]
+    )
+
+
+async def insert_metadata_embedding_qdrant(
+    resource_id: int,
+    model_name: str,
+    embedding: list,
+    content: str = None,
+    collection_name: str = None
+):
+    """Insère l'embedding des métadonnées d'un document dans Qdrant.
+
+    L'ID du point est un UUID déterministe (uuid5) dérivé du resource_id,
+    car Qdrant n'accepte que des entiers non signés ou des UUID comme ID de point.
+
+    Returns:
+        Le résultat de l'upsert (UpsertResult du client Qdrant)
+    """
+    final_collection_name = collection_name or model_name
+    await ensure_qdrant_collection(final_collection_name, len(embedding))
+    print(f"Collection {final_collection_name} vérifiée.")
+
+    document_id = f"metadata-{resource_id}"
+    point_id = str(uuid.uuid5(uuid.NAMESPACE_URL, document_id))
+
+    payload = {
+        "document_id": document_id,
+        "model_name": model_name,
+        "source": "metadata",
+        "resource_id": resource_id,
+    }
+    if content: payload["content"] = content
+
+    return qdrant_client.upsert(
+        collection_name=final_collection_name,
+        points=[
+            models.PointStruct(
+                id=point_id,
                 vector=embedding,
                 payload=payload
             )
