@@ -509,10 +509,13 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
             # Créer un document_id unique pour les métadonnées
             document_id = f"metadata-{resource_id}"
             chunk_id = f"{document_id}-metadata"
+            # Qdrant n'accepte comme ID de point qu'un entier non signé ou un UUID :
+            # on dérive un UUID déterministe du chunk_id (stable, ré-indexable sans doublon)
+            point_id = str(uuid.uuid5(uuid.NAMESPACE_URL, chunk_id))
 
             # Insérer dans Qdrant
             result = await insert_chunk_embedding_qdrant(
-                chunk_id=chunk_id,
+                chunk_id=point_id,
                 document_id=document_id,
                 model_name=model_name,
                 embedding=embedding,
