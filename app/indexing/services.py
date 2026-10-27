@@ -861,3 +861,116 @@ async def process_pdf_indexing_job(job_id: str, chunk_size: int, overlap: int, e
         "errors": errors
     }
 
+
+
+async def get_indexed_documents_overview() -> dict:
+    """
+    Construit l'état d'indexation de chaque document (resource_id) :
+
+    - chunks_count / chunking_strategies : chunks présents dans MySQL (text_chunks)
+    - content_embedders : embedders utilisés pour le contenu (collections Qdrant "LD-<model>-<dim>")
+    - metadata_embedders : embedders utilisés pour les métadonnées (collections "MD-<model>-<dim>")
+    - title / creator : métadonnées de base du document
+    """
+    from database.database import get_resource_basic_metadata
+
+    overview = {}
+
+    conn = await get_db_connection()
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT td.id, td.source_id, COUNT(tc.id)
+                FROM text_documents td
+                LEFT JOIN text_chunks tc ON tc.document_id = td.id
+                GROUP BY td.id, td.source_id
+            """)
+            doc_rows = await cur.fetchall()
+    finally:
+        await conn.close()
+
+    # Documents avec chunks en MySQL (contenu indexé)
+    docs_with_chunks = {}
+    for document_id, source_id, chunks_count in doc_rows:
+        docs_with_chunks[str(source_id)] = {
+            "document_id": document_id,
+            "chunks_count": chunks_count,
+        }
+
+    # Parcourir les collections Qdrant pour retrouver les embedders utilisés
+    ld_embedders_by_resource = {}
+    md_embedders_by_resource = {}
+    resource_id_by_doc_id = {
+        info["document_id"]: resource_id
+        for resource_id, info in docs_with_chunks.items()
+    }
+    try:
+        collections = qdrant_client.get_collections().collections
+    except Exception as e:
+        print(f"Erreur récupération collections Qdrant: {e}")
+        collections = []
+
+    for collection in collections:
+        name = collection.name
+        points, next_offset = None, None
+        while True:
+            try:
+                points, next_offset = qdrant_client.scroll(
+                    collection_name=name,
+                    offset=next_offset,
+                    limit=256,
+                    with_payload=True,
+                    with_vectors=False,
+                )
+            except Exception as e:
+                print(f"Erreur scroll collection {name}: {e}")
+                break
+
+            for p in points:
+                payload = p.payload or {}
+                if name.startswith("LD-"):
+                    doc_id = payload.get("document_id")
+                    resource_id = resource_id_by_doc_id.get(doc_id)
+                    if resource_id is None:
+                        continue
+                    ld_embedders_by_resource.setdefault(resource_id, set()).add(name)
+                elif name.startswith("MD-"):
+                    resource_id = str((payload.get("metadata") or {}).get("resource_id", ""))
+                    if not resource_id or resource_id == "None":
+                        continue
+                    md_embedders_by_resource.setdefault(resource_id, set()).add(name)
+
+            if not next_offset:
+                break
+
+    # Rassembler par resource_id
+    all_resource_ids = set(docs_with_chunks.keys())
+    all_resource_ids.update(ld_embedders_by_resource.keys())
+    all_resource_ids.update(md_embedders_by_resource.keys())
+
+    conn = await get_db_connection()
+    try:
+        for resource_id in sorted(all_resource_ids, key=lambda x: int(x) if str(x).isdigit() else float('inf')):
+            try:
+                basic = await get_resource_basic_metadata(conn, int(resource_id))
+            except (ValueError, TypeError):
+                basic = {"title": None, "creator": None, "created_at": None}
+
+            doc_info = docs_with_chunks.get(resource_id, {})
+            overview[resource_id] = {
+                "resource_id": resource_id,
+                "document_id": doc_info.get("document_id"),
+                "title": basic.get("title"),
+                "creator": basic.get("creator"),
+                "chunks_count": doc_info.get("chunks_count", 0),
+                "content_embedders": sorted(ld_embedders_by_resource.get(resource_id, [])),
+                "metadata_embedders": sorted(md_embedders_by_resource.get(resource_id, [])),
+                "metadata_indexed": bool(md_embedders_by_resource.get(resource_id)),
+            }
+    finally:
+        await conn.close()
+
+    return {
+        "documents": overview,
+        "count": len(overview),
+    }

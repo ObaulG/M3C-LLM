@@ -117,3 +117,39 @@ class IndexJobListResponse(BaseModel):
         description="Liste des jobs"
     )
     count: int = Field(..., description="Nombre total de jobs")
+
+
+class IndexedDocumentStatus(BaseModel):
+    """État d'indexation d'un document"""
+    resource_id: str = Field(..., description="Identifiant de la ressource M3C")
+    document_id: Optional[int] = Field(
+        None,
+        description="Identifiant interne du document (text_documents.id)"
+    )
+    title: Optional[str] = Field(None, description="Titre du document")
+    creator: Optional[str] = Field(None, description="Auteur du document")
+    chunks_count: int = Field(
+        0,
+        description="Nombre de chunks créés pour ce document"
+    )
+    content_embedders: List[str] = Field(
+        default_factory=list,
+        description="Embedders utilisés pour indexer le contenu (collections LD-*)"
+    )
+    metadata_embedders: List[str] = Field(
+        default_factory=list,
+        description="Embedders utilisés pour indexer les métadonnées (collections MD-*)"
+    )
+    metadata_indexed: bool = Field(
+        False,
+        description="Indique si les métadonnées de ce document ont été indexées"
+    )
+
+
+class IndexedDocumentsStatusResponse(BaseModel):
+    """Réponse pour l'état d'indexation des documents"""
+    documents: List[IndexedDocumentStatus] = Field(
+        default_factory=list,
+        description="État d'indexation de chaque document"
+    )
+    count: int = Field(..., description="Nombre total de documents indexés")

@@ -28,7 +28,8 @@ from .models import (
     IndexJobRequest,
     IndexJobStatusResponse,
     IndexJobControlResponse,
-    IndexJobListResponse, IndexDocumentsResponse, IndexDocumentsRequest
+    IndexJobListResponse, IndexDocumentsResponse, IndexDocumentsRequest,
+    IndexedDocumentsStatusResponse,
 )
 from .services import process_pdf_indexing_job, split_text_into_chunks
 from database.database import insert_chunks, insert_chunk_embeddings_batch_qdrant
@@ -351,6 +352,34 @@ async def get_indexing_count():
         "pdf_from_m3c_count": len(VALID_TEXT_RESOURCE_ID),
         "valid_resource_ids": VALID_TEXT_RESOURCE_ID
     }
+
+
+@router.get("/documents-status",
+         response_model=IndexedDocumentsStatusResponse,
+         summary="État d'indexation des documents")
+async def get_indexed_documents_status():
+    """
+    Liste les documents indexés avec, pour chacun :
+    - le nombre de chunks créés
+    - les embedders utilisés (contenu et métadonnées)
+    - si les métadonnées ont été indexées
+    """
+    from .services import get_indexed_documents_overview
+
+    try:
+        overview = await get_indexed_documents_overview()
+        return IndexedDocumentsStatusResponse(
+            documents=list(overview["documents"].values()),
+            count=overview["count"],
+        )
+    except Exception as e:
+        print(f"Erreur état d'indexation des documents: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération de l'état d'indexation: {str(e)}"
+        )
 
 
 @router.post("/job/{job_id}/cancel",

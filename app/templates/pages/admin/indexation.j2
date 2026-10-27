@@ -18,6 +18,16 @@
     .count-info { font-size: 13px; color: #666; margin-bottom: 15px; }
     .count-info strong { color: #b74420; }
     @media (max-width: 768px) { .indexation-type { flex-direction: column; } }
+    .indexed-docs-section { margin-top: 40px; }
+    .indexed-docs-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    .indexed-docs-table th, .indexed-docs-table td { padding: 10px 12px; border: 1px solid #e0e0e0; text-align: left; vertical-align: top; }
+    .indexed-docs-table th { background: #f8f9fa; color: #333; font-weight: 600; }
+    .indexed-docs-table tr:nth-child(even) { background: #fafafa; }
+    .indexed-docs-table .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin: 2px 4px 2px 0; background: #eef1f4; color: #555; }
+    .indexed-docs-table .badge.success { background: #e6f4ea; color: #1e7e34; }
+    .indexed-docs-table .badge.danger { background: #fdecea; color: #b74420; }
+    .indexed-docs-empty { color: #666; font-style: italic; margin-top: 10px; }
+    .indexed-docs-refresh { margin-left: 10px; }
 </style>
 {% endblock %}
 
@@ -104,6 +114,16 @@
             
             <div class="results-section">
                 <div id="resultsContainer"></div>
+            </div>
+
+            <div class="indexed-docs-section">
+                <h3>Documents indexés
+                    <button class="btn indexed-docs-refresh" onclick="loadIndexedDocuments()" id="refreshDocsBtn" style="padding: 6px 14px; font-size: 13px;">🔄 Actualiser</button>
+                </h3>
+                <div class="description">État d'indexation de chaque document : nombre de chunks créés, embedders utilisés et indexation des métadonnées.</div>
+                <div id="indexedDocumentsContainer">
+                    <p class="indexed-docs-empty">Chargement des documents indexés...</p>
+                </div>
             </div>
 
             <div class="loading" id="loadingIndicator">
