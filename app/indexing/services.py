@@ -888,8 +888,7 @@ async def get_indexed_documents_overview() -> dict:
 
     overview = {}
 
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
             await cur.execute("""
                 SELECT td.id, td.source_id, COUNT(tc.id)
@@ -898,8 +897,7 @@ async def get_indexed_documents_overview() -> dict:
                 GROUP BY td.id, td.source_id
             """)
             doc_rows = await cur.fetchall()
-    finally:
-        await conn.close()
+
 
     # Documents avec chunks en MySQL (contenu indexé)
     docs_with_chunks = {}
@@ -960,8 +958,7 @@ async def get_indexed_documents_overview() -> dict:
     all_resource_ids.update(ld_embedders_by_resource.keys())
     all_resource_ids.update(md_embedders_by_resource.keys())
 
-    conn = await get_db_connection()
-    try:
+    async with await get_db_connection() as conn:
         for resource_id in sorted(all_resource_ids, key=lambda x: int(x) if str(x).isdigit() else float('inf')):
             try:
                 basic = await get_resource_basic_metadata(conn, int(resource_id))
@@ -979,8 +976,6 @@ async def get_indexed_documents_overview() -> dict:
                 "metadata_embedders": sorted(md_embedders_by_resource.get(resource_id, [])),
                 "metadata_indexed": bool(md_embedders_by_resource.get(resource_id)),
             }
-    finally:
-        await conn.close()
 
     return {
         "documents": overview,
