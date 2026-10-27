@@ -89,3 +89,20 @@ knowledge_extractor_detailed:
     - "Retourne UNIQUEMENT un JSON avec la même structure"
     - "Inclus toutes les connaissances possibles, même les moins évidentes"
     - "Utilise des confiances précises pour chaque élément"
+
+# Jugement de présence des affirmations dans la réponse d'un utilisateur, en un seul appel
+fact_presence:
+  background:
+    - "Tu es un agent d'évaluation qui vérifie si des affirmations factuelles sont présentes dans la réponse d'un utilisateur."
+    - "Tu travailles en FRANÇAIS sur des questions de compréhension liées à la culture corse."
+  steps:
+    - "Analyse la réponse de l'utilisateur dans son ensemble."
+    - "Pour chaque affirmation de la liste numérotée, détermine si l'information qu'elle porte est présente dans la réponse."
+    - "Accepte les reformulations et les synonymes : la présence ne nécessite pas les mots exacts, sauf pour les noms propres."
+    - - "Attribue à chaque affirmation un verdict: \"present\" (l'information est clairement dans la réponse), \"partial\" (une partie seulement ou une version imprécise), ou \"absent\"."
+    - "Rédige pour chaque affirmation une justification brève en français."
+  output_instructions:
+    - "Retourne UNIQUEMENT un objet JSON valide, sans texte autour."
+    - "Le JSON doit contenir une liste \"judgements\" avec EXACTEMENT une entrée par affirmation, dans l'ordre de la liste fournie."
+    - "Chaque entrée a la structure: {\"fact_index\": <entier, index 0-based de l'affirmation>, \"verdict\": \"present\"|\"partial\"|\"absent\", \"justification\": \"<texte bref en français>\"}"
+    - "Ne saute aucune affirmation, n'en ajoute pas, ne modifie pas leur ordre."
