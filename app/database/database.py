@@ -976,6 +976,142 @@ async def save_question_to_db(
 
         await conn.commit()
 
+
+async def insert_answer_facts(
+    answer_id: int,
+    facts: List[Dict],
+    conn,
+    model: Optional[str] = None,
+) -> List[int]:
+    """
+    Insère les affirmations (faits) d'une réponse de référence dans la table text_answer_facts.
+
+    Args:
+        answer_id (int): L'identifiant de la réponse dans text_question_answers.
+        facts (List[Dict]): Liste des affirmations constituant la réponse, dans l'ordre.
+            Chaque fait est un dict avec les clés "content" (str) et "importance"
+            ("essential" ou "optional", défaut: "essential").
+        conn: Connexion à la base de données.
+        model (Optional[str]): Modèle ayant généré l'extraction des faits.
+
+    Returns:
+        List[int]: Les fact_id insérés, dans l'ordre des affirmations.
+    """
+    fact_ids = []
+    async with conn.cursor() as cur:
+        for position, fact in enumerate(facts):
+            content = fact["content"] if isinstance(fact, dict) else fact
+            importance = (fact.get("importance", "essential") if isinstance(fact, dict)
+                          else "essential")
+            await cur.execute("""
+                INSERT INTO text_answer_facts (answer_id, content, position, importance, model)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (answer_id, content, position, importance, model))
+            fact_ids.append(cur.lastrowid)
+        await conn.commit()
+    return fact_ids
+
+
+async def get_facts_by_answer_ids(
+    answer_ids: List[int],
+    conn,
+) -> Dict[int, List[Dict]]:
+    """
+    Récupère les affirmations associées à des réponses de référence.
+
+    Args:
+        answer_ids (List[int]): Identifiants des réponses dans text_question_answers.
+        conn: Connexion à la base de données.
+
+    Returns:
+        Dict[int, List[Dict]]: Mapping answer_id -> liste de faits triés par position
+        (champs: fact_id, content, position, importance, model).
+    """
+    if not answer_ids:
+        return {}
+    placeholders = ",".join(["%s"] * len(answer_ids))
+    query = f"""
+        SELECT answer_id, fact_id, content, position, importance, model
+        FROM text_answer_facts
+        WHERE answer_id IN ({placeholders})
+        ORDER BY answer_id, position
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(answer_ids))
+        rows = await cur.fetchall()
+
+    facts_by_answer: Dict[int, List[Dict]] = {aid: [] for aid in answer_ids}
+    for answer_id, fact_id, content, position, importance, model in rows:
+        facts_by_answer[answer_id].append({
+            "fact_id": fact_id,
+            "content": content,
+            "position": position,
+            "importance": importance,
+            "model": model,
+        })
+    return facts_by_answer
+
+
+async def get_facts_by_question_ids(
+    question_ids: List[int],
+    conn,
+) -> Dict[int, List[Dict]]:
+    """
+    Récupère les affirmations des réponses de référence d'un ensemble de questions.
+
+    Args:
+        question_ids (List[int]): Identifiants des questions.
+        conn: Connexion à la base de données.
+
+    Returns:
+        Dict[int, List[Dict]]: Mapping question_id -> liste de faits de toutes
+        les réponses de référence de la question, triés par (answer_id, position).
+    """
+    if not question_ids:
+        return {}
+    placeholders = ",".join(["%s"] * len(question_ids))
+    query = f"""
+        SELECT a.question_id, f.fact_id, f.answer_id, f.content, f.position, f.importance, f.model
+        FROM text_answer_facts f
+        JOIN text_question_answers a ON f.answer_id = a.answer_id
+        WHERE a.question_id IN ({placeholders})
+        ORDER BY a.question_id, f.answer_id, f.position
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(query, tuple(question_ids))
+        rows = await cur.fetchall()
+
+    facts_by_question: Dict[int, List[Dict]] = {qid: [] for qid in question_ids}
+    for question_id, fact_id, answer_id, content, position, importance, model in rows:
+        facts_by_question[question_id].append({
+            "fact_id": fact_id,
+            "answer_id": answer_id,
+            "content": content,
+            "position": position,
+            "importance": importance,
+            "model": model,
+        })
+    return facts_by_question
+
+
+async def get_answer_ids_with_facts(
+    conn,
+) -> set:
+    """
+    Récupère l'ensemble des answer_id disposant déjà de faits extraits.
+
+    Args:
+        conn: Connexion à la base de données.
+
+    Returns:
+        set: Ensemble des answer_id présents dans text_answer_facts.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("SELECT DISTINCT answer_id FROM text_answer_facts")
+        rows = await cur.fetchall()
+    return {row[0] for row in rows}
+
+
 async def get_questions_by_document_id(
     document_id: str,
     conn,
