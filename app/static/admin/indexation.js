@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadEmbedders();
     loadIndexingCount();
     loadIndexedDocuments();
+
+    const searchInput = document.getElementById('docsSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', renderDocsSelection);
+    }
 });
 
 // ============================================================================
@@ -20,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================================
 
 let availableEmbedders = [];
+let availableDocuments = [];
+let selectedResourceIds = new Set();
 
 async function loadEmbedders() {
     try {
@@ -128,6 +135,15 @@ function updateChunkParametersVisibility(type) {
     } else {
         paramsDiv.style.display = 'none';
     }
+
+    const selectionDiv = document.getElementById('docsSelectionSection');
+    if (selectionDiv) {
+        const show = type === 'selected-metadata';
+        selectionDiv.style.display = show ? 'block' : 'none';
+        if (show && availableDocuments.length === 0) {
+            loadAvailableDocuments();
+        }
+    }
 }
 
 // ============================================================================
@@ -154,6 +170,11 @@ async function startIndexation() {
     
     const selectedEmbedder = getSelectedEmbedder();
     
+    if (indexType === 'selected-metadata' && selectedResourceIds.size === 0) {
+        showError('Sélectionnez au moins un document dans la liste');
+        return;
+    }
+    
     showLoading(true);
     updateProgress(0, 'Préparation...');
     
@@ -167,6 +188,10 @@ async function startIndexation() {
         // Ajouter l'embedder si sélectionné
         if (selectedEmbedder) {
             requestBody.embedder_name = selectedEmbedder;
+        }
+        
+        if (indexType === 'selected-metadata') {
+            requestBody.resource_ids = Array.from(selectedResourceIds);
         }
         
         const response = await fetch(`${API_BASE}/api/admin/documents/index`, {
@@ -369,6 +394,132 @@ function subscribeToJobEvents(jobId) {
 }
 
 // ============================================================================
+// SÉLECTION DE DOCUMENTS (métadonnées)
+// ============================================================================
+
+async function loadAvailableDocuments() {
+    const container = document.getElementById('docsSelectionList');
+    if (!container) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/documents/index/documents-status`);
+        if (!response.ok) {
+            container.innerHTML = `<p class="indexed-docs-empty">Impossible de charger les documents (HTTP ${response.status}).</p>`;
+            return;
+        }
+
+        const data = await response.json();
+        availableDocuments = data.documents || [];
+        renderDocsSelection();
+    } catch (error) {
+        console.error('Erreur lors du chargement des documents:', error);
+        container.innerHTML = `<p class="indexed-docs-empty">Erreur lors du chargement des documents.</p>`;
+    }
+}
+
+function renderDocsSelection() {
+    const container = document.getElementById('docsSelectionList');
+    if (!container) return;
+
+    if (availableDocuments.length === 0) {
+        container.innerHTML = `<p class="indexed-docs-empty">Aucun document disponible.</p>`;
+        updateSelectionCount();
+        return;
+    }
+
+    const searchTerm = (document.getElementById('docsSearchInput')?.value || '').trim().toLowerCase();
+    const filtered = availableDocuments.filter(doc => {
+        if (!searchTerm) return true;
+        const rid = String(doc.resource_id).toLowerCase();
+        const title = (doc.title || '').toLowerCase();
+        const creator = (doc.creator || '').toLowerCase();
+        return rid.includes(searchTerm) || title.includes(searchTerm) || creator.includes(searchTerm);
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<p class="indexed-docs-empty">Aucun document ne correspond à la recherche.</p>`;
+        updateSelectionCount();
+        return;
+    }
+
+    let rows = '';
+    filtered.forEach(doc => {
+        const rid = String(doc.resource_id);
+        const checked = selectedResourceIds.has(rid) ? 'checked' : '';
+        const title = doc.title ? escapeHtml(doc.title) : `<em>resource ${escapeHtml(rid)}</em>`;
+        const creator = doc.creator ? escapeHtml(doc.creator) : '—';
+        const metadataBadge = doc.metadata_indexed
+            ? '<span class="badge success">✅ MD indexées</span>'
+            : '<span class="badge danger">❌ MD non indexées</span>';
+        rows += `
+            <tr>
+                <td style="width: 30px;"><input type="checkbox" class="doc-select-checkbox" value="${escapeHtml(rid)}" ${checked} onchange="toggleDocSelection('${escapeHtml(rid)}', this.checked)"></td>
+                <td>${escapeHtml(rid)}</td>
+                <td>${title}<div style="font-size: 12px; color: #666;">${creator}</div></td>
+                <td>${metadataBadge}</td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Resource ID</th>
+                    <th>Document</th>
+                    <th>État métadonnées</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    `;
+    updateSelectionCount();
+}
+
+function toggleDocSelection(resourceId, isChecked) {
+    if (isChecked) {
+        selectedResourceIds.add(String(resourceId));
+    } else {
+        selectedResourceIds.delete(String(resourceId));
+    }
+    updateSelectionCount();
+}
+
+function selectAllDocs(selectAll) {
+    const searchTerm = (document.getElementById('docsSearchInput')?.value || '').trim().toLowerCase();
+    const filtered = availableDocuments.filter(doc => {
+        if (!searchTerm) return true;
+        const rid = String(doc.resource_id).toLowerCase();
+        const title = (doc.title || '').toLowerCase();
+        const creator = (doc.creator || '').toLowerCase();
+        return rid.includes(searchTerm) || title.includes(searchTerm) || creator.includes(searchTerm);
+    });
+
+    filtered.forEach(doc => {
+        const rid = String(doc.resource_id);
+        if (selectAll) {
+            selectedResourceIds.add(rid);
+        } else {
+            selectedResourceIds.delete(rid);
+        }
+    });
+
+    renderDocsSelection();
+}
+
+function updateSelectionCount() {
+    const countEl = document.getElementById('docsSelectionCount');
+    if (countEl) {
+        countEl.textContent = `${selectedResourceIds.size} sélectionné(s)`;
+    }
+    const badge = document.getElementById('selectionCountBadge');
+    if (badge) {
+        badge.textContent = selectedResourceIds.size > 0 ? `(${selectedResourceIds.size} document(s) sélectionné(s))` : '';
+    }
+}
+
+// ============================================================================
 // LISTE DES DOCUMENTS INDEXÉS
 // ============================================================================
 
@@ -387,7 +538,9 @@ async function loadIndexedDocuments() {
         }
 
         const data = await response.json();
+        availableDocuments = data.documents || [];
         renderIndexedDocuments(data);
+        renderDocsSelection();
     } catch (error) {
         console.error('Erreur lors du chargement des documents indexés:', error);
         container.innerHTML = `<p class="indexed-docs-empty">Erreur lors du chargement des documents indexés.</p>`;

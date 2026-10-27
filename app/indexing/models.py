@@ -9,8 +9,12 @@ class IndexDocumentsRequest(BaseModel):
     """Requête pour l'indexation des documents existants"""
     indexation_type: str = Field(
         ...,
-        description="Type d'indexation: 'all-metadata' pour TOUS les docs par métadonnées, 'all-with-text' pour docs avec extracted_text, 'pdf-from-m3c' pour télécharger depuis M3C",
-        pattern="^(all-metadata|all-with-text|pdf-from-m3c)$"
+        description="Type d'indexation: 'metadata-only' pour TOUS les docs par métadonnées, 'selected-metadata' pour une sélection de docs par métadonnées, 'all-with-text' pour docs avec extracted_text, 'pdf-from-m3c' pour télécharger depuis M3C",
+        pattern="^(metadata-only|selected-metadata|all-metadata|all-with-text|pdf-from-m3c)$"
+    )
+    resource_ids: Optional[List[int]] = Field(
+        None,
+        description="Liste des resource_ids à indexer (requis pour 'selected-metadata', ignoré sinon)"
     )
     chunk_size: int = Field(
         2700,
@@ -52,8 +56,12 @@ class IndexJobRequest(BaseModel):
     """Requête pour créer un job d'indexation de PDFs depuis M3C"""
     indexation_type: str = Field(
         "pdf-from-m3c",
-        description="Type d'indexation: 'pdf-from-m3c' pour télécharger depuis M3C",
-        pattern="^pdf-from-m3c$"
+        description="Type d'indexation: 'pdf-from-m3c' pour télécharger depuis M3C, 'metadata-only' pour les métadonnées, 'selected-metadata' pour les métadonnées d'une sélection",
+        pattern="^(pdf-from-m3c|metadata-only|selected-metadata)$"
+    )
+    resource_ids: Optional[List[int]] = Field(
+        None,
+        description="Liste des resource_ids à indexer (utilisé pour 'selected-metadata')"
     )
     chunk_size: int = Field(
         2700,
@@ -70,6 +78,10 @@ class IndexJobRequest(BaseModel):
     force_restart: bool = Field(
         False,
         description="Forcer le redémarrage même si un job existe déjà"
+    )
+    embedder_name: Optional[str] = Field(
+        None,
+        description="Nom du modèle d'embedding à utiliser"
     )
 
 
