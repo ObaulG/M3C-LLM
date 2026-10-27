@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRadioButtons();
     loadEmbedders();
     loadIndexingCount();
+    loadIndexedDocuments();
 });
 
 // ============================================================================
@@ -363,5 +364,97 @@ function subscribeToJobEvents(jobId) {
         } else {
             showError(`❌ Job ${data.job_id} terminé avec erreurs. ${data.processed_items}/${data.total_items} documents traités`);
         }
+        loadIndexedDocuments();
     });
+}
+
+// ============================================================================
+// LISTE DES DOCUMENTS INDEXÉS
+// ============================================================================
+
+async function loadIndexedDocuments() {
+    const container = document.getElementById('indexedDocumentsContainer');
+    if (!container) return;
+
+    const refreshBtn = document.getElementById('refreshDocsBtn');
+    if (refreshBtn) refreshBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/documents/index/documents-status`);
+        if (!response.ok) {
+            container.innerHTML = `<p class="indexed-docs-empty">Impossible de charger les documents indexés (HTTP ${response.status}).</p>`;
+            return;
+        }
+
+        const data = await response.json();
+        renderIndexedDocuments(data);
+    } catch (error) {
+        console.error('Erreur lors du chargement des documents indexés:', error);
+        container.innerHTML = `<p class="indexed-docs-empty">Erreur lors du chargement des documents indexés.</p>`;
+    } finally {
+        if (refreshBtn) refreshBtn.disabled = false;
+    }
+}
+
+function renderIndexedDocuments(data) {
+    const container = document.getElementById('indexedDocumentsContainer');
+    if (!container) return;
+
+    if (!data.documents || data.documents.length === 0) {
+        container.innerHTML = `<p class="indexed-docs-empty">Aucun document n'a encore été indexé.</p>`;
+        return;
+    }
+
+    let rows = '';
+    data.documents.forEach(doc => {
+        const title = doc.title ? escapeHtml(doc.title) : `<em>resource ${escapeHtml(String(doc.resource_id))}</em>`;
+        const creator = doc.creator ? escapeHtml(doc.creator) : '—';
+
+        let embedders = '—';
+        if (doc.content_embedders && doc.content_embedders.length > 0) {
+            embedders = doc.content_embedders.map(e => `<span class="badge">${escapeHtml(e)}</span>`).join('');
+        }
+
+        const metadataBadge = doc.metadata_indexed
+            ? '<span class="badge success">✅ Métadonnées indexées</span>'
+            : '<span class="badge danger">❌ Métadonnées non indexées</span>';
+
+        let metadataEmbedders = '';
+        if (doc.metadata_indexed && doc.metadata_embedders && doc.metadata_embedders.length > 0) {
+            metadataEmbedders = '<div style="margin-top: 4px;">' +
+                doc.metadata_embedders.map(e => `<span class="badge">${escapeHtml(e)}</span>`).join('') +
+                '</div>';
+        }
+
+        rows += `
+            <tr>
+                <td>${escapeHtml(String(doc.resource_id))}</td>
+                <td>${title}<div style="font-size: 12px; color: #666;">${creator}</div></td>
+                <td>${doc.chunks_count}</td>
+                <td>${embedders}</td>
+                <td>${metadataBadge}${metadataEmbedders}</td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <table class="indexed-docs-table">
+            <thead>
+                <tr>
+                    <th>Resource ID</th>
+                    <th>Document</th>
+                    <th>Chunks</th>
+                    <th>Embedders (contenu)</th>
+                    <th>Métadonnées</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    `;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
