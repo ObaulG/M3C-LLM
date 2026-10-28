@@ -118,14 +118,29 @@ if _fact_presence_prompt is None:
     _fact_presence_prompt = _FALLBACK_PRESENCE_PROMPT
 
 
-def get_fact_presence_agent(model: str = "mistral-medium"):
-    client = get_mistral_client()
+def get_fact_presence_agent(model: str = "mistral-medium",
+                            provider: str = "mistral",
+                            async_mode: bool = False):
+    from .instructor_factory import create_client
+    import instructor
+
+    if provider == "ollama":
+        instructor_mode = instructor.Mode.JSON
+        client = create_client(provider, model, async_mode, instructor_mode=instructor_mode)
+        model_api_parameters = {"temperature": 0.35, "max_tokens": 8192 if "qwen" in model else 2048, "reasoning_effort": "none"}
+    else:
+        instructor_mode = instructor.Mode.JSON
+        client = create_client(provider, model, async_mode, instructor_mode=instructor_mode)
+        model_api_parameters = {"temperature": 0.35} if provider not in ["gemini", "google"] else {}
     agent = AtomicAgent[FactPresenceInput, FactPresenceOutput](
         config=AgentConfig(
             client=client,
             model=model,
+            mode=instructor_mode,
             history=None,
             system_prompt_generator=_fact_presence_prompt,
+            model_api_parameters=model_api_parameters,
+            assistant_role="model" if provider in ["gemini", "google"] else "assistant",
         )
     )
     return agent
