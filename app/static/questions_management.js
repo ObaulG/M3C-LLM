@@ -324,7 +324,7 @@ function displayQuestions(questions, count) {
                                 <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
                                     ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
                                 </span>
-                                ${escapeHtml(fact.content)}
+                                <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
                             </li>
                         `).join('')}
                     </ul>
@@ -416,7 +416,23 @@ function displayQuestions(questions, count) {
                 `}
                 
                 <input type="hidden" id="eval-source-${question.question_id}" value="llm">
-                
+
+                <div class="evaluation-mode-controls">
+                    <span class="evaluation-mode-label">Base d'évaluation :</span>
+                    <label class="evaluation-mode-option">
+                        <input type="radio" name="eval-mode-${question.question_id}" value="references" checked>
+                        Réponses de référence
+                    </label>
+                    <label class="evaluation-mode-option">
+                        <input type="radio" name="eval-mode-${question.question_id}" value="facts">
+                        Faits
+                    </label>
+                    <label class="evaluation-mode-option">
+                        <input type="radio" name="eval-mode-${question.question_id}" value="both">
+                        Les deux (comparaison)
+                    </label>
+                </div>
+
                 <textarea 
                     id="answer-to-evaluate-${question.question_id}" 
                     class="evaluation-textarea" 
@@ -440,6 +456,22 @@ function displayQuestions(questions, count) {
                 <div class="evaluation-result" id="eval-result-${question.question_id}" style="display: none;">
                     <p><strong>Score:</strong> <span id="score-${question.question_id}" class="score-display"></span>/10</p>
                     <p><strong>Feedback:</strong> <span id="feedback-${question.question_id}"></span></p>
+                </div>
+                <div class="evaluation-comparison" id="eval-comparison-${question.question_id}" style="display: none;">
+                    <h5>Comparaison des évaluations</h5>
+                    <div class="comparison-grid">
+                        <div class="comparison-column comparison-references">
+                            <h6>Par réponses de référence</h6>
+                            <p><strong>Score:</strong> <span id="score-references-${question.question_id}" class="score-display"></span>/10</p>
+                            <p><strong>Feedback:</strong> <span id="feedback-references-${question.question_id}"></span></p>
+                        </div>
+                        <div class="comparison-column comparison-facts">
+                            <h6>Par faits</h6>
+                            <p><strong>Score:</strong> <span id="score-facts-${question.question_id}" class="score-display"></span>/10</p>
+                            <p><strong>Feedback:</strong> <span id="feedback-facts-${question.question_id}"></span></p>
+                        </div>
+                    </div>
+                    <p class="comparison-summary" id="comparison-summary-${question.question_id}"></p>
                 </div>
                 <div class="manual-evaluation">
                     <label>Note manuelle: 
@@ -788,6 +820,127 @@ async function saveMetaEvaluation(questionId) {
 }
 
 /**
+ * Retourne le mode d'évaluation choisi pour une question
+ * @param {number} questionId - ID de la question
+ * @returns {string} 'references', 'facts' ou 'both'
+ */
+function getEvaluationMode(questionId) {
+    const checkedRadio = document.querySelector(`input[name="eval-mode-${questionId}"]:checked`);
+    return checkedRadio ? checkedRadio.value : 'references';
+}
+
+/**
+ * Retourne la liste des réponses de référence sélectionnées pour une question
+ * @param {number} questionId - ID de la question
+ * @param {HTMLElement} questionCard - Carte de la question
+ * @returns {string[]}
+ */
+function getReferenceAnswerList(questionId, questionCard) {
+    const answerType = Array.from(document.querySelectorAll('input[name="answer"]'))
+        .find(radio => radio.checked)?.id;
+    let answerList = [];
+    let answerDivArray = questionCard.querySelectorAll('.answer-item');
+    if (answerType == "refAnswer"){
+        const hasReference = document.querySelector(`[data-question-id="${questionId}"]`)?.dataset.hasReference === 'true';
+
+        if (hasReference && referenceAnswers[questionId]) {
+            answerList.push(referenceAnswers[questionId].response_answer);
+        } else if (answerDivArray.length > 0) {
+            answerList.push(answerDivArray[0].childNodes[1].textContent.trim());
+        }
+    } else {
+        answerDivArray.forEach((answerDiv) => {
+            const responseText = answerDiv.childNodes[1].textContent.trim();
+            answerList.push(responseText);
+        });
+    }
+    return answerList;
+}
+
+/**
+ * Retourne la liste des faits de réponse d'une question
+ * @param {HTMLElement} questionCard - Carte de la question
+ * @returns {string[]}
+ */
+function getFactsList(questionCard) {
+    if (!questionCard) return [];
+    const factItems = questionCard.querySelectorAll('.answer-fact-item .answer-fact-content');
+    if (factItems.length > 0) {
+        return Array.from(factItems).map(item => item.textContent.trim());
+    }
+    const legacyFactItems = questionCard.querySelectorAll('.answer-fact-item');
+    return Array.from(legacyFactItems).map(item => item.textContent.trim());
+}
+
+/**
+ * Lance une évaluation via l'API
+ * @param {string} questionText - Contenu de la question
+ * @param {string[]} expectedAnswers - Réponses attendues
+ * @param {string} userAnswer - Réponse de l'utilisateur
+ * @param {string} model - Modèle sélectionné
+ * @returns {Promise<Object>}
+ */
+async function runEvaluation(questionText, expectedAnswers, userAnswer, model) {
+    const response = await fetch('/api/evaluate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            question: questionText,
+            expected_answers: expectedAnswers,
+            user_answer: userAnswer,
+            model: model
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * Affiche ou masque le bloc de comparaison des évaluations (références vs faits)
+ * @param {number} questionId - ID de la question
+ * @param {Object|null} comparison - { references: {score, feedback}, facts: {score, feedback} } ou null
+ */
+function displayComparison(questionId, comparison) {
+    const comparisonDiv = document.getElementById(`eval-comparison-${questionId}`);
+    if (!comparisonDiv) return;
+
+    if (!comparison) {
+        comparisonDiv.style.display = 'none';
+        return;
+    }
+
+    const scoreReferences = document.getElementById(`score-references-${questionId}`);
+    const feedbackReferences = document.getElementById(`feedback-references-${questionId}`);
+    const scoreFacts = document.getElementById(`score-facts-${questionId}`);
+    const feedbackFacts = document.getElementById(`feedback-facts-${questionId}`);
+    const summary = document.getElementById(`comparison-summary-${questionId}`);
+
+    if (scoreReferences) scoreReferences.textContent = comparison.references.score;
+    if (feedbackReferences) feedbackReferences.textContent = comparison.references.feedback;
+    if (scoreFacts) scoreFacts.textContent = comparison.facts.score;
+    if (feedbackFacts) feedbackFacts.textContent = comparison.facts.feedback;
+
+    if (summary) {
+        const diff = comparison.references.score - comparison.facts.score;
+        if (diff === 0) {
+            summary.textContent = `Les deux évaluations sont identiques (${comparison.references.score}/10).`;
+        } else if (diff > 0) {
+            summary.textContent = `L'évaluation par réponses de référence est plus sévère de ${diff} point${diff > 1 ? 's' : ''} (${comparison.references.score}/10 vs ${comparison.facts.score}/10).`;
+        } else {
+            summary.textContent = `L'évaluation par faits est plus sévère de ${-diff} point${-diff > 1 ? 's' : ''} (${comparison.facts.score}/10 vs ${comparison.references.score}/10).`;
+        }
+    }
+
+    comparisonDiv.style.display = 'block';
+}
+
+/**
  * Évalue une réponse par rapport à la réponse de référence
  * @param {number} questionId - ID de la question
  */
@@ -801,29 +954,24 @@ async function evaluateAnswer(questionId) {
         return;
     }
 
-    // Récupérer la réponse
-    const answerType = Array.from(document.querySelectorAll('input[name="answer"]'))
-  .find(radio => radio.checked)?.id;
-    let answerList = [];
-    let answerDivArray = questionCard.querySelectorAll('.answer-item');
-    console.log(answerType);
-    if (answerType == "refAnswer"){
-        const hasReference = document.querySelector(`[data-question-id="${questionId}"]`)?.dataset.hasReference === 'true';
+    // Récupérer le mode d'évaluation choisi
+    const evaluationMode = getEvaluationMode(questionId);
 
-        if (hasReference && referenceAnswers[questionId]) {
-            answerList.push(referenceAnswers[questionId].response_answer);
-        } else {
-            answerList.push(answerDivArray[0].childNodes[1].textContent.trim());
-        }
-    } else {
-        answerDivArray.forEach((answerDiv) => {
-            const responseText = answerDiv.childNodes[1].textContent.trim();
-            answerList.push(responseText);
-        });
-    }
+    // Récupérer les réponses de référence
+    const referenceList = getReferenceAnswerList(questionId, questionCard);
 
-    if (answerList.length == 0) {
+    // Récupérer les faits de réponse
+    const factsList = getFactsList(questionCard);
+
+    const wantsReferences = evaluationMode === 'references' || evaluationMode === 'both';
+    const wantsFacts = evaluationMode === 'facts' || evaluationMode === 'both';
+
+    if (wantsReferences && referenceList.length === 0) {
         alert('Veuillez fournir une réponse de référence pour évaluer. Vous pouvez en saisir une dans le champ prévu à cet effet.');
+        return;
+    }
+    if (wantsFacts && factsList.length === 0) {
+        alert('Aucun fait de réponse trouvé pour cette question. Générez d\u2019abord les faits ou choisissez un autre mode d\u2019évaluation.');
         return;
     }
 
@@ -853,25 +1001,35 @@ async function evaluateAnswer(questionId) {
         // Récupérer le modèle sélectionné
         const modelSelect = document.getElementById('modelFilter');
         const selectedModel = modelSelect ? modelSelect.value : '';
-        const response = await fetch('/api/evaluate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                question: questionText,
-                expected_answers: answerList,
-                user_answer: userAnswer,
-                model: selectedModel
-            })
-        });
 
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
+        const evaluationPromises = [];
+        if (wantsReferences) {
+            evaluationPromises.push(runEvaluation(questionText, referenceList, userAnswer, selectedModel));
+        }
+        if (wantsFacts) {
+            evaluationPromises.push(runEvaluation(questionText, factsList, userAnswer, selectedModel));
         }
 
-        const evaluation = await response.json();
-        
+        const settledResults = await Promise.allSettled(evaluationPromises);
+        const evaluations = settledResults
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value);
+
+        if (evaluations.length === 0) {
+            const firstError = settledResults.find(result => result.status === 'rejected');
+            throw firstError ? firstError.reason : new Error('Erreur inconnue lors de l\u2019évaluation');
+        }
+
+        let evaluation;
+        let comparison = null;
+        if (wantsReferences && wantsFacts && evaluations.length === 2) {
+            const [referenceEvaluation, factsEvaluation] = evaluations;
+            evaluation = referenceEvaluation;
+            comparison = { references: referenceEvaluation, facts: factsEvaluation };
+        } else {
+            evaluation = evaluations[0];
+        }
+
         // Afficher les résultats
         const scoreElement = document.getElementById(`score-${questionId}`);
         const feedbackElement = document.getElementById(`feedback-${questionId}`);
@@ -887,6 +1045,9 @@ async function evaluateAnswer(questionId) {
         if (resultDiv) {
             resultDiv.style.display = 'block';
         }
+
+        // Afficher la comparaison si les deux modes ont été évalués
+        displayComparison(questionId, comparison);
         
         // Stocker les résultats pour la sauvegarde
         if (scoreElement) {
@@ -1629,7 +1790,7 @@ async function generateAnswerFacts(answerId, button) {
                                 <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
                                     ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
                                 </span>
-                                ${escapeHtml(fact.content)}
+                                <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
                             </li>
                         `).join('')}
                     </ul>
