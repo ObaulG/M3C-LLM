@@ -94,8 +94,8 @@ async def main():
     parser.add_argument("-k", type=int, default=1, help="Nombre de documents (défaut: 1)")
     parser.add_argument("--document-id", type=str, default=None,
                         help="Force un document précis (prioritaire sur -k)")
-    parser.add_argument("--extraction-model", type=str, default="mistral-medium",
-                        help="Modèle pour l'extraction des affirmations (défaut: mistral-medium)")
+    parser.add_argument("--extraction-model", type=str, default="mistral-small",
+                        help="Modèle pour l'extraction des affirmations (défaut: mistral-small)")
     parser.add_argument("--output", type=str, default=None, help="Chemin du CSV de sortie")
     parser.add_argument("--skip-existing", action="store_true",
                         help="Ne pas ré-extraire les réponses ayant déjà des faits")

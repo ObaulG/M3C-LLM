@@ -5,7 +5,7 @@
 -- ou fait d'une énumération au même niveau d'importance).
 CREATE TABLE IF NOT EXISTS text_answer_facts (
     fact_id INT AUTO_INCREMENT PRIMARY KEY,
-    answer_id INT NOT NULL,
+    answer_id BIGINT UNSIGNED NOT NULL,
     content TEXT NOT NULL,
     position INT NOT NULL DEFAULT 0,
     importance VARCHAR(16) NOT NULL DEFAULT 'essential',

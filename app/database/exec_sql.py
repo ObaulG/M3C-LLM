@@ -41,6 +41,6 @@ async def run_sql_file(filename: str) -> None:
 
 if __name__ == "__main__":
     try:
-        asyncio.run(run_sql_file("user_knowledge_model.sql"))
+        asyncio.run(run_sql_file("sql_tables_scripts/create_answer_facts_table.sql"))
     except Exception as error:
         print(f"Erreur : {error}")
