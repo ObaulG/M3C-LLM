@@ -181,6 +181,7 @@
             margin-right: 6px;
             border-radius: 3px;
             vertical-align: middle;
+            cursor: pointer;
         }
 
         .fact-importance-badge.badge-essential {

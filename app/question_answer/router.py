@@ -2,7 +2,9 @@
 Router FastAPI pour la génération de questions sur les documents validés.
 """
 import asyncio
-from typing import Optional
+from typing import Optional, List
+
+from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -464,6 +466,64 @@ class GenerateAnswerFactsResponse(BaseModel):
     message: str
 
 
+class UpdateFactImportanceRequest(BaseModel):
+    """Requête pour basculer l'importance d'un fait de réponse"""
+    importance: str = Field(..., description="Nouvelle importance : " + "essential" + " ou " + "optional")
+
+
+class UpdateFactImportanceResponse(BaseModel):
+    """Réponse après la mise à jour de l'importance d'un fait"""
+    success: bool
+    fact_id: int
+    importance: str
+    message: str
+
+
+@router.post(
+    "/facts/{fact_id}/update-importance",
+    response_model=UpdateFactImportanceResponse,
+    summary="Bascule l'importance d'un fait de réponse",
+    description="Met à jour l'importance (" + "essential" + "/" + "optional" + ") d'une affirmation "
+                "dans text_answer_facts et retourne la nouvelle valeur."
+)
+async def update_fact_importance(fact_id: int, request: UpdateFactImportanceRequest):
+    """
+    Met à jour l'importance d'un fait de réponse en base.
+    """
+    from database.database import update_answer_fact_importance
+
+    if request.importance not in ("essential", "optional"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="L'importance doit être " + "'essential'" + " ou " + "'optional'"
+        )
+
+    try:
+        async with await get_db_connection() as conn:
+            updated = await update_answer_fact_importance(fact_id, request.importance, conn)
+
+        if not updated:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Fait {fact_id} introuvable"
+            )
+
+        return UpdateFactImportanceResponse(
+            success=True,
+            fact_id=fact_id,
+            importance=request.importance,
+            message="Importance mise à jour avec succès"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la mise à jour de l'importance: {str(e)}"
+        )
+
+
 @router.post(
     "/answers/{answer_id}/generate-facts",
     response_model=GenerateAnswerFactsResponse,
@@ -511,7 +571,9 @@ async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small
                 )
 
             await delete_answer_facts(answer_id, conn)
-            await insert_answer_facts(answer_id, facts, conn, model=model_name)
+            fact_ids = await insert_answer_facts(answer_id, facts, conn, model=model_name)
+            for fact, fact_id in zip(facts, fact_ids):
+                fact["fact_id"] = fact_id
 
             return GenerateAnswerFactsResponse(
                 success=True,

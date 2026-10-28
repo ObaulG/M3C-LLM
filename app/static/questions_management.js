@@ -209,6 +209,26 @@ async function selectDocument(documentId) {
  * Charge les questions pour un document donné
  * @param {string} documentId - L'ID du document
  */
+/**
+ * Construit l'URL de l'API questions avec les filtres actuels
+ * @param {string} documentId - ID du document
+ * @returns {string} URL avec paramètres
+ */
+function buildQuestionsUrl(documentId) {
+    const params = new URLSearchParams();
+    params.append('include_answers', 'true');
+
+    const statusFilter = document.getElementById('statusFilter').value;
+    const difficultyFilter = document.getElementById('difficultyFilter').value;
+    const limitFilter = document.getElementById('limitFilter').value;
+
+    if (statusFilter) params.append('status_filter', statusFilter);
+    if (difficultyFilter) params.append('difficulty_filter', difficultyFilter);
+    if (limitFilter) params.append('nb_limit', limitFilter);
+
+    return `/api/questions/${encodeURIComponent(documentId)}?${params.toString()}`;
+}
+
 async function loadQuestions(documentId) {
     const loadingElement = document.getElementById('loadingQuestions');
     const contentElement = document.getElementById('questionsContent');
@@ -218,22 +238,9 @@ async function loadQuestions(documentId) {
         loadingElement.classList.add('active');
         contentElement.innerHTML = '';
 
-        // Construire l'URL avec les filtres actuels
-        const params = new URLSearchParams();
-        params.append('include_answers', 'true');
-        
-        const statusFilter = document.getElementById('statusFilter').value;
-        const difficultyFilter = document.getElementById('difficultyFilter').value;
-        const limitFilter = document.getElementById('limitFilter').value;
         const chunkFilter = document.getElementById('chunkFilter')?.value || '';
 
-        if (statusFilter) params.append('status_filter', statusFilter);
-        if (difficultyFilter) params.append('difficulty_filter', difficultyFilter);
-        if (limitFilter) params.append('nb_limit', limitFilter);
-
-        const url = `/api/questions/${encodeURIComponent(documentId)}?${params.toString()}`;
-        
-        const response = await fetch(url);
+        const url = buildQuestionsUrl(documentId);
         
         if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
@@ -320,8 +327,8 @@ function displayQuestions(questions, count) {
                     <div class="answer-facts-title">Faits de réponse (${answer.facts.length})</div>
                     <ul class="answer-facts-list">
                         ${answer.facts.map(fact => `
-                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}">
-                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
+                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
+                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
                                     ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
                                 </span>
                                 <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
@@ -602,6 +609,8 @@ function resetFilters() {
     document.getElementById('limitFilter').value = '';
     document.getElementById('chunkFilter').value = '';
     document.getElementById('modelFilter').value = '';
+    const generationModelFilter = document.getElementById('generationModelFilter');
+    if (generationModelFilter) generationModelFilter.value = '';
     
     if (currentDocumentId) {
         loadQuestions(currentDocumentId);
@@ -1388,7 +1397,7 @@ async function generateAnswerForQuestion(questionId, button) {
     }
 
     try {
-        const modelFilter = document.getElementById('modelFilter');
+        const modelFilter = document.getElementById('generationModelFilter');
         const modelName = modelFilter && modelFilter.value ? modelFilter.value : 'mistral-small';
 
         const response = await fetch('/api/admin/questions/generate-answers', {
@@ -1721,6 +1730,31 @@ async function saveQuestionChanges(questionId) {
         const result = await response.json();
         
         if (result.success) {
+            // Rafraîchir uniquement la question mise à jour, sans recharger toute la page
+            let refreshedCard = null;
+            if (currentDocumentId) {
+                const questionsResponse = await fetch(buildQuestionsUrl(currentDocumentId));
+                if (questionsResponse.ok) {
+                    const data = await questionsResponse.json();
+                    const refreshedQuestion = (data.questions || []).find(
+                        q => parseInt(q.question_id) === parseInt(questionId)
+                    );
+                    if (refreshedQuestion) {
+                        const updatedIndex = currentQuestions.findIndex(
+                            q => parseInt(q.question_id) === parseInt(questionId)
+                        );
+                        if (updatedIndex !== -1) {
+                            currentQuestions[updatedIndex] = refreshedQuestion;
+                        }
+                        const contentElement = document.getElementById('questionsContent');
+                        const previousScroll = window.scrollY;
+                        displayQuestions(currentQuestions, currentQuestions.length);
+                        window.scrollTo(0, previousScroll);
+                        refreshedCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                    }
+                }
+            }
+
             // Afficher un message de succès
             const editStatus = document.createElement('div');
             editStatus.className = 'edit-status';
@@ -1728,14 +1762,8 @@ async function saveQuestionChanges(questionId) {
             editStatus.style.marginTop = '10px';
             editStatus.style.fontWeight = 'bold';
             editStatus.textContent = 'Modifications sauvegardées avec succès !';
-            questionCard.appendChild(editStatus);
-            
-            // Recharger après un court délai
-            setTimeout(() => {
-                if (currentDocumentId) {
-                    loadQuestions(currentDocumentId);
-                }
-            }, 1000);
+            const newCard = refreshedCard || document.querySelector(`[data-question-id="${questionId}"]`);
+            if (newCard) newCard.appendChild(editStatus);
         } else {
             alert(`Erreur: ${result.message || 'Échec de la sauvegarde'}`);
         }
@@ -1839,6 +1867,57 @@ function renderKnowledgeItems(questionId, items) {
 }
 
 /**
+ * Bascule l'importance d'un fait de réponse (Essentiel <-> Facultatif) via l'API
+ * et applique la modification directement dans le DOM sans rechargement.
+ * @param {number} factId - ID du fait dans text_answer_facts
+ * @param {HTMLElement} badgeElement - Élément DOM du badge cliqué
+ */
+async function toggleFactImportance(factId, badgeElement) {
+    const factItem = badgeElement.closest('.answer-fact-item');
+    if (!factItem) return;
+
+    const currentImportance = factItem.classList.contains('importance-optional') ? 'optional' : 'essential';
+    const newImportance = currentImportance === 'optional' ? 'essential' : 'optional';
+
+    badgeElement.style.opacity = '0.5';
+    badgeElement.style.pointerEvents = 'none';
+
+    try {
+        const response = await fetch(`/api/admin/questions/facts/${factId}/update-importance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ importance: newImportance })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            factItem.classList.remove('importance-essential', 'importance-optional');
+            factItem.classList.add(`importance-${data.importance}`);
+
+            badgeElement.classList.remove('badge-essential', 'badge-optional');
+            badgeElement.classList.add(data.importance === 'optional' ? 'badge-optional' : 'badge-essential');
+            badgeElement.textContent = data.importance === 'optional' ? 'Facultatif' : 'Essentiel';
+        } else {
+            throw new Error(data.message || 'Échec de la mise à jour');
+        }
+    } catch (error) {
+        console.error('Erreur lors du basculement de l\u2019importance du fait:', error);
+        alert(`Erreur lors du changement d\u2019importance : ${error.message}`);
+    } finally {
+        badgeElement.style.opacity = '';
+        badgeElement.style.pointerEvents = '';
+    }
+}
+
+/**
  * Génère les faits de réponse d'une réponse de référence via l'API.
  * @param {number|string} answerId - ID de la réponse dans text_question_answers
  * @param {HTMLElement} button - Bouton cliqué
@@ -1858,7 +1937,10 @@ async function generateAnswerFacts(answerId, button) {
     }
 
     try {
-        const response = await fetch(`/api/admin/questions/answers/${answerId}/generate-facts?model_name=mistral-small`, {
+        const modelFilter = document.getElementById('generationModelFilter');
+        const modelName = modelFilter && modelFilter.value ? modelFilter.value : 'mistral-small';
+
+        const response = await fetch(`/api/admin/questions/answers/${answerId}/generate-facts?model_name=${encodeURIComponent(modelName)}`, {
             method: 'POST'
         });
 
@@ -1879,8 +1961,8 @@ async function generateAnswerFacts(answerId, button) {
                     <div class="answer-facts-title">Faits de réponse (${data.facts.length})</div>
                     <ul class="answer-facts-list">
                         ${data.facts.map(fact => `
-                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}">
-                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
+                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
+                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
                                     ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
                                 </span>
                                 <span class="answer-fact-content">${escapeHtml(fact.content)}</span>

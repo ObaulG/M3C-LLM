@@ -1035,6 +1035,33 @@ async def delete_answer_facts(
     return deleted
 
 
+async def update_answer_fact_importance(
+    fact_id: int,
+    importance: str,
+    conn,
+) -> bool:
+    """
+    Met à jour l'importance d'une affirmation (fait) de réponse.
+
+    Args:
+        fact_id (int): Identifiant de l'affirmation dans text_answer_facts.
+        importance (str): Nouvelle importance ("essential" ou "optional").
+        conn: Connexion à la base de données.
+
+    Returns:
+        bool: True si l'affirmation a été mise à jour, False sinon.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            UPDATE text_answer_facts
+            SET importance = %s
+            WHERE fact_id = %s
+        """, (importance, fact_id))
+        updated = cur.rowcount > 0
+        await conn.commit()
+    return updated
+
+
 async def get_facts_by_answer_ids(
     answer_ids: List[int],
     conn,
