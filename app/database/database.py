@@ -1012,6 +1012,29 @@ async def insert_answer_facts(
     return fact_ids
 
 
+async def delete_answer_facts(
+    answer_id: int,
+    conn,
+) -> int:
+    """
+    Supprime les affirmations associées à une réponse de référence.
+
+    Args:
+        answer_id (int): L'identifiant de la réponse dans text_question_answers.
+        conn: Connexion à la base de données.
+
+    Returns:
+        int: Le nombre d'affirmations supprimées.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            DELETE FROM text_answer_facts WHERE answer_id = %s
+        """, (answer_id,))
+        deleted = cur.rowcount
+        await conn.commit()
+    return deleted
+
+
 async def get_facts_by_answer_ids(
     answer_ids: List[int],
     conn,

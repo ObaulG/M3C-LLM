@@ -412,3 +412,76 @@ async def add_answer_to_question(question_id: int, request: AddAnswerRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de l'ajout de la réponse: {str(e)}"
         )
+
+
+class GenerateAnswerFactsResponse(BaseModel):
+    """Réponse après la génération des faits d'une réponse"""
+    success: bool
+    answer_id: int
+    facts: List[dict] = []
+    message: str
+
+
+@router.post(
+    "/answers/{answer_id}/generate-facts",
+    response_model=GenerateAnswerFactsResponse,
+    summary="Génère les faits (affirmations) d'une réponse de référence",
+    description="Extrait les affirmations constituant une réponse de référence via l'agent fact_extractor, "
+                "remplace les faits existants dans text_answer_facts et retourne les faits générés."
+)
+async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small"):
+    """
+    Génère les faits d'une réponse de référence et les sauvegarde en base.
+    """
+    from agents.fact_extractor import get_answer_facts_agent, FactExtractionInput
+    from database.database import insert_answer_facts, delete_answer_facts
+
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT content FROM text_question_answers WHERE answer_id = %s
+                """, (answer_id,))
+                row = await cur.fetchone()
+
+            if not row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Réponse {answer_id} introuvable"
+                )
+
+            agent = get_answer_facts_agent(model=model_name)
+            output = agent.run(FactExtractionInput(paragraph=row[0]))
+            facts = [
+                {
+                    "content": f.content,
+                    "importance": f.importance if f.importance in ("essential", "optional") else "essential",
+                }
+                for f in output.facts
+            ]
+
+            if not facts:
+                return GenerateAnswerFactsResponse(
+                    success=False,
+                    answer_id=answer_id,
+                    facts=[],
+                    message="Aucun fait n'a pu être extrait de cette réponse"
+                )
+
+            await delete_answer_facts(answer_id, conn)
+            await insert_answer_facts(answer_id, facts, conn, model=model_name)
+
+            return GenerateAnswerFactsResponse(
+                success=True,
+                answer_id=answer_id,
+                facts=facts,
+                message=f"{len(facts)} fait(s) généré(s) avec succès"
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la génération des faits: {str(e)}"
+        )
