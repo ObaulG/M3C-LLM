@@ -241,7 +241,8 @@ async function loadQuestions(documentId) {
         const chunkFilter = document.getElementById('chunkFilter')?.value || '';
 
         const url = buildQuestionsUrl(documentId);
-        
+
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
