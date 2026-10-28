@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 import database
-from database.database import get_db_connection, get_questions_by_document_id
+from database.database import get_db_connection, get_questions_by_document_id, get_facts_by_answer_ids
 from question_answer.generation_services import generate_questions_single_answer_for_chunk
 
 router = APIRouter(tags=["Questions", "Admin"])
@@ -147,7 +147,8 @@ async def get_questions_for_document(
     include_answers: bool = True,
     status_filter: Optional[str] = None,
     difficulty_filter: Optional[int] = None,
-    nb_limit: Optional[int] = None
+    nb_limit: Optional[int] = None,
+    include_facts: bool = True
 ):
     """
     Récupère toutes les questions/réponses pour un document spécifique.
@@ -158,6 +159,7 @@ async def get_questions_for_document(
         status_filter: Filtre par statut (ex: "generated", "validated")
         difficulty_filter: Filtre par niveau de difficulté (1-5)
         nb_limit: Limite le nombre de questions retournées
+        include_facts: Si True, inclut les faits (affirmations) extraits de chaque réponse
         
     Returns:
         QuestionsListResponse: Liste des questions avec leurs réponses
@@ -171,6 +173,19 @@ async def get_questions_for_document(
                 difficulty_filter=difficulty_filter,
                 nb_limit=nb_limit
             )
+
+            if include_facts and include_answers:
+                answer_ids = [
+                    answer.get("answer_id")
+                    for q in questions
+                    for answer in q.get("answers", [])
+                    if answer.get("answer_id") is not None
+                ]
+                if answer_ids:
+                    facts_by_answer = await get_facts_by_answer_ids(answer_ids, conn)
+                    for q in questions:
+                        for answer in q.get("answers", []):
+                            answer["facts"] = facts_by_answer.get(answer.get("answer_id"), [])
 
         # Convertir en QuestionResponse
         question_responses = []

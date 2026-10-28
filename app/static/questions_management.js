@@ -312,6 +312,26 @@ function displayQuestions(questions, count) {
         const llmAnswerContent = llmAnswer ? escapeHtml(llmAnswer.content) : '';
         const llmAnswerId = llmAnswer ? (llmAnswer.answer_id || llmAnswer.id || '') : '';
 
+        // Formater les faits de réponse (affirmations extraites) pour une réponse
+        const answerFactsHtml = (answer) => {
+            if (!answer.facts || answer.facts.length === 0) return '';
+            return `
+                <div class="answer-facts">
+                    <div class="answer-facts-title">Faits de réponse (${answer.facts.length})</div>
+                    <ul class="answer-facts-list">
+                        ${answer.facts.map(fact => `
+                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}">
+                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
+                                    ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
+                                </span>
+                                ${escapeHtml(fact.content)}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        };
+
         // Formater les réponses
         const answersHtml = question.answers.length > 0 ? `
             <div class="answers-section">
@@ -321,6 +341,7 @@ function displayQuestions(questions, count) {
                         <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
                         ${answer.is_correct ? '<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>' : ''}
                         ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
+                        ${answerFactsHtml(answer)}
                     </div>
                 `).join('')}
             </div>
