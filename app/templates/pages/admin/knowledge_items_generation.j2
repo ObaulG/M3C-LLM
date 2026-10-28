@@ -126,7 +126,7 @@
 
                 <div class="form-group">
                     <label for="modelSelect">3. Modèle LLM</label>
-                    <select id="modelSelect"></select>
+                    <select id="modelSelect"><option value="">Modèle par défaut (mistral-small)</option></select>
                     <div class="description">Modèle utilisé pour l'extraction des knowledge_items</div>
                 </div>
 
@@ -197,6 +197,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
 <script>
     const API_BASE = window.location.origin;
     const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
@@ -213,6 +214,7 @@
     document.addEventListener('DOMContentLoaded', loadInitialData);
 
     async function loadInitialData() {
+        loadModelsIntoSelect(document.getElementById('modelSelect'), { prefixProvider: true, keepFirst: true });
         renderGeneratedItems([], 'knowledgeItemsContainer');
         renderGeneratedItems([], 'knowledgeItemsFromQuestionsContainer');
         updateColumnButtons();

@@ -139,7 +139,7 @@
 
                 <div class="form-group">
                     <label for="modelSelect">3. Modèle LLM</label>
-                    <select id="modelSelect"></select>
+                    <select id="modelSelect"><option value="">Modèle par défaut (mistral-small)</option></select>
                     <div class="description">Modèle utilisé pour l'extraction des knowledge_items</div>
                 </div>
 
@@ -224,6 +224,7 @@
     document.addEventListener('DOMContentLoaded', loadInitialData);
 
     async function loadInitialData() {
+        loadModelsIntoSelect(document.getElementById('modelSelect'), { prefixProvider: true, keepFirst: true });
         renderGeneratedItems([], 'knowledgeItemsContainer');
         renderGeneratedItems([], 'knowledgeItemsFromQuestionsContainer');
         updateColumnButtons();
@@ -701,6 +702,7 @@
     }
 </script>
 
+<script src="../models.js"></script>
 <script src="../auth_widget.js"></script>
 </body>
 </html>
