@@ -264,6 +264,90 @@
             background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
         }
 
+        .evaluation-mode-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ffe0e0;
+        }
+
+        .evaluation-mode-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #b74420;
+        }
+
+        .evaluation-mode-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .evaluation-comparison {
+            margin-top: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .evaluation-comparison h5 {
+            margin: 0 0 10px 0;
+            color: #b74420;
+            font-size: 14px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .comparison-column {
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .comparison-references {
+            background: #f0f7ff;
+            border: 1px solid #b3d9ff;
+        }
+
+        .comparison-facts {
+            background: #f5fff0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .comparison-column h6 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+        }
+
+        .comparison-column p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .comparison-summary {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #b74420;
+        }
+
+        @media (max-width: 700px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .evaluation-result {
             margin-top: 15px;
             padding: 12px;
