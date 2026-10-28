@@ -336,14 +336,18 @@ function displayQuestions(questions, count) {
         const answersHtml = question.answers.length > 0 ? `
             <div class="answers-section">
                 <div class="answers-title">Réponses (${question.answers.length})</div>
-                ${question.answers.map((answer, index) => `
-                    <div class="answer-item" data-answer-index="${index}" data-answer-id="${answer.answer_id || answer.id || ''}">
+                ${question.answers.map((answer, index) => {
+                    const answerId = answer.answer_id || answer.id || '';
+                    return `
+                    <div class="answer-item" data-answer-index="${index}" data-answer-id="${answerId}">
                         <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
                         ${answer.is_correct ? '<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>' : ''}
                         ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
-                        ${answerFactsHtml(answer)}
+                        ${answerId ? `<button class="btn btn-generate-facts" onclick="generateAnswerFacts(${answerId}, this)" title="Générer les faits de réponse via l'agent d'extraction">✨ Faits</button>` : ''}
+                        <div class="answer-facts-container">${answerFactsHtml(answer)}</div>
+                        <div class="generation-status" id="facts-status-${answerId}" style="display: none;"></div>
                     </div>
-                `).join('')}
+                `;}).join('')}
             </div>
         ` : '';
 
@@ -1578,4 +1582,69 @@ function renderKnowledgeItems(questionId, items) {
     }).join('');
 
     container.innerHTML = itemsHtml;
+}
+
+/**
+ * Génère les faits de réponse d'une réponse de référence via l'API.
+ * @param {number|string} answerId - ID de la réponse dans text_question_answers
+ * @param {HTMLElement} button - Bouton cliqué
+ */
+async function generateAnswerFacts(answerId, button) {
+    const statusElement = document.getElementById(`facts-status-${answerId}`);
+    const factsContainer = button ? button.closest('.answer-item').querySelector('.answer-facts-container') : null;
+    const originalButtonText = button ? button.innerHTML : '✨ Faits';
+
+    if (button) {
+        button.innerHTML = '⏳ Génération...';
+        button.disabled = true;
+    }
+    if (statusElement) {
+        statusElement.style.display = 'block';
+        statusElement.innerHTML = '<span style="color: #007bff;">Génération des faits en cours...</span>';
+    }
+
+    try {
+        const response = await fetch(`/api/admin/questions/answers/${answerId}/generate-facts?model_name=mistral-small`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (statusElement) {
+            statusElement.innerHTML = `<span style="color: ${data.success ? '#28a745' : '#dc3545'};">${escapeHtml(data.message)}</span>`;
+        }
+
+        if (data.success && data.facts && data.facts.length > 0 && factsContainer) {
+            factsContainer.innerHTML = `
+                <div class="answer-facts">
+                    <div class="answer-facts-title">Faits de réponse (${data.facts.length})</div>
+                    <ul class="answer-facts-list">
+                        ${data.facts.map(fact => `
+                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}">
+                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}">
+                                    ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
+                                </span>
+                                ${escapeHtml(fact.content)}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Erreur lors de la génération des faits:', error);
+        if (statusElement) {
+            statusElement.innerHTML = `<span style="color: #dc3545;">Erreur: ${escapeHtml(error.message)}</span>`;
+        }
+    } finally {
+        if (button) {
+            button.innerHTML = originalButtonText;
+            button.disabled = false;
+        }
+    }
 }
