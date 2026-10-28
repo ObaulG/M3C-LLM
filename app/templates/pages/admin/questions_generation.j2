@@ -191,7 +191,7 @@
 
                 <div class="form-group">
                     <label for="modelSelect">Modèle LLM</label>
-                    <select id="modelSelect"></select>
+                    <select id="modelSelect"><option value="">Modèle par défaut (mistral-small)</option></select>
                     <div class="description">Modèle à utiliser pour la génération des questions</div>
                 </div>
 
@@ -267,6 +267,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ static_prefix }}models.js"></script>
 <script>
     // Configuration de l'API
     const API_BASE = window.location.origin || window.location.protocol + '//' + window.location.host;
@@ -522,6 +523,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         refreshStats();
         refreshJobs();
+        loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
     });
 </script>
 {% endblock %}
