@@ -609,6 +609,8 @@ function resetFilters() {
     document.getElementById('limitFilter').value = '';
     document.getElementById('chunkFilter').value = '';
     document.getElementById('modelFilter').value = '';
+    const generationModelFilter = document.getElementById('generationModelFilter');
+    if (generationModelFilter) generationModelFilter.value = '';
     
     if (currentDocumentId) {
         loadQuestions(currentDocumentId);
@@ -1395,7 +1397,7 @@ async function generateAnswerForQuestion(questionId, button) {
     }
 
     try {
-        const modelFilter = document.getElementById('modelFilter');
+        const modelFilter = document.getElementById('generationModelFilter');
         const modelName = modelFilter && modelFilter.value ? modelFilter.value : 'mistral-small';
 
         const response = await fetch('/api/admin/questions/generate-answers', {
@@ -1935,7 +1937,10 @@ async function generateAnswerFacts(answerId, button) {
     }
 
     try {
-        const response = await fetch(`/api/admin/questions/answers/${answerId}/generate-facts?model_name=mistral-small`, {
+        const modelFilter = document.getElementById('generationModelFilter');
+        const modelName = modelFilter && modelFilter.value ? modelFilter.value : 'mistral-small';
+
+        const response = await fetch(`/api/admin/questions/answers/${answerId}/generate-facts?model_name=${encodeURIComponent(modelName)}`, {
             method: 'POST'
         });
 

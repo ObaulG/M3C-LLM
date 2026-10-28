@@ -170,6 +170,11 @@
                 <select id="modelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
             </div>
 
+            <div class="filter-group">
+                <label for="generationModelFilter">Modèle LLM pour la génération (réponses et faits)</label>
+                <select id="generationModelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
+            </div>
+
             <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
             <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 10px;">Réinitialiser</button>
         </div>
@@ -245,6 +250,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
+    loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true });
   });
 </script>
 
