@@ -299,8 +299,9 @@ from typing import List, Optional
 
 class GenerateAnswersRequest(BaseModel):
     """Requête pour générer des réponses à une question"""
-    question_text: str = Field(..., description="Texte de la question")
-    document_context: str = Field(..., description="Contexte du document")
+    question_text: Optional[str] = Field(default=None, description="Texte de la question ( requis si question_id absent)")
+    document_context: Optional[str] = Field(default=None, description="Contexte du document (requis si question_id absent)")
+    question_id: Optional[int] = Field(default=None, description="ID de la question existante : la question et son contexte (chunks) sont récupérés en base")
     num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
     model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
 
@@ -322,32 +323,73 @@ async def generate_answers(request: GenerateAnswersRequest):
     """
     Génère des réponses multiples pour une question.
     Utilise l'agent qa_agent pour générer les réponses.
+    Si question_id est fourni, la question et son contexte (chunks associés)
+    sont récupérés depuis la base de données.
     """
     from agents import qa_agent
-    
+
+    question_text = request.question_text
+    document_context = request.document_context
+
+    if request.question_id is not None:
+        if question_text or document_context:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Fournissez soit question_id, soit question_text + document_context, mais pas les deux."
+            )
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT content FROM text_questions WHERE question_id = %s
+                """, (request.question_id,))
+                row = await cur.fetchone()
+                if not row:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Question {request.question_id} introuvable"
+                    )
+                question_text = row[0]
+
+                await cur.execute("""
+                    SELECT c.content
+                    FROM text_question_chunks qc
+                    JOIN text_chunks c ON c.id = qc.chunk_id
+                    WHERE qc.question_id = %s
+                    ORDER BY c.num_page, c.position_in_page
+                """, (request.question_id,))
+                chunk_rows = await cur.fetchall()
+
+        document_context = "\n\n".join(row[0] for row in chunk_rows) if chunk_rows else ""
+
+    if not question_text or not document_context:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="question_id (existant en base) ou question_text + document_context sont requis."
+        )
+
     # Définir provider et model
     provider, model = tuple(request.model_name.split("/")) if "/" in request.model_name else ("mistral", request.model_name)
-    
+
     agent = qa_agent.get_qa_agent(model=model, provider=provider, async_mode=True)
-    
+
     input_schema = qa_agent.QuestionRequestInput(
         message=(
-            f"Question: {request.question_text}\n\n"
+            f"Question: {question_text}\n\n"
             f"Génère exactement {request.num_answers} réponses différentes à la question ci-dessus, "
             f"en t'appuyant uniquement sur le contexte fourni. Ne génère aucune question."
         ),
-        document=request.document_context,
+        document=document_context,
         num_questions=1,
         num_answers_per_question=request.num_answers
     )
-    
+
     response = await agent.run_async(input_schema)
-    
+
     # Récupérer les réponses de la première question (unique) générée
     answers = response.questions_answers[0].answers_text[:request.num_answers] if response.questions_answers else []
-    
+
     return GenerateAnswersResponse(
-        question=request.question_text,
+        question=question_text,
         answers=answers,
         model_used=request.model_name
     )
