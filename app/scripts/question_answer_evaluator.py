@@ -56,7 +56,8 @@ try:
         EvaluationResult,
         from_AgentEvaluationResult_to_EvaluationResult
     )
-    from app.database.database import get_db_connection, get_question_by_id
+    from app.database.database import get_db_connection, get_question_by_id, get_facts_by_question_ids
+    from app.agents.fact_extractor import get_fact_presence_agent, FactPresenceInput
     from app.agents.token_monitor import monitor_agent_call, monitor_agent_call_async
     logger.info("Tous les imports du projet réussis")
 except ImportError as e:
@@ -100,6 +101,69 @@ class IndividualEvaluation:
     
     def __repr__(self) -> str:
         return f"IndividualEvaluation({self.model}, score={self.score}, num_ref={self.num_reference_answers})"
+
+
+class FactEvaluation:
+    """Résultat d'une évaluation par les faits (présence des affirmations) par un modèle."""
+
+    VERDICT_WEIGHTS = {
+        "present": 1.0,
+        "partial": 0.5,
+        "absent": 0.0,
+    }
+
+    IMPORTANCE_WEIGHTS = {
+        "essential": 3.0,
+        "optional": 1.0,
+    }
+
+    def __init__(
+        self,
+        model: str,
+        provider: str,
+        score: float,
+        judgements: List[Dict[str, Any]],
+        execution_time: float,
+        num_facts: int
+    ):
+        self.model = model
+        self.provider = provider
+        self.score = score
+        self.judgements = judgements
+        self.execution_time = execution_time
+        self.num_facts = num_facts
+
+    @classmethod
+    def compute_score(cls, facts: List[Dict[str, Any]], judgements: List[Any]) -> float:
+        """Score agrégé sur 10: moyenne pondérée par verdict et importance."""
+        if not facts:
+            return 0.0
+        by_index = {j.fact_index: j for j in judgements}
+        total = 0.0
+        weight_sum = 0.0
+        for i, fact in enumerate(facts):
+            j = by_index.get(i)
+            verdict = j.verdict if j else "absent"
+            weight = cls.IMPORTANCE_WEIGHTS.get(fact.get("importance", "essential"), 3.0)
+            total += cls.VERDICT_WEIGHTS.get(verdict, 0.0) * weight
+            weight_sum += weight
+        if weight_sum == 0:
+            return 0.0
+        return round(10.0 * total / weight_sum, 2)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convertit en dictionnaire pour export JSON."""
+        return {
+            "model": self.model,
+            "provider": self.provider,
+            "score": self.score,
+            "judgements": self.judgements,
+            "execution_time": round(self.execution_time, 3),
+            "num_facts": self.num_facts
+        }
+
+    def __repr__(self) -> str:
+        return f"FactEvaluation({self.model}, score={self.score}, num_facts={self.num_facts})"
 
 
 class CombinationResult:
@@ -147,7 +211,9 @@ class QuestionResult:
         expected_score: int,
         individual_evaluations: List[IndividualEvaluation],
         combination_results: List[CombinationResult],
-        total_execution_time: float
+        total_execution_time: float,
+        fact_evaluations: Optional[List[FactEvaluation]] = None,
+        facts: Optional[List[Dict[str, Any]]] = None
     ):
         self.question_id = question_id
         self.question_text = question_text
@@ -156,6 +222,8 @@ class QuestionResult:
         self.individual_evaluations = individual_evaluations
         self.combination_results = combination_results
         self.total_execution_time = total_execution_time
+        self.fact_evaluations = fact_evaluations or []
+        self.facts = facts or []
     
     def to_dict(self) -> Dict[str, Any]:
         """Convertit en dictionnaire pour export JSON."""
@@ -166,6 +234,8 @@ class QuestionResult:
             "expected_score": self.expected_score,
             "individual_evaluations": [e.to_dict() for e in self.individual_evaluations],
             "combination_results": [c.to_dict() for c in self.combination_results],
+            "fact_evaluations": [fe.to_dict() for fe in self.fact_evaluations],
+            "num_facts": len(self.facts),
             "total_execution_time": round(self.total_execution_time, 3)
         }
     
@@ -531,6 +601,142 @@ class QuestionAnswerEvaluator:
         logger.info(f"Terminé: {len(individual_evaluations)} évaluations individuelles")
         return individual_evaluations, question_text, expected_answers
 
+    def _get_cached_fact_presence_evaluator(self, model_name: str, provider: str) -> Any:
+        """
+        Récupère ou crée un agent de présence des faits et le met en cache.
+
+        Args:
+            model_name: Nom du modèle
+            provider: Fournisseur (mistral, ollama, google)
+
+        Returns:
+            Agent de jugement de présence des faits
+        """
+        cache_key = ("fact_presence", model_name, provider)
+        if cache_key not in self._agent_cache:
+            logger.info(f"Création de l'agent de présence des faits pour {provider}:{model_name}")
+            self._agent_cache[cache_key] = get_fact_presence_agent(model_name, provider, async_mode=True)
+        return self._agent_cache[cache_key]
+
+    async def _get_question_facts(self, question_id: str) -> List[Dict[str, Any]]:
+        """
+        Récupère les affirmations (faits) stockées pour une question.
+
+        Args:
+            question_id: ID de la question
+
+        Returns:
+            Liste de dictionnaires représentant les faits
+        """
+        try:
+            async with await get_db_connection() as conn:
+                facts_by_question = await get_facts_by_question_ids([int(question_id)], conn)
+            return facts_by_question.get(int(question_id), [])
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des faits de la question {question_id}: {str(e)}")
+            return []
+
+    async def _evaluate_facts_with_all_models(
+        self,
+        question_data: Dict[str, Any],
+        facts: List[Dict[str, Any]]
+    ) -> List[FactEvaluation]:
+        """
+        Évalue la réponse humaine par vérification de présence des faits,
+        avec chaque modèle disponible.
+
+        Args:
+            question_data: Dictionnaire avec question_id, human_answer, expected_score
+            facts: Liste des faits (affirmations) de la réponse de référence
+
+        Returns:
+            Liste de FactEvaluation, une par modèle
+        """
+        if not facts:
+            logger.warning(
+                f"Pas de faits stockés pour la question {question_data['question_id']}, "
+                "évaluation par les faits ignorée"
+            )
+            return []
+
+        all_models = self._get_all_models()
+        logger.info(
+            f"Évaluation par les faits de la question {question_data['question_id']} "
+            f"avec {len(all_models)} modèle(s) ({len(facts)} fait(s))..."
+        )
+
+        coroutines = []
+        for model_name, provider in all_models:
+            agent = self._get_cached_fact_presence_evaluator(model_name, provider)
+            start_time = time.time()
+
+            async def _evaluate_model_facts(
+                agent,
+                model_name: str,
+                provider: str,
+                start_time: float,
+                facts: List[Dict[str, Any]],
+                human_answer: str
+            ) -> FactEvaluation:
+                """
+                Juge la présence des faits avec un seul modèle.
+                """
+                try:
+                    fact_contents = [f.get("content", "") for f in facts]
+                    evaluation_input = FactPresenceInput(
+                        user_answer=human_answer,
+                        facts=fact_contents
+                    )
+                    result = await monitor_agent_call_async(
+                        agent,
+                        evaluation_input,
+                        "run_async"
+                    )
+                    eval_result, token_count, output_tokens = result
+                    exec_time = time.time() - start_time
+
+                    judgements = [
+                        {
+                            "fact_index": j.fact_index,
+                            "verdict": j.verdict,
+                            "justification": j.justification
+                        }
+                        for j in eval_result.judgements
+                    ]
+                    score = FactEvaluation.compute_score(facts, eval_result.judgements)
+
+                    return FactEvaluation(
+                        model=model_name,
+                        provider=provider,
+                        score=score,
+                        judgements=judgements,
+                        execution_time=exec_time,
+                        num_facts=len(facts)
+                    )
+                except Exception as e:
+                    logger.error(f"Erreur avec {model_name} ({provider}, faits): {str(e)}")
+                    return FactEvaluation(
+                        model=model_name,
+                        provider=provider,
+                        score=0,
+                        judgements=[],
+                        execution_time=0,
+                        num_facts=len(facts)
+                    )
+
+            coroutines.append(_evaluate_model_facts(
+                agent, model_name, provider, start_time, facts, question_data["human_answer"]
+            ))
+
+        fact_evaluations = list(await asyncio.gather(*coroutines))
+
+        logger.info(
+            f"Terminé: {len(fact_evaluations)} évaluation(s) par les faits "
+            f"(score moyen: {sum(fe.score for fe in fact_evaluations) / len(fact_evaluations):.2f}/10)"
+            if fact_evaluations else "Terminé: aucune évaluation par les faits"
+        )
+        return fact_evaluations
+
     def _calculate_all_combinations(
         self, 
         evaluations: List[IndividualEvaluation]
@@ -590,6 +796,7 @@ class QuestionAnswerEvaluator:
         Évalue complètement une question:
         1. Évalue avec tous les modèles
         2. Calcule toutes les combinaisons
+        3. Évalue par les faits (présence des affirmations) avec tous les modèles
         
         Args:
             question_data: Dictionnaire avec les données de la question
@@ -607,6 +814,10 @@ class QuestionAnswerEvaluator:
         # Étape 2: Calculer toutes les combinaisons (pour chaque nombre de réponses de référence)
         combination_results = self._calculate_all_combinations(individual_evaluations)
         
+        # Étape 3: Évaluer par les faits avec tous les modèles
+        facts = await self._get_question_facts(question_data["question_id"])
+        fact_evaluations = await self._evaluate_facts_with_all_models(question_data, facts)
+        
         total_time = time.time() - start_time
         
         return QuestionResult(
@@ -616,7 +827,9 @@ class QuestionAnswerEvaluator:
             expected_score=question_data["expected_score"],
             individual_evaluations=individual_evaluations,
             combination_results=combination_results,
-            total_execution_time=total_time
+            total_execution_time=total_time,
+            fact_evaluations=fact_evaluations,
+            facts=facts
         )
     
     async def run_full_evaluation(self) -> List[QuestionResult]:
@@ -652,7 +865,9 @@ class QuestionAnswerEvaluator:
                     expected_score=question_data["expected_score"],
                     individual_evaluations=[],
                     combination_results=[],
-                    total_execution_time=0
+                    total_execution_time=0,
+                    fact_evaluations=[],
+                    facts=[]
                 ))
         
         logger.info(f"\nÉvaluation complète terminée! {len(results)} questions traitées")
@@ -722,6 +937,29 @@ class QuestionAnswerEvaluator:
                     "score": ie.score,
                     "feedback": ie.feedback,
                     "execution_time": round(ie.execution_time, 3)
+                })
+            
+            # Ajouter les évaluations par les faits
+            for fe in question_result.fact_evaluations:
+                nb_verdicts = {"present": 0, "partial": 0, "absent": 0}
+                for j in fe.judgements:
+                    verdict = j.get("verdict")
+                    if verdict in nb_verdicts:
+                        nb_verdicts[verdict] += 1
+                csv_data.append({
+                    "question_id": question_id,
+                    "question_text": question_text,
+                    "human_answer": human_answer,
+                    "expected_score": expected_score,
+                    "type": "facts",
+                    "model": f"{fe.provider}:{fe.model}",
+                    "num_reference_answers": fe.num_facts,
+                    "score": fe.score,
+                    "feedback": json.dumps(fe.judgements, ensure_ascii=False),
+                    "nb_present": nb_verdicts["present"],
+                    "nb_partial": nb_verdicts["partial"],
+                    "nb_absent": nb_verdicts["absent"],
+                    "execution_time": round(fe.execution_time, 3)
                 })
             
             # Ajouter les combinaisons
@@ -816,6 +1054,30 @@ class QuestionAnswerEvaluator:
             report += f"| {model} | {model_avg_scores[model]:.2f} | {model_counts[model]} |\n"
         report += "\n"
         
+        # ===== SCORES MOYENS PAR MODÈLE (ÉVALUATION PAR LES FAITS) =====
+        report += "## \U0001f50d Scores moyens par modèle (évaluation par les faits)\n\n"
+        
+        facts_model_scores = {}
+        facts_model_counts = {}
+        for qr in results:
+            for fe in qr.fact_evaluations:
+                model_key = f"{fe.provider}:{fe.model}"
+                facts_model_scores.setdefault(model_key, 0.0)
+                facts_model_counts.setdefault(model_key, 0)
+                facts_model_scores[model_key] += fe.score
+                facts_model_counts[model_key] += 1
+        
+        if facts_model_scores:
+            report += "| Modèle | Score moyen (faits) | Nombre d'évaluations |\n"
+            report += "|--------|--------------------|---------------------|\n"
+            for model in sorted(facts_model_scores.keys()):
+                count = facts_model_counts[model]
+                avg = facts_model_scores[model] / count if count else 0
+                report += f"| {model} | {avg:.2f} | {count} |\n"
+            report += "\n"
+        else:
+            report += "_Aucune évaluation par les faits disponible (faits non stockés en base)._\n\n"
+        
         # ===== SCORES MOYENS PAR NOMBRE DE RÉPONSES DE RÉFÉRENCE =====
         report += "## 📏 Scores moyens par nombre de réponses de référence\n\n"
         
@@ -871,6 +1133,24 @@ class QuestionAnswerEvaluator:
                 diff = abs(avg - qr.expected_score)
                 report += f"| {num_ref} | {avg:.2f}/10 | {diff:.2f} |\n"
             report += "\n"
+            
+            # Évaluations par les faits
+            if qr.fact_evaluations:
+                report += "### \U0001f50d Évaluations par les faits\n\n"
+                report += f"**Nombre de faits (affirmations) de référence**: {len(qr.facts)}\n\n"
+                report += "| Modèle | Nb faits | Présents | Partiels | Absents | Score | Temps (s) |\n"
+                report += "|--------|----------|----------|----------|---------|-------|-----------|\n"
+                for fe in sorted(qr.fact_evaluations, key=lambda x: -x.score):
+                    nb = {"present": 0, "partial": 0, "absent": 0}
+                    for j in fe.judgements:
+                        verdict = j.get("verdict")
+                        if verdict in nb:
+                            nb[verdict] += 1
+                    report += (
+                        f"| {fe.provider}:{fe.model} | {fe.num_facts} | {nb['present']} | "
+                        f"{nb['partial']} | {nb['absent']} | {fe.score}/10 | {fe.execution_time:.3f} |\n"
+                    )
+                report += "\n"
             
             # Meilleure combinaison
             best_combo = qr.get_best_combination()
