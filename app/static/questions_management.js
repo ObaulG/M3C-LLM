@@ -1308,12 +1308,25 @@ function enableQuestionEditing(questionId) {
     if (answersSection) {
         // Vérifier si le bouton "Ajouter une réponse" existe déjà
         if (!answersSection.querySelector('.btn-add-answer')) {
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'answers-action-buttons';
+            buttonsDiv.style.marginTop = '10px';
+
             const addAnswerButton = document.createElement('button');
             addAnswerButton.className = 'btn btn-secondary btn-add-answer';
             addAnswerButton.textContent = 'Ajouter une réponse';
             addAnswerButton.onclick = () => addNewAnswerField(questionId);
-            addAnswerButton.style.marginTop = '10px';
-            answersSection.appendChild(addAnswerButton);
+
+            const generateAnswerButton = document.createElement('button');
+            generateAnswerButton.className = 'btn btn-secondary btn-generate-answer';
+            generateAnswerButton.textContent = '✨ Générer une réponse';
+            generateAnswerButton.title = 'Générer une réponse via l\u2019agent LLM à partir de la question et de son contexte';
+            generateAnswerButton.style.marginLeft = '10px';
+            generateAnswerButton.onclick = () => generateAnswerForQuestion(questionId, generateAnswerButton);
+
+            buttonsDiv.appendChild(addAnswerButton);
+            buttonsDiv.appendChild(generateAnswerButton);
+            answersSection.appendChild(buttonsDiv);
         }
     }
     
@@ -1334,7 +1347,7 @@ function enableQuestionEditing(questionId) {
 function addNewAnswerField(questionId) {
     const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
     const answersSection = questionCard.querySelector('.answers-section');
-    const addAnswerButton = answersSection.querySelector('.btn-add-answer');
+    const actionButtons = answersSection.querySelector('.answers-action-buttons') || answersSection.querySelector('.btn-add-answer');
     
     const newAnswerDiv = document.createElement('div');
     newAnswerDiv.className = 'answer-item editing new-answer-item';
@@ -1356,7 +1369,74 @@ function addNewAnswerField(questionId) {
     newAnswerDiv.appendChild(answerTextarea);
     newAnswerDiv.appendChild(deleteButton);
     
-    answersSection.insertBefore(newAnswerDiv, addAnswerButton);
+    answersSection.insertBefore(newAnswerDiv, actionButtons);
+}
+
+/**
+ * Génère une réponse à la question via l'agent LLM (endpoint /api/admin/questions/generate-answers)
+ * et l'ajoute comme nouveau champ de réponse dans le formulaire d'édition.
+ * La réponse générée est sauvegardée en base uniquement lorsque l'utilisateur clique sur « Sauvegarder ».
+ * @param {number} questionId - ID de la question
+ * @param {HTMLElement} button - Bouton cliqué
+ */
+async function generateAnswerForQuestion(questionId, button) {
+    const originalButtonText = button ? button.innerHTML : '✨ Générer une réponse';
+
+    if (button) {
+        button.innerHTML = '⏳ Génération...';
+        button.disabled = true;
+    }
+
+    try {
+        const modelFilter = document.getElementById('modelFilter');
+        const modelName = modelFilter && modelFilter.value ? modelFilter.value : 'mistral-small';
+
+        const response = await fetch('/api/admin/questions/generate-answers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question_id: questionId,
+                num_answers: 1,
+                model_name: modelName
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.answers || data.answers.length === 0) {
+            throw new Error('L\u2019agent n\u2019a généré aucune réponse');
+        }
+
+        // Basculer la question en mode édition si nécessaire
+        const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+        if (questionCard && !questionCard.classList.contains('edit-mode')) {
+            enableQuestionEditing(questionId);
+        }
+
+        // Ajouter la réponse générée dans un nouveau champ
+        addNewAnswerField(questionId);
+        const newFields = document.querySelectorAll(`[data-question-id="${questionId}"] .new-answer-item .editable-answer-text`);
+        const newField = newFields[newFields.length - 1];
+        if (newField) {
+            newField.value = data.answers[0];
+            newField.dataset.generatedBy = data.model_used || '';
+        }
+    } catch (error) {
+        console.error('Erreur lors de la génération de la réponse:', error);
+        alert(`Erreur lors de la génération de la réponse : ${error.message}`);
+    } finally {
+        if (button) {
+            button.innerHTML = originalButtonText;
+            button.disabled = false;
+        }
+    }
 }
 
 /**
@@ -1472,12 +1552,25 @@ function enableQuestionEditing(questionId) {
     if (answersSection) {
         // Vérifier si le bouton existe déjà
         if (!answersSection.querySelector('.btn-add-answer')) {
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'answers-action-buttons';
+            buttonsDiv.style.marginTop = '10px';
+
             const addAnswerButton = document.createElement('button');
             addAnswerButton.className = 'btn btn-secondary btn-add-answer';
             addAnswerButton.textContent = 'Ajouter une réponse';
             addAnswerButton.onclick = () => addNewAnswerField(questionId);
-            addAnswerButton.style.marginTop = '10px';
-            answersSection.appendChild(addAnswerButton);
+
+            const generateAnswerButton = document.createElement('button');
+            generateAnswerButton.className = 'btn btn-secondary btn-generate-answer';
+            generateAnswerButton.textContent = '✨ Générer une réponse';
+            generateAnswerButton.title = 'Générer une réponse via l\u2019agent LLM à partir de la question et de son contexte';
+            generateAnswerButton.style.marginLeft = '10px';
+            generateAnswerButton.onclick = () => generateAnswerForQuestion(questionId, generateAnswerButton);
+
+            buttonsDiv.appendChild(addAnswerButton);
+            buttonsDiv.appendChild(generateAnswerButton);
+            answersSection.appendChild(buttonsDiv);
         }
     }
     
@@ -1498,7 +1591,7 @@ function enableQuestionEditing(questionId) {
 function addNewAnswerField(questionId) {
     const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
     const answersSection = questionCard.querySelector('.answers-section');
-    const addAnswerButton = answersSection.querySelector('.btn-add-answer');
+    const actionButtons = answersSection.querySelector('.answers-action-buttons') || answersSection.querySelector('.btn-add-answer');
     
     const newAnswerDiv = document.createElement('div');
     newAnswerDiv.className = 'answer-item editing new-answer-item';
@@ -1520,7 +1613,7 @@ function addNewAnswerField(questionId) {
     newAnswerDiv.appendChild(answerTextarea);
     newAnswerDiv.appendChild(deleteButton);
     
-    answersSection.insertBefore(newAnswerDiv, addAnswerButton);
+    answersSection.insertBefore(newAnswerDiv, actionButtons);
 }
 
 /**
