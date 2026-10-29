@@ -32,6 +32,10 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="ID du chunk spécifique à traiter. Si fourni, prioritaire sur document_id."
     )
+    user_prompt: Optional[str] = Field(
+        default=None,
+        description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
+    )
 
 class QuestionGenerationResult(BaseModel):
     """Résultat de génération pour un document."""

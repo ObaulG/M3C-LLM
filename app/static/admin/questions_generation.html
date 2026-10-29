@@ -131,6 +131,30 @@
         flex-direction: column;
         gap: 10px;
     }
+    .prompt-commands { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .prompt-command-chip {
+        background: #f1f3f5;
+        border: 1px solid #d0d4d8;
+        color: #444;
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    .prompt-command-chip:hover { background: #fbe9e4; border-color: #b74420; color: #b74420; }
+    #userPrompt {
+        width: 100%;
+        min-height: 90px;
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+    }
+    #userPrompt:focus { outline: none; border-color: #b74420; }
+    .prompt-command-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
     @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
 </style>
 <link rel="stylesheet" href="../admin/admin.css">
@@ -231,6 +255,14 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="userPrompt">Instructions personnalisées (optionnel)</label>
+                    <div class="description">Adaptez la génération de questions/réponses au contenu du document. Ces instructions seront intégrées au prompt de l'agent de génération.</div>
+                    <div class="prompt-command-title">Commandes prédéfinies (cliquez pour insérer) :</div>
+                    <div class="prompt-commands" id="promptCommands"></div>
+                    <textarea id="userPrompt" placeholder="Ex. : Génère des questions sur les personnages et leurs relations, en évitant les questions de type dates ou chiffres..."></textarea>
+                </div>
+
                 <div class="results-section">
                     <h3 class="section-title">Questions Existantes pour ce Chunk</h3>
                     <div id="existingQuestionsContainer">
@@ -293,6 +325,42 @@
     let currentJobId = null;
     let refreshInterval = null;
     let currentDocumentId = null;
+
+    // Commandes personnalisées prédéfinies, insérables dans la zone d'instructions
+    const PROMPT_COMMANDS = [
+        { label: '📘 Type : livre / roman', text: 'Le document est un livre ou un roman : privilégie des questions sur l\u2019intrigue, les personnages, les thèmes et le contexte, en évitant les questions sur les auteurs.' },
+        { label: '📰 Type : article / presse', text: 'Le document est un article de presse : privilégie des questions sur les faits, les événements, les causes et les conséquences évoqués.' },
+        { label: '📊 Type : rapport / données', text: 'Le document est un rapport ou un document de données : privilégie des questions sur les chiffres, les tendances, les comparaisons et les conclusions principales.' },
+        { label: '🎬 Type : interview / témoignage', text: 'Le document est une interview ou un témoignage : privilégie des questions sur les propos des personnes, leurs opinions et leurs expériences.' },
+        { label: '🎯 Difficulté : simple', text: 'Génère des questions simples, avec des réponses courtes et directement vérifiables dans le texte.' },
+        { label: '🎓 Difficulté : analytique', text: 'Génère des questions qui demandent une analyse et une synthèse de plusieurs éléments du texte, avec des réponses argumentées.' },
+        { label: '🔗 Questions de liaison', text: 'Formule des questions qui relient plusieurs passages ou idées du texte entre eux.' },
+        { label: '🚫 Exclusions', text: 'Évite les questions triviales, les questions fermées (oui/non) et toute information absente du texte.' }
+    ];
+
+    function renderPromptCommands() {
+        const container = document.getElementById('promptCommands');
+        if (!container) return;
+        container.innerHTML = PROMPT_COMMANDS.map((cmd, i) =>
+            `<span class="prompt-command-chip" onclick="insertPromptCommand(${i})" title="${escapeHtml(cmd.text)}">${cmd.label}</span>`
+        ).join('');
+    }
+
+    function insertPromptCommand(index) {
+        const textarea = document.getElementById('userPrompt');
+        if (!textarea) return;
+        const cmd = PROMPT_COMMANDS[index];
+        if (!cmd) return;
+        const current = textarea.value.trim();
+        if (current) {
+            if (current.includes(cmd.text)) return;
+            textarea.value = current + (current.endsWith('.') ? '' : '.') + '\n' + cmd.text;
+        } else {
+            textarea.value = cmd.text;
+        }
+        textarea.focus();
+        textarea.dispatchEvent(new Event('change'));
+    }
     
     // Fonction pour rafraîchir les statistiques
     async function refreshStats() {
@@ -437,6 +505,7 @@
         const modelName = document.getElementById('modelSelect').value || 'mistral/mistral-small';
         const documentId = document.getElementById('documentSelect').value;
         const chunkId = document.getElementById('chunkSelect').value;
+        const userPrompt = document.getElementById('userPrompt').value.trim();
 
         if (!documentId && !chunkId) {
             alert('❌ Veuillez sélectionner un document (ou un chunk spécifique) pour lancer la génération.');
@@ -446,7 +515,8 @@
         const cible = chunkId
             ? `le chunk ${chunkId}`
             : `tous les chunks du document ${documentId}`;
-        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.\n\nVoulez-vous continuer ?`)) {
+        const promptInfo = userPrompt ? `\n\nInstructions personnalisées : « ${userPrompt.substring(0, 120)}${userPrompt.length > 120 ? '...' : ''} »` : '';
+        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.${promptInfo}\n\nVoulez-vous continuer ?`)) {
             return;
         }
 
@@ -465,7 +535,8 @@
                     num_answers_per_question: numAnswersPerQuestion,
                     model_name: modelName,
                     document_id: documentId ? parseInt(documentId) : null,
-                    chunk_id: chunkId ? parseInt(chunkId) : null
+                    chunk_id: chunkId ? parseInt(chunkId) : null,
+                    user_prompt: userPrompt || null
                 })
             });
 
@@ -670,6 +741,9 @@
             parametersHtml = '<div class="job-parameters"><strong>Paramètres:</strong>';
             parametersHtml += `<span><strong>Questions/doc:</strong> ${job.parameters.num_questions_per_doc || 'N/A'}</span>`;
             parametersHtml += `<span><strong>Modèle:</strong> ${job.parameters.model_name || 'N/A'}</span>`;
+            if (job.parameters.user_prompt) {
+                parametersHtml += `<div style="margin-top: 6px;"><strong>Instructions personnalisées:</strong> ${escapeHtml(job.parameters.user_prompt)}</div>`;
+            }
             parametersHtml += '</div>';
         }
         
@@ -1129,6 +1203,7 @@
         refreshJobs();
         renderGeneratedQuestions();
         updateExportButtonVisibility();
+        renderPromptCommands();
         loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
     });
 

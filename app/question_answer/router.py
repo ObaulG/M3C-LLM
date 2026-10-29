@@ -57,7 +57,8 @@ async def generate_questions(request: QuestionGenerationRequest):
         num_answers_per_question=request.num_answers_per_question,
         model_name=request.model_name,
         document_id=request.document_id,
-        chunk_id=request.chunk_id
+        chunk_id=request.chunk_id,
+        user_prompt=request.user_prompt
     )
     
     job = get_question_generation_job(job_id)
