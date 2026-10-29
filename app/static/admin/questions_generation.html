@@ -261,10 +261,14 @@
 
             <div class="loading" id="loadingIndicator">
                 <div class="spinner"></div>
-                <p>Génération en cours, veuillez patienter...</p>
+                <p id="liveJobLabel">Génération en cours, veuillez patienter...</p>
                 <div class="progress-container">
                     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
                     <div class="progress-text" id="progressText">0%</div>
+                </div>
+                <div id="liveJobDetails" style="margin-top: 12px; font-size: 13px; color: #555; text-align: left;
+                    background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px;
+                    max-height: 220px; overflow-y: auto;">
                 </div>
             </div>
 
@@ -477,7 +481,12 @@
             const data = await response.json();
             currentJobId = data.job_id;
 
-            alert(`✅ Job de génération lancé (ID: ${data.job_id}). Le traitement des chunks s'effectue en arrière-plan, suivez la progression dans l'historique des jobs.`);
+            const loading = document.getElementById('loadingIndicator');
+            loading.classList.add('active');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            document.getElementById('liveJobLabel').textContent = 'Job créé, démarrage du traitement...';
+            document.getElementById('liveJobDetails').innerHTML = '';
             startAutoRefresh();
         } catch (error) {
             console.error('Erreur lors du lancement de la génération:', error);
@@ -494,13 +503,12 @@
             clearInterval(refreshInterval);
         }
         refreshJobs();
-        refreshInterval = setInterval(() => {
-            refreshJobs();
-            const lastJobStatus = document.getElementById('lastJobStatus').textContent;
-            if (!['En cours', 'En attente'].includes(lastJobStatus)) {
+        refreshInterval = setInterval(async () => {
+            await refreshJobs();
+            if (!currentJobId) {
                 stopAutoRefresh();
             }
-        }, 3000);
+        }, 2000);
     }
 
     function stopAutoRefresh() {
@@ -521,6 +529,7 @@
                 document.getElementById('jobsContainer').innerHTML = 
                     '<p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>';
                 document.getElementById('lastJobStatus').textContent = 'Aucun';
+                updateLiveProgress(null);
                 return;
             }
             
@@ -533,10 +542,99 @@
             });
             
             document.getElementById('jobsContainer').innerHTML = html;
+
+            const activeJob = data.jobs.find(job => job.job_id === currentJobId) ||
+                (['pending', 'running'].includes(latestJob.status) ? latestJob : null);
+            updateLiveProgress(activeJob);
             
         } catch (error) {
             console.error('Erreur lors du rafraîchissement des jobs:', error);
         }
+    }
+
+    function updateLiveProgress(job) {
+        const loading = document.getElementById('loadingIndicator');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const label = document.getElementById('liveJobLabel');
+        const details = document.getElementById('liveJobDetails');
+        if (!loading || !progressFill || !progressText || !label || !details) return;
+
+        if (!job || !['pending', 'running'].includes(job.status)) {
+            if (currentJobId && job) {
+                const statusText = getStatusText(job.status);
+                label.textContent = `Génération terminée (${statusText.toLowerCase()})`;
+                progressFill.style.width = '100%';
+                progressText.textContent = '100%';
+                const total = job.total_documents || 0;
+                const done = job.processed_documents || 0;
+                const questions = Object.values(job.progress || {})
+                    .reduce((sum, p) => sum + (p.questions_generated || 0), 0);
+                const errors = (job.errors || []).length;
+                details.innerHTML =
+                    `<div>📊 ${done}/${total} chunks traités — ${questions} question(s) générée(s)` +
+                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
+                setTimeout(() => loading.classList.remove('active'), 4000);
+                currentJobId = null;
+            } else if (!job) {
+                loading.classList.remove('active');
+            }
+            return;
+        }
+
+        loading.classList.add('active');
+
+        const total = job.total_documents || 0;
+        const done = job.processed_documents || 0;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        progressFill.style.width = percent + '%';
+        progressText.textContent = `${percent}% (${done}/${total} chunks)`;
+
+        const params = job.parameters || {};
+        const cible = params.chunk_id ? `chunk ${params.chunk_id}`
+            : (params.document_id ? `document ${params.document_id}` : 'tous les documents validés');
+        label.textContent = `Génération en cours (${cible}) — ${getStatusText(job.status).toLowerCase()}...`;
+
+        const progressEntries = Object.values(job.progress || {});
+        const questionsGenerated = progressEntries.reduce((sum, p) => sum + (p.questions_generated || 0), 0);
+        const completedChunks = progressEntries.filter(p => p.status === 'completed').length;
+        const skippedChunks = progressEntries.filter(p => p.status === 'skipped').length;
+        const failedChunks = progressEntries.filter(p => p.status === 'failed').length;
+
+        let detailsHtml =
+            `<div>📊 ${done}/${total} chunks traités — ✅ ${completedChunks} générés` +
+            (skippedChunks > 0 ? ` — ⏭️ ${skippedChunks} déjà complets` : '') +
+            (failedChunks > 0 ? ` — ⚠️ ${failedChunks} en échec` : '') +
+            ` — ❓ ${questionsGenerated} question(s) générée(s)</div>`;
+
+        const runningChunk = progressEntries.find(p => p.status === 'running');
+        if (runningChunk) {
+            detailsHtml += `<div style="margin-top: 6px;">⏳ Chunk en cours : ${runningChunk.chunk_id || 'N/A'} (document ${runningChunk.document_id || 'N/A'})</div>`;
+        }
+
+        const lastChunks = progressEntries.slice(-5);
+        if (lastChunks.length > 0) {
+            detailsHtml += '<div style="margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;"><strong>Derniers chunks traités :</strong>';
+            lastChunks.forEach(p => {
+                const icon = p.status === 'completed' ? '✅' : (p.status === 'skipped' ? '⏭️' : (p.status === 'failed' ? '❌' : '⏳'));
+                const info = p.status === 'skipped' ? 'déjà 3+ questions' : `${p.questions_generated || 0} question(s)`;
+                detailsHtml += `<div>\n${icon} Chunk ${p.chunk_id || 'N/A'} (doc ${p.document_id || 'N/A'}) — ${info}` +
+                    (p.error ? ` — ⚠️ ${escapeHtml(p.error)}` : '') + '</div>';
+            });
+            detailsHtml += '</div>';
+        }
+
+        const errors = job.errors || [];
+        if (errors.length > 0) {
+            detailsHtml += `<div style="margin-top: 8px; color: #dc3545;"><strong>⚠️ ${errors.length} erreur(s) :</strong>`;
+            errors.slice(-3).forEach(e => {
+                detailsHtml += `<div>\n• ${escapeHtml(e)}</div>`;
+            });
+            detailsHtml += '</div>';
+        }
+
+        details.innerHTML = detailsHtml;
     }
     
     function getStatusText(status) {
