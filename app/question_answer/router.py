@@ -57,7 +57,8 @@ async def generate_questions(request: QuestionGenerationRequest):
         num_answers_per_question=request.num_answers_per_question,
         model_name=request.model_name,
         document_id=request.document_id,
-        chunk_id=request.chunk_id
+        chunk_id=request.chunk_id,
+        user_prompt=request.user_prompt
     )
     
     job = get_question_generation_job(job_id)
@@ -306,6 +307,10 @@ class GenerateAnswersRequest(BaseModel):
     question_id: Optional[int] = Field(default=None, description="ID de la question existante : la question et son contexte (chunks) sont récupérés en base")
     num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
     model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
+    user_prompt: Optional[str] = Field(
+        default=None,
+        description="Instructions personnalisées de l'utilisateur pour adapter la génération des réponses au contenu du document"
+    )
 
 
 class GenerateAnswersResponse(BaseModel):
@@ -374,11 +379,17 @@ async def generate_answers(request: GenerateAnswersRequest):
 
     agent = qa_agent.get_qa_agent(model=model, provider=provider, async_mode=True)
 
+    user_prompt_instructions = (
+        f"\n\nInstructions supplémentaires de l'utilisateur :\n{request.user_prompt.strip()}"
+        if (request.user_prompt and request.user_prompt.strip()) else ""
+    )
+
     input_schema = qa_agent.QuestionRequestInput(
         message=(
             f"Question: {question_text}\n\n"
             f"Génère exactement {request.num_answers} réponses différentes à la question ci-dessus, "
             f"en t'appuyant uniquement sur le contexte fourni. Ne génère aucune question."
+            f"{user_prompt_instructions}"
         ),
         document=document_context,
         num_questions=1,
@@ -455,6 +466,69 @@ async def add_answer_to_question(question_id: int, request: AddAnswerRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de l'ajout de la réponse: {str(e)}"
+        )
+
+
+class DeleteAllAnswersResponse(BaseModel):
+    """Réponse après la suppression de toutes les réponses d'une question"""
+    success: bool
+    question_id: int
+    deleted_answers: int
+    deleted_facts: int
+    message: str
+
+
+@router.post(
+    "/{question_id}/delete-answers",
+    response_model=DeleteAllAnswersResponse,
+    summary="Supprime toutes les réponses d'une question",
+    description="Supprime toutes les réponses d'une question existante, ainsi que les faits (affirmations) associés à chaque réponse."
+)
+async def delete_all_answers(question_id: int):
+    """
+    Supprime toutes les réponses d'une question et leurs faits associés.
+    """
+    from database.database import delete_answer_facts
+
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT answer_id FROM text_question_answers WHERE question_id = %s
+                """, (question_id,))
+                answer_rows = await cur.fetchall()
+
+                if not answer_rows:
+                    return DeleteAllAnswersResponse(
+                        success=True,
+                        question_id=question_id,
+                        deleted_answers=0,
+                        deleted_facts=0,
+                        message=f"Aucune réponse à supprimer pour la question {question_id}"
+                    )
+
+                deleted_facts = 0
+                for row in answer_rows:
+                    deleted_facts += await delete_answer_facts(row[0], conn)
+
+                await cur.execute("""
+                    DELETE FROM text_question_answers WHERE question_id = %s
+                """, (question_id,))
+                deleted_answers = cur.rowcount
+                await conn.commit()
+
+                return DeleteAllAnswersResponse(
+                    success=True,
+                    question_id=question_id,
+                    deleted_answers=deleted_answers,
+                    deleted_facts=deleted_facts,
+                    message=f"{deleted_answers} réponse(s) et {deleted_facts} fait(s) supprimés pour la question {question_id}"
+                )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression des réponses: {str(e)}"
         )
 
 

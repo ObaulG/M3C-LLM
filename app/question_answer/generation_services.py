@@ -41,7 +41,8 @@ def create_question_generation_job(
     model_name: str = "mistral-small",
     document_id: Optional[int] = None,
     num_answers_per_question: int = 1,
-    chunk_id: Optional[int] = None
+    chunk_id: Optional[int] = None,
+    user_prompt: Optional[str] = None
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -52,6 +53,7 @@ def create_question_generation_job(
         document_id: ID du document spécifique à traiter (optionnel). Si None, traite tous les documents validés.
         num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
         chunk_id: ID du chunk spécifique à traiter (optionnel). Prioritaire sur document_id.
+        user_prompt: Instructions personnalisées de l'utilisateur (optionnel), transmises à l'agent QA
         
     Returns:
         job_id: L'ID unique du job créé
@@ -65,7 +67,8 @@ def create_question_generation_job(
             "model_name": model_name,
             "document_id": document_id,
             "num_answers_per_question": num_answers_per_question,
-            "chunk_id": chunk_id
+            "chunk_id": chunk_id,
+            "user_prompt": user_prompt
         },
         total_documents=0  # sera mis à jour lors du traitement avec le nombre de chunks
     )
@@ -264,7 +267,8 @@ async def generate_questions_single_answer_for_chunk(
     document_id: str,
     num_questions: int,
     model_name: str,
-    max_retries: int = 2
+    max_retries: int = 2,
+    user_prompt: Optional[str] = None
 ) -> Tuple[qa_single_agent.QuestionAnswerList, Optional[str]]:
     import instructor
     """
@@ -277,6 +281,7 @@ async def generate_questions_single_answer_for_chunk(
         num_questions: Nombre de questions à générer
         model_name: Nom du modèle LLM
         max_retries: Nombre maximal de tentatives
+    user_prompt: Instructions personnalisées de l'utilisateur (optionnel), intégrées au message de l'agent
         
     Returns:
         Tuple de (QuestionAnswerList, error)
@@ -351,6 +356,7 @@ async def process_question_generation_job(job_id: str):
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
     chunk_id = parameters.get("chunk_id")  # ID du chunk spécifique (optionnel, prioritaire)
     num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
+    user_prompt = parameters.get("user_prompt")  # Instructions personnalisées de l'utilisateur (optionnel)
     
     errors = []
     progress = job.get("progress", {})
@@ -441,7 +447,8 @@ async def process_question_generation_job(job_id: str):
                 chunk_id=chunk_id,
                 document_id=document_id,
                 num_questions=num_questions,
-                model_name=model_name
+                model_name=model_name,
+                user_prompt=user_prompt
             )
 
             questions_generated = 0

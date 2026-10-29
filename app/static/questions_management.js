@@ -10,6 +10,46 @@ let allDocuments = [];
 let currentQuestions = [];
 let knowledgeItemsByQuestion = {};
 
+// Commandes personnalisées prédéfinies pour la génération groupée de réponses
+const BULK_PROMPT_COMMANDS = [
+    { label: '📝 Réponses détaillées', text: 'Formule des réponses détaillées et argumentées, en appuyant chaque affirmation par des éléments du texte.' },
+    { label: '📋 Réponses concises', text: 'Formule des réponses concises et directes, limitées à l\u2019essentiel du texte.' },
+    { label: '📚 Réponses pédagogiques', text: 'Formule des réponses à visée pédagogique : reformule avec des mots simples et illustre avec des exemples du texte.' },
+    { label: '🔗 Avec citations', text: 'Cite explicitement les passages du texte qui justifient chaque réponse.' },
+    { label: '🚫 Exclusions', text: 'N\u2019invente aucune information absente du contexte et évite les réponses par simple oui/non.' }
+];
+
+/**
+ * Insère une commande prédéfinie dans la zone de commande personnalisée
+ * du menu d'actions groupées.
+ * @param {number} index - Index de la commande dans BULK_PROMPT_COMMANDS
+ */
+function insertBulkPromptCommand(index) {
+    const textarea = document.getElementById('bulkUserPrompt');
+    if (!textarea) return;
+    const cmd = BULK_PROMPT_COMMANDS[index];
+    if (!cmd) return;
+    const current = textarea.value.trim();
+    if (current) {
+        if (current.includes(cmd.text)) return;
+        textarea.value = current + (current.endsWith('.') ? '' : '.') + '\n' + cmd.text;
+    } else {
+        textarea.value = cmd.text;
+    }
+    textarea.focus();
+}
+
+/**
+ * Affiche les chips de commandes prédéfinies dans le menu d'actions groupées.
+ */
+function renderBulkPromptCommands() {
+    const container = document.getElementById('bulkPromptCommands');
+    if (!container) return;
+    container.innerHTML = BULK_PROMPT_COMMANDS.map((cmd, i) =>
+        `<span class="prompt-command-chip" onclick="insertBulkPromptCommand(${i})" title="${escapeHtml(cmd.text)}">${cmd.label}</span>`
+    ).join('');
+}
+
 /**
  * Initialise la page au chargement
  */
@@ -301,6 +341,34 @@ function displayQuestions(questions, count) {
             <h2>${currentDocumentTitle ? escapeHtml(currentDocumentTitle) : 'Questions pour ce document'}</h2>
             <span class="questions-count">${count} question(s) trouvée(s)</span>
         </div>
+        <div class="bulk-actions">
+            <button class="btn" id="bulkMenuBtn" onclick="toggleBulkMenu()">⚙️ Actions groupées ▾</button>
+            <div class="bulk-menu" id="bulkMenu" style="display: none;">
+                <div class="bulk-menu-title">Générer des réponses pour toutes les questions</div>
+                <div class="bulk-menu-field">
+                    <label for="bulkNumAnswers">Réponses par question</label>
+                    <input type="number" id="bulkNumAnswers" value="1" min="1" max="10">
+                </div>
+                <div class="bulk-menu-field">
+                    <label for="bulkModel">Modèle de génération</label>
+                    <select id="bulkModel"><option value="">Modèle par défaut (filtre « génération »)</option></select>
+                </div>
+                <div class="bulk-menu-field">
+                    <label for="bulkUserPrompt">Commande personnalisée (optionnel)</label>
+                    <div class="bulk-prompt-commands" id="bulkPromptCommands"></div>
+                    <textarea id="bulkUserPrompt" rows="3" placeholder="Ex. : Formule des réponses détaillées avec des exemples tirés du texte..."></textarea>
+                    <div class="bulk-menu-description">Ces instructions seront intégrées au prompt de l'agent pour chaque génération de réponse.</div>
+                </div>
+                <div class="bulk-menu-field">
+                    <label class="bulk-checkbox">
+                        <input type="checkbox" id="bulkGenerateFacts" checked>
+                        Générer aussi les faits des réponses
+                    </label>
+                </div>
+                <button class="btn" onclick="bulkGenerateAnswers()">✨ Générer les réponses</button>
+                <div class="bulk-menu-progress" id="bulkProgress" style="display: none;"></div>
+            </div>
+        </div>
     `;
 
     let questionsHtml = questions.map(question => {
@@ -524,6 +592,9 @@ function displayQuestions(questions, count) {
                     <button class="btn btn-knowledge-items" onclick="getKnowledgeItemsForQuestion(${question.question_id})">
                         🧠 Éléments de connaissance
                     </button>
+                    <button class="btn btn-delete-question-answers" onclick="deleteAllAnswersForQuestion(${question.question_id}, this)" title="Supprimer toutes les réponses de cette question et leurs faits associés">
+                        🗑 Supprimer toutes les réponses
+                    </button>
                     <button class="btn btn-save-changes" onclick="saveQuestionChanges(${question.question_id})" style="display: none;">
                         ✓ Sauvegarder les modifications
                     </button>
@@ -575,6 +646,15 @@ function displayQuestions(questions, count) {
 
     currentQuestions = questions;
     contentElement.innerHTML = headerHtml + questionsHtml;
+
+    // Charger les modèles dans le sélecteur du menu d'actions groupées
+    const bulkModelSelect = document.getElementById('bulkModel');
+    if (bulkModelSelect && typeof loadModelsIntoSelect === 'function') {
+        loadModelsIntoSelect(bulkModelSelect, { prefixProvider: true, keepFirst: true });
+    }
+
+    // Afficher les chips de commandes personnalisées prédéfinies
+    renderBulkPromptCommands();
 }
 
 /**
@@ -2033,4 +2113,171 @@ async function generateAnswerFacts(answerId, button) {
             button.disabled = false;
         }
     }
+}
+
+/**
+ * Supprime toutes les réponses d'une question (et leurs faits associés),
+ * via l'endpoint /api/admin/questions/{question_id}/delete-answers.
+ * @param {number} questionId - ID de la question
+ * @param {HTMLElement} button - Bouton cliqué
+ */
+async function deleteAllAnswersForQuestion(questionId, button) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    const answersSection = questionCard ? questionCard.querySelector('.answers-section') : null;
+    const answersCount = answersSection ? answersSection.querySelectorAll('.answer-item').length : 0;
+
+    if (answersCount === 0) {
+        alert('Cette question n\'a aucune réponse à supprimer.');
+        return;
+    }
+
+    if (!confirm(`Supprimer les ${answersCount} réponse(s) de cette question ?\n\nLes faits associés à chaque réponse seront également supprimés. Cette action est irréversible.`)) {
+        return;
+    }
+
+    const originalButtonText = button ? button.innerHTML : '';
+    if (button) {
+        button.innerHTML = '⏳ Suppression...';
+        button.disabled = true;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/questions/${questionId}/delete-answers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`✅ ${data.message}`);
+        await loadQuestions(currentDocumentId);
+    } catch (error) {
+        console.error('Erreur lors de la suppression des réponses:', error);
+        alert('❌ Erreur lors de la suppression des réponses : ' + error.message);
+    } finally {
+        if (button) {
+            button.innerHTML = originalButtonText || '🗑 Supprimer toutes les réponses';
+            button.disabled = false;
+        }
+    }
+}
+
+/**
+ * Affiche/masque le menu d'actions groupées.
+ */
+function toggleBulkMenu() {
+    const menu = document.getElementById('bulkMenu');
+    if (!menu) return;
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+/**
+ * Génère des réponses pour toutes les questions du document affiché.
+ * Parcourt les questions une à une, en réutilisant les endpoints
+ * /generate-answers, /add-answer et /generate-facts.
+ * Option : générer ou non les faits des réponses générées.
+ */
+async function bulkGenerateAnswers() {
+    const questions = currentQuestions || [];
+    if (questions.length === 0) {
+        alert('Aucune question à traiter pour ce document.');
+        return;
+    }
+
+    const numAnswers = parseInt(document.getElementById('bulkNumAnswers').value) || 1;
+    const bulkModelSelect = document.getElementById('bulkModel');
+    const generateFacts = document.getElementById('bulkGenerateFacts').checked;
+    const userPrompt = (document.getElementById('bulkUserPrompt').value || '').trim();
+    const modelFilter = document.getElementById('generationModelFilter');
+    const modelName = (bulkModelSelect && bulkModelSelect.value)
+        ? bulkModelSelect.value
+        : ((modelFilter && modelFilter.value) ? modelFilter.value : 'mistral-small');
+
+    if (!confirm(`Générer ${numAnswers} réponse(s) pour chacune des ${questions.length} question(s) de ce document ?\n\n`
+        + `Modèle : ${modelName}\n`
+        + `Faits : ${generateFacts ? 'génération des faits activée' : 'pas de génération de faits'}\n`
+        + (userPrompt ? `Commande personnalisée : « ${userPrompt.substring(0, 120)}${userPrompt.length > 120 ? '...' : ''} »\n` : '')
+        + `\nCette opération peut prendre plusieurs minutes.`)) {
+        return;
+    }
+
+    const progressElement = document.getElementById('bulkProgress');
+    const bulkButton = document.querySelector('#bulkMenu .btn');
+    if (bulkButton) bulkButton.disabled = true;
+    progressElement.style.display = 'block';
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < questions.length; i++) {
+        const question = questions[i];
+        progressElement.innerHTML = `⏳ Question ${i + 1}/${questions.length} — ${escapeHtml(question.content.substring(0, 80))}${question.content.length > 80 ? '...' : ''}`;
+        try {
+            const generateResponse = await fetch('/api/admin/questions/generate-answers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question_id: question.question_id,
+                    num_answers: numAnswers,
+                    model_name: modelName,
+                    user_prompt: userPrompt || null
+                })
+            });
+
+            if (!generateResponse.ok) {
+                const errorData = await generateResponse.json().catch(() => null);
+                throw new Error(errorData?.detail || `Erreur ${generateResponse.status}`);
+            }
+
+            const data = await generateResponse.json();
+            if (!data.answers || data.answers.length === 0) {
+                throw new Error('L\'agent n\'a généré aucune réponse');
+            }
+
+            for (const answerText of data.answers) {
+                const addResponse = await fetch(`/api/admin/questions/${question.question_id}/add-answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answer_text: answerText,
+                        is_correct: true,
+                        model_name: modelName
+                    })
+                });
+
+                if (!addResponse.ok) {
+                    const errorData = await addResponse.json().catch(() => null);
+                    throw new Error(errorData?.detail || `Erreur ${addResponse.status} à l'ajout de la réponse`);
+                }
+
+                if (generateFacts) {
+                    const addData = await addResponse.json();
+                    if (addData.answer_id) {
+                        const factsResponse = await fetch(`/api/admin/questions/answers/${addData.answer_id}/generate-facts?model_name=${encodeURIComponent(modelName)}`, {
+                            method: 'POST'
+                        });
+                        if (!factsResponse.ok) {
+                            console.warn(`Faits non générés pour la réponse ${addData.answer_id} : ${factsResponse.status}`);
+                        }
+                    }
+                }
+            }
+
+            successCount++;
+        } catch (error) {
+            console.error(`Erreur pour la question ${question.question_id}:`, error);
+            errorCount++;
+            progressElement.innerHTML += `<div style="color: #dc3545;">❌ Question ${question.question_id} : ${escapeHtml(error.message)}</div>`;
+        }
+    }
+
+    progressElement.innerHTML = `✅ ${successCount} question(s) traitée(s) avec succès`
+        + (errorCount > 0 ? ` — ❌ ${errorCount} échec(s)` : '');
+    if (bulkButton) bulkButton.disabled = false;
+
+    await loadQuestions(currentDocumentId);
 }
