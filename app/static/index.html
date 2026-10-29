@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLMAgents - Portail M3C</title>
+    <title>M3C - Portail RAG</title>
     <link rel="stylesheet" href="style.css" />
 <style>
     /* Styles spécifiques pour la page d'accueil */
@@ -33,41 +33,10 @@
         margin: 0 auto;
     }
 
-    .home-nav {
-        background: rgba(255,255,255,0.1);
-        padding: 15px 0;
-        margin: 20px 0;
-        border-radius: 10px;
-    }
-
-    .home-nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-    }
-
-    .home-nav li a {
-        color: white;
-        text-decoration: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        font-size: 16px;
-    }
-
-    .home-nav li a:hover {
-        background: rgba(255,255,255,0.2);
-        transform: translateY(-2px);
-    }
-
     .project-description {
         line-height: 1.8;
         color: #444;
+        margin-bottom: 20px;
     }
 
     .project-description p {
@@ -79,6 +48,7 @@
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 20px;
+        justify-content: center;
     }
 
     .tech-tag {
@@ -179,10 +149,12 @@
         padding: 30px;
         border-radius: 15px;
         width: 90%;
-        max-width: 700px;
+        max-width: 800px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         position: relative;
         animation: slideIn 0.3s ease;
+        max-height: 85vh;
+        overflow-y: auto;
     }
 
     @keyframes slideIn {
@@ -257,18 +229,137 @@
         margin-left: 8px;
     }
 
+    /* Tutoriel Mistral API */
+    .tutorial-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin: 30px 0;
+        border-left: 4px solid #b74420;
+    }
+
+    .tutorial-section h2 {
+        color: #b74420;
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tutorial-steps {
+        list-style: none;
+        padding: 0;
+    }
+
+    .tutorial-step {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .tutorial-step h4 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .tutorial-step .step-number {
+        background: #b74420;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .tutorial-images {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+
+    .tutorial-image {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+    }
+
+    .tutorial-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .api-key-form {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        margin-top: 20px;
+    }
+
+    .api-key-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .api-key-form input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .api-key-form button {
+        background: #b74420;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .api-key-form button:hover {
+        background: #8b2e1b;
+    }
+
+    .api-key-info {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+
+    .api-key-info i {
+        margin-right: 8px;
+    }
+
     @media (max-width: 768px) {
         .home-header h1 { font-size: 32px; }
         .home-header p { font-size: 16px; }
-        .home-nav ul { gap: 15px; }
-        .home-nav li a { padding: 8px 15px; font-size: 14px; }
         .cards-grid { grid-template-columns: 1fr; }
         .modal-content { width: 95%; margin: 10% auto; padding: 20px; }
     }
 
     @media (max-width: 480px) {
         .card-actions { flex-direction: column; }
-        .home-nav ul { flex-direction: column; align-items: center; gap: 10px; }
     }
 </style>
 </head>
@@ -277,7 +368,7 @@
     <div class="container">
         <div class="header">
     <div class="header-main">
-        <h1>🏠 LLMAgents - Portail M3C</h1><p class="subtitle">Système RAG pour l&#39;analyse documentaire et la recherche intelligente</p></div>
+        <h1>🏛️ M3C - Portail RAG</h1></div>
     <div class="header-nav"><a href="index.html" class="nav-link active">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="admin/indexation.html" class="nav-link">Indexation</a><span class="nav-separator">|</span><a href="admin/questions_generation.html" class="nav-link">Génération Questions</a><span class="nav-separator">|</span><a href="admin/knowledge_items_generation.html" class="nav-link">Knowledge Items</a><span class="nav-separator">|</span><a href="admin/message_evaluator_admin.html" class="nav-link">Test Message Evaluator</a><span class="nav-separator">|</span><a href="admin/chatbot_admin.html" class="nav-link">Admin Chatbot</a></div>    <div class="profile-widget" id="profileWidget">
     <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
         <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
@@ -298,23 +389,89 @@
     </div>
 </div></div>
 
-<div class="section" id="accueil"><h2 class="section-title">📚 À propos du projet LLMAgents</h2>            <div class="project-description">
-                <p>Bienvenue sur le site prototype de développement d'outils basés sur IA générative pour la M3C.</p>
-                <p><strong>Objectif principal:</strong> Faciliter l'accès aux connaissances contenues dans les documents
-                en permettant une recherche sémantique et vectorielle avancée et une interaction naturelle avec les données.</p>
-                <div class="technologies">
-                    <span class="tech-tag">FastAPI</span>
-                    <span class="tech-tag">Mistral AI</span>
-                    <span class="tech-tag">ChromaDB</span>
-                    <span class="tech-tag">Qdrant</span>
-                    <span class="tech-tag">Solr</span>
-                    <span class="tech-tag">RAG</span>
-                    <span class="tech-tag">LLM</span>
-                </div>
+<div class="section" id="accueil"><h2 class="section-title">📄 À propos du projet M3C-LLM</h2>            <div class="project-description">
+                <p><strong>Bienvenue sur le portail RAG de la Médiathèque Culturelle de la Corse et des Corses (M3C).</strong></p>
+                
+                <p>Ce système permet d'explorer et d'interroger intelligemment les documents scientifiques et académiques de la M3C grâce à des technologies d'intelligence artificielle.</p>
+
             </div>
 
 </div>
-<div class="section" id="interfaces"><h2 class="section-title">📱 Interfaces Utilisateur <span class="info-badge">6 interfaces disponibles</span></h2>            <div class="cards-grid">
+<div class="section" id="tutoriel-mistral"><h2 class="section-title">🔑 Configuration de votre clé API Mistral</h2>            <div class="tutorial-section">
+                <p style="margin-bottom: 20px; color: #666;">
+                    Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI. 
+                    Cette clé est <strong>stockée uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.
+                </p>
+                
+                <h3 style="color: #b74420; margin-bottom: 15px;">📝 Étapes pour obtenir votre clé API Mistral :</h3>
+                
+                <ol class="tutorial-steps">
+                    <li class="tutorial-step">
+                        <span class="step-number">1</span>
+                        <h4>Créer un compte sur Mistral AI</h4>
+                        <p>Rendez-vous sur <a href="https://mistral.ai/" target="_blank" style="color: #b74420;">https://mistral.ai/</a> et cliquez sur "Sign Up" ou "S'inscrire".</p>
+                        <p>Vous pouvez vous inscrire avec :</p>
+                        <ul style="margin-left: 20px; color: #555;">
+                            <li>Votre adresse email professionnelle ou personnelle</li>
+                            <li>Votre compte Google</li>
+                            <li>Votre compte GitHub</li>
+                        </ul>
+                    </li>
+                    
+                    <li class="tutorial-step">
+                        <span class="step-number">2</span>
+                        <h4>Accéder à votre tableau de bord</h4>
+                        <p>Une fois connecté, vous serez redirigé vers votre tableau de bord Mistral AI.</p>
+                        <p>Si ce n'est pas le cas, cliquez sur votre avatar en haut à droite, puis sélectionnez "Dashboard".</p>
+                    </li>
+                    
+                    <li class="tutorial-step">
+                        <span class="step-number">3</span>
+                        <h4>Générer une nouvelle clé API</h4>
+                        <p>Dans votre tableau de bord :</p>
+                        <ol style="margin-left: 20px; color: #555;">
+                            <li>Recherchez la section "API Keys" ou "Clés API"</li>
+                            <li>Cliquez sur "Create new key" ou "Créer une nouvelle clé"</li>
+                            <li>Donnez un nom à votre clé (par exemple : "M3C-Portail")</li>
+                            <li>Cliquez sur "Create" ou "Créer"</li>
+                        </ol>
+                        <p><strong>⚠️ Important :</strong> Votre clé API ne sera affichée qu'une seule fois. Copiez-la immédiatement et conservez-la dans un endroit sûr.</p>
+                    </li>
+                    
+                    <li class="tutorial-step">
+                        <span class="step-number">4</span>
+                        <h4>Configurer votre clé dans le portail M3C</h4>
+                        <p>Une fois votre clé API obtenue, vous pouvez la configurer dans votre profil utilisateur :</p>
+                        <ol style="margin-left: 20px; color: #555;">
+                            <li>Cliquez sur l'icône de profil en haut à droite de cette page</li>
+                            <li>Sélectionnez "Configurer la clé API Mistral"</li>
+                            <li>Collez votre clé API dans le champ prévu à cet effet</li>
+                            <li>Cliquez sur "Enregistrer"</li>
+                        </ol>
+                        <p>Votre clé sera stockée dans votre navigateur et utilisée automatiquement pour toutes vos requêtes.</p>
+                    </li>
+                </ol>
+                
+                <div class="api-key-info">
+                    <i>ℹ️</i>
+                    <strong>Informations importantes :</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Votre clé API est personnelle et ne doit pas être partagée</li>
+                        <li>Elle est stockée uniquement dans votre navigateur (localStorage)</li>
+                        <li>Vous pouvez révoquer une clé à tout moment depuis votre tableau de bord Mistral</li>
+                        <li>Si vous êtes administrateur (global_admin), vous n'avez pas besoin de fournir votre clé</li>
+                    </ul>
+                </div>
+                
+                <p style="margin-top: 20px; text-align: center;">
+                    <a href="https://docs.mistral.ai/" target="_blank" class="btn btn-primary" style="display: inline-block;">
+                        Documentation officielle Mistral AI
+                    </a>
+                </p>
+            </div>
+
+</div>
+<div class="section" id="interfaces"><h2 class="section-title">💻 Interfaces Utilisateur <span class="info-badge">6 interfaces disponibles</span></h2>            <div class="cards-grid">
                 <div class="feature-card">
     <span class="category-badge category-user">Utilisateur</span>
     <div class="card-header">
@@ -358,7 +515,7 @@
                 <div class="feature-card">
     <span class="category-badge category-user">Utilisateur</span>
     <div class="card-header">
-        <div class="card-icon">🎯</div>
+        <div class="card-icon">🏆</div>
         <h3>Gestion Q/R</h3>
     </div>
     <p class="card-description">Interface de gestion des questions et réponses. Créez, modifiez et organisez les questions pour faciliter la recherche et l&#39;apprentissage.</p><ul class="card-features"><li>Création de questions</li><li>Organisation par catégories</li><li>Suivi des réponses</li><li>Évaluation des réponses</li><li>Export des données</li></ul><div class="card-actions">
@@ -368,13 +525,14 @@
 
 </div>
         <div class="home-footer">
-            <p><strong>LLMAgents © 2026</strong> - M3C (Maison des Sciences de l'Homme Mondes Contemporains)</p>
+            <p><strong>M3C RAG Portail © 2026</strong> - Maison des Sciences de l'Homme Mondes Contemporains</p>
             <p>Système RAG pour l'analyse documentaire intelligente</p>
             <div class="footer-links">
                 <a href="#accueil">Accueil</a>
+                <a href="#tutoriel-mistral">Tutoriel Mistral</a>
                 <a href="#interfaces">Interfaces</a>
-                <a href="#admin">Administration</a>
                 <a href="m3c-chatbot.html">Chatbot</a>
+                <a href="tutorials.html">Documentation</a>
             </div>
             <p style="margin-top: 15px; font-size: 12px;">Version 0.1.0 | FastAPI | Mistral AI | RAG Technology</p>
         </div>
@@ -392,14 +550,14 @@
         <li><strong>Historique:</strong> Accès à l'historique complet des échanges</li>
         <li><strong>Visualisation:</strong> Affichage des sources citées avec leurs scores</li>
     </ul></div>
-    <div class="modal-section"><h3>🎯 Cas d'usage</h3><ul>
+    <div class="modal-section"><h3>🏆 Cas d'usage</h3><ul>
         <li>Poser des questions spécifiques sur les documents M3C</li>
         <li>Obtenir des réponses avec sources citées</li>
         <li>Comparer les réponses de différents modèles</li>
         <li>Explorer le corpus documentaire de manière interactive</li>
         <li>Trouver des informations précises rapidement</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="m3c-chatbot.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🚀 Accès rapide</h3><p><a href="m3c-chatbot.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="pdf-chat-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('pdf-chat-info')">&times;</span>
@@ -412,14 +570,14 @@
         <li><strong>Navigation facile:</strong> Changement rapide entre documents</li>
         <li><strong>Recherche ciblée:</strong> Posez des questions sur un document spécifique</li>
     </ul></div>
-    <div class="modal-section"><h3>🎯 Cas d'usage</h3><ul>
+    <div class="modal-section"><h3>🏆 Cas d'usage</h3><ul>
         <li>Analyser un document PDF spécifique</li>
         <li>Extraire des informations d'un document</li>
         <li>Poser des questions sur le contenu d'un PDF</li>
         <li>Comparer différents documents</li>
         <li>Étudier un document en détail</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="question_session.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🚀 Accès rapide</h3><p><a href="question_session.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="solr-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('solr-info')">&times;</span>
@@ -433,13 +591,13 @@
         <li><strong>Visualisation:</strong> Affichage clair des résultats avec extraits</li>
         <li><strong>Export:</strong> Possibilité d'exporter les résultats de recherche</li>
     </ul></div>
-    <div class="modal-section"><h3>🎯 Cas d'usage</h3><ul>
+    <div class="modal-section"><h3>🏆 Cas d'usage</h3><ul>
         <li>Trouver des documents sur un sujet spécifique</li>
         <li>Rechercher des informations précises dans le corpus</li>
         <li>Explorer les relations entre les documents</li>
         <li>Effectuer des recherches complexes avec filtres</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="solr_search.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🚀 Accès rapide</h3><p><a href="solr_search.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="visualization-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('visualization-info')">&times;</span>
@@ -453,18 +611,18 @@
         <li><strong>Exploration des clusters:</strong> Découverte de groupes de chunks similaires</li>
         <li><strong>Limitation du nombre:</strong> Contrôle du nombre de chunks affichés</li>
     </ul></div>
-    <div class="modal-section"><h3>🎯 Cas d'usage</h3><ul>
+    <div class="modal-section"><h3>🏆 Cas d'usage</h3><ul>
         <li>Comprendre les relations entre les documents</li>
         <li>Identifier des clusters thématiques</li>
         <li>Visualiser la structure du corpus</li>
         <li>Analyser la distribution des embeddings</li>
         <li>Explorer les similarités entre chunks</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="rag_visualization.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🚀 Accès rapide</h3><p><a href="rag_visualization.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <div id="qr-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('qr-info')">&times;</span>
-    <h2>🎯 Gestion des Questions/Réponses</h2>
+    <h2>🏆 Gestion des Questions/Réponses</h2>
     <div class="modal-section"><h3>📋 Description</h3><p>Interface de gestion complète des questions et réponses. Créez, organisez et évaluez les questions pour faciliter la recherche et l'apprentissage.</p></div>
     <div class="modal-section"><h3>⚙️ Fonctionnalités clés</h3><ul>
         <li><strong>Création de questions:</strong> Ajoutez de nouvelles questions au système</li>
@@ -474,14 +632,14 @@
         <li><strong>Export des données:</strong> Export en CSV ou JSON</li>
         <li><strong>Recherche:</strong> Trouvez rapidement des questions spécifiques</li>
     </ul></div>
-    <div class="modal-section"><h3>🎯 Cas d'usage</h3><ul>
+    <div class="modal-section"><h3>🏆 Cas d'usage</h3><ul>
         <li>Créer des quiz ou évaluations</li>
         <li>Organiser des questions par thème</li>
         <li>Suivre les progrès d'apprentissage</li>
         <li>Évaluer la qualité des réponses</li>
         <li>Exporter les données pour analyse</li>
     </ul></div>
-    <div class="modal-section"><h3>🔗 Accès rapide</h3><p><a href="questions_management.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
+    <div class="modal-section"><h3>🚀 Accès rapide</h3><p><a href="questions_management.html" class="btn btn-primary">Ouvrir l'interface</a></p></div>
 </div></div>
 
 <script>

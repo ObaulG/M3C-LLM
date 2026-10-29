@@ -365,8 +365,8 @@
 <div class="main_container">
     <div class="container">
         {{ header(
-            title='M3C - Portail RAG',
-            subtitle='Système de recherche avancée par intelligence artificielle',
+            title='M3C - Bac à sable',
+            subtitle='',
             title_icon='🏛️',
             page='index.html',
             page_dir='root',
@@ -374,31 +374,74 @@
         ) }}
 
         {# --- Description du projet --- #}
-        {% call section(id='accueil', title='À propos du projet M3C RAG', title_icon='📄') %}
+        {% call section(id='accueil', title='À propos', title_icon='📄') %}
             <div class="project-description">
-                <p><strong>Bienvenue sur le portail RAG de la Maison des Sciences de l'Homme Mondes Contemporains (M3C).</strong></p>
+                <p><strong>Bienvenue sur le portail bac à sable de la Médiathèque Culturelle de la Corse et des Corses (M3C).</strong></p>
                 
-                <p>Ce système permet d'explorer et d'interroger intelligemment les documents scientifiques et académiques de la M3C grâce à des technologies d'intelligence artificielle de pointe.</p>
-                
-                <p><strong>Notre objectif :</strong> Rendre accessible la connaissance contenue dans les documents de recherche, en permettant une interaction naturelle et intuitive avec les données.</p>
-                
-                <p>Que vous soyez chercheur, étudiant ou simplement intéressé par les travaux de la M3C, ce portail vous offre des outils puissants pour :</p>
-                <ul style="color: #666; line-height: 1.8; margin-left: 20px;">
-                    <li>Poser des questions en langage naturel sur les documents</li>
-                    <li>Obtenir des réponses précises avec sources citées</li>
-                    <li>Visualiser les relations entre les documents</li>
-                    <li>Explorer les thèmes de recherche de manière interactive</li>
-                </ul>
-                
-                <div class="technologies">
-                    <span class="tech-tag">FastAPI</span>
-                    <span class="tech-tag">Mistral AI</span>
-                    <span class="tech-tag">ChromaDB</span>
-                    <span class="tech-tag">Qdrant</span>
-                    <span class="tech-tag">Solr</span>
-                    <span class="tech-tag">RAG</span>
-                    <span class="tech-tag">LLM</span>
-                </div>
+                <p> Il consiste à tester l'utilisation d'outils d'IA génératives au travers des documents de la M3C.
+                    Une poignée de documents seulement est disponible, ceux dont le texte est correct et non erroné à la
+                    suite de l'OCR, qui a pu être fait il y a longtemps ! </p>
+
+                <p> Si vous êtes ici, vous avez très probablement reçu un lien, voire directement une adresse IP. Nous avons besoin
+                   de votre retour d'utilisation pour pouvoir exploiter ces données dans le cadre d'une thèse de doctorat en informatique
+                   réalisée dans le cadre du projet ICPP. </p>
+                <p>
+                    Pour pouvoir relier vos différentes utilisations, nous vous demanderons de créer un compte. Aucune information
+                    personnelle ne sera demandée. A ce compte, il sera également demandé de fournir une clef API (gratuite) issue de chez Mistral.
+
+                    En effet :</p>
+                    <ul>
+                        <li>La création de compte est gratuite;</li>
+                        <li>Les modèles proposés sont <i>cost-effecient</i></li>
+                        <li>Il y a une grande variété de taille de modèles,ce qui permet d'élargir les tests</li>
+                        <li>Les petits modèles, dont la version à 14 Mds de paramètres de ministral,
+                            fonctionnent très bien pour toutes les tâches réalisées ici; </li>
+                <li>Les petits modèles peuvent être utilisés <b>gratuitement</b>.</li>
+                    </ul>
+
+                <p>
+                    Aussi, notre clef API Mistral n'offre qu'une quantité limitée de requêtes par minute. En cas d'utilisation de groupe,
+                    ou d'une fréquentation élevée (ce qui nous ferait fortement plaisir!), il serait compliqué de proposer une utilisation
+                    fluide pour tout le monde. Votre clef permet
+                </p>p>
+
+            </div>
+        {% endcall %}
+
+    {# --- Interfaces utilisateur --- #}
+        {% call section(id='interfaces', title='Interfaces Utilisateur',
+                        title_icon='💻',
+                        extra='<span class="info-badge">6 interfaces disponibles</span>') %}
+            <div class="cards-grid">
+                {{ feature_card(
+                    title='Chatbot RAG',
+                    description="Interface principale de discussion avec le modèle LLM. Posez des questions en langage naturel et obtenez des réponses basées sur les documents indexés avec sources citées.",
+                    href='m3c-chatbot.html',
+                    icon='🤖',
+                    category='user',
+                    modal_id='chatbot-info'
+                ) }}
+
+                {{ feature_card(
+                    title='Médiation inversée',
+                    description="Interface permettant de sélectionner un document PDF et d'interagir avec son contenu via un chat intelligent. Visualisation du PDF intégrée.",
+                    href='question_session.html',
+                    icon='📄',
+                    category='user',
+                    features=['Sélection de documents PDF','Visualisation du PDF','Chat contextuel par document','Navigation facile','Recherche ciblée'],
+                    modal_id='pdf-chat-info'
+                ) }}
+
+
+                {{ feature_card(
+                    title='Gestion Q/R',
+                    description="Interface de gestion des questions et réponses. Créez, modifiez et organisez les questions pour faciliter la recherche et l'apprentissage.",
+                    href='questions_management.html',
+                    icon='🏆',
+                    category='user',
+                    features=['Création de questions','Organisation par catégories','Suivi des réponses','Évaluation des réponses','Export des données'],
+                    modal_id='qr-info'
+                ) }}
             </div>
         {% endcall %}
 
@@ -478,61 +521,7 @@
             </div>
         {% endcall %}
 
-        {# --- Interfaces utilisateur --- #}
-        {% call section(id='interfaces', title='Interfaces Utilisateur',
-                        title_icon='💻',
-                        extra='<span class="info-badge">6 interfaces disponibles</span>') %}
-            <div class="cards-grid">
-                {{ feature_card(
-                    title='Chatbot RAG',
-                    description="Interface principale de discussion avec le modèle LLM. Posez des questions en langage naturel et obtenez des réponses basées sur les documents indexés avec sources citées.",
-                    href='m3c-chatbot.html',
-                    icon='🤖',
-                    category='user',
-                    modal_id='chatbot-info'
-                ) }}
 
-                {{ feature_card(
-                    title='PDF + Chat',
-                    description="Interface permettant de sélectionner un document PDF et d'interagir avec son contenu via un chat intelligent. Visualisation du PDF intégrée.",
-                    href='question_session.html',
-                    icon='📄',
-                    category='user',
-                    features=['Sélection de documents PDF','Visualisation du PDF','Chat contextuel par document','Navigation facile','Recherche ciblée'],
-                    modal_id='pdf-chat-info'
-                ) }}
-
-                {{ feature_card(
-                    title='Recherche Solr',
-                    description="Interface de recherche sémantique avancée utilisant Apache Solr pour trouver des informations précises dans le corpus documentaire.",
-                    href='solr_search.html',
-                    icon='🔍',
-                    category='user',
-                    features=['Recherche full-text','Filtrage avancé','Résultats pertinents','Visualisation des résultats','Export possible'],
-                    modal_id='solr-info'
-                ) }}
-
-                {{ feature_card(
-                    title='Visualisation RAG',
-                    description="Visualisation interactive des embeddings en 2D utilisant les algorithmes t-SNE ou UMAP. Explorez les relations entre les chunks de documents.",
-                    href='rag_visualization.html',
-                    icon='📊',
-                    category='user',
-                    features=['Projection t-SNE','Projection UMAP','Visualisation interactive','Coloration par document','Exploration des clusters'],
-                    modal_id='visualization-info'
-                ) }}
-
-                {{ feature_card(
-                    title='Gestion Q/R',
-                    description="Interface de gestion des questions et réponses. Créez, modifiez et organisez les questions pour faciliter la recherche et l'apprentissage.",
-                    href='questions_management.html',
-                    icon='🏆',
-                    category='user',
-                    features=['Création de questions','Organisation par catégories','Suivi des réponses','Évaluation des réponses','Export des données'],
-                    modal_id='qr-info'
-                ) }}
-            </div>
-        {% endcall %}
 
         {# --- Footer --- #}
         <div class="home-footer">
