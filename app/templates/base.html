@@ -23,5 +23,6 @@
 {% if include_profile_widget|default(false) %}
 <script src="{{ static_prefix }}auth_widget.js"></script>
 {% endif %}
+{% block body_end %}{% endblock %}
 </body>
 </html>

@@ -197,7 +197,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ static_prefix }}models.js"></script>
 <script>
     const API_BASE = window.location.origin;
     const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
@@ -691,4 +690,5 @@
         return div.innerHTML;
     }
 </script>
-{% endblock %}
+
+<script src="{{ static_prefix }}models.js"></script>{% endblock %}

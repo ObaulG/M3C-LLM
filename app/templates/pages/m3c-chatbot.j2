@@ -4,7 +4,9 @@
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{{ static_prefix }}chatFunctions.js"></script>
+<script src="{{ static_prefix }}feedback.js"></script>
 <script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}model_selector.js"></script>
 <script src="{{ static_prefix }}m3c-chatbot.js"></script>
 {% endblock %}
 
@@ -19,53 +21,6 @@
             page_dir='root',
             show_admin=true
         ) }}
-
-        <div class="settings">
-            <div class="settings-grid">
-                <div class="setting-item">
-                    <label class="setting-checkbox">
-                        <input type="checkbox" id="useRAG" checked>
-                        <span class="setting-label">RAG</span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label class="setting-checkbox">
-                        <input type="checkbox" id="useReranking" checked>
-                        <span class="setting-label">Reranking</span>
-                    </label>
-                </div>
-
-                <div class="setting-item">
-                    <label class="setting-label">
-                        Nb sources:
-                        <input type="number" id="numSources" value="3" min="1" max="10" class="setting-input">
-                    </label>
-                </div>
-            </div>
-
-            <!-- Sélecteur de document pour RAG -->
-            <div class="document-selector-container">
-                <label class="setting-label">
-                    <input type="checkbox" id="useSingleDocument" onchange="toggleDocumentSelector()">
-                    <span>RAG sur un document spécifique</span>
-                </label>
-                <div id="documentSelector" style="display: none; margin-top: 10px;">
-                    <select id="selectedDocumentRAG" class="document-select">
-                        <option value="">Chargement des documents...</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="model-selector">
-                <label for="model-select" class="model-selector-label">Modèle de langage</label>
-                <div class="model-select-container">
-                    <select id="model-select" name="models" multiple class="model-select"></select>
-                    <div class="selected-models" id="selectedModels">
-                        <span class="selected-model-badge">Aucun modèle sélectionné</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         {{ chat_zone(
             container_id='chatContainer',
@@ -93,7 +48,64 @@
 {% block scripts %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
+    const modelSelect = document.getElementById("model-select");
+    loadModelsIntoSelect(modelSelect).then(() => enhanceModelSelect(modelSelect));
   });
 </script>
+{% endblock %}
+
+{% block body_end %}
+<!-- Widget flottant des parametres (marge droite) -->
+<button type="button" class="settings-fab" id="settingsFab" onclick="toggleSettingsPanel()" title="Paramètres" aria-label="Paramètres" aria-expanded="false">⚙️</button>
+<div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Paramètres de la requête">
+    <div class="settings-panel-header">
+        <span>⚙️ Paramètres</span>
+    </div>
+    <div class="settings-panel-body">
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label class="setting-checkbox">
+                    <input type="checkbox" id="useRAG" checked>
+                    <span class="setting-label">RAG</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label class="setting-checkbox">
+                    <input type="checkbox" id="useReranking" checked>
+                    <span class="setting-label">Reranking</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label class="setting-label">
+                    Nb sources:
+                    <input type="number" id="numSources" value="3" min="1" max="10" class="setting-input">
+                </label>
+            </div>
+        </div>
+
+        <!-- Sélecteur de document pour RAG -->
+        <div class="document-selector-container">
+            <label class="setting-label">
+                <input type="checkbox" id="useSingleDocument" onchange="toggleDocumentSelector()">
+                <span>RAG sur un document spécifique</span>
+            </label>
+            <div id="documentSelector" style="display: none; margin-top: 10px;">
+                <select id="selectedDocumentRAG" class="document-select">
+                    <option value="">Chargement des documents...</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="model-selector">
+            <label for="model-select" class="model-selector-label">Modèle de langage</label>
+            <div class="model-select-container">
+                <select id="model-select" name="models" multiple class="model-select"></select>
+                <div class="selected-models" id="selectedModels">
+                    <span class="selected-model-badge">Aucun modèle sélectionné</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
