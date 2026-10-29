@@ -459,6 +459,69 @@ async def add_answer_to_question(question_id: int, request: AddAnswerRequest):
         )
 
 
+class DeleteAllAnswersResponse(BaseModel):
+    """Réponse après la suppression de toutes les réponses d'une question"""
+    success: bool
+    question_id: int
+    deleted_answers: int
+    deleted_facts: int
+    message: str
+
+
+@router.post(
+    "/{question_id}/delete-answers",
+    response_model=DeleteAllAnswersResponse,
+    summary="Supprime toutes les réponses d'une question",
+    description="Supprime toutes les réponses d'une question existante, ainsi que les faits (affirmations) associés à chaque réponse."
+)
+async def delete_all_answers(question_id: int):
+    """
+    Supprime toutes les réponses d'une question et leurs faits associés.
+    """
+    from database.database import delete_answer_facts
+
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT answer_id FROM text_question_answers WHERE question_id = %s
+                """, (question_id,))
+                answer_rows = await cur.fetchall()
+
+                if not answer_rows:
+                    return DeleteAllAnswersResponse(
+                        success=True,
+                        question_id=question_id,
+                        deleted_answers=0,
+                        deleted_facts=0,
+                        message=f"Aucune réponse à supprimer pour la question {question_id}"
+                    )
+
+                deleted_facts = 0
+                for row in answer_rows:
+                    deleted_facts += await delete_answer_facts(row[0], conn)
+
+                await cur.execute("""
+                    DELETE FROM text_question_answers WHERE question_id = %s
+                """, (question_id,))
+                deleted_answers = cur.rowcount
+                await conn.commit()
+
+                return DeleteAllAnswersResponse(
+                    success=True,
+                    question_id=question_id,
+                    deleted_answers=deleted_answers,
+                    deleted_facts=deleted_facts,
+                    message=f"{deleted_answers} réponse(s) et {deleted_facts} fait(s) supprimés pour la question {question_id}"
+                )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression des réponses: {str(e)}"
+        )
+
+
 class GenerateAnswerFactsResponse(BaseModel):
     """Réponse après la génération des faits d'une réponse"""
     success: bool
