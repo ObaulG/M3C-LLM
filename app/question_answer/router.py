@@ -307,6 +307,10 @@ class GenerateAnswersRequest(BaseModel):
     question_id: Optional[int] = Field(default=None, description="ID de la question existante : la question et son contexte (chunks) sont récupérés en base")
     num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
     model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
+    user_prompt: Optional[str] = Field(
+        default=None,
+        description="Instructions personnalisées de l'utilisateur pour adapter la génération des réponses au contenu du document"
+    )
 
 
 class GenerateAnswersResponse(BaseModel):
@@ -375,11 +379,17 @@ async def generate_answers(request: GenerateAnswersRequest):
 
     agent = qa_agent.get_qa_agent(model=model, provider=provider, async_mode=True)
 
+    user_prompt_instructions = (
+        f"\n\nInstructions supplémentaires de l'utilisateur :\n{request.user_prompt.strip()}"
+        if (request.user_prompt and request.user_prompt.strip()) else ""
+    )
+
     input_schema = qa_agent.QuestionRequestInput(
         message=(
             f"Question: {question_text}\n\n"
             f"Génère exactement {request.num_answers} réponses différentes à la question ci-dessus, "
             f"en t'appuyant uniquement sur le contexte fourni. Ne génère aucune question."
+            f"{user_prompt_instructions}"
         ),
         document=document_context,
         num_questions=1,

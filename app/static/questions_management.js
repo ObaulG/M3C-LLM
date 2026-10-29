@@ -10,6 +10,46 @@ let allDocuments = [];
 let currentQuestions = [];
 let knowledgeItemsByQuestion = {};
 
+// Commandes personnalisées prédéfinies pour la génération groupée de réponses
+const BULK_PROMPT_COMMANDS = [
+    { label: '📝 Réponses détaillées', text: 'Formule des réponses détaillées et argumentées, en appuyant chaque affirmation par des éléments du texte.' },
+    { label: '📋 Réponses concises', text: 'Formule des réponses concises et directes, limitées à l\u2019essentiel du texte.' },
+    { label: '📚 Réponses pédagogiques', text: 'Formule des réponses à visée pédagogique : reformule avec des mots simples et illustre avec des exemples du texte.' },
+    { label: '🔗 Avec citations', text: 'Cite explicitement les passages du texte qui justifient chaque réponse.' },
+    { label: '🚫 Exclusions', text: 'N\u2019invente aucune information absente du contexte et évite les réponses par simple oui/non.' }
+];
+
+/**
+ * Insère une commande prédéfinie dans la zone de commande personnalisée
+ * du menu d'actions groupées.
+ * @param {number} index - Index de la commande dans BULK_PROMPT_COMMANDS
+ */
+function insertBulkPromptCommand(index) {
+    const textarea = document.getElementById('bulkUserPrompt');
+    if (!textarea) return;
+    const cmd = BULK_PROMPT_COMMANDS[index];
+    if (!cmd) return;
+    const current = textarea.value.trim();
+    if (current) {
+        if (current.includes(cmd.text)) return;
+        textarea.value = current + (current.endsWith('.') ? '' : '.') + '\n' + cmd.text;
+    } else {
+        textarea.value = cmd.text;
+    }
+    textarea.focus();
+}
+
+/**
+ * Affiche les chips de commandes prédéfinies dans le menu d'actions groupées.
+ */
+function renderBulkPromptCommands() {
+    const container = document.getElementById('bulkPromptCommands');
+    if (!container) return;
+    container.innerHTML = BULK_PROMPT_COMMANDS.map((cmd, i) =>
+        `<span class="prompt-command-chip" onclick="insertBulkPromptCommand(${i})" title="${escapeHtml(cmd.text)}">${cmd.label}</span>`
+    ).join('');
+}
+
 /**
  * Initialise la page au chargement
  */
@@ -314,6 +354,12 @@ function displayQuestions(questions, count) {
                     <select id="bulkModel"><option value="">Modèle par défaut (filtre « génération »)</option></select>
                 </div>
                 <div class="bulk-menu-field">
+                    <label for="bulkUserPrompt">Commande personnalisée (optionnel)</label>
+                    <div class="bulk-prompt-commands" id="bulkPromptCommands"></div>
+                    <textarea id="bulkUserPrompt" rows="3" placeholder="Ex. : Formule des réponses détaillées avec des exemples tirés du texte..."></textarea>
+                    <div class="bulk-menu-description">Ces instructions seront intégrées au prompt de l'agent pour chaque génération de réponse.</div>
+                </div>
+                <div class="bulk-menu-field">
                     <label class="bulk-checkbox">
                         <input type="checkbox" id="bulkGenerateFacts" checked>
                         Générer aussi les faits des réponses
@@ -606,6 +652,9 @@ function displayQuestions(questions, count) {
     if (bulkModelSelect && typeof loadModelsIntoSelect === 'function') {
         loadModelsIntoSelect(bulkModelSelect, { prefixProvider: true, keepFirst: true });
     }
+
+    // Afficher les chips de commandes personnalisées prédéfinies
+    renderBulkPromptCommands();
 }
 
 /**
@@ -2142,6 +2191,7 @@ async function bulkGenerateAnswers() {
     const numAnswers = parseInt(document.getElementById('bulkNumAnswers').value) || 1;
     const bulkModelSelect = document.getElementById('bulkModel');
     const generateFacts = document.getElementById('bulkGenerateFacts').checked;
+    const userPrompt = (document.getElementById('bulkUserPrompt').value || '').trim();
     const modelFilter = document.getElementById('generationModelFilter');
     const modelName = (bulkModelSelect && bulkModelSelect.value)
         ? bulkModelSelect.value
@@ -2149,8 +2199,9 @@ async function bulkGenerateAnswers() {
 
     if (!confirm(`Générer ${numAnswers} réponse(s) pour chacune des ${questions.length} question(s) de ce document ?\n\n`
         + `Modèle : ${modelName}\n`
-        + `Faits : ${generateFacts ? 'génération des faits activée' : 'pas de génération de faits'}\n\n`
-        + `Cette opération peut prendre plusieurs minutes.`)) {
+        + `Faits : ${generateFacts ? 'génération des faits activée' : 'pas de génération de faits'}\n`
+        + (userPrompt ? `Commande personnalisée : « ${userPrompt.substring(0, 120)}${userPrompt.length > 120 ? '...' : ''} »\n` : '')
+        + `\nCette opération peut prendre plusieurs minutes.`)) {
         return;
     }
 
@@ -2172,7 +2223,8 @@ async function bulkGenerateAnswers() {
                 body: JSON.stringify({
                     question_id: question.question_id,
                     num_answers: numAnswers,
-                    model_name: modelName
+                    model_name: modelName,
+                    user_prompt: userPrompt || null
                 })
             });
 
