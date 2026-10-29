@@ -357,7 +357,9 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
           response_model=QueryResponse,
           tags=["Query"])
 async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
-                   m3c_api_key: Optional[str] = Cookie(default=None)):
+                   m3c_api_key: Optional[str] = Cookie(default=None),
+                   mistral_api_key: Optional[str] = None,
+                   authorization: Optional[str] = None):
     """
     Pose une question au système et retourne la réponse en fournissant les sources
     Args:
@@ -398,7 +400,9 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
           response_model=QueryResponse,
           tags=["Query"])
 async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep,
-                             m3c_api_key: Optional[str] = Cookie(default=None)):
+                             m3c_api_key: Optional[str] = Cookie(default=None),
+                             mistral_api_key: Optional[str] = None,
+                             authorization: Optional[str] = None):
     """
     Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
     permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
@@ -463,6 +467,9 @@ async def api_recommend_questions(
     document_id: str,
     k: int = 5,
     rag_pipeline: RagPipelineDep = None,
+    mistral_api_key: Optional[str] = None,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
 ):
     """
     Recommande les questions les plus pertinentes d'un document par rapport à un prompt utilisateur.
@@ -523,7 +530,9 @@ async def api_recommend_questions(
           response_model=QueryCompareResponse,
           tags=["Query"])
 async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
-                       m3c_api_key: Optional[str] = Cookie(default=None)):
+                       m3c_api_key: Optional[str] = Cookie(default=None),
+                       mistral_api_key: Optional[str] = None,
+                       authorization: Optional[str] = None):
     """
     Note: can be done with or without RAG
     """
@@ -571,7 +580,9 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
           response_model=QueryResponse,
           tags=["Query"])
 async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
-                              m3c_api_key: Optional[str] = Cookie(default=None)):
+                              m3c_api_key: Optional[str] = Cookie(default=None),
+                              mistral_api_key: Optional[str] = None,
+                              authorization: Optional[str] = None):
     """
     Pose une question au systÃ¨me en utilisant le RAG sur un seul document spécifique.
     Sauvegarde également l'historique d'une session utilisateur

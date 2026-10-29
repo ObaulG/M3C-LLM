@@ -6,6 +6,7 @@
 {% from 'macros/knowledge_item_card.html' import knowledge_item_card %}
 {% from 'macros/theme_stats.html' import theme_stats_card %}
 {% from 'macros/resource_card.html' import resource_card %}
+{% from 'macros/profile.html' import mistral_api_modal %}
 
 {% block title %}{{ page_title|default("Mon Profil - M3C") }}{% endblock %}
 
@@ -530,6 +531,37 @@
             </div>
 
             {# ================================================================
+               CONFIGURATION CLÉ API MISTRAL
+               ================================================================ #}
+            <section class="section" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <span class="icon">🔑</span>
+                    <h2>Configuration de la clé API Mistral</h2>
+                </div>
+                
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+                        Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI. 
+                        <strong>Cette clé est stockée uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.
+                    </p>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <button onclick="showMistralApiModal()" class="btn btn-primary">
+                            ✏️ Configurer la clé API Mistral
+                        </button>
+                        <span id="apiKeyStatus" style="padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; background: #f8f9fa; border: 1px solid #e0e0e0;">
+                            <span id="profileApiStatus" style="font-size: 16px;">✗</span> Clé API non configurée
+                        </span>
+                    </div>
+                    
+                    <p style="margin-top: 15px; color: #888; font-size: 13px;">
+                        <i>ℹ️</i> Si vous êtes administrateur (global_admin), vous n'avez pas besoin de fournir votre clé. 
+                        Le système utilisera automatiquement la clé configurée sur le serveur.
+                    </p>
+                </div>
+            </section>
+
+            {# ================================================================
                STATISTIQUES GLOBALES
                ================================================================ #}
             <section class="stats-section">
@@ -871,6 +903,7 @@
 {% endblock %}
 
 {% block scripts %}
+{{ mistral_api_modal() }}
 <script>
 // Fonction pour basculer l'affichage des thèmes
 function toggleTheme(element) {
@@ -909,5 +942,28 @@ document.querySelectorAll('.section').forEach(section => {
     section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(section);
 });
+
+// Mettre à jour l'affichage du statut de la clé API au chargement
+window.addEventListener('DOMContentLoaded', function() {
+    updateApiKeyStatus();
+});
+
+function updateApiKeyStatus() {
+    const apiKey = localStorage.getItem('mistral_api_key');
+    const apiKeyStatus = document.getElementById('apiKeyStatus');
+    const profileApiStatus = document.getElementById('profileApiStatus');
+    
+    if (apiKeyStatus && profileApiStatus) {
+        if (apiKey && apiKey.length > 0) {
+            profileApiStatus.textContent = '✓';
+            profileApiStatus.style.color = '#28a745';
+            apiKeyStatus.innerHTML = '<span id="profileApiStatus" style="font-size: 16px; color: #28a745;">✓</span> Clé API configurée';
+        } else {
+            profileApiStatus.textContent = '✗';
+            profileApiStatus.style.color = '#dc3545';
+            apiKeyStatus.innerHTML = '<span id="profileApiStatus" style="font-size: 16px; color: #dc3545;">✗</span> Clé API non configurée';
+        }
+    }
+}
 </script>
 {% endblock %}
