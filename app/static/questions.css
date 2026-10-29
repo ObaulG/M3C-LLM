@@ -32,8 +32,39 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .document-item {
+            cursor: pointer;
+            user-select: none;
+            padding: 10px 12px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            list-style: none;
+        }
+
+        .document-item:hover {
+            background: #efedec;
+            border-color: #b74420;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        }
+
+        .document-item.active {
+            background: #fdf0ec;
+            border-color: #b74420;
+            box-shadow: 0 2px 6px rgba(183, 68, 32, 0.2);
+        }
+
+        .document-item h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
         .question-header {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: start;
             margin-bottom: 15px;
@@ -46,17 +77,27 @@
             color: #333;
         }
 
+        .question-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 15px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
         .question-meta {
             display: flex;
+            flex-wrap: wrap;
+            align-items: center;
             gap: 10px;
-            margin-top: 10px;
         }
 
         .question-info {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
             gap: 15px;
-            margin-top: 8px;
             font-size: 12px;
             color: #666;
         }
@@ -194,12 +235,26 @@
             color: #6c757d;
         }
 
-        .chunk-info {
+        .btn-set-reference {
+            padding: 2px 8px;
+            margin-left: 10px;
             font-size: 12px;
-            color: #999;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #f0f0f0;
+            vertical-align: middle;
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .btn-set-reference:hover {
+            background: #dce0e5;
+        }
+
+        .btn-set-reference.is-reference {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
         }
 
         .empty-state {
