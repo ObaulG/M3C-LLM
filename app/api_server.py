@@ -9,7 +9,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status, Response, Cookie
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from auth_middleware import install_auth_middleware
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, Field, ConfigDict
 from dotenv import load_dotenv
@@ -209,6 +210,7 @@ app.add_middleware(
     allow_methods=["*"],  # GET, POST, etc.
     allow_headers=["*"],  # Headers autorisés
 )
+install_auth_middleware(app)
 # === INITIALISATION DU RAG ===
 def initialize_rag(app: FastAPI):
     """
@@ -271,13 +273,8 @@ async def initialize_database(app: FastAPI):
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
-    """Endpoint racine - Redirige vers la documentation"""
-    return {
-        "message": "API Chatbot RAG v0.1 - M3C",
-        "documentation": "/docs",
-        "health_check": "/api/health",
-        "query_endpoint": "/api/query"
-    }
+    """Endpoint racine - Redirige vers la page d'index"""
+    return RedirectResponse("/static/index.html", status_code=302)
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():

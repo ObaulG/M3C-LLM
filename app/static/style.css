@@ -45,6 +45,14 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
+.nav-link.nav-link-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.5);
+}
+
 .main_container{
     display: flex;
     justify-content: center;

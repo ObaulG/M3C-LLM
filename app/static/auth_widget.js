@@ -32,6 +32,27 @@
         var loggedIn = document.getElementById('profileLoggedIn');
         if (form) form.style.display = 'flex';
         if (loggedIn) loggedIn.style.display = 'none';
+        setNavLinksDisabled(true);
+    }
+
+    // Grise (ou réactive) les liens de navigation autres que Index / Connexion.
+    // Les liens grisés ne sont plus cliquables tant que l'utilisateur n'est pas
+    // connecté (la page reste de toute façon protégée côté serveur).
+    function setNavLinksDisabled(disabled) {
+        var allowed = ['index.html', 'auth.html'];
+        var links = document.querySelectorAll('a.nav-link');
+        links.forEach(function (link) {
+            var href = (link.getAttribute('href') || '');
+            var page = href.split('?')[0].split('#')[0].split('/').pop() || 'index.html';
+            if (allowed.indexOf(page) !== -1) return;
+            if (disabled) {
+                link.classList.add('nav-link-disabled');
+                link.setAttribute('aria-disabled', 'true');
+            } else {
+                link.classList.remove('nav-link-disabled');
+                link.removeAttribute('aria-disabled');
+            }
+        });
     }
 
     function setMessage(text, isError) {
@@ -59,6 +80,7 @@
             return resp.json().then(function (data) {
                 if (!resp.ok) throw new Error(data.detail || 'Connexion échouée');
                 showLoggedIn(data.user);
+                setNavLinksDisabled(false);
                 setMessage('Connecté', false);
                 document.dispatchEvent(new CustomEvent('profile-widget-login', { detail: data.user }));
             });
@@ -89,5 +111,8 @@
             })
             .then(function (data) { showLoggedIn(data.user); })
             .catch(function () { showLoginForm(); });
+        document.addEventListener('profile-widget-login', function () {
+            setNavLinksDisabled(false);
+        });
     });
 })();
