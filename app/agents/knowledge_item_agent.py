@@ -10,13 +10,29 @@ prompt_loader avec un fallback SystemPromptGenerator, client Mistral via
 mistral_client.get_mistral_client, factory get_knowledge_item_agent.
 """
 from typing import List, Optional, Literal
+
+import instructor
 from pydantic import Field
 
 from atomic_agents import AtomicAgent, AgentConfig, BaseIOSchema
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 
-from .mistral_client import get_mistral_client
+from .instructor_factory import create_client
 from .prompt_loader import get_prompt
+
+
+def _resolve_provider_model(model: str, default_provider: str = "mistral"):
+    """Sépare un sélecteur "provider/model" (envoyé par les pages admin via
+    models.js prefixProvider) en (provider, model).
+
+    Sans préfixe, le fournisseur par défaut est mistral."""
+    if not model:
+        return default_provider, "mistral-small"
+    if "/" in model:
+        provider, _, model_name = model.partition("/")
+        if provider in ("mistral", "ollama", "google", "gemini"):
+            return provider, model_name
+    return default_provider, model
 
 
 # ============================================================================
@@ -291,8 +307,9 @@ def get_knowledge_item_agent(
     """Crée et retourne un AtomicAgent de génération de knowledge_items.
 
     Args:
-        model: Nom du modèle LLM à utiliser (par défaut: mistral-medium).
-        async_mode: Si True, le client Mistral est asynchrone (run_async).
+        model: Nom du modèle LLM, éventuellement préfixé par le fournisseur
+               ("mistral/mistral-small", "ollama/mistral:7b", ...).
+        async_mode: Si True, le client LLM est asynchrone (run_async).
         prompt_name: Nom du prompt à charger depuis knowledge_item.yaml
                      ("default" ou "compact").
 
@@ -300,15 +317,21 @@ def get_knowledge_item_agent(
         AtomicAgent[KnowledgeExtractionInput, KnowledgeExtractionOutput]
         configuré pour l'extraction de connaissances.
     """
-    client = get_mistral_client(async_mode=async_mode)
+    provider, model_name = _resolve_provider_model(model)
+    instructor_mode = instructor.Mode.TOOLS
+    model_api_parameters = {"temperature": 0.2} if provider not in ["gemini", "google"] else {}
+    client = create_client(provider, model_name, async_mode, instructor_mode=instructor_mode)
     system_prompt_generator = _load_system_prompt(prompt_name)
 
     agent = AtomicAgent[KnowledgeExtractionInput, KnowledgeExtractionOutput](
         config=AgentConfig(
             client=client,
-            model=model,
+            model=model_name,
+            mode=instructor_mode,
             history=ChatHistory(),
             system_prompt_generator=system_prompt_generator,
+            model_api_parameters=model_api_parameters,
+            assistant_role="model" if provider in ["gemini", "google"] else "assistant",
         )
     )
     return agent
@@ -332,15 +355,21 @@ def get_knowledge_item_agent_from_questions(
         AtomicAgent[KnowledgeExtractionFromQuestionsInput, KnowledgeExtractionOutput]
         configuré pour l'extraction depuis les questions/réponses.
     """
-    client = get_mistral_client(async_mode=async_mode)
+    provider, model_name = _resolve_provider_model(model)
+    instructor_mode = instructor.Mode.TOOLS
+    model_api_parameters = {"temperature": 0.2} if provider not in ["gemini", "google"] else {}
+    client = create_client(provider, model_name, async_mode, instructor_mode=instructor_mode)
     system_prompt_generator = _load_system_prompt_from_questions(prompt_name)
 
     agent = AtomicAgent[KnowledgeExtractionFromQuestionsInput, KnowledgeExtractionOutput](
         config=AgentConfig(
             client=client,
-            model=model,
+            model=model_name,
+            mode=instructor_mode,
             history=ChatHistory(),
             system_prompt_generator=system_prompt_generator,
+            model_api_parameters=model_api_parameters,
+            assistant_role="model" if provider in ["gemini", "google"] else "assistant",
         )
     )
     return agent
