@@ -5,6 +5,7 @@
 
 // Variables globales
 let currentDocumentId = null;
+let currentDocumentTitle = null;
 let allDocuments = [];
 let currentQuestions = [];
 let knowledgeItemsByQuestion = {};
@@ -98,7 +99,6 @@ async function loadDocuments() {
             li.dataset.documentId = doc.document_id;
             li.innerHTML = `
                 <h4>${doc.title}</h4>
-                <p>Taille: ${formatFileSize(doc.file_size)}</p>
             `;
             li.onclick = () => selectDocument(doc.document_id);
             documentListElement.appendChild(li);
@@ -201,6 +201,10 @@ async function selectDocument(documentId) {
         item.classList.toggle('active', item.dataset.documentId === documentId);
     });
 
+    // Afficher le nom du document sélectionné
+    const selectedDoc = (allDocuments || []).find(doc => doc.document_id === documentId);
+    currentDocumentTitle = selectedDoc ? selectedDoc.title : null;
+
     // Charger les questions pour ce document
     await loadQuestions(documentId);
 }
@@ -294,7 +298,7 @@ function displayQuestions(questions, count) {
     
     let headerHtml = `
         <div class="questions-header">
-            <h2>Questions pour ce document</h2>
+            <h2>${currentDocumentTitle ? escapeHtml(currentDocumentTitle) : 'Questions pour ce document'}</h2>
             <span class="questions-count">${count} question(s) trouvée(s)</span>
         </div>
     `;
@@ -352,19 +356,12 @@ function displayQuestions(questions, count) {
                         <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
                         ${answer.is_correct ? '<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>' : ''}
                         ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
+                        ${answerId ? `<button class="btn btn-set-reference ${answer.is_correct ? 'is-reference' : ''}" onclick="setReferenceAnswer(${question.question_id}, ${answerId}, this)" title="Déclarer cette réponse comme réponse de référence">${answer.is_correct ? '★ Référence' : '☆ Référence'}</button>` : ''}
                         ${answerId ? `<button class="btn btn-generate-facts" onclick="generateAnswerFacts(${answerId}, this)" title="Générer les faits de réponse via l'agent d'extraction">✨ Faits</button>` : ''}
                         <div class="answer-facts-container">${answerFactsHtml(answer)}</div>
                         <div class="generation-status" id="facts-status-${answerId}" style="display: none;"></div>
                     </div>
                 `;}).join('')}
-            </div>
-        ` : '';
-
-        // Informations sur le chunk
-        const chunkInfo = question.chunk_id ? `
-            <div class="chunk-info">
-                Chunk ID: ${question.chunk_id}
-                ${question.num_page ? `<br>Page: ${question.num_page}` : ''}
             </div>
         ` : '';
 
@@ -407,22 +404,10 @@ function displayQuestions(questions, count) {
         }
         
         // Section d'évaluation - TOUJOURS affichée pour permettre l'évaluation
-        const referenceAnswerText = hasReferenceAnswer ? escapeHtml(referenceAnswerData.response_answer) : '';
-        const referenceAnswerId = hasReferenceAnswer ? (referenceAnswerData.answer_id || '') : '';
-        
+
         const evaluationSection = `
             <div class="evaluation-section" data-question-id="${question.question_id}" data-has-reference="${hasReferenceAnswer}">
                 <h4>📊 Évaluation de réponse</h4>
-                ${hasReferenceAnswer ? `
-                    <p style="font-size: 13px; color: #28a745; margin-bottom: 10px;">
-                        <strong>✓ Réponse de référence actuelle:</strong> ${referenceAnswerText}
-                    </p>
-                ` : `
-                    <p style="font-size: 13px; color: #dc3545; margin-bottom: 10px;">
-                        <strong>⚠️ Aucune réponse de référence trouvée.</strong>
-                        Vous pouvez quand même évaluer, mais vous devrez fournir une réponse de référence.
-                    </p>
-                `}
                 
                 <input type="hidden" id="eval-source-${question.question_id}" value="llm">
 
@@ -498,26 +483,24 @@ function displayQuestions(questions, count) {
             <div class="question-card" data-question-id="${question.question_id}" data-chunk-id="${question.chunk_id || ''}">
                 <div class="question-header">
                     <div class="question-content">
-                        <strong>Q:</strong> ${marked.parse(question.content)}
+                        ${marked.parse(question.content)}
                     </div>
-                </div>
-                
-                <div class="question-meta">
-                    <span class="badge ${badgeClass}">${question.status}</span>
-                    <span class="difficulty">
-                        <span class="difficulty-stars">${stars}</span>
-                        <span>Niveau ${question.difficulty_level}</span>
-                    </span>
-                    ${question.created_by ? `<span style="font-size: 12px; color: #999;">Créé par: ${question.created_by}</span>` : ''}
-                </div>
-                
-                <div class="question-info">
-                    <span class="info-item" title="Identifiant de la question">
-                        <strong>ID:</strong> ${question.question_id}
-                    </span>
-                    ${question.chunk_id ? `<span class="info-item" title="Identifiant du chunk">
-                        <strong>Chunk:</strong> ${question.chunk_id}
-                    </span>` : ''}
+                    <div class="question-meta-row">
+                        <div class="question-meta">
+                            <span class="badge ${badgeClass}">${question.status}</span>
+                            <span class="difficulty">
+                                <span class="difficulty-stars">${stars}</span>
+                                <span>Niveau ${question.difficulty_level}</span>
+                            </span>
+                            ${question.created_by ? `<span style="font-size: 12px; color: #999;">Créé par: ${question.created_by}</span>` : ''}
+                        </div>
+                        <div class="question-info">
+                            <span class="info-item" title="Identifiant de la question">
+                                <strong>ID:</strong> ${question.question_id}
+                            </span>
+                            ${question.chunk_id ? `<span class="info-item" title="Identifiant du chunk">
+                                <strong>Chunk:</strong> ${question.chunk_id}
+                            </span>` : ''}
                     ${question.page ? `<span class="info-item" title="Page du document">
                         <strong>Page:</strong> ${question.page}
                     </span>` : ''}
@@ -527,10 +510,11 @@ function displayQuestions(questions, count) {
                     ${question.num_page ? `<span class="info-item" title="Page du document">
                         <strong>Page:</strong> ${question.num_page}
                     </span>` : ''}
+                        </div>
+                    </div>
                 </div>
                 
                 ${answersHtml}
-                ${chunkInfo}
                 
                 <!-- Boutons d'édition -->
                 <div class="edit-actions">
@@ -649,6 +633,70 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
+ * Déclare une réponse comme réponse de référence pour une question
+ * @param {number} questionId - ID de la question
+ * @param {number} answerId - ID de la réponse à déclarer comme référence
+ * @param {HTMLElement} button - Bouton cliqué
+ */
+async function setReferenceAnswer(questionId, answerId, button) {
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    const originalButtonText = button.innerHTML;
+    button.innerHTML = '...';
+
+    try {
+        const response = await fetch(`/api/questions/${questionId}/set-reference-answer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ answer_id: answerId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Erreur HTTP: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message || 'Échec de la déclaration de la référence');
+        }
+
+        // Rafraîchir l'affichage de la question
+        if (currentDocumentId) {
+            const questionsResponse = await fetch(buildQuestionsUrl(currentDocumentId));
+            if (questionsResponse.ok) {
+                const data = await questionsResponse.json();
+                const refreshedQuestion = (data.questions || []).find(
+                    q => parseInt(q.question_id) === parseInt(questionId)
+                );
+                if (refreshedQuestion) {
+                    const updatedIndex = currentQuestions.findIndex(
+                        q => parseInt(q.question_id) === parseInt(questionId)
+                    );
+                    if (updatedIndex !== -1) {
+                        currentQuestions[updatedIndex] = refreshedQuestion;
+                    }
+                    const contentElement = document.getElementById('questionsContent');
+                    const previousScroll = window.scrollY;
+                    displayQuestions(currentQuestions, currentQuestions.length);
+                    window.scrollTo(0, previousScroll);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de la déclaration de la réponse de référence:', error);
+        alert('Une erreur est survenue: ' + error.message);
+        if (button) {
+            button.innerHTML = originalButtonText;
+            button.disabled = false;
+        }
+    }
 }
 
 /**

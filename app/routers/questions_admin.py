@@ -134,6 +134,66 @@ class UpdateQuestionRequest(BaseModel):
     deleted_answer_ids: Optional[List[int]] = Field(default_factory=list, description="Liste des IDs des réponses à supprimer")
 
 
+class SetReferenceAnswerRequest(BaseModel):
+    """Modèle pour déclarer une réponse comme réponse de référence"""
+    answer_id: int = Field(..., description="ID de la réponse à déclarer comme référence")
+
+
+class SetReferenceAnswerResponse(BaseModel):
+    """Modèle de réponse pour la déclaration d'une réponse de référence"""
+    success: bool = Field(..., description="Indique si l'opération a réussi")
+    message: str = Field(..., description="Message de statut")
+
+
+@router.post("/api/questions/{question_id}/set-reference-answer", response_model=SetReferenceAnswerResponse, tags=["Questions"])
+async def set_reference_answer(question_id: int, request: SetReferenceAnswerRequest):
+    """
+    Déclare une réponse comme réponse de référence (is_correct = true) pour une question.
+
+    Args:
+        question_id: Identifiant de la question
+        request: SetReferenceAnswerRequest contenant l'ID de la réponse de référence
+
+    Returns:
+        SetReferenceAnswerResponse: Résultat de l'opération
+    """
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT answer_id FROM text_question_answers
+                    WHERE answer_id = %s AND question_id = %s
+                """, (request.answer_id, question_id))
+                if not await cur.fetchone():
+                    return SetReferenceAnswerResponse(
+                        success=False,
+                        message=f"Réponse avec ID {request.answer_id} non trouvée pour la question {question_id}"
+                    )
+
+                await cur.execute("""
+                    UPDATE text_question_answers SET is_correct = false
+                    WHERE question_id = %s AND is_correct = true
+                """, (question_id,))
+
+                await cur.execute("""
+                    UPDATE text_question_answers SET is_correct = true
+                    WHERE answer_id = %s
+                """, (request.answer_id,))
+
+                await conn.commit()
+
+        return SetReferenceAnswerResponse(
+            success=True,
+            message="Réponse déclarée comme réponse de référence"
+        )
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la déclaration de la réponse de référence: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la déclaration de la réponse de référence: {str(e)}"
+        )
+
+
 class UpdateQuestionResponse(BaseModel):
     """Modèle de réponse pour la mise à jour d'une question"""
     success: bool = Field(..., description="Indique si la mise à jour a réussi")
