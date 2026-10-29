@@ -416,6 +416,89 @@
         chunkSelect.onchange = null;
     }
     
+    async function startQuestionGeneration() {
+        const numQuestions = parseInt(document.getElementById('numQuestions').value) || 3;
+        const numAnswersPerQuestion = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+        const modelName = document.getElementById('modelSelect').value || 'mistral/mistral-small';
+        const documentId = document.getElementById('documentSelect').value;
+        const chunkId = document.getElementById('chunkSelect').value;
+
+        if (!documentId && !chunkId) {
+            alert('❌ Veuillez sélectionner un document (ou un chunk spécifique) pour lancer la génération.');
+            return;
+        }
+
+        const cible = chunkId
+            ? `le chunk ${chunkId}`
+            : `tous les chunks du document ${documentId}`;
+        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.\n\nVoulez-vous continuer ?`)) {
+            return;
+        }
+
+        const generateBtn = document.getElementById('generateBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        generateBtn.disabled = true;
+        refreshBtn.disabled = true;
+        generateBtn.textContent = 'Génération en cours...';
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    num_questions_per_doc: numQuestions,
+                    num_answers_per_question: numAnswersPerQuestion,
+                    model_name: modelName,
+                    document_id: documentId ? parseInt(documentId) : null,
+                    chunk_id: chunkId ? parseInt(chunkId) : null
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `Erreur: ${response.status} - ${response.statusText}`;
+                try {
+                    errorMessage = JSON.parse(errorText).detail || errorMessage;
+                } catch (e) {}
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            currentJobId = data.job_id;
+
+            alert(`✅ Job de génération lancé (ID: ${data.job_id}). Le traitement des chunks s'effectue en arrière-plan, suivez la progression dans l'historique des jobs.`);
+            startAutoRefresh();
+        } catch (error) {
+            console.error('Erreur lors du lancement de la génération:', error);
+            alert('❌ Erreur: ' + error.message);
+        } finally {
+            generateBtn.disabled = false;
+            refreshBtn.disabled = false;
+            generateBtn.textContent = '✨ Générer des Questions';
+        }
+    }
+
+    function startAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+        refreshJobs();
+        refreshInterval = setInterval(() => {
+            refreshJobs();
+            const lastJobStatus = document.getElementById('lastJobStatus').textContent;
+            if (!['En cours', 'En attente'].includes(lastJobStatus)) {
+                stopAutoRefresh();
+            }
+        }, 3000);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
     async function refreshJobs() {
         try {
             const response = await fetch(QUESTIONS_API + '/jobs');
@@ -485,15 +568,14 @@
         
         let progressHtml = '';
         if (job.progress && Object.keys(job.progress).length > 0) {
-            progressHtml = '<div class="document-list"><strong>Documents:</strong>';
-            for (const [docId, progress] of Object.entries(job.progress)) {
-                const docClass = progress.status === 'completed' ? 'completed' : progress.status === 'failed' ? 'failed' : 'pending';
+            progressHtml = '<div class="document-list"><strong>Chunks:</strong>';
+            for (const [chunkId, progress] of Object.entries(job.progress)) {
+                const docClass = progress.status === 'completed' ? 'completed' : progress.status === 'failed' ? 'failed' : (progress.status === 'skipped' ? 'pending' : 'pending');
                 progressHtml += `
                     <div class="document-item ${docClass}">
-                        <div class="doc-id">Document ID: ${progress.resource_id}</div>
+                        <div class="doc-id">Chunk ID: ${progress.chunk_id || chunkId} (Document: ${progress.document_id || 'N/A'})</div>
                         <div class="doc-stats">
-                            ✓ ${progress.questions_generated || 0} générées | 
-                            💾 ${progress.questions_saved || 0} sauvegardées
+                            ✓ ${progress.questions_generated || 0} générées | Statut: ${progress.status || 'N/A'}
                         </div>
                         ${progress.error ? `<div class="doc-error">❌ ${progress.error}</div>` : ''}
                     </div>
@@ -520,10 +602,435 @@
         `;
     }
     
+    function getQuestionStatusClass(status) {
+        const classMap = {
+            'generated': 'status-running',
+            'validated': 'status-completed',
+            'pending': 'status-pending',
+            'rejected': 'status-failed'
+        };
+        return classMap[status] || 'status-pending';
+    }
+
+    function saveQuestionsToSession(newQuestions) {
+        let existingQuestions = JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+        existingQuestions = existingQuestions.concat(newQuestions);
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(existingQuestions));
+    }
+
+    function getQuestionsFromSession() {
+        return JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+    }
+
+    function removeQuestionFromSession(questionId) {
+        let questions = getQuestionsFromSession();
+        questions = questions.filter(q => q.id !== questionId);
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(questions));
+    }
+
+    function renderGeneratedQuestions() {
+        const container = document.getElementById('generatedQuestionsContainer');
+        const validateAllBtn = document.getElementById('validateAllBtn');
+        const exportLogBtn = document.getElementById('exportLogBtn');
+        const questions = getQuestionsFromSession();
+
+        if (questions.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>';
+            validateAllBtn.style.display = 'none';
+            exportLogBtn.style.display = 'none';
+            return;
+        }
+
+        validateAllBtn.style.display = 'inline-block';
+
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+
+        let html = '<div class="questions-list">';
+        questions.forEach((q, index) => {
+            const questionId = `edit-question-${q.id}`;
+            const answerId = `edit-answer-${q.id}`;
+
+            html += `
+                <div class="question-card" data-id="${q.id}" data-index="${index}">
+                    <div class="question-header">
+                        <strong>Question ${index + 1}</strong>
+                        <div>
+                            <button class="validate-btn" onclick="validateQuestion('${q.id}')">✅ Valider</button>
+                            <button class="delete-btn" onclick="deleteQuestion('${q.id}')">❌ Supprimer</button>
+                        </div>
+                    </div>
+                    <textarea id="${questionId}" class="editable-question" onchange="updateQuestionInSession('${q.id}', this.value, document.getElementById('${answerId}').value)">${escapeHtml(q.question)}</textarea>
+                    <textarea id="${answerId}" class="editable-answer" onchange="updateQuestionInSession('${q.id}', document.getElementById('${questionId}').value, this.value)">${escapeHtml(q.answer)}</textarea>
+                    ${q.chunk_id ? `<div class="question-meta">Chunk ID: ${q.chunk_id} | Document ID: ${q.document_id || 'N/A'} | Modèle: ${q.model || 'N/A'}</div>` : ''}
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+
+    function updateQuestionInSession(questionId, newQuestion, newAnswer) {
+        const questions = getQuestionsFromSession();
+        const updatedQuestions = questions.map(q => {
+            if (q.id === questionId) {
+                return { ...q, question: newQuestion, answer: newAnswer };
+            }
+            return q;
+        });
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(updatedQuestions));
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatCSVRow(data) {
+        return data.map(field => {
+            if (field === null || field === undefined) return '';
+            const stringField = String(field).replace(/"/g, '""');
+            if (stringField.includes(',') || stringField.includes('\n') || stringField.includes('"')) {
+                return `"${stringField}"`;
+            }
+            return stringField;
+        }).join(',');
+    }
+
+    function logQuestionAction(question, action) {
+        let logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        const logEntry = {
+            model: question.model || 'N/A',
+            document_id: question.document_id || 'N/A',
+            chunk_id: question.chunk_id || 'N/A',
+            question_text: question.question || '',
+            answer_text: question.answer || '',
+            action: action,
+            timestamp: new Date().toISOString()
+        };
+        logs.push(logEntry);
+        sessionStorage.setItem('question_actions_log', JSON.stringify(logs));
+        updateExportButtonVisibility();
+        return logEntry;
+    }
+
+    function updateExportButtonVisibility() {
+        const exportLogBtn = document.getElementById('exportLogBtn');
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        if (exportLogBtn) {
+            exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    function exportActionsLogToCSV() {
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        if (logs.length === 0) {
+            alert('Aucune action à exporter.');
+            return;
+        }
+        const header = ['model', 'document_id', 'chunk_id', 'question_text', 'answer_text', 'action', 'timestamp'];
+        let csvContent = formatCSVRow(header) + '\n';
+        logs.forEach(log => {
+            const row = [
+                log.model || '',
+                log.document_id || '',
+                log.chunk_id || '',
+                log.question_text || '',
+                log.answer_text || '',
+                log.action || '',
+                log.timestamp || ''
+            ];
+            csvContent += formatCSVRow(row) + '\n';
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `journal_actions_questions_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    async function validateQuestion(questionId) {
+        if (!confirm('Valider cette question et la sauvegarder en base de données?')) {
+            return;
+        }
+
+        const questions = getQuestionsFromSession();
+        const questionToSave = questions.find(q => q.id === questionId);
+
+        if (!questionToSave) {
+            alert('Question introuvable');
+            return;
+        }
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: questionToSave.question,
+                    answers: [questionToSave.answer],
+                    chunk_id: questionToSave.chunk_id,
+                    model: questionToSave.model || 'local-generation',
+                    difficulty_level: 3
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur: ${response.status} - ${response.statusText}`);
+            }
+
+            logQuestionAction(questionToSave, 'VALIDATION');
+            removeQuestionFromSession(questionId);
+            renderGeneratedQuestions();
+
+            alert('✅ Question validée et sauvegardée en base de données!');
+
+        } catch (error) {
+            console.error('Erreur lors de la validation:', error);
+            alert('❌ Erreur: ' + error.message);
+        }
+    }
+
+    function deleteQuestion(questionId) {
+        if (!confirm('Supprimer cette question de la file d\'attente?')) {
+            return;
+        }
+
+        const questions = getQuestionsFromSession();
+        const questionToDelete = questions.find(q => q.id === questionId);
+        if (questionToDelete) {
+            logQuestionAction(questionToDelete, 'SUPPRESSION');
+        }
+
+        removeQuestionFromSession(questionId);
+        renderGeneratedQuestions();
+    }
+
+    async function validateAllQuestions() {
+        const questions = getQuestionsFromSession();
+
+        if (questions.length === 0 || !confirm(`Valider TOUTES les ${questions.length} questions?`)) {
+            return;
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const question of questions) {
+            try {
+                const response = await fetch(QUESTIONS_API + '/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question.question,
+                        answers: [question.answer],
+                        chunk_id: question.chunk_id,
+                        model: question.model || 'local-generation',
+                        difficulty_level: 3
+                    })
+                });
+
+                if (response.ok) {
+                    successCount++;
+                    logQuestionAction(question, 'VALIDATION');
+                } else {
+                    errorCount++;
+                    console.error(`Erreur validation question ${question.id}: ${response.statusText}`);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Erreur validation question ${question.id}:`, error);
+            }
+        }
+
+        sessionStorage.removeItem('unvalidated_questions');
+        renderGeneratedQuestions();
+
+        alert(`✅ ${successCount} question(s) validées avec succès! ${errorCount > 0 ? `\n❌ ${errorCount} échec(s).` : ''}`);
+    }
+
+    async function loadExistingQuestionsForChunk(chunkId) {
+        const container = document.getElementById('existingQuestionsContainer');
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/chunk/' + chunkId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.questions && data.questions.length > 0) {
+                renderExistingQuestions(data.questions, chunkId);
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question existante pour ce chunk.</p>';
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des questions existantes:', error);
+            container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Erreur lors du chargement des questions existantes.</p>';
+        }
+    }
+
+    function renderExistingQuestions(questions, chunkId) {
+        const container = document.getElementById('existingQuestionsContainer');
+
+        let html = '<div class="questions-list">';
+
+        questions.forEach((q, index) => {
+            const questionId = q.question_id;
+            const questionContent = escapeHtml(q.content);
+            const status = q.status || 'generated';
+            const statusClass = getQuestionStatusClass(status);
+
+            let answersHtml = '<div class="existing-answers">';
+            if (q.answers && q.answers.length > 0) {
+                q.answers.forEach((answer, idx) => {
+                    const answerContent = escapeHtml(answer.content);
+                    const isCorrect = answer.is_correct ? '✓' : '✗';
+                    answersHtml += `
+                        <div class="answer-item" style="margin: 5px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
+                            <strong>${isCorrect} Réponse ${idx + 1}:</strong> ${answerContent}
+                        </div>
+                    `;
+                });
+            } else {
+                answersHtml += '<p style="color: #666; font-style: italic;">Aucune réponse associée</p>';
+            }
+            answersHtml += '</div>';
+
+            const generateAnswersBtn = '<button class="btn" onclick="handleGenerateAnswers(this)" ' +
+                        'data-question-id="' + questionId + '" ' +
+                        'data-chunk-id="' + chunkId + '" ' +
+                        'style="margin-top: 10px; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">' +
+                        '🔄 Générer de nouvelles réponses</button>';
+
+            html += `
+                <div class="question-card existing-question" data-id="${questionId}" data-chunk-id="${chunkId}">
+                    <div class="question-header">
+                        <strong>Question ${index + 1}</strong>
+                        <span class="status-badge ${statusClass}">${status.toUpperCase()}</span>
+                    </div>
+                    <div class="question-text" style="margin: 10px 0;">${questionContent}</div>
+                    <div style="margin-top: 10px;">
+                        <strong>Réponses existantes :</strong>
+                        ${answersHtml}
+                    </div>
+                    <div class="actions" style="margin-top: 15px;">
+                        ${generateAnswersBtn}
+                    </div>
+                    <div class="question-meta">Question ID: ${q.question_id} | Chunk ID: ${q.chunk_id || chunkId}</div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    async function handleGenerateAnswers(button) {
+        const questionId = button.dataset.questionId;
+        const chunkId = button.dataset.chunkId;
+
+        const numNewAnswers = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+        const modelName = document.getElementById('modelSelect').value;
+        const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+
+        if (!chunkContent || chunkContent.includes('Sélectionnez un chunk')) {
+            alert('❌ Veuillez sélectionner un chunk valide.');
+            return;
+        }
+
+        if (!confirm(`Vous allez générer ${numNewAnswers} nouvelle(s) réponse(s) pour cette question.\n\nVoulez-vous continuer ?`)) {
+            return;
+        }
+
+        const questionCard = button.closest('.question-card');
+        const questionElement = questionCard ? questionCard.querySelector('.question-text') : null;
+        const questionText = questionElement ? questionElement.textContent : '';
+
+        if (!questionText) {
+            alert('❌ Impossible de récupérer le texte de la question.');
+            return;
+        }
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/generate-answers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question_text: questionText,
+                    document_context: chunkContent,
+                    num_answers: numNewAnswers,
+                    model_name: modelName
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erreur API: ${response.status} - ${response.statusText} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            if (data && data.answers && data.answers.length > 0) {
+                await saveNewAnswersForQuestion(questionId, chunkId, data.answers, modelName);
+                await loadExistingQuestionsForChunk(chunkId);
+                alert(`✅ ${data.answers.length} nouvelle(s) réponse(s) générée(s) et ajoutée(s) à la question!`);
+            } else {
+                throw new Error('Aucune réponse générée par le modèle');
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la génération des réponses:', error);
+            alert('❌ Erreur: ' + error.message);
+        }
+    }
+
+    async function saveNewAnswersForQuestion(questionId, chunkId, answers, modelName) {
+        try {
+            for (const answer of answers) {
+                const response = await fetch(QUESTIONS_API + `/${questionId}/add-answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answer_text: answer,
+                        is_correct: true,
+                        model_name: modelName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.warn(`Erreur lors de la sauvegarde d'une réponse: ${response.status} - ${errorText}`);
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde des réponses:', error);
+            throw error;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         refreshStats();
         refreshJobs();
+        renderGeneratedQuestions();
+        updateExportButtonVisibility();
         loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else if (currentJobId) {
+            startAutoRefresh();
+        }
     });
 </script>
 {% endblock %}

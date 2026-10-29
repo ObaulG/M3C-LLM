@@ -95,7 +95,7 @@ def get_all_question_generation_jobs() -> Dict[str, dict]:
     Returns:
         Dictionnaire de tous les jobs (job_id -> job)
     """
-    jobs = _get_jobs_by_type("question_generation")
+    jobs = _get_jobs_by_type("qa-generation") + _get_jobs_by_type("question_generation")
     return {job["job_id"]: job for job in jobs}
 
 
@@ -109,7 +109,7 @@ def get_latest_question_generation_job(exclude_status: list = None) -> Optional[
     Returns:
         Le job le plus récent sous forme de dict, ou None si aucun trouvé
     """
-    return _get_latest_job("question_generation", exclude_status)
+    return _get_latest_job("qa-generation", exclude_status)
 
 
 async def get_all_chunks_from_qdrant(embedder_model: str = "mistral_embed") -> List[Dict]:
@@ -385,7 +385,9 @@ async def process_question_generation_job(job_id: str):
             total_chunks = len(all_chunks)
     
     print(f"{total_chunks} chunks à traiter..." + (f" (chunk {chunk_id})" if chunk_id else (f" (document {document_id})" if document_id else "")))
-    
+
+    _update_job(job_id, total_documents=total_chunks)
+
     update_question_generation_job(
         job_id=job_id,
         status="running",
