@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Génération de Questions</title>
+    <link rel="stylesheet" href="../style.css" />
+<style>
+    .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    #documentSelect { min-width: 300px; max-width: 500px; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
+    .job-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .job-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .job-id { font-weight: 600; color: #b74420; font-size: 14px; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-running { background: #cce5ff; color: #004085; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-failed { background: #f8d7da; color: #721c24; }
+    .status-completed_with_errors { background: #ffeeba; color: #856404; }
+    .status-cancelled { background: #e2e3e5; color: #383d41; }
+    .job-meta { font-size: 12px; color: #666; }
+    .job-parameters { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px; }
+    .job-parameters span { margin-right: 15px; }
+    .job-parameters strong { color: #b74420; }
+    .document-list { margin-top: 15px; }
+    .document-item { padding: 10px; margin: 5px 0; border-left: 3px solid #e0e0e0; background: #f8f9fa; border-radius: 4px; }
+    .document-item.completed { border-left-color: #28a745; }
+    .document-item.failed { border-left-color: #dc3545; }
+    .document-item.pending { border-left-color: #ffc107; }
+    .document-item .doc-id { font-weight: 600; color: #333; }
+    .document-item .doc-stats { font-size: 12px; color: #666; margin-top: 5px; }
+    .document-item .doc-error { color: #dc3545; font-size: 12px; margin-top: 5px; }
+    .valid-documents-info { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3; }
+    .valid-documents-info h4 { color: #1976D2; margin-bottom: 10px; }
+    .valid-documents-list { font-size: 13px; color: #555; line-height: 1.8; }
+    .valid-documents-list span { display: inline-block; margin: 2px 0; }
+    .chunk-content-display {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .question-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+    }
+    .question-card .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .question-card .question-text {
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    .question-card .answer-text {
+        color: #555;
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-top: 8px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .question-card .validate-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: opacity 0.2s;
+    }
+    .question-card .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: opacity 0.2s;
+        margin-left: 8px;
+    }
+    .question-card .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .question-card textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        resize: vertical;
+        margin-top: 8px;
+        font-family: inherit;
+    }
+    .question-meta {
+        font-size: 11px;
+        color: #666;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #eee;
+    }
+    .questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
+</style>
+<link rel="stylesheet" href="../admin/admin.css">
+</head>
+<body>
+<div class="main_container">
+    <div class="sidebar">
+        <h3>Administration</h3>
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="label">Documents validés</div>
+                <div class="value" id="validDocsCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Jobs totaux</div>
+                <div class="value" id="totalJobsCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Dernier job</div>
+                <div class="value" id="lastJobStatus">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="header">
+    <h1>📝 Administration - Génération de Questions</h1><p>Générez des questions à partir des documents validés (VALID_TEXT_RESOURCE_ID)</p><div class="nav-links"><a href="../index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="../tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="../m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="../question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="../rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="../questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="../solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="../m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="../auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="indexation.html" class="nav-link">Indexation</a><span class="nav-separator">|</span><a href="questions_generation.html" class="nav-link active">Génération Questions</a><span class="nav-separator">|</span><a href="knowledge_items_generation.html" class="nav-link">Knowledge Items</a><span class="nav-separator">|</span><a href="message_evaluator_admin.html" class="nav-link">Test Message Evaluator</a><span class="nav-separator">|</span><a href="chatbot_admin.html" class="nav-link">Admin Chatbot</a></div>    <div class="profile-widget" id="profileWidget">
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="../auth.html" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="../profile.html" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
+    </div>
+</div></div>
+
+        <div class="admin-content">
+            <h2 class="section-title">Génération de Questions sur Documents Validés</h2>
+            
+            <div class="valid-documents-info">
+                <h4>📋 Documents Validés (VALID_TEXT_RESOURCE_ID)</h4>
+                <div class="valid-documents-list" id="validDocumentsList">
+                    Chargement...
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Paramètres de Génération</h3>
+                
+                <div class="form-group">
+                    <label for="numQuestions">Nombre de questions par document</label>
+                    <input type="number" id="numQuestions" value="3" min="1" max="10" placeholder="Nombre de questions">
+                    <div class="description">Nombre de questions Q/R à générer pour chaque document validé</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
+                    <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
+                    <div class="description">Nombre de réponses à générer pour chaque question</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modelSelect">Modèle LLM</label>
+                    <select id="modelSelect"><option value="">Modèle par défaut (mistral-small)</option></select>
+                    <div class="description">Modèle à utiliser pour la génération des questions</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="documentSelect">Document spécifique (optionnel)</label>
+                    <select id="documentSelect">
+                        <option value="">Tous les documents validés</option>
+                    </select>
+                    <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="chunkSelect">Chunk spécifique (optionnel)</label>
+                    <select id="chunkSelect" disabled>
+                        <option value="">Sélectionnez un document d'abord</option>
+                    </select>
+                    <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contenu du chunk sélectionné</label>
+                    <div id="chunkContentDisplay" class="chunk-content-display">
+                        Sélectionnez un chunk pour afficher son contenu...
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h3 class="section-title">Questions Existantes pour ce Chunk</h3>
+                    <div id="existingQuestionsContainer">
+                        <p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="startQuestionGeneration()" id="generateBtn">
+                    ✨ Générer des Questions
+                </button>
+                <button class="btn" onclick="refreshJobs()" id="refreshBtn" style="margin-left: 10px;">
+                    🔄 Rafraîchir
+                </button>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Questions Générées (En Attente de Validation)</h3>
+                <div id="generatedQuestionsContainer">
+                    <p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>
+                </div>
+                <button class="btn" onclick="validateAllQuestions()" id="validateAllBtn" style="margin-top: 10px; display: none;">
+                    ✅ Valider Toutes les Questions
+                </button>
+                <button class="btn" onclick="exportActionsLogToCSV()" id="exportLogBtn" style="margin-top: 10px; display: none;">
+                    📥 Exporter le Journal CSV
+                </button>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p id="liveJobLabel">Génération en cours, veuillez patienter...</p>
+                <div class="progress-container">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+                <div id="liveJobDetails" style="margin-top: 12px; font-size: 13px; color: #555; text-align: left;
+                    background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px;
+                    max-height: 220px; overflow-y: auto;">
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Historique des Jobs</h3>
+                <div id="jobsContainer">
+                    <p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../models.js"></script>
+<script>
+    // Configuration de l'API
+    const API_BASE = window.location.origin || window.location.protocol + '//' + window.location.host;
+    const QUESTIONS_API = API_BASE + '/api/admin/questions';
+    const DOCUMENTS_API = API_BASE + '/api/documents';
+    
+    // Variables globales
+    let currentJobId = null;
+    let refreshInterval = null;
+    let currentDocumentId = null;
+    
+    // Fonction pour rafraîchir les statistiques
+    async function refreshStats() {
+        try {
+            const response = await fetch(QUESTIONS_API + '/valid-documents');
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Erreur API valid-documents:', response.status, errorText);
+                alert('Erreur lors du chargement des documents. Voir la console pour plus de détails.');
+                return;
+            }
+            
+            const data = await response.json();
+            
+            if (!data || !data.documents) {
+                console.error('Aucune donnée de documents reçue:', data);
+                alert('Aucun document validé trouvé.');
+                return;
+            }
+            
+            document.getElementById('validDocsCount').textContent = data.count;
+            
+            const docsList = document.getElementById('validDocumentsList');
+            if (data.documents.length === 0) {
+                docsList.innerHTML = '<span>Aucun document validé</span>';
+            } else {
+                docsList.innerHTML = data.documents.map(doc => 
+                    `<span>• ${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</span>`
+                ).join('');
+            }
+            
+            const docSelect = document.getElementById('documentSelect');
+            let selectOptions = '<option value="">Tous les documents validés</option>';
+            
+            data.documents.forEach(doc => {
+                selectOptions += `<option value="${doc.document_id}">${doc.title} (Resource: ${doc.resource_id}, Doc: ${doc.document_id})</option>`;
+            });
+            
+            docSelect.innerHTML = selectOptions;
+            
+            docSelect.onchange = async function() {
+                const selectedValue = this.value;
+                currentDocumentId = selectedValue ? parseInt(selectedValue) : null;
+                await loadChunksForDocument(currentDocumentId);
+            };
+            
+            resetChunkSelector();
+            
+            console.log('Documents chargés avec succès:', data.documents.length, 'documents');
+        } catch (error) {
+            console.error('Erreur lors du chargement des documents validés:', error);
+            alert('Erreur lors du chargement des documents. Vérifiez la console pour plus de détails: ' + error.message);
+        }
+    }
+    
+    async function loadChunksForDocument(documentId) {
+        const chunkSelect = document.getElementById('chunkSelect');
+        const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+        
+        if (!documentId) {
+            resetChunkSelector();
+            return;
+        }
+        
+        try {
+            chunkSelect.disabled = true;
+            chunkSelect.innerHTML = '<option value="">Chargement des chunks...</option>';
+            chunkContentDisplay.textContent = 'Chargement des chunks...';
+            
+            const response = await fetch(`${DOCUMENTS_API}/${documentId}/chunks`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.chunks && data.chunks.length > 0) {
+                let options = '<option value="">Tous les chunks du document</option>';
+                
+                data.chunks.forEach(chunk => {
+                    const preview = chunk.content.substring(0, 80).replace(/\s+/g, ' ');
+                    const displayText = `Chunk ${chunk.id} - Page ${chunk.num_page || 'N/A'} - ${preview}...`;
+                    const encodedContent = encodeURIComponent(chunk.content);
+                    
+                    options += `<option value="${chunk.id}" data-content="${encodedContent}" data-preview="${displayText}">
+                        ${displayText}
+                    </option>`;
+                });
+                
+                chunkSelect.innerHTML = options;
+                chunkSelect.disabled = false;
+                chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                
+                chunkSelect.onchange = async function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const content = selectedOption.dataset.content;
+                    const chunkId = this.value;
+                    
+                    if (content) {
+                        chunkContentDisplay.textContent = decodeURIComponent(content);
+                    } else {
+                        chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                    }
+                    
+                    if (chunkId) {
+                        await loadExistingQuestionsForChunk(chunkId);
+                    } else {
+                        document.getElementById('existingQuestionsContainer').innerHTML = 
+                            '<p style="text-align: center; color: #666; padding: 20px;">Aucun chunk sélectionné ou aucune question existante pour ce chunk.</p>';
+                    }
+                };
+            } else {
+                chunkSelect.innerHTML = '<option value="">Aucun chunk disponible</option>';
+                chunkSelect.disabled = true;
+                chunkContentDisplay.textContent = 'Aucun chunk trouvé pour ce document.';
+            }
+            
+        } catch (error) {
+            console.error('Erreur lors du chargement des chunks:', error);
+            chunkSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            chunkSelect.disabled = true;
+            chunkContentDisplay.textContent = 'Erreur lors du chargement des chunks.';
+        }
+    }
+    
+    function resetChunkSelector() {
+        const chunkSelect = document.getElementById('chunkSelect');
+        const chunkContentDisplay = document.getElementById('chunkContentDisplay');
+        
+        chunkSelect.innerHTML = '<option value="">Sélectionnez un document d\'abord</option>';
+        chunkSelect.disabled = true;
+        chunkContentDisplay.textContent = 'Sélectionnez un document puis un chunk...';
+        
+        chunkSelect.onchange = null;
+    }
+    
+    async function startQuestionGeneration() {
+        const numQuestions = parseInt(document.getElementById('numQuestions').value) || 3;
+        const numAnswersPerQuestion = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+        const modelName = document.getElementById('modelSelect').value || 'mistral/mistral-small';
+        const documentId = document.getElementById('documentSelect').value;
+        const chunkId = document.getElementById('chunkSelect').value;
+
+        if (!documentId && !chunkId) {
+            alert('❌ Veuillez sélectionner un document (ou un chunk spécifique) pour lancer la génération.');
+            return;
+        }
+
+        const cible = chunkId
+            ? `le chunk ${chunkId}`
+            : `tous les chunks du document ${documentId}`;
+        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.\n\nVoulez-vous continuer ?`)) {
+            return;
+        }
+
+        const generateBtn = document.getElementById('generateBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        generateBtn.disabled = true;
+        refreshBtn.disabled = true;
+        generateBtn.textContent = 'Génération en cours...';
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    num_questions_per_doc: numQuestions,
+                    num_answers_per_question: numAnswersPerQuestion,
+                    model_name: modelName,
+                    document_id: documentId ? parseInt(documentId) : null,
+                    chunk_id: chunkId ? parseInt(chunkId) : null
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `Erreur: ${response.status} - ${response.statusText}`;
+                try {
+                    errorMessage = JSON.parse(errorText).detail || errorMessage;
+                } catch (e) {}
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            currentJobId = data.job_id;
+
+            const loading = document.getElementById('loadingIndicator');
+            loading.classList.add('active');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            document.getElementById('liveJobLabel').textContent = 'Job créé, démarrage du traitement...';
+            document.getElementById('liveJobDetails').innerHTML = '';
+            startAutoRefresh();
+        } catch (error) {
+            console.error('Erreur lors du lancement de la génération:', error);
+            alert('❌ Erreur: ' + error.message);
+        } finally {
+            generateBtn.disabled = false;
+            refreshBtn.disabled = false;
+            generateBtn.textContent = '✨ Générer des Questions';
+        }
+    }
+
+    function startAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+        refreshJobs();
+        refreshInterval = setInterval(async () => {
+            await refreshJobs();
+            if (!currentJobId) {
+                stopAutoRefresh();
+            }
+        }, 2000);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
+    async function refreshJobs() {
+        try {
+            const jobsContainer = document.getElementById('jobsContainer');
+
+            if (!currentJobId) {
+                document.getElementById('totalJobsCount').textContent = '0';
+                document.getElementById('lastJobStatus').textContent = 'Aucun';
+                jobsContainer.innerHTML =
+                    '<p style="text-align: center; color: #666; padding: 40px;">Aucun job lancé depuis cette page. Lancez une nouvelle génération pour commencer.</p>';
+                updateLiveProgress(null);
+                return;
+            }
+
+            const response = await fetch(QUESTIONS_API + '/jobs/' + currentJobId);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const job = await response.json();
+
+            document.getElementById('totalJobsCount').textContent = '1';
+            document.getElementById('lastJobStatus').textContent = getStatusText(job.status);
+            jobsContainer.innerHTML = renderJobCard(job);
+            updateLiveProgress(job);
+
+            if (!['pending', 'running'].includes(job.status)) {
+                stopAutoRefresh();
+            }
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement du job:', error);
+        }
+    }
+
+    function updateLiveProgress(job) {
+        const loading = document.getElementById('loadingIndicator');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const label = document.getElementById('liveJobLabel');
+        const details = document.getElementById('liveJobDetails');
+        if (!loading || !progressFill || !progressText || !label || !details) return;
+
+        if (!job || !['pending', 'running'].includes(job.status)) {
+            if (currentJobId && job) {
+                const statusText = getStatusText(job.status);
+                label.textContent = `Génération terminée (${statusText.toLowerCase()})`;
+                progressFill.style.width = '100%';
+                progressText.textContent = '100%';
+                const total = job.total_documents || 0;
+                const done = job.processed_documents || 0;
+                const questions = Object.values(job.progress || {})
+                    .reduce((sum, p) => sum + (p.questions_generated || 0), 0);
+                const errors = (job.errors || []).length;
+                details.innerHTML =
+                    `<div>📊 ${done}/${total} chunks traités — ${questions} question(s) générée(s)` +
+                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
+                setTimeout(() => loading.classList.remove('active'), 4000);
+                stopAutoRefresh();
+            } else if (!job) {
+                loading.classList.remove('active');
+            }
+            return;
+        }
+
+        loading.classList.add('active');
+
+        const total = job.total_documents || 0;
+        const done = job.processed_documents || 0;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        progressFill.style.width = percent + '%';
+        progressText.textContent = `${percent}% (${done}/${total} chunks)`;
+
+        const params = job.parameters || {};
+        const cible = params.chunk_id ? `chunk ${params.chunk_id}`
+            : (params.document_id ? `document ${params.document_id}` : 'tous les documents validés');
+        label.textContent = `Génération en cours (${cible}) — ${getStatusText(job.status).toLowerCase()}...`;
+
+        const progressEntries = Object.values(job.progress || {});
+        const questionsGenerated = progressEntries.reduce((sum, p) => sum + (p.questions_generated || 0), 0);
+        const completedChunks = progressEntries.filter(p => p.status === 'completed').length;
+        const skippedChunks = progressEntries.filter(p => p.status === 'skipped').length;
+        const failedChunks = progressEntries.filter(p => p.status === 'failed').length;
+
+        let detailsHtml =
+            `<div>📊 ${done}/${total} chunks traités — ✅ ${completedChunks} générés` +
+            (skippedChunks > 0 ? ` — ⏭️ ${skippedChunks} déjà complets` : '') +
+            (failedChunks > 0 ? ` — ⚠️ ${failedChunks} en échec` : '') +
+            ` — ❓ ${questionsGenerated} question(s) générée(s)</div>`;
+
+        const runningChunk = progressEntries.find(p => p.status === 'running');
+        if (runningChunk) {
+            detailsHtml += `<div style="margin-top: 6px;">⏳ Chunk en cours : ${runningChunk.chunk_id || 'N/A'} (document ${runningChunk.document_id || 'N/A'})</div>`;
+        }
+
+        const lastChunks = progressEntries.slice(-5);
+        if (lastChunks.length > 0) {
+            detailsHtml += '<div style="margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;"><strong>Derniers chunks traités :</strong>';
+            lastChunks.forEach(p => {
+                const icon = p.status === 'completed' ? '✅' : (p.status === 'skipped' ? '⏭️' : (p.status === 'failed' ? '❌' : '⏳'));
+                const info = p.status === 'skipped' ? 'déjà 3+ questions' : `${p.questions_generated || 0} question(s)`;
+                detailsHtml += `<div>\n${icon} Chunk ${p.chunk_id || 'N/A'} (doc ${p.document_id || 'N/A'}) — ${info}` +
+                    (p.error ? ` — ⚠️ ${escapeHtml(p.error)}` : '') + '</div>';
+            });
+            detailsHtml += '</div>';
+        }
+
+        const errors = job.errors || [];
+        if (errors.length > 0) {
+            detailsHtml += `<div style="margin-top: 8px; color: #dc3545;"><strong>⚠️ ${errors.length} erreur(s) :</strong>`;
+            errors.slice(-3).forEach(e => {
+                detailsHtml += `<div>\n• ${escapeHtml(e)}</div>`;
+            });
+            detailsHtml += '</div>';
+        }
+
+        details.innerHTML = detailsHtml;
+    }
+    
+    function getStatusText(status) {
+        const statusMap = {
+            'pending': 'En attente',
+            'running': 'En cours',
+            'completed': 'Terminé',
+            'completed_with_errors': 'Terminé (avec erreurs)',
+            'failed': 'Échoué',
+            'cancelled': 'Annulé'
+        };
+        return statusMap[status] || status;
+    }
+    
+    function getStatusClass(status) {
+        const classMap = {
+            'pending': 'status-pending',
+            'running': 'status-running',
+            'completed': 'status-completed',
+            'completed_with_errors': 'status-completed_with_errors',
+            'failed': 'status-failed',
+            'cancelled': 'status-cancelled'
+        };
+        return classMap[status] || 'status-pending';
+    }
+    
+    function renderJobCard(job) {
+        const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
+        const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
+        const statusText = getStatusText(job.status);
+        const statusClass = getStatusClass(job.status);
+        
+        let parametersHtml = '';
+        if (job.parameters && Object.keys(job.parameters).length > 0) {
+            parametersHtml = '<div class="job-parameters"><strong>Paramètres:</strong>';
+            parametersHtml += `<span><strong>Questions/doc:</strong> ${job.parameters.num_questions_per_doc || 'N/A'}</span>`;
+            parametersHtml += `<span><strong>Modèle:</strong> ${job.parameters.model_name || 'N/A'}</span>`;
+            parametersHtml += '</div>';
+        }
+        
+        let progressHtml = '';
+        if (job.progress && Object.keys(job.progress).length > 0) {
+            progressHtml = '<div class="document-list"><strong>Chunks:</strong>';
+            for (const [chunkId, progress] of Object.entries(job.progress)) {
+                const docClass = progress.status === 'completed' ? 'completed' : progress.status === 'failed' ? 'failed' : (progress.status === 'skipped' ? 'pending' : 'pending');
+                progressHtml += `
+                    <div class="document-item ${docClass}">
+                        <div class="doc-id">Chunk ID: ${progress.chunk_id || chunkId} (Document: ${progress.document_id || 'N/A'})</div>
+                        <div class="doc-stats">
+                            ✓ ${progress.questions_generated || 0} générées | Statut: ${progress.status || 'N/A'}
+                        </div>
+                        ${progress.error ? `<div class="doc-error">❌ ${progress.error}</div>` : ''}
+                    </div>
+                `;
+            }
+            progressHtml += '</div>';
+        }
+        
+        return `
+            <div class="job-card">
+                <div class="job-header">
+                    <span class="job-id">Job: ${job.job_id.substring(0, 8)}...</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="job-meta">
+                    Créé: ${createdDate} | Mis à jour: ${updatedDate} | 
+                    ${job.processed_documents || 0}/${job.total_documents || 0} documents
+                </div>
+                ${parametersHtml}
+                ${progressHtml}
+                ${job.status === 'running' ? 
+                    '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitement en cours...</div>' : ''}
+            </div>
+        `;
+    }
+    
+    function getQuestionStatusClass(status) {
+        const classMap = {
+            'generated': 'status-running',
+            'validated': 'status-completed',
+            'pending': 'status-pending',
+            'rejected': 'status-failed'
+        };
+        return classMap[status] || 'status-pending';
+    }
+
+    function saveQuestionsToSession(newQuestions) {
+        let existingQuestions = JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+        existingQuestions = existingQuestions.concat(newQuestions);
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(existingQuestions));
+    }
+
+    function getQuestionsFromSession() {
+        return JSON.parse(sessionStorage.getItem('unvalidated_questions') || '[]');
+    }
+
+    function removeQuestionFromSession(questionId) {
+        let questions = getQuestionsFromSession();
+        questions = questions.filter(q => q.id !== questionId);
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(questions));
+    }
+
+    function renderGeneratedQuestions() {
+        const container = document.getElementById('generatedQuestionsContainer');
+        const validateAllBtn = document.getElementById('validateAllBtn');
+        const exportLogBtn = document.getElementById('exportLogBtn');
+        const questions = getQuestionsFromSession();
+
+        if (questions.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question générée en local. Générez des questions pour commencer.</p>';
+            validateAllBtn.style.display = 'none';
+            exportLogBtn.style.display = 'none';
+            return;
+        }
+
+        validateAllBtn.style.display = 'inline-block';
+
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+
+        let html = '<div class="questions-list">';
+        questions.forEach((q, index) => {
+            const questionId = `edit-question-${q.id}`;
+            const answerId = `edit-answer-${q.id}`;
+
+            html += `
+                <div class="question-card" data-id="${q.id}" data-index="${index}">
+                    <div class="question-header">
+                        <strong>Question ${index + 1}</strong>
+                        <div>
+                            <button class="validate-btn" onclick="validateQuestion('${q.id}')">✅ Valider</button>
+                            <button class="delete-btn" onclick="deleteQuestion('${q.id}')">❌ Supprimer</button>
+                        </div>
+                    </div>
+                    <textarea id="${questionId}" class="editable-question" onchange="updateQuestionInSession('${q.id}', this.value, document.getElementById('${answerId}').value)">${escapeHtml(q.question)}</textarea>
+                    <textarea id="${answerId}" class="editable-answer" onchange="updateQuestionInSession('${q.id}', document.getElementById('${questionId}').value, this.value)">${escapeHtml(q.answer)}</textarea>
+                    ${q.chunk_id ? `<div class="question-meta">Chunk ID: ${q.chunk_id} | Document ID: ${q.document_id || 'N/A'} | Modèle: ${q.model || 'N/A'}</div>` : ''}
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+
+    function updateQuestionInSession(questionId, newQuestion, newAnswer) {
+        const questions = getQuestionsFromSession();
+        const updatedQuestions = questions.map(q => {
+            if (q.id === questionId) {
+                return { ...q, question: newQuestion, answer: newAnswer };
+            }
+            return q;
+        });
+        sessionStorage.setItem('unvalidated_questions', JSON.stringify(updatedQuestions));
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatCSVRow(data) {
+        return data.map(field => {
+            if (field === null || field === undefined) return '';
+            const stringField = String(field).replace(/"/g, '""');
+            if (stringField.includes(',') || stringField.includes('\n') || stringField.includes('"')) {
+                return `"${stringField}"`;
+            }
+            return stringField;
+        }).join(',');
+    }
+
+    function logQuestionAction(question, action) {
+        let logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        const logEntry = {
+            model: question.model || 'N/A',
+            document_id: question.document_id || 'N/A',
+            chunk_id: question.chunk_id || 'N/A',
+            question_text: question.question || '',
+            answer_text: question.answer || '',
+            action: action,
+            timestamp: new Date().toISOString()
+        };
+        logs.push(logEntry);
+        sessionStorage.setItem('question_actions_log', JSON.stringify(logs));
+        updateExportButtonVisibility();
+        return logEntry;
+    }
+
+    function updateExportButtonVisibility() {
+        const exportLogBtn = document.getElementById('exportLogBtn');
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        if (exportLogBtn) {
+            exportLogBtn.style.display = logs.length > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    function exportActionsLogToCSV() {
+        const logs = JSON.parse(sessionStorage.getItem('question_actions_log') || '[]');
+        if (logs.length === 0) {
+            alert('Aucune action à exporter.');
+            return;
+        }
+        const header = ['model', 'document_id', 'chunk_id', 'question_text', 'answer_text', 'action', 'timestamp'];
+        let csvContent = formatCSVRow(header) + '\n';
+        logs.forEach(log => {
+            const row = [
+                log.model || '',
+                log.document_id || '',
+                log.chunk_id || '',
+                log.question_text || '',
+                log.answer_text || '',
+                log.action || '',
+                log.timestamp || ''
+            ];
+            csvContent += formatCSVRow(row) + '\n';
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `journal_actions_questions_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    async function validateQuestion(questionId) {
+        if (!confirm('Valider cette question et la sauvegarder en base de données?')) {
+            return;
+        }
+
+        const questions = getQuestionsFromSession();
+        const questionToSave = questions.find(q => q.id === questionId);
+
+        if (!questionToSave) {
+            alert('Question introuvable');
+            return;
+        }
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: questionToSave.question,
+                    answers: [questionToSave.answer],
+                    chunk_id: questionToSave.chunk_id,
+                    model: questionToSave.model || 'local-generation',
+                    difficulty_level: 3
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur: ${response.status} - ${response.statusText}`);
+            }
+
+            logQuestionAction(questionToSave, 'VALIDATION');
+            removeQuestionFromSession(questionId);
+            renderGeneratedQuestions();
+
+            alert('✅ Question validée et sauvegardée en base de données!');
+
+        } catch (error) {
+            console.error('Erreur lors de la validation:', error);
+            alert('❌ Erreur: ' + error.message);
+        }
+    }
+
+    function deleteQuestion(questionId) {
+        if (!confirm('Supprimer cette question de la file d\'attente?')) {
+            return;
+        }
+
+        const questions = getQuestionsFromSession();
+        const questionToDelete = questions.find(q => q.id === questionId);
+        if (questionToDelete) {
+            logQuestionAction(questionToDelete, 'SUPPRESSION');
+        }
+
+        removeQuestionFromSession(questionId);
+        renderGeneratedQuestions();
+    }
+
+    async function validateAllQuestions() {
+        const questions = getQuestionsFromSession();
+
+        if (questions.length === 0 || !confirm(`Valider TOUTES les ${questions.length} questions?`)) {
+            return;
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const question of questions) {
+            try {
+                const response = await fetch(QUESTIONS_API + '/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question.question,
+                        answers: [question.answer],
+                        chunk_id: question.chunk_id,
+                        model: question.model || 'local-generation',
+                        difficulty_level: 3
+                    })
+                });
+
+                if (response.ok) {
+                    successCount++;
+                    logQuestionAction(question, 'VALIDATION');
+                } else {
+                    errorCount++;
+                    console.error(`Erreur validation question ${question.id}: ${response.statusText}`);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Erreur validation question ${question.id}:`, error);
+            }
+        }
+
+        sessionStorage.removeItem('unvalidated_questions');
+        renderGeneratedQuestions();
+
+        alert(`✅ ${successCount} question(s) validées avec succès! ${errorCount > 0 ? `\n❌ ${errorCount} échec(s).` : ''}`);
+    }
+
+    async function loadExistingQuestionsForChunk(chunkId) {
+        const container = document.getElementById('existingQuestionsContainer');
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/chunk/' + chunkId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.questions && data.questions.length > 0) {
+                renderExistingQuestions(data.questions, chunkId);
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucune question existante pour ce chunk.</p>';
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des questions existantes:', error);
+            container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Erreur lors du chargement des questions existantes.</p>';
+        }
+    }
+
+    function renderExistingQuestions(questions, chunkId) {
+        const container = document.getElementById('existingQuestionsContainer');
+
+        let html = '<div class="questions-list">';
+
+        questions.forEach((q, index) => {
+            const questionId = q.question_id;
+            const questionContent = escapeHtml(q.content);
+            const status = q.status || 'generated';
+            const statusClass = getQuestionStatusClass(status);
+
+            let answersHtml = '<div class="existing-answers">';
+            if (q.answers && q.answers.length > 0) {
+                q.answers.forEach((answer, idx) => {
+                    const answerContent = escapeHtml(answer.content);
+                    const isCorrect = answer.is_correct ? '✓' : '✗';
+                    answersHtml += `
+                        <div class="answer-item" style="margin: 5px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
+                            <strong>${isCorrect} Réponse ${idx + 1}:</strong> ${answerContent}
+                        </div>
+                    `;
+                });
+            } else {
+                answersHtml += '<p style="color: #666; font-style: italic;">Aucune réponse associée</p>';
+            }
+            answersHtml += '</div>';
+
+            const generateAnswersBtn = '<button class="btn" onclick="handleGenerateAnswers(this)" ' +
+                        'data-question-id="' + questionId + '" ' +
+                        'data-chunk-id="' + chunkId + '" ' +
+                        'style="margin-top: 10px; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">' +
+                        '🔄 Générer de nouvelles réponses</button>';
+
+            html += `
+                <div class="question-card existing-question" data-id="${questionId}" data-chunk-id="${chunkId}">
+                    <div class="question-header">
+                        <strong>Question ${index + 1}</strong>
+                        <span class="status-badge ${statusClass}">${status.toUpperCase()}</span>
+                    </div>
+                    <div class="question-text" style="margin: 10px 0;">${questionContent}</div>
+                    <div style="margin-top: 10px;">
+                        <strong>Réponses existantes :</strong>
+                        ${answersHtml}
+                    </div>
+                    <div class="actions" style="margin-top: 15px;">
+                        ${generateAnswersBtn}
+                    </div>
+                    <div class="question-meta">Question ID: ${q.question_id} | Chunk ID: ${q.chunk_id || chunkId}</div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    async function handleGenerateAnswers(button) {
+        const questionId = button.dataset.questionId;
+        const chunkId = button.dataset.chunkId;
+
+        const numNewAnswers = parseInt(document.getElementById('numAnswersPerQuestion').value) || 1;
+        const modelName = document.getElementById('modelSelect').value;
+        const chunkContent = document.getElementById('chunkContentDisplay').textContent;
+
+        if (!chunkContent || chunkContent.includes('Sélectionnez un chunk')) {
+            alert('❌ Veuillez sélectionner un chunk valide.');
+            return;
+        }
+
+        if (!confirm(`Vous allez générer ${numNewAnswers} nouvelle(s) réponse(s) pour cette question.\n\nVoulez-vous continuer ?`)) {
+            return;
+        }
+
+        const questionCard = button.closest('.question-card');
+        const questionElement = questionCard ? questionCard.querySelector('.question-text') : null;
+        const questionText = questionElement ? questionElement.textContent : '';
+
+        if (!questionText) {
+            alert('❌ Impossible de récupérer le texte de la question.');
+            return;
+        }
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/generate-answers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question_text: questionText,
+                    document_context: chunkContent,
+                    num_answers: numNewAnswers,
+                    model_name: modelName
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erreur API: ${response.status} - ${response.statusText} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            if (data && data.answers && data.answers.length > 0) {
+                await saveNewAnswersForQuestion(questionId, chunkId, data.answers, modelName);
+                await loadExistingQuestionsForChunk(chunkId);
+                alert(`✅ ${data.answers.length} nouvelle(s) réponse(s) générée(s) et ajoutée(s) à la question!`);
+            } else {
+                throw new Error('Aucune réponse générée par le modèle');
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la génération des réponses:', error);
+            alert('❌ Erreur: ' + error.message);
+        }
+    }
+
+    async function saveNewAnswersForQuestion(questionId, chunkId, answers, modelName) {
+        try {
+            for (const answer of answers) {
+                const response = await fetch(QUESTIONS_API + `/${questionId}/add-answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answer_text: answer,
+                        is_correct: true,
+                        model_name: modelName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.warn(`Erreur lors de la sauvegarde d'une réponse: ${response.status} - ${errorText}`);
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde des réponses:', error);
+            throw error;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        refreshStats();
+        refreshJobs();
+        renderGeneratedQuestions();
+        updateExportButtonVisibility();
+        loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else if (currentJobId) {
+            startAutoRefresh();
+        }
+    });
+</script>
+
+<script src="../auth_widget.js"></script>
+</body>
+</html>

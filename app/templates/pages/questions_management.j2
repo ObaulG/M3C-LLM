@@ -102,6 +102,18 @@
         gap: 10px;
         flex-wrap: wrap;
     }
+
+    .btn-generate-facts {
+        margin-left: 10px;
+        padding: 2px 8px;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .generation-status {
+        margin-top: 5px;
+        font-size: 12px;
+    }
 </style>
 {% endblock %}
 
@@ -157,6 +169,11 @@
             <div class="filter-group">
                 <label for="modelFilter">Modèle LLM pour l'évaluation</label>
                 <select id="modelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
+            </div>
+
+            <div class="filter-group">
+                <label for="generationModelFilter">Modèle LLM pour la génération (réponses et faits)</label>
+                <select id="generationModelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
             </div>
 
             <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
@@ -223,6 +240,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
+    loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true });
   });
 </script>
 {% endblock %}

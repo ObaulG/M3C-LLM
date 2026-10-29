@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{{ static_prefix }}chatFunctions.js"></script>
 <script src="{{ static_prefix }}models.js"></script>
+<script src="{{ static_prefix }}model_selector.js"></script>
 <script src="{{ static_prefix }}rag_tutorial.js"></script>
 {% endblock %}
 
@@ -77,74 +78,11 @@
     opacity: 1;
   }
 
-  /* Style des paramètres */
+  /* Ajustements specifiques aux tutoriels : le reste vient de style.css */
   .settings {
     margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
-  }
-
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-
-  .setting-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .setting-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-
-  .setting-label {
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-  }
-
-  .setting-input {
-    width: 60px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  /* Style du sélecteur de modèle */
-  .model-selector {
-    margin-top: 15px;
-  }
-
-  .model-select {
-    width: 100%;
-    height: 120px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-  }
-
-  .selected-models {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .selected-model-badge {
-    background-color: #e0e0e0;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
   }
 
   .loading-spinner {
@@ -533,7 +471,12 @@
 
           <!-- Paramètres RAG avec explications -->
   <div class="settings">
-    <h3>⚙️ Paramètres de la requête</h3>
+    <button type="button" class="settings-header" onclick="toggleSettings(this)" aria-expanded="true">
+        <span class="settings-header-title">⚙️ Paramètres de la requête</span>
+        <span class="settings-header-summary" id="settingsSummary"></span>
+        <span class="settings-toggle-icon">▼</span>
+    </button>
+    <div class="settings-content">
     <div class="settings-grid">
       <!-- RAG -->
       <div class="setting-item">
@@ -600,6 +543,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
           <div id="requestResponse">
               <h2>Réponse donnée avec RAG</h2>
@@ -620,7 +564,8 @@
 {% block scripts %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("model-select"));
+    const modelSelect = document.getElementById("model-select");
+    loadModelsIntoSelect(modelSelect).then(() => enhanceModelSelect(modelSelect));
   });
 </script>
 {% endblock %}
