@@ -100,6 +100,32 @@ async def list_question_generation_jobs():
 
 
 @router.get(
+    "/jobs/latest",
+    response_model=QuestionGenerationJob,
+    summary="Récupère le dernier job",
+    description="Retourne le job de génération de questions le plus récent."
+)
+async def get_latest_question_generation_job_endpoint():
+    """
+    Récupère le job de génération de questions le plus récent.
+    
+    Returns:
+        QuestionGenerationJob avec les détails du dernier job
+        
+    Raises:
+        HTTPException 404: Si aucun job n'existe
+    """
+    job = get_latest_question_generation_job()
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucun job de génération de questions trouvé"
+        )
+    
+    return QuestionGenerationJob(**job)
+
+
+@router.get(
     "/jobs/{job_id}",
     response_model=QuestionGenerationJob,
     summary="Récupère un job spécifique",
@@ -123,32 +149,6 @@ async def get_question_generation_job_by_id(job_id: str):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job {job_id} introuvable"
-        )
-    
-    return QuestionGenerationJob(**job)
-
-
-@router.get(
-    "/jobs/latest",
-    response_model=QuestionGenerationJob,
-    summary="Récupère le dernier job",
-    description="Retourne le job de génération de questions le plus récent."
-)
-async def get_latest_question_generation_job_endpoint():
-    """
-    Récupère le job de génération de questions le plus récent.
-    
-    Returns:
-        QuestionGenerationJob avec les détails du dernier job
-        
-    Raises:
-        HTTPException 404: Si aucun job n'existe
-    """
-    job = get_latest_question_generation_job()
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Aucun job de génération de questions trouvé"
         )
     
     return QuestionGenerationJob(**job)
