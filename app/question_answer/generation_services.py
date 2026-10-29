@@ -322,7 +322,7 @@ async def generate_questions_single_answer_for_chunk(
                 print("other error: ", error_msg)
                 return None, f"Erreur génération: {error_msg}"
     
-    return 0, 0, f"Échec après {max_retries} tentatives"
+    return None, f"Échec après {max_retries} tentatives"
 
 
 async def process_question_generation_job(job_id: str):
@@ -347,7 +347,7 @@ async def process_question_generation_job(job_id: str):
     parameters = job.get("parameters", {})
     num_questions = parameters.get("num_questions_per_doc", 3)
     # note: le provider est indiqué comme dans la syntaxe d'instructor
-    model_name = parameters.get("model_name", "mistral/mistral-small")
+    model_name = parameters.get("model_name") or "mistral/mistral-small"
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
     chunk_id = parameters.get("chunk_id")  # ID du chunk spécifique (optionnel, prioritaire)
     num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
@@ -414,14 +414,13 @@ async def process_question_generation_job(job_id: str):
                 
             if existing_questions_count >= 3:
                 print(f"Chunk {chunk_id} a déjà {existing_questions_count} questions, on saute la génération")
-                if chunk_id in progress:
-                    progress[chunk_id] = {
-                        "chunk_id": chunk_id,
-                        "document_id": document_id,
-                        "questions_generated": 0,
-                        "error": "Déjà 3+ questions existantes",
-                        "status": "skipped"
-                    }
+                progress[chunk_id] = {
+                    "chunk_id": chunk_id,
+                    "document_id": document_id,
+                    "questions_generated": 0,
+                    "error": "Déjà 3+ questions existantes",
+                    "status": "skipped"
+                }
                 processed_chunks += 1
                 update_question_generation_job(
                     job_id=job_id,
@@ -445,22 +444,27 @@ async def process_question_generation_job(job_id: str):
                 model_name=model_name
             )
 
-            # insertion dans MySQL
-            async with await get_db_connection() as conn:
-                for qa in qa_list.QA_list:
-                    await save_question_to_db(
-                        question=qa.question,
-                        answers=[qa.answer],
-                        chunk_id=chunk_id,
-                        conn=conn,
-                        difficulty_level=3,
-                        model=model_name
-                    )
+            questions_generated = 0
+            if qa_list is not None and getattr(qa_list, "QA_list", None):
+                # insertion dans MySQL
+                async with await get_db_connection() as conn:
+                    for qa in qa_list.QA_list:
+                        await save_question_to_db(
+                            question=qa.question,
+                            answers=[qa.answer],
+                            chunk_id=chunk_id,
+                            conn=conn,
+                            difficulty_level=3,
+                            model=model_name
+                        )
+                questions_generated = len(qa_list.QA_list)
+            elif not error:
+                error = "Aucune question générée par le modèle"
 
             progress[chunk_id] = {
                 "chunk_id": chunk_id,
                 "document_id": document_id,
-                "questions_generated": len(qa_list.QA_list),
+                "questions_generated": questions_generated,
                 "error": error,
                 "status": "completed" if not error else "failed"
             }
