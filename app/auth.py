@@ -71,8 +71,8 @@ async def create_user(username: str, email: str, password: str, role: str = "use
             async with conn.cursor() as cur:
                 await cur.execute(
                     """
-                    INSERT INTO user (name, email, password_hash, role, is_active)
-                    VALUES (%s, %s, %s, %s, TRUE)
+                    INSERT INTO user (name, email, password_hash, role, is_active, created)
+                    VALUES (%s, %s, %s, %s, TRUE, NOW())
                     """,
                     (username, email, password_hash, role),
                 )
@@ -110,6 +110,7 @@ async def create_user(username: str, email: str, password: str, role: str = "use
         except Exception as e:
             print(e)
             await conn.rollback()
+            raise
 
 
 
