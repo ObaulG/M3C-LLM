@@ -551,8 +551,9 @@ async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Réponse {answer_id} introuvable"
                 )
-
-            agent = get_answer_facts_agent(model=model_name)
+            provider, model = tuple(model_name.split("/"))
+            print(provider, model)
+            agent = get_answer_facts_agent(provider=provider, model=model)
             output = agent.run(FactExtractionInput(paragraph=row[0]))
             facts = [
                 {

@@ -1,6 +1,7 @@
 from atomic_agents import AtomicAgent, AgentConfig, BaseIOSchema
 from atomic_agents.context import SystemPromptGenerator, ChatHistory
 
+from .instructor_factory import create_client
 from .mistral_client import get_mistral_client
 from .prompt_loader import get_prompt
 
@@ -169,8 +170,8 @@ if _answer_facts_prompt is None:
     _answer_facts_prompt = _FALLBACK_ANSWER_FACTS_PROMPT
 
 
-def get_answer_facts_agent(model: str = "mistral-medium"):
-    client = get_mistral_client()
+def get_answer_facts_agent(provider: str = "mistral", model: str = "mistral-medium"):
+    client = create_client(provider, model)
     agent = AtomicAgent[FactExtractionInput, AnswerFactsExtractionOutput](
         config=AgentConfig(
             client=client,
