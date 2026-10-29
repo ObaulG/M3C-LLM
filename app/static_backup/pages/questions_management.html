@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Questions/Réponses</title>
+    <link rel="stylesheet" href="style.css" />
+<style>
+    /* Styles spécifiques pour la gestion des questions */
+    .filters-section {
+        padding: 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .filter-group {
+        margin-bottom: 15px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .document-selector {
+        margin-bottom: 20px;
+    }
+
+    /* Styles pour l'édition des questions */
+    .editable-question-text,
+    .editable-answer-text {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        margin: 5px 0;
+    }
+
+    .editable-question-text:focus,
+    .editable-answer-text:focus {
+        border-color: #b74420;
+        outline: none;
+    }
+
+    .answer-item.editing {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .answer-item.editing.new-answer-item {
+        border: 1px dashed #ccc;
+    }
+
+    .btn-edit-question {
+        background: #007bff;
+        margin-right: 10px;
+    }
+
+    .btn-save-changes {
+        background: #28a745;
+    }
+
+    .btn-cancel-edit {
+        background: #6c757d;
+    }
+
+    .btn-delete-answer {
+        padding: 2px 8px;
+        font-size: 12px;
+    }
+
+    .edit-mode {
+        border-left: 4px solid #b74420;
+        background-color: #fff8f8;
+    }
+
+    .edit-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-generate-facts {
+        margin-left: 10px;
+        padding: 2px 8px;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .generation-status {
+        margin-top: 5px;
+        font-size: 12px;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="questions.css" />
+<link rel="stylesheet" href="admin/admin.css" />
+<script src="models.js"></script>
+</head>
+<body>
+<div class="main_container">
+    <div class="sidebar">
+        <h3>Documents</h3>
+        <div class="document-selector">
+            <div class="loading" id="loadingDocuments">
+                <div class="spinner"></div>
+                <p>Chargement des documents...</p>
+            </div>
+            <ul class="document-list" id="documentList">
+                <!-- Les documents seront chargés dynamiquement -->
+            </ul>
+        </div>
+        
+        <div class="filters-section">
+            <h4>Filtres</h4>
+            
+            <div class="filter-group">
+                <label for="statusFilter">Statut</label>
+                <select id="statusFilter">
+                    <option value="">Tous</option>
+                    <option value="generated">Généré</option>
+                    <option value="validated">Validé</option>
+                    <option value="pending">En attente</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="difficultyFilter">Difficulté</label>
+                <select id="difficultyFilter">
+                    <option value="">Toutes</option>
+                    <option value="1">1 - Très facile</option>
+                    <option value="2">2 - Facile</option>
+                    <option value="3">3 - Moyenne</option>
+                    <option value="4">4 - Difficile</option>
+                    <option value="5">5 - Très difficile</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="limitFilter">Nombre de résultats</label>
+                <input type="number" id="limitFilter" min="1" max="100" placeholder="Toutes">
+            </div>
+
+            <div class="filter-group">
+                <label for="chunkFilter">Numéro de chunk</label>
+                <input type="text" id="chunkFilter" placeholder="Ex: 1, 2, 123">
+            </div>
+
+            <div class="filter-group">
+                <label for="modelFilter">Modèle LLM pour l'évaluation</label>
+                <select id="modelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
+            </div>
+
+            <div class="filter-group">
+                <label for="generationModelFilter">Modèle LLM pour la génération (réponses et faits)</label>
+                <select id="generationModelFilter"><option value="">Modèle par défaut (mistral-small)</option></select>
+            </div>
+
+            <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
+            <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 10px;">Réinitialiser</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="header">
+    <h1>📝 Gestion des Questions/Réponses</h1><p>Sélectionnez un document pour visualiser ses questions générées</p><div class="nav-links"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link active">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="admin/indexation.html" class="nav-link">Indexation</a><span class="nav-separator">|</span><a href="admin/questions_generation.html" class="nav-link">Génération Questions</a><span class="nav-separator">|</span><a href="admin/knowledge_items_generation.html" class="nav-link">Knowledge Items</a><span class="nav-separator">|</span><a href="admin/message_evaluator_admin.html" class="nav-link">Test Message Evaluator</a><span class="nav-separator">|</span><a href="admin/chatbot_admin.html" class="nav-link">Admin Chatbot</a></div>    <div class="profile-widget" id="profileWidget">
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="auth.html" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="profile.html" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
+    </div>
+</div></div>
+
+        <div class="questions-container">
+            <div class="loading" id="loadingQuestions">
+                <div class="spinner"></div>
+                <p>Chargement des questions...</p>
+            </div>
+            
+            <div id="questionsContent">
+                <!-- Les questions seront affichées ici -->
+                <div class="empty-state" id="emptyState">
+                    <h3>Aucun document sélectionné</h3>
+                    <p>Sélectionnez un document dans la barre latérale pour afficher ses questions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Données des réponses de référence chargées au démarrage
+    let referenceAnswers = {};
+    
+    // Charge les réponses de référence au démarrage
+    async function loadReferenceAnswers() {
+        try {
+            console.log('Chargement des réponses de référence depuis /api/reference-answers...');
+            const response = await fetch('/api/reference-answers');
+            if (response.ok) {
+                const data = await response.json();
+                referenceAnswers = data.reference_answers || {};
+                console.log('✓ Réponses de référence chargées:', Object.keys(referenceAnswers).length, 'questions');
+                console.log('IDs des questions avec référence:', Object.keys(referenceAnswers));
+            } else {
+                console.warn('Aucune réponse de référence trouvée, mais cela est normal si le fichier CSV est vide');
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des réponses de référence:', error);
+        }
+    }
+    
+    // Appel au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        loadReferenceAnswers();
+    });
+</script>
+<script src="questions_management.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
+    loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true });
+  });
+</script>
+
+<script src="auth_widget.js"></script>
+</body>
+</html>
