@@ -410,7 +410,39 @@
 </div></div>
 
         <div class="profile-body" id="profileRoot">
+            <div class="profile-section-header" style="margin-top: 0;"><h2>🔑 Clé API Mistral</h2></div>
+            <p style="color: #666; line-height: 1.6;">
+                Pour utiliser pleinement les fonctionnalités de ce portail, configurez votre clé API Mistral AI.
+                <strong>Cette clé est stockée uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
+                <button type="button" class="btn btn-primary" onclick="showMistralApiConfigModal()">✏️ Configurer la clé API Mistral</button>
+                <span id="apiKeyStatus" style="padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; background: #f8f9fa; border: 1px solid #e0e0e0;"></span>
+            </div>
+            <p style="color: #888; font-size: 13px;">
+                <i>ℹ️</i> Si vous êtes administrateur (global_admin), vous n'avez pas besoin de fournir votre clé.
+                Le système utilisera automatiquement la clé configurée sur le serveur.
+            </p>
+
+            <div id="mistralApiModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.4);">
+                <div style="background: white; margin: 10% auto; padding: 25px; width: 80%; max-width: 600px; border-radius: 8px; position: relative;">
+                    <span onclick="hideMistralApiConfigModal()" style="position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                    <h2>🔑 Configurer la clé API Mistral</h2>
+                    <p>Votre clé API Mistral est stockée <strong>uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.</p>
+                    <label for="mistralApiKeyInput" style="display: block; margin: 15px 0 8px; font-weight: 600;">Clé API Mistral :</label>
+                    <input type="password" id="mistralApiKeyInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                           placeholder="Ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary" onclick="saveMistralApiKeyFromModal()">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearMistralApiKey()">Effacer</button>
+                        <button type="button" class="btn" style="background: #6c757d; color: white;" onclick="hideMistralApiConfigModal()">Annuler</button>
+                    </div>
+                    <div id="mistralApiMessage" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+                </div>
+            </div>
+
             <div class="profile-loading">Chargement du profil…</div>
+            <div id="profileData"></div>
         </div>
     </div>
 </div>
@@ -469,7 +501,7 @@
     }
 
     function root() {
-        return document.getElementById('profileRoot');
+        return document.getElementById('profileData');
     }
 
     function fetchJson(url) {
@@ -653,5 +685,6 @@
 })();
 </script>
 <script src="auth_widget.js"></script>
+<script src="mistral_api_key.js"></script>
 </body>
 </html>
