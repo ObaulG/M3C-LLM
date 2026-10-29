@@ -509,35 +509,33 @@
 
     async function refreshJobs() {
         try {
-            const response = await fetch(QUESTIONS_API + '/jobs');
-            const data = await response.json();
-            
-            document.getElementById('totalJobsCount').textContent = data.count;
-            
-            if (data.jobs.length === 0) {
-                document.getElementById('jobsContainer').innerHTML = 
-                    '<p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>';
+            const jobsContainer = document.getElementById('jobsContainer');
+
+            if (!currentJobId) {
+                document.getElementById('totalJobsCount').textContent = '0';
                 document.getElementById('lastJobStatus').textContent = 'Aucun';
+                jobsContainer.innerHTML =
+                    '<p style="text-align: center; color: #666; padding: 40px;">Aucun job lancé depuis cette page. Lancez une nouvelle génération pour commencer.</p>';
                 updateLiveProgress(null);
                 return;
             }
-            
-            const latestJob = data.jobs[0];
-            document.getElementById('lastJobStatus').textContent = getStatusText(latestJob.status);
-            
-            let html = '';
-            data.jobs.forEach(job => {
-                html += renderJobCard(job);
-            });
-            
-            document.getElementById('jobsContainer').innerHTML = html;
 
-            const activeJob = data.jobs.find(job => job.job_id === currentJobId) ||
-                (['pending', 'running'].includes(latestJob.status) ? latestJob : null);
-            updateLiveProgress(activeJob);
-            
+            const response = await fetch(QUESTIONS_API + '/jobs/' + currentJobId);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const job = await response.json();
+
+            document.getElementById('totalJobsCount').textContent = '1';
+            document.getElementById('lastJobStatus').textContent = getStatusText(job.status);
+            jobsContainer.innerHTML = renderJobCard(job);
+            updateLiveProgress(job);
+
+            if (!['pending', 'running'].includes(job.status)) {
+                stopAutoRefresh();
+            }
         } catch (error) {
-            console.error('Erreur lors du rafraîchissement des jobs:', error);
+            console.error('Erreur lors du rafraîchissement du job:', error);
         }
     }
 
@@ -564,7 +562,7 @@
                     `<div>📊 ${done}/${total} chunks traités — ${questions} question(s) générée(s)` +
                     (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
                 setTimeout(() => loading.classList.remove('active'), 4000);
-                currentJobId = null;
+                stopAutoRefresh();
             } else if (!job) {
                 loading.classList.remove('active');
             }
