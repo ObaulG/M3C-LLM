@@ -377,6 +377,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
         HTTPException 503: Si le système RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
+    print(f"[DEBUG] header key reçue: len={len(x_mistral_api_key or '')}, prefix={(x_mistral_api_key or '')[:3]!r}")
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")

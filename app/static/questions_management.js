@@ -329,6 +329,269 @@ async function loadQuestions(documentId) {
 }
 
 /**
+ * Génère le HTML pour une seule carte de question
+ * @param {Object} question - La question à rendre
+ * @param {number} totalCount - Nombre total de questions
+ * @returns {string} - HTML de la carte de question
+ */
+function generateQuestionCardHtml(question, totalCount) {
+    // Déterminer la classe du badge en fonction du statut
+    let badgeClass = 'badge-generated';
+    switch (question.status) {
+        case 'validated':
+            badgeClass = 'badge-validated';
+            break;
+        case 'pending':
+            badgeClass = 'badge-pending';
+            break;
+        default:
+            badgeClass = 'badge-generated';
+    }
+
+    // Créer les étoiles de difficulté
+    const stars = getDifficultyStars(question.difficulty_level);
+
+    // Récupérer la réponse LLM (première réponse par défaut)
+    const llmAnswer = question.answers.length > 0 ? question.answers[0] : null;
+    const llmAnswerContent = llmAnswer ? escapeHtml(llmAnswer.content) : '';
+
+    // Formater les faits de réponse
+    const answerFactsHtml = (answer) => {
+        if (!answer.facts || answer.facts.length === 0) return '';
+        return `
+            <div class="answer-facts">
+                <div class="answer-facts-title">Faits de réponse (${answer.facts.length})</div>
+                <ul class="answer-facts-list">
+                    ${answer.facts.map(fact => `
+                        <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
+                            <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
+                                ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
+                            </span>
+                            <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    };
+
+    // Formater les réponses
+    const answersHtml = question.answers.length > 0 ? `
+        <div class="answers-section">
+            <div class="answers-title">Réponses (${question.answers.length})</div>
+            ${question.answers.map((answer, index) => {
+                const answerId = answer.answer_id || answer.id || '';
+                return `
+                <div class="answer-item" data-answer-index="${index}" data-answer-id="${answerId}">
+                    <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
+                    ${answer.is_correct ? '<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>' : ''}
+                    ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
+                    ${answerId ? `<button class="btn btn-set-reference ${answer.is_correct ? 'is-reference' : ''}" onclick="setReferenceAnswer(${question.question_id}, ${answerId}, this)" title="Déclarer cette réponse comme réponse de référence">${answer.is_correct ? '★ Référence' : '☆ Référence'}</button>` : ''}
+                    ${answerId ? `<button class="btn btn-generate-facts" onclick="generateAnswerFacts(${answerId}, this)" title="Générer les faits de réponse via l\'agent d\'extraction">✨ Faits</button>` : ''}
+                    <div class="answer-facts-container">${answerFactsHtml(answer)}</div>
+                    <div class="generation-status" id="facts-status-${answerId}" style="display: none;"></div>
+                </div>
+            `;}).join('')}
+        </div>
+    ` : '';
+
+    // Récupérer la réponse de référence
+    let hasReferenceAnswer = false;
+    if (question.answers && question.answers.length > 0) {
+        let referenceAnswer = null;
+        let referenceAnswerObj = null;
+        for (let i = 0; i < question.answers.length; i++) {
+            if (question.answers[i].is_correct) {
+                referenceAnswer = question.answers[i].content;
+                referenceAnswerObj = question.answers[i];
+                break;
+            }
+        }
+        if (!referenceAnswer && question.answers.length > 0) {
+            referenceAnswer = question.answers[0].content;
+            referenceAnswerObj = question.answers[0];
+        }
+        if (referenceAnswer) {
+            hasReferenceAnswer = true;
+        }
+    } else if (referenceAnswers[question.question_id]) {
+        hasReferenceAnswer = true;
+    }
+
+    // Section d'évaluation
+    const evaluationSection = `
+        <div class="evaluation-section" data-question-id="${question.question_id}" data-has-reference="${hasReferenceAnswer}">
+            <h4>📊 Évaluation de réponse</h4>
+            
+            <input type="hidden" id="eval-source-${question.question_id}" value="llm">
+
+            <div class="evaluation-mode-controls">
+                <span class="evaluation-mode-label">Base d'évaluation :</span>
+                <label class="evaluation-mode-option">
+                    <input type="radio" name="eval-mode-${question.question_id}" value="references" checked>
+                    Réponses de référence
+                </label>
+                <label class="evaluation-mode-option">
+                    <input type="radio" name="eval-mode-${question.question_id}" value="facts">
+                    Faits
+                </label>
+                <label class="evaluation-mode-option">
+                    <input type="radio" name="eval-mode-${question.question_id}" value="both">
+                    Les deux (comparaison)
+                </label>
+            </div>
+
+            <textarea 
+                id="answer-to-evaluate-${question.question_id}" 
+                class="evaluation-textarea" 
+                placeholder="Réponse à évaluer..."
+                rows="3"
+                data-llm-answer="${llmAnswerContent}"
+            >${llmAnswerContent}</textarea>
+            <div class="evaluation-controls">
+                <button class="btn btn-evaluate" onclick="evaluateAnswer(${question.question_id})">
+                    Évaluer avec l'agent
+                </button>
+                <button class="btn btn-save" onclick="saveEvaluation(${question.question_id})">
+                    Sauvegarder l'évaluation
+                </button>
+                    <input type="radio" id="refAnswer-${question.question_id}" name="answer-${question.question_id}" value="refAnswer" />
+                <label for="refAnswer-${question.question_id}">Réponse de référence</label>
+                <input type="radio" id="allAnswers-${question.question_id}" name="answer-${question.question_id}" value="allAnswers" />
+                <label for="allAnswers-${question.question_id}">Toutes les réponses</label>
+            </div>
+            
+            <div class="evaluation-result" id="eval-result-${question.question_id}" style="display: none;">
+                <p><strong>Score:</strong> <span id="score-${question.question_id}" class="score-display"></span>/10</p>
+                <p><strong>Feedback:</strong> <span id="feedback-${question.question_id}"></span></p>
+            </div>
+            <div class="evaluation-comparison" id="eval-comparison-${question.question_id}" style="display: none;">
+                <h5>Comparaison des évaluations</h5>
+                <div class="comparison-grid">
+                    <div class="comparison-column comparison-references">
+                        <h6>Par réponses de référence</h6>
+                        <p><strong>Score:</strong> <span id="score-references-${question.question_id}" class="score-display"></span>/10</p>
+                        <p><strong>Feedback:</strong> <span id="feedback-references-${question.question_id}"></span></p>
+                    </div>
+                    <div class="comparison-column comparison-facts">
+                        <h6>Par faits</h6>
+                        <p><strong>Score:</strong> <span id="score-facts-${question.question_id}" class="score-display"></span>/10</p>
+                        <p><strong>Feedback:</strong> <span id="feedback-facts-${question.question_id}"></span></p>
+                    </div>
+                </div>
+                <p class="comparison-summary" id="comparison-summary-${question.question_id}"></p>
+            </div>
+            <div class="manual-evaluation">
+                <label>Note manuelle: 
+                    <input type="number" id="manual-score-${question.question_id}" min="1" max="10" placeholder="1-10">
+                </label>
+                <label>Commentaire: 
+                    <textarea id="manual-feedback-${question.question_id}" placeholder="Commentaire manuel..."></textarea>
+                </label>
+            </div>
+            <div class="evaluation-status" id="eval-status-${question.question_id}"></div>
+        </div>
+    `;
+
+    // Générer le HTML de la carte
+    return `
+        <div class="question-card" data-question-id="${question.question_id}" data-chunk-id="${question.chunk_id || ''}">
+            <div class="question-header">
+                <div class="question-content">
+                    ${marked.parse(question.content)}
+                </div>
+                <div class="question-meta-row">
+                    <div class="question-meta">
+                        <span class="badge ${badgeClass}">${question.status}</span>
+                        <span class="difficulty">
+                            <span class="difficulty-stars">${stars}</span>
+                            <span>Niveau ${question.difficulty_level}</span>
+                        </span>
+                        ${question.created_by ? `<span style="font-size: 12px; color: #999;">Créé par: ${question.created_by}</span>` : ''}
+                    </div>
+                    <div class="question-info">
+                        <span class="info-item" title="Identifiant de la question">
+                            <strong>ID:</strong> ${question.question_id}
+                        </span>
+                        ${question.chunk_id ? `<span class="info-item" title="Identifiant du chunk">
+                            <strong>Chunk:</strong> ${question.chunk_id}
+                        </span>` : ''}
+                        ${question.page ? `<span class="info-item" title="Page du document">
+                            <strong>Page:</strong> ${question.page}
+                        </span>` : ''}
+                        ${question.page_number ? `<span class="info-item" title="Page du document">
+                            <strong>Page:</strong> ${question.page_number}
+                        </span>` : ''}
+                        ${question.num_page ? `<span class="info-item" title="Page du document">
+                            <strong>Page:</strong> ${question.num_page}
+                        </span>` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            ${answersHtml}
+            
+            <!-- Boutons d'édition -->
+            <div class="edit-actions">
+                <button class="btn btn-edit-question" onclick="enableQuestionEditing(${question.question_id})">
+                    ⚙️ Modifier
+                </button>
+                <button class="btn btn-knowledge-items" onclick="getKnowledgeItemsForQuestion(${question.question_id})">
+                    🧠 Éléments de connaissance
+                </button>
+                <button class="btn btn-delete-question-answers" onclick="deleteAllAnswersForQuestion(${question.question_id}, this)" title="Supprimer toutes les réponses de cette question et leurs faits associés">
+                    🗑 Supprimer toutes les réponses
+                </button>
+                <button class="btn btn-save-changes" onclick="saveQuestionChanges(${question.question_id})" style="display: none;">
+                    ✓ Sauvegarder les modifications
+                </button>
+                <button class="btn btn-secondary btn-cancel-edit" onclick="cancelQuestionEditing(${question.question_id})" style="display: none;">
+                    × Annuler
+                </button>
+            </div>
+            
+            <!-- Section des éléments de connaissance associés -->
+            <div class="knowledge-items-section" id="knowledge-items-${question.question_id}" style="display: none;">
+                <h4>🧠 Éléments de connaissance associés</h4>
+                <div class="knowledge-items-container" id="knowledge-items-container-${question.question_id}">
+                    <p style="font-size: 13px; color: #666;">Cliquez sur le bouton pour afficher les éléments de connaissance de cette question.</p>
+                </div>
+                <div class="evaluation-status" id="knowledge-items-status-${question.question_id}"></div>
+            </div>
+            
+            ${evaluationSection}
+            
+            <!-- Section de méta-évaluation (critique de l'évaluation IA) -->
+            <div class="meta-evaluation-section" id="meta-eval-${question.question_id}" style="display: none;">
+                <h4>🔍 Critiquer l'évaluation IA</h4>
+                <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                    <p><strong>Note IA:</strong> <span id="meta-ai-score-${question.question_id}"></span>/10</p>
+                    <p><strong>Commentaire IA:</strong> <span id="meta-ai-feedback-${question.question_id}"></span></p>
+                </div>
+                <div class="meta-evaluation-controls">
+                    <div class="meta-evaluation-input">
+                        <label>Note sur l'évaluation IA (1-10): 
+                            <input type="number" id="meta-rating-${question.question_id}" min="1" max="10" placeholder="1-10">
+                        </label>
+                    </div>
+                    <div class="meta-evaluation-input">
+                        <label>Commentaire sur l'évaluation IA:
+                            <textarea id="meta-comment-${question.question_id}" placeholder="Votre avis sur la qualité de l'évaluation IA..."></textarea>
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-meta-save" onclick="saveMetaEvaluation(${question.question_id})">
+                        Sauvegarder la critique
+                    </button>
+                </div>
+                <div class="evaluation-status" id="meta-eval-status-${question.question_id}"></div>
+            </div>
+        </div>
+    `;
+}
+
+/**
  * Affiche les questions dans le DOM
  * @param {Array} questions - Liste des questions à afficher
  * @param {number} count - Nombre total de questions
@@ -371,278 +634,7 @@ function displayQuestions(questions, count) {
         </div>
     `;
 
-    let questionsHtml = questions.map(question => {
-        // Déterminer la classe du badge en fonction du statut
-        let badgeClass = 'badge-generated';
-        switch (question.status) {
-            case 'validated':
-                badgeClass = 'badge-validated';
-                break;
-            case 'pending':
-                badgeClass = 'badge-pending';
-                break;
-            default:
-                badgeClass = 'badge-generated';
-        }
-
-        // Créer les étoiles de difficulté
-        const stars = getDifficultyStars(question.difficulty_level);
-
-        // Récupérer la réponse LLM (première réponse par défaut)
-        const llmAnswer = question.answers.length > 0 ? question.answers[0] : null;
-        const llmAnswerContent = llmAnswer ? escapeHtml(llmAnswer.content) : '';
-        const llmAnswerId = llmAnswer ? (llmAnswer.answer_id || llmAnswer.id || '') : '';
-
-        // Formater les faits de réponse (affirmations extraites) pour une réponse
-        const answerFactsHtml = (answer) => {
-            if (!answer.facts || answer.facts.length === 0) return '';
-            return `
-                <div class="answer-facts">
-                    <div class="answer-facts-title">Faits de réponse (${answer.facts.length})</div>
-                    <ul class="answer-facts-list">
-                        ${answer.facts.map(fact => `
-                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
-                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
-                                    ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
-                                </span>
-                                <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            `;
-        };
-
-        // Formater les réponses
-        const answersHtml = question.answers.length > 0 ? `
-            <div class="answers-section">
-                <div class="answers-title">Réponses (${question.answers.length})</div>
-                ${question.answers.map((answer, index) => {
-                    const answerId = answer.answer_id || answer.id || '';
-                    return `
-                    <div class="answer-item" data-answer-index="${index}" data-answer-id="${answerId}">
-                        <strong>Réponse ${index + 1}:</strong> ${escapeHtml(answer.content)}
-                        ${answer.is_correct ? '<span style="color: #28a745; margin-left: 10px;">✓ Correcte</span>' : ''}
-                        ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
-                        ${answerId ? `<button class="btn btn-set-reference ${answer.is_correct ? 'is-reference' : ''}" onclick="setReferenceAnswer(${question.question_id}, ${answerId}, this)" title="Déclarer cette réponse comme réponse de référence">${answer.is_correct ? '★ Référence' : '☆ Référence'}</button>` : ''}
-                        ${answerId ? `<button class="btn btn-generate-facts" onclick="generateAnswerFacts(${answerId}, this)" title="Générer les faits de réponse via l'agent d'extraction">✨ Faits</button>` : ''}
-                        <div class="answer-facts-container">${answerFactsHtml(answer)}</div>
-                        <div class="generation-status" id="facts-status-${answerId}" style="display: none;"></div>
-                    </div>
-                `;}).join('')}
-            </div>
-        ` : '';
-
-        // Récupérer la réponse de référence si disponible
-        // 1. D'abord vérifier si la question a des réponses dans ses answers
-        // 2. Sinon, vérifier dans referenceAnswers
-        let referenceAnswerData = null;
-        let hasReferenceAnswer = false;
-        
-        // Vérifier si la question a des réponses (answers)
-        if (question.answers && question.answers.length > 0) {
-            // Trouver la première réponse marquée comme correcte, sinon utiliser la première
-            let referenceAnswer = null;
-            let referenceAnswerObj = null;
-            for (let i = 0; i < question.answers.length; i++) {
-                if (question.answers[i].is_correct) {
-                    referenceAnswer = question.answers[i].content;
-                    referenceAnswerObj = question.answers[i];
-                    break;
-                }
-            }
-            // Si aucune réponse correcte n'a été trouvée, utiliser la première
-            if (!referenceAnswer && question.answers.length > 0) {
-                referenceAnswer = question.answers[0].content;
-                referenceAnswerObj = question.answers[0];
-            }
-            
-            if (referenceAnswer) {
-                referenceAnswerData = {
-                    answer_id: referenceAnswerObj.answer_id || referenceAnswerObj.id || '',
-                    question_content: question.content,
-                    response_answer: referenceAnswer
-                };
-                hasReferenceAnswer = true;
-            }
-        } else if (referenceAnswers[question.question_id]) {
-            // Sinon, utiliser le CSV de référence
-            referenceAnswerData = referenceAnswers[question.question_id];
-            hasReferenceAnswer = true;
-        }
-        
-        // Section d'évaluation - TOUJOURS affichée pour permettre l'évaluation
-
-        const evaluationSection = `
-            <div class="evaluation-section" data-question-id="${question.question_id}" data-has-reference="${hasReferenceAnswer}">
-                <h4>📊 Évaluation de réponse</h4>
-                
-                <input type="hidden" id="eval-source-${question.question_id}" value="llm">
-
-                <div class="evaluation-mode-controls">
-                    <span class="evaluation-mode-label">Base d'évaluation :</span>
-                    <label class="evaluation-mode-option">
-                        <input type="radio" name="eval-mode-${question.question_id}" value="references" checked>
-                        Réponses de référence
-                    </label>
-                    <label class="evaluation-mode-option">
-                        <input type="radio" name="eval-mode-${question.question_id}" value="facts">
-                        Faits
-                    </label>
-                    <label class="evaluation-mode-option">
-                        <input type="radio" name="eval-mode-${question.question_id}" value="both">
-                        Les deux (comparaison)
-                    </label>
-                </div>
-
-                <textarea 
-                    id="answer-to-evaluate-${question.question_id}" 
-                    class="evaluation-textarea" 
-                    placeholder="Réponse à évaluer..."
-                    rows="3"
-                    data-llm-answer="${llmAnswerContent}"
-                >${llmAnswerContent}</textarea>
-                <div class="evaluation-controls">
-                    <button class="btn btn-evaluate" onclick="evaluateAnswer(${question.question_id})">
-                        Évaluer avec l'agent
-                    </button>
-                    <button class="btn btn-save" onclick="saveEvaluation(${question.question_id})">
-                        Sauvegarder l'évaluation
-                    </button>
-                        <input type="radio" id="refAnswer" name="answer" value="refAnswer" />
-                    <label for="refAnswer">Réponse de référence</label>
-                    <input type="radio" id="allAnswers" name="answer" value="allAnswers" />
-                    <label for="allAnswers">Toutes les réponses</label>
-                </div>
-                
-                <div class="evaluation-result" id="eval-result-${question.question_id}" style="display: none;">
-                    <p><strong>Score:</strong> <span id="score-${question.question_id}" class="score-display"></span>/10</p>
-                    <p><strong>Feedback:</strong> <span id="feedback-${question.question_id}"></span></p>
-                </div>
-                <div class="evaluation-comparison" id="eval-comparison-${question.question_id}" style="display: none;">
-                    <h5>Comparaison des évaluations</h5>
-                    <div class="comparison-grid">
-                        <div class="comparison-column comparison-references">
-                            <h6>Par réponses de référence</h6>
-                            <p><strong>Score:</strong> <span id="score-references-${question.question_id}" class="score-display"></span>/10</p>
-                            <p><strong>Feedback:</strong> <span id="feedback-references-${question.question_id}"></span></p>
-                        </div>
-                        <div class="comparison-column comparison-facts">
-                            <h6>Par faits</h6>
-                            <p><strong>Score:</strong> <span id="score-facts-${question.question_id}" class="score-display"></span>/10</p>
-                            <p><strong>Feedback:</strong> <span id="feedback-facts-${question.question_id}"></span></p>
-                        </div>
-                    </div>
-                    <p class="comparison-summary" id="comparison-summary-${question.question_id}"></p>
-                </div>
-                <div class="manual-evaluation">
-                    <label>Note manuelle: 
-                        <input type="number" id="manual-score-${question.question_id}" min="1" max="10" placeholder="1-10">
-                    </label>
-                    <label>Commentaire: 
-                        <textarea id="manual-feedback-${question.question_id}" placeholder="Commentaire manuel..."></textarea>
-                    </label>
-                </div>
-                <div class="evaluation-status" id="eval-status-${question.question_id}"></div>
-            </div>
-        `;
-
-        return `
-            <div class="question-card" data-question-id="${question.question_id}" data-chunk-id="${question.chunk_id || ''}">
-                <div class="question-header">
-                    <div class="question-content">
-                        ${marked.parse(question.content)}
-                    </div>
-                    <div class="question-meta-row">
-                        <div class="question-meta">
-                            <span class="badge ${badgeClass}">${question.status}</span>
-                            <span class="difficulty">
-                                <span class="difficulty-stars">${stars}</span>
-                                <span>Niveau ${question.difficulty_level}</span>
-                            </span>
-                            ${question.created_by ? `<span style="font-size: 12px; color: #999;">Créé par: ${question.created_by}</span>` : ''}
-                        </div>
-                        <div class="question-info">
-                            <span class="info-item" title="Identifiant de la question">
-                                <strong>ID:</strong> ${question.question_id}
-                            </span>
-                            ${question.chunk_id ? `<span class="info-item" title="Identifiant du chunk">
-                                <strong>Chunk:</strong> ${question.chunk_id}
-                            </span>` : ''}
-                    ${question.page ? `<span class="info-item" title="Page du document">
-                        <strong>Page:</strong> ${question.page}
-                    </span>` : ''}
-                    ${question.page_number ? `<span class="info-item" title="Page du document">
-                        <strong>Page:</strong> ${question.page_number}
-                    </span>` : ''}
-                    ${question.num_page ? `<span class="info-item" title="Page du document">
-                        <strong>Page:</strong> ${question.num_page}
-                    </span>` : ''}
-                        </div>
-                    </div>
-                </div>
-                
-                ${answersHtml}
-                
-                <!-- Boutons d'édition -->
-                <div class="edit-actions">
-                    <button class="btn btn-edit-question" onclick="enableQuestionEditing(${question.question_id})">
-                        ⚙️ Modifier
-                    </button>
-                    <button class="btn btn-knowledge-items" onclick="getKnowledgeItemsForQuestion(${question.question_id})">
-                        🧠 Éléments de connaissance
-                    </button>
-                    <button class="btn btn-delete-question-answers" onclick="deleteAllAnswersForQuestion(${question.question_id}, this)" title="Supprimer toutes les réponses de cette question et leurs faits associés">
-                        🗑 Supprimer toutes les réponses
-                    </button>
-                    <button class="btn btn-save-changes" onclick="saveQuestionChanges(${question.question_id})" style="display: none;">
-                        ✓ Sauvegarder les modifications
-                    </button>
-                    <button class="btn btn-secondary btn-cancel-edit" onclick="cancelQuestionEditing(${question.question_id})" style="display: none;">
-                        × Annuler
-                    </button>
-                </div>
-                
-                <!-- Section des éléments de connaissance associés -->
-                <div class="knowledge-items-section" id="knowledge-items-${question.question_id}" style="display: none;">
-                    <h4>🧠 Éléments de connaissance associés</h4>
-                    <div class="knowledge-items-container" id="knowledge-items-container-${question.question_id}">
-                        <p style="font-size: 13px; color: #666;">Cliquez sur le bouton pour afficher les éléments de connaissance de cette question.</p>
-                    </div>
-                    <div class="evaluation-status" id="knowledge-items-status-${question.question_id}"></div>
-                </div>
-                
-                ${evaluationSection}
-                
-                <!-- Section de méta-évaluation (critique de l'évaluation IA) -->
-                <div class="meta-evaluation-section" id="meta-eval-${question.question_id}" style="display: none;">
-                    <h4>🔍 Critiquer l'évaluation IA</h4>
-                    <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
-                        <p><strong>Note IA:</strong> <span id="meta-ai-score-${question.question_id}"></span>/10</p>
-                        <p><strong>Commentaire IA:</strong> <span id="meta-ai-feedback-${question.question_id}"></span></p>
-                    </div>
-                    <div class="meta-evaluation-controls">
-                        <div class="meta-evaluation-input">
-                            <label>Note sur l'évaluation IA (1-10): 
-                                <input type="number" id="meta-rating-${question.question_id}" min="1" max="10" placeholder="1-10">
-                            </label>
-                        </div>
-                        <div class="meta-evaluation-input">
-                            <label>Commentaire sur l'évaluation IA:
-                                <textarea id="meta-comment-${question.question_id}" placeholder="Votre avis sur la qualité de l'évaluation IA..."></textarea>
-                            </label>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-meta-save" onclick="saveMetaEvaluation(${question.question_id})">
-                            Sauvegarder la critique
-                        </button>
-                    </div>
-                    <div class="evaluation-status" id="meta-eval-status-${question.question_id}"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
+    let questionsHtml = questions.map(question => generateQuestionCardHtml(question, count)).join('');
 
     currentQuestions = questions;
     contentElement.innerHTML = headerHtml + questionsHtml;
@@ -762,10 +754,14 @@ async function setReferenceAnswer(questionId, answerId, button) {
                     if (updatedIndex !== -1) {
                         currentQuestions[updatedIndex] = refreshedQuestion;
                     }
-                    const contentElement = document.getElementById('questionsContent');
-                    const previousScroll = window.scrollY;
-                    displayQuestions(currentQuestions, currentQuestions.length);
-                    window.scrollTo(0, previousScroll);
+                    // Remplacer uniquement la carte de la question modifiée
+                    const oldCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                    if (oldCard) {
+                        const previousScroll = window.scrollY;
+                        const newCardHtml = generateQuestionCardHtml(refreshedQuestion, currentQuestions.length);
+                        oldCard.outerHTML = newCardHtml;
+                        window.scrollTo(0, previousScroll);
+                    }
                 }
             }
         }
@@ -1876,11 +1872,15 @@ async function saveQuestionChanges(questionId) {
                         if (updatedIndex !== -1) {
                             currentQuestions[updatedIndex] = refreshedQuestion;
                         }
-                        const contentElement = document.getElementById('questionsContent');
-                        const previousScroll = window.scrollY;
-                        displayQuestions(currentQuestions, currentQuestions.length);
-                        window.scrollTo(0, previousScroll);
-                        refreshedCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                        // Remplacer uniquement la carte de la question modifiée
+                        const oldCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                        if (oldCard) {
+                            const previousScroll = window.scrollY;
+                            const newCardHtml = generateQuestionCardHtml(refreshedQuestion, currentQuestions.length);
+                            oldCard.outerHTML = newCardHtml;
+                            window.scrollTo(0, previousScroll);
+                            refreshedCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                        }
                     }
                 }
             }

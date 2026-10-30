@@ -125,20 +125,13 @@ def verify_mistral_api_key(api_key: str) -> bool:
     if not api_key:
         return False
 
-    # Format de base : commence par 'x' et a au moins 30 caractères
-    if not api_key.startswith('x'):
+    # Format de base : commence par 'mstrl' et a au moins 30 caractères
+    if not api_key.startswith('mstrl'):
         return False
 
     if len(api_key) < 30:
         return False
 
-    # Format typique : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    parts = api_key.split('-')
-    if len(parts) == 5:
-        if all(len(part) > 0 for part in parts):
-            return True
-
-    # Certains formats peuvent ne pas avoir de tirets
     return len(api_key) >= 30
 
 
