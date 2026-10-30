@@ -381,6 +381,82 @@
             background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
             color: white;
         }
+
+        .profile-tabs {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .profile-tab {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            margin-bottom: -2px;
+        }
+
+        .profile-tab:hover {
+            color: #b74420;
+        }
+
+        .profile-tab.active {
+            color: #b74420;
+            border-bottom-color: #b74420;
+        }
+
+        .profile-tab-content {
+            display: block;
+        }
+
+        .tutorial-steps {
+            margin: 15px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tutorial-step {
+            margin-bottom: 15px;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .tutorial-step .step-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #b74420;
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .tutorial-step h4 {
+            margin: 4px 0 6px;
+            color: #333;
+        }
+
+        .api-key-info {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -410,6 +486,12 @@
 </div></div>
 
         <div class="profile-body" id="profileRoot">
+            <div class="profile-tabs" role="tablist">
+                <button type="button" class="profile-tab active" data-tab="tab-api-key" role="tab">🔑 Clé API Mistral</button>
+                <button type="button" class="profile-tab" data-tab="tab-stats" role="tab">📊 Mon profil</button>
+            </div>
+
+            <div class="profile-tab-content" id="tab-api-key" role="tabpanel">
             <div class="profile-section-header" style="margin-top: 0;"><h2>🔑 Clé API Mistral</h2></div>
             <p style="color: #666; line-height: 1.6;">
                 Pour utiliser pleinement les fonctionnalités de ce portail, configurez votre clé API Mistral AI.
@@ -441,8 +523,77 @@
                 </div>
             </div>
 
+
+            <div class="profile-section-header"><h2>📖 Tutoriel : obtenir votre clé API Mistral</h2></div>
+            <div class="tutorial-section">
+                <p style="margin-bottom: 20px; color: #666;">
+                    Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI.
+                    Cette clé est <strong>stockée uniquement dans votre navigateur</strong> (et enregistrée sur votre compte
+                    si vous êtes connecté) pour être utilisée dans vos requêtes.
+                </p>
+
+                <ol class="tutorial-steps">
+                    <li class="tutorial-step">
+                        <span class="step-number">1</span>
+                        <h4>Créer un compte sur Mistral AI</h4>
+                        <p>Rendez-vous sur <a href="https://mistral.ai/" target="_blank" style="color: #b74420;">https://mistral.ai/</a> et cliquez sur "Sign Up" ou "S'inscrire".</p>
+                        <p>Vous pouvez vous inscrire avec :</p>
+                        <ul style="margin-left: 20px; color: #555;">
+                            <li>Votre adresse email professionnelle ou personnelle</li>
+                            <li>Votre compte Google</li>
+                            <li>Votre compte GitHub</li>
+                        </ul>
+                    </li>
+
+                    <li class="tutorial-step">
+                        <span class="step-number">2</span>
+                        <h4>Accéder à votre tableau de bord</h4>
+                        <p>Une fois connecté, vous serez redirigé vers votre tableau de bord Mistral AI.</p>
+                        <p>Si ce n'est pas le cas, cliquez sur votre avatar en haut à droite, puis sélectionnez "Dashboard".</p>
+                    </li>
+
+                    <li class="tutorial-step">
+                        <span class="step-number">3</span>
+                        <h4>Générer une nouvelle clé API</h4>
+                        <p>Dans votre tableau de bord :</p>
+                        <ol style="margin-left: 20px; color: #555;">
+                            <li>Recherchez la section "API Keys" ou "Clés API"</li>
+                            <li>Cliquez sur "Create new key" ou "Créer une nouvelle clé"</li>
+                            <li>Donnez un nom à votre clé (par exemple : "M3C-Portail")</li>
+                            <li>Cliquez sur "Create" ou "Créer"</li>
+                        </ol>
+                        <p><strong>⚠️ Important :</strong> Votre clé API ne sera affichée qu'une seule fois. Copiez-la immédiatement et conservez-la dans un endroit sûr.</p>
+                    </li>
+
+                    <li class="tutorial-step">
+                        <span class="step-number">4</span>
+                        <h4>Coller votre clé dans le champ ci-dessus</h4>
+                        <p>Vous êtes déjà au bon endroit :</p>
+                        <ol style="margin-left: 20px; color: #555;">
+                            <li>Cliquez sur "✏️ Configurer la clé API Mistral" ci-dessus</li>
+                            <li>Collez votre clé API dans le champ prévu à cet effet</li>
+                            <li>Cliquez sur "Enregistrer"</li>
+                        </ol>
+                        <p>Votre clé sera stockée dans votre navigateur et envoyée avec chacune de vos requêtes.</p>
+                    </li>
+                </ol>
+
+                <div class="api-key-info">
+                    <strong>ℹ️ Informations importantes :</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Votre clé API est personnelle et ne doit pas être partagée</li>
+                        <li>Elle est stockée uniquement dans votre navigateur (localStorage)</li>
+                        <li>Vous pouvez révoquer une clé à tout moment depuis votre tableau de bord Mistral</li>
+                        <li>Si vous êtes administrateur (admin / global_admin), vous n'avez pas besoin de fournir votre clé : le système utilisera automatiquement la clé configurée sur le serveur</li>
+                    </ul>
+                </div>
+            </div>
+            </div>
+
+            <div class="profile-tab-content" id="tab-stats" role="tabpanel" style="display:none;">
             <div class="profile-loading">Chargement du profil…</div>
             <div id="profileData"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -680,7 +831,19 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', load);
+    function initTabs() {
+        document.querySelectorAll('.profile-tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.profile-tab').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                document.querySelectorAll('.profile-tab-content').forEach(function (c) { c.style.display = 'none'; });
+                var target = document.getElementById(btn.getAttribute('data-tab'));
+                if (target) target.style.display = 'block';
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () { initTabs(); load(); });
     document.addEventListener('profile-widget-login', load);
 })();
 </script>

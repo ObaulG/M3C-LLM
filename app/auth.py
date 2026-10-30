@@ -57,10 +57,15 @@ def _purge_expired_tokens() -> None:
         _ACTIVE_TOKENS.pop(t, None)
 
 
-VALID_ROLES = ("admin", "validator", "user")
+VALID_ROLES = ("global_admin", "admin", "validator", "user", "guest")
+
+# Rôle attribué à tout compte créé via l'inscription publique :
+# un simple utilisateur est enregistré comme "guest" (pas "user"),
+# et devra renseigner sa propre clé API Mistral pour interroger le serveur.
+DEFAULT_REGISTER_ROLE = "guest"
 
 
-async def create_user(username: str, email: str, password: str, role: str = "user") -> Tuple[Dict[str, Any], str]:
+async def create_user(username: str, email: str, password: str, role: str = DEFAULT_REGISTER_ROLE) -> Tuple[Dict[str, Any], str]:
     if role not in VALID_ROLES:
         raise ValueError(f"Rôle invalide : {role}")
     if len(password) < 6:
@@ -168,6 +173,28 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             "created_at": row[5].isoformat() if row[5] else None,
         }
 
+
+
+async def get_user_mistral_api_key(user_id: int) -> Optional[str]:
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT mistral_api_key FROM user WHERE id = %s;",
+                (user_id,),
+            )
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return row[0]
+
+
+async def set_user_mistral_api_key(user_id: int, api_key: Optional[str]) -> None:
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "UPDATE user SET mistral_api_key = %s, modified = NOW() WHERE id = %s;",
+                (api_key if api_key else None, user_id),
+            )
 
 
 def _token_from_authorization(authorization: Optional[str]) -> Optional[str]:

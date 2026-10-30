@@ -226,11 +226,15 @@ async function sendMessage() {
     };
     let response;
     try {
+        const msgHeaders = {
+            'Content-Type': 'application/json',
+        };
+        if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
+            msgHeaders['X-Mistral-Api-Key'] = mistralApiKey.get();
+        }
         response = await fetch(API_URL_MESSAGE, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: msgHeaders,
         body: JSON.stringify(params)
     })} catch (error) {
         console.error('Erreur:', error);

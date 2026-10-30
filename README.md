@@ -21,6 +21,7 @@ Deux prototypes sont disponibles :
 | created | datetime | NO | | NULL | |
 | modified | datetime | YES | | NULL | |
 | password_hash | varchar(60) | YES | | NULL | |
+| mistral_api_key | varchar(255) | YES | | NULL | | Clé API Mistral personnelle (rôles user/guest) |
 | role | varchar(190) | NO | | NULL | |
 | is_active | tinyint(1) | NO | | NULL | |
 

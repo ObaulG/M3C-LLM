@@ -85,11 +85,15 @@ async function launchRAGRequest(){
 
     let data;
 	try {
+		const headers = {
+			'Content-Type': 'application/json',
+		};
+		if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
+			headers['X-Mistral-Api-Key'] = mistralApiKey.get();
+		}
 		const response = await fetch("http://localhost:8000/api/query/rag/tutorial", {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers: headers,
 			body: JSON.stringify(params)
 		});
 
