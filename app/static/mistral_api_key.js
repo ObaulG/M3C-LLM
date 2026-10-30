@@ -57,15 +57,10 @@ function isValidMistralApiKeyFormat(apiKey) {
     if (!apiKey) {
         return false;
     }
-<<<<<<< Updated upstream
 
-    // Format de base : commence par 'x' et a au moins 30 caractères
-    if (!apiKey.startsWith('x')) {
-=======
-    
     // Format de base : commence par 'mstrl' et a au moins 30 caractères
     if (!apiKey.startsWith('mstrl')) {
->>>>>>> Stashed changes
+
         return false;
     }
 
