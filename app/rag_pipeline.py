@@ -98,6 +98,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
     async def query_simple(self,
                            prompt: str,
                            model: str,
+                           api_key: Optional[str] = None,
                            **kwargs) -> tuple[BaseMessage, float, float]:
         """Asynchronously queries a language model (LLM) with a given prompt and returns its response along with processing time.
 
@@ -119,9 +120,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         if 'chat_history' in kwargs and kwargs['chat_history']:
             messages = kwargs.pop('chat_history')
             messages.append({"role": "user", "content": prompt})
-            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, messages)
+            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, messages, api_key=api_key)
         else:
-            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, prompt)
+            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, prompt, api_key=api_key)
 
         return answer, total_time, consumed_energy_Wh
 
@@ -134,6 +135,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                         sources: Optional[List[RAGSource]],
                         k: int = 3,
                         specified_document_id: Optional[int]=None,
+                        api_key: Optional[str] = None,
                         **kwargs) -> tuple[BaseMessage, List[RAGSource], float, Optional[float]]:
         """
         if preprocess_data does not contain the keys final_prompt and sources,
@@ -145,9 +147,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         print("query_rag")
         if not (final_prompt or sources):
             print("before rag_preprocess")
-            final_prompt, sources = await self.rag_preprocess(prompt, reranking, k, specified_document_id)
+            final_prompt, sources = await self.rag_preprocess(prompt, reranking, k, specified_document_id, api_key=api_key)
             print("preprocess done")
-        answer, total_time, consumed_energy_Wh = await self.query_simple(final_prompt, model, **kwargs)
+        answer, total_time, consumed_energy_Wh = await self.query_simple(final_prompt, model, api_key=api_key, **kwargs)
         print(answer)
         return answer, sources, total_time, consumed_energy_Wh
 
@@ -192,24 +194,32 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             except Exception as e:
                 print(f"Erreur lors de l'initialisation du modèle Ollama '{model_name}': {e}")
 
-    def _get_prompt_embeddings(self, prompt: str) -> list[float]:
+    def _get_prompt_embeddings(self, prompt: str, api_key: Optional[str] = None) -> list[float]:
         """
         Transforme le prompt en un vecteur d'embeddings.
 
         Args:
             prompt (str): Le texte du prompt à transformer.
+            api_key (str, optional): Clé API Mistral à utiliser pour l'embedder.
+                Si None, l'embedder utilise sa clé par défaut (clé serveur).
 
         Returns:
             list[float]: Le vecteur d'embeddings du prompt.
         """
         try:
+            # Si une clé API est fournie et que l'embedder est un MistralEmbedder,
+            # on crée un embedder temporaire avec cette clé.
+            embedder = self.embedder
+            if api_key and hasattr(embedder, '_api_key'):
+                from embedders.api.MistralEmbedder import MistralEmbedder
+                embedder = MistralEmbedder(api_key=api_key, model=embedder.model, dimension=embedder.dimension)
             # Utilise le modèle d'embeddings déjà initialisé dans la classe
             # Si embedder est un BaseEmbedder, utiliser embed()
             # Sinon, utiliser embed_query() pour compatibilité avec MistralAIEmbeddings
-            if hasattr(self.embedder, 'embed'):
-                embeddings = self.embedder.embed(prompt)
+            if hasattr(embedder, 'embed'):
+                embeddings = embedder.embed(prompt)
             else:
-                embeddings = self.embedder.embed_query(prompt)
+                embeddings = embedder.embed_query(prompt)
             return embeddings
         except Exception as e:
             raise ValueError(f"Erreur lors de la transformation du prompt en embeddings : {e}")
@@ -353,7 +363,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                              prompt: str,
                              reranking: Optional[str],
                              k: int = 3,
-                             specified_document_id: Optional[int] = None) -> tuple[str, List[RAGSource]]:
+                             specified_document_id: Optional[int] = None,
+                             api_key: Optional[str] = None) -> tuple[str, List[RAGSource]]:
         """
         Établit les étapes préliminaires du RAG :
         1. Transforme le prompt en embeddings.
@@ -371,7 +382,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
 
         try:
             # 1. Transforme le prompt en embeddings
-            prompt_embeddings = self._get_prompt_embeddings(prompt)
+            prompt_embeddings = self._get_prompt_embeddings(prompt, api_key=api_key)
             # 2. Recherche les 3*k chunks les plus pertinents
             top_k_chunks = await self._retrieve_top_k_chunks_from_db(prompt_embeddings,
                                                                      self.rag_rerank_ndocs_coeff*k,
@@ -387,10 +398,12 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             raise ValueError(f"Erreur lors du prétraitement RAG : {e}")
 
 
-    async def _invoke_llm(self, model: str, prompt) -> tuple[AIMessage, float]:
+    async def _invoke_llm(self, model: str, prompt, api_key: Optional[str] = None) -> tuple[AIMessage, float]:
         """
         Encapsule ainvoke, en ajoutant le temps d'execution.
         Accepte soit un prompt string, soit une liste de messages (pour l'historique).
+        Si `api_key` est fourni, un client LLM temporaire est créé avec cette clé
+        (clé personnelle de l'utilisateur) au lieu de la clé interne du serveur.
         """
         print("calling", model)
         consumed_energy = 0
@@ -404,11 +417,15 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         
         # Si prompt est une liste (messages avec historique), l'utiliser directement
         # Sinon, traiter comme un simple prompt string
+        llm = self.dict_llm[model]
+        if api_key and model in MISTRAL_MODELS and hasattr(llm, 'api_key'):
+            # Créer une copie du modèle avec la clé de l'utilisateur
+            llm = llm.model_copy(update={"api_key": api_key})
         try :
             if isinstance(prompt, list):
-                answer = await self.dict_llm[model].ainvoke(prompt)
+                answer = await llm.ainvoke(prompt)
             else:
-                answer = await self.dict_llm[model].ainvoke(prompt)
+                answer = await llm.ainvoke(prompt)
             print(answer)
         except Exception as e:
             print("Exception:", e)

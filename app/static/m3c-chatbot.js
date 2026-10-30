@@ -263,11 +263,15 @@ async function simpleQuery(params) {
 			}
 		}
 
+		const headers = {
+			'Content-Type': 'application/json',
+		};
+		if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
+			headers['X-Mistral-Api-Key'] = mistralApiKey.get();
+		}
 		const response = await fetch(route_to_fetch, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers: headers,
 			body: JSON.stringify(params)
 		});
 
@@ -301,11 +305,15 @@ async function simpleQuery(params) {
 async function compareQuery(params) {
 	try {
 		console.log(params.models);
+		const headers = {
+			'Content-Type': 'application/json',
+		};
+		if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
+			headers['X-Mistral-Api-Key'] = mistralApiKey.get();
+		}
 		const response = await fetch(API_URL_COMPARE, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers: headers,
 			body: JSON.stringify(params)
 		});
 		if (!response.ok) {

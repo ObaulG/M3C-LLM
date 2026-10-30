@@ -29,6 +29,10 @@ class AuthLoginRequest(BaseModel):
     password: str = Field(...)
 
 
+class MistralApiKeyRequest(BaseModel):
+    mistral_api_key: Optional[str] = Field(default=None, max_length=255)
+
+
 class AuthUserResponse(BaseModel):
     user_id: int
     username: str
@@ -106,6 +110,51 @@ async def get_current_user(
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable.")
     return {"user": AuthUserResponse(**user)}
+
+
+@router.get("/me/mistral-api-key")
+async def get_my_mistral_api_key(
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Retourne l'état de la clé API Mistral enregistrée pour l'utilisateur connecté.
+
+    Ne renvoie jamais la clé elle-même, seulement un masque et un booléen.
+    """
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
+    stored = await auth.get_user_mistral_api_key(user_id)
+    return {
+        "has_api_key": bool(stored),
+        "masked": (stored[:4] + "…" + stored[-4:]) if stored and len(stored) > 8 else None,
+    }
+
+
+@router.put("/me/mistral-api-key")
+async def set_my_mistral_api_key(
+    request: MistralApiKeyRequest,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Enregistre (ou efface, si null/vide) la clé API Mistral de l'utilisateur connecté."""
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
+    api_key = (request.mistral_api_key or "").strip() or None
+    if api_key is not None:
+        from mistral_api_key_manager import verify_mistral_api_key
+        if not verify_mistral_api_key(api_key):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Clé API Mistral invalide. Vérifiez que vous avez copié la bonne clé.",
+            )
+    await auth.set_user_mistral_api_key(user_id, api_key)
+    return {"has_api_key": bool(api_key)}
 
 
 @router.post("/logout")

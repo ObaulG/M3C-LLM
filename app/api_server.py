@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status, Response, Cookie
+from fastapi import FastAPI, HTTPException, status, Response, Cookie, Header, Request, Depends, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
@@ -75,6 +75,7 @@ from documents.router import router as documents_router
 
 # Import du router d'authentification
 from routers.auth import router as auth_router
+from mistral_api_key_manager import async_require_mistral_api_key
 from routers.observations import router as observations_router
 from routers.observations_admin import router as observations_admin_router
 from routers.sessions import router as sessions_router
@@ -330,17 +331,22 @@ async def health_check():
           response_model=QueryResponse,
           tags=["Query"])
 async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
-                      m3c_api_key: Optional[str] = Cookie(default=None)):
+                      m3c_api_key: Optional[str] = Cookie(default=None),
+                      mistral_api_key: Optional[str] = None,
+                      authorization: Optional[str] = None,
+                      x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key")):
     if not request.models:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Aucun modÃ¨le sélectionné. Veuillez spécifier au moins un modÃ¨le."
         )
+    resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}\n ModÃ¨le: {request.models[0]}")
         answer, total_time, consumed_energy_Wh = await rag_pipeline.query_simple(
             prompt=request.question,
-            model=request.models[0]
+            model=request.models[0],
+            api_key=resolved_api_key
         )
         # Construire la réponse
         user_id = auth.user_id_from_token(m3c_api_key)
@@ -359,7 +365,8 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
 async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
                    m3c_api_key: Optional[str] = Cookie(default=None),
                    mistral_api_key: Optional[str] = None,
-                   authorization: Optional[str] = None):
+                   authorization: Optional[str] = None,
+                   x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key")):
     """
     Pose une question au système et retourne la réponse en fournissant les sources
     Args:
@@ -370,6 +377,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
         HTTPException 503: Si le système RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
+    resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
 
@@ -385,6 +393,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
             final_prompt=None,
             sources=None,
             specified_document_id=doc_id,
+            api_key=resolved_api_key,
         )
     except Exception as e:
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
@@ -402,12 +411,14 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
 async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep,
                              m3c_api_key: Optional[str] = Cookie(default=None),
                              mistral_api_key: Optional[str] = None,
-                             authorization: Optional[str] = None):
+                             authorization: Optional[str] = None,
+                             x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key")):
     """
     Pose une question au système et retourne l'intégralité des éléments constitutifs du RAG
     permettant de les présenter à l'utilisateur. Ils seront contenus dans l'attribut metadata
     de QueryResponse
     """
+    resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
 
@@ -418,9 +429,9 @@ async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep
 
         # On calcule normalement la réponse du RAG
         # QueryResponse
-        response = await query_rag(request, rag_pipeline, m3c_api_key)
+        response = await query_rag(request, rag_pipeline, m3c_api_key, resolved_api_key)
 
-        prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question)
+        prompt_embeddings = rag_pipeline._get_prompt_embeddings(request.question, api_key=resolved_api_key)
         best_50_chunks = await database.get_top_k_similar_chunks_qdrant(
             prompt_embeddings,
             "LD-mistral-mistral-embed-1024",
@@ -470,6 +481,7 @@ async def api_recommend_questions(
     mistral_api_key: Optional[str] = None,
     m3c_api_key: Optional[str] = Cookie(default=None),
     authorization: Optional[str] = None,
+    x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key"),
 ):
     """
     Recommande les questions les plus pertinentes d'un document par rapport à un prompt utilisateur.
@@ -532,10 +544,12 @@ async def api_recommend_questions(
 async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
                        m3c_api_key: Optional[str] = Cookie(default=None),
                        mistral_api_key: Optional[str] = None,
-                       authorization: Optional[str] = None):
+                       authorization: Optional[str] = None,
+                       x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key")):
     """
     Note: can be done with or without RAG
     """
+    resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     time_start = time.time()
     final_prompt, best_documents, scores = request.question, None, None
     reranking = "bm25+" if request.use_reranking else None
@@ -543,13 +557,15 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(prompt=request.question,
                                                                          reranking=reranking,
                                                                          k=request.k,
-                                                                         specified_document_id=request.rag_monodocument_id,)
+                                                                         specified_document_id=request.rag_monodocument_id,
+                                                                         api_key=resolved_api_key)
         print(best_documents)
     # we keep the query_simple function to get the answer
     tasks = [
         rag_pipeline.query_simple(
             prompt=final_prompt,
             model=model,
+            api_key=resolved_api_key,
             k=request.k,
         ) for model in request.models
     ]
@@ -582,7 +598,8 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
 async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
                               m3c_api_key: Optional[str] = Cookie(default=None),
                               mistral_api_key: Optional[str] = None,
-                              authorization: Optional[str] = None):
+                              authorization: Optional[str] = None,
+                              x_mistral_api_key: Optional[str] = Header(default=None, alias="X-Mistral-Api-Key")):
     """
     Pose une question au systÃ¨me en utilisant le RAG sur un seul document spécifique.
     Sauvegarde également l'historique d'une session utilisateur
@@ -600,6 +617,7 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Aucun document_id spécifié pour le RAG sur un seul document."
         )
+    resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     # Récupérer l'historique de la session si session_id est fourni
     session_messages = []
     print("session_id:", request.session_id)
@@ -624,7 +642,8 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
             specified_document_id=request.rag_monodocument_id,
             reranking="bm25+" if request.use_reranking else None,
             final_prompt=None,
-            sources=None
+            sources=None,
+            api_key=resolved_api_key
         )
     except Exception as e:
         print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")

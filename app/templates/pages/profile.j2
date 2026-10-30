@@ -531,6 +531,15 @@
             </div>
 
             {# ================================================================
+               ONGLETS DU PROFIL
+               ================================================================ #}
+            <div class="profile-tabs" role="tablist" style="display: flex; gap: 6px; border-bottom: 2px solid #e0e0e0; margin-bottom: 25px; flex-wrap: wrap;">
+                <button type="button" class="profile-tab active" data-tab="tab-api-key" role="tab" style="background: none; border: none; border-bottom: 3px solid #b74420; padding: 10px 18px; font-size: 15px; font-weight: 600; color: #b74420; cursor: pointer; margin-bottom: -2px;">🔑 Clé API Mistral</button>
+                <button type="button" class="profile-tab" data-tab="tab-stats" role="tab" style="background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 18px; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; margin-bottom: -2px;">📊 Mon profil</button>
+            </div>
+
+            <div class="profile-tab-content" id="tab-api-key" role="tabpanel">
+            {# ================================================================
                CONFIGURATION CLÉ API MISTRAL
                ================================================================ #}
             <section class="section" style="margin-bottom: 30px;">
@@ -561,6 +570,36 @@
                 </div>
             </section>
 
+            {# ================================================================
+               TUTORIEL CLÉ API MISTRAL (recopié de la page d'index)
+               ================================================================ #}
+            <section class="section" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <span class="icon">📖</span>
+                    <h2>Tutoriel : obtenir votre clé API Mistral</h2>
+                </div>
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+                        Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI.
+                        Cette clé est <strong>stockée uniquement dans votre navigateur</strong> (et enregistrée sur votre compte
+                        si vous êtes connecté) pour être utilisée dans vos requêtes.
+                    </p>
+                    <ol style="margin-left: 20px; color: #555; line-height: 1.7;">
+                        <li><strong>Créer un compte sur Mistral AI</strong> : rendez-vous sur <a href="https://mistral.ai/" target="_blank" style="color: #b74420;">https://mistral.ai/</a> et cliquez sur "Sign Up" / "S'inscrire" (email, compte Google ou GitHub).</li>
+                        <li><strong>Accéder à votre tableau de bord</strong> : cliquez sur votre avatar en haut à droite, puis "Dashboard".</li>
+                        <li><strong>Générer une nouvelle clé API</strong> : section "API Keys" / "Clés API" → "Create new key" → nommez votre clé (ex : "M3C-Portail") → "Create".
+                            <br><strong>⚠️ Important :</strong> la clé n'est affichée qu'une seule fois, copiez-la immédiatement.</li>
+                        <li><strong>Coller votre clé dans le champ ci-dessus</strong> : cliquez sur "✏️ Configurer la clé API Mistral", collez la clé, puis "Enregistrer".</li>
+                    </ol>
+                    <p style="margin-top: 15px; color: #888; font-size: 13px;">
+                        <i>ℹ️</i> Votre clé est personnelle et ne doit pas être partagée. Vous pouvez la révoquer à tout moment depuis votre tableau de bord Mistral.
+                        Si vous êtes administrateur (admin / global_admin), vous n'avez pas besoin de clé personnelle : le serveur utilise sa propre clé interne.
+                    </p>
+                </div>
+            </section>
+            </div>
+
+            <div class="profile-tab-content" id="tab-stats" role="tabpanel" style="display:none;">
             {# ================================================================
                STATISTIQUES GLOBALES
                ================================================================ #}
@@ -899,6 +938,7 @@
             </div>
         </div>
     </div>
+            </div>
 </div>
 {% endblock %}
 
@@ -941,6 +981,23 @@ document.querySelectorAll('.section').forEach(section => {
     section.style.transform = 'translateY(20px)';
     section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(section);
+});
+
+// Switch d'onglets du profil
+document.querySelectorAll('.profile-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.profile-tab').forEach(function (b) {
+            b.classList.remove('active');
+            b.style.borderBottomColor = 'transparent';
+            b.style.color = '#666';
+        });
+        btn.classList.add('active');
+        btn.style.borderBottomColor = '#b74420';
+        btn.style.color = '#b74420';
+        document.querySelectorAll('.profile-tab-content').forEach(function (c) { c.style.display = 'none'; });
+        var target = document.getElementById(btn.getAttribute('data-tab'));
+        if (target) target.style.display = 'block';
+    });
 });
 
 // Mettre à jour l'affichage du statut de la clé API au chargement

@@ -931,3 +931,25 @@ FROM user_knowledge_states uks
 JOIN knowledge_items ki ON uks.knowledge_id = ki.id
 WHERE uks.user_id IS NOT NULL
 ORDER BY uks.user_id, uks.score DESC, uks.confidence DESC;
+
+-- =============================================================================
+-- MIGRATION : clé API Mistral personnelle + rôle "guest"
+-- =============================================================================
+-- La table `user` (externe à ce script) gagne une colonne pour stocker la
+-- clé API Mistral de l'utilisateur. Les rôles "admin"/"global_admin" utilisent
+-- la clé interne du serveur ; les rôles "user"/"guest" doivent fournir la leur.
+-- Idempotent : la colonne n'est ajoutée que si elle n'existe pas.
+
+SET @col_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'user'
+                      AND COLUMN_NAME = 'mistral_api_key');
+SET @sql := IF(@col_exists = 0,
+    'ALTER TABLE user ADD COLUMN mistral_api_key VARCHAR(255) NULL AFTER password_hash',
+    'SELECT "colonne mistral_api_key deja presente" AS info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Tout compte créé via l'inscription publique prend désormais le rôle "guest".
+UPDATE user SET role = 'guest' WHERE role = 'user';

@@ -10,12 +10,13 @@ CREATE TABLE IF NOT EXISTS user (
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    mistral_api_key VARCHAR(255),
     role VARCHAR(50) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW(),
     modified_at TIMESTAMP DEFAULT NOW(),
     validator BOOLEAN DEFAULT FALSE,
-    CONSTRAINT valid_role CHECK (role IN ('global_admin', 'admin',  'user'))
+    CONSTRAINT valid_role CHECK (role IN ('global_admin', 'admin', 'validator', 'user', 'guest'))
 );
 
 CREATE TABLE IF NOT EXISTS text_questions (
