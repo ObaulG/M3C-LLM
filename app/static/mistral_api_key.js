@@ -58,8 +58,8 @@ function isValidMistralApiKeyFormat(apiKey) {
         return false;
     }
 
-    // Format de base : commence par 'mstrl' et a au moins 30 caractères
-    if (!apiKey.startsWith('mstrl')) {
+    // Format de base : commence par 'mst' ou 'x' et a au moins 30 caractères
+    if (!apiKey.startsWith('mst') && !apiKey.startsWith('x')) {
 
         return false;
     }

@@ -114,7 +114,8 @@ def verify_mistral_api_key(api_key: str) -> bool:
     Vérifie si une clé API Mistral est valide.
 
     Cette vérification est basique et vérifie seulement le format.
-    Une clé Mistral valide commence généralement par 'x' et a un format spécifique.
+    Une clé Mistral valide commence par 'mst' (nouveau format) ou 'x'
+    (ancien format) et fait au moins 30 caractères.
 
     Args:
         api_key: La clé API à vérifier
@@ -125,20 +126,19 @@ def verify_mistral_api_key(api_key: str) -> bool:
     if not api_key:
         return False
 
-    # Format de base : commence par 'x' et a au moins 30 caractères
-    if not api_key.startswith('x'):
+    if not (api_key.startswith('mst') or api_key.startswith('x')):
         return False
 
     if len(api_key) < 30:
         return False
 
-    # Format typique : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    # Ancien format typique : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     parts = api_key.split('-')
     if len(parts) == 5:
         if all(len(part) > 0 for part in parts):
             return True
 
-    # Certains formats peuvent ne pas avoir de tirets
+    # Nouveau format ('mst...') ou anciens formats sans tirets
     return len(api_key) >= 30
 
 
