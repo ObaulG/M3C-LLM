@@ -271,7 +271,7 @@ class QuestionAnswerEvaluator:
         "ministral-3b-2512",
         "ministral-8b-2512",
         "ministral-14b-2512",
-        #"mistral-small-2603",
+        "mistral-small-2603",
     ]
 
     #MISTRAL_MODELS = []

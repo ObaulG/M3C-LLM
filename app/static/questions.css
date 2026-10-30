@@ -23,6 +23,49 @@
             color: #666;
         }
 
+        .questions-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Affichage réduit : ID, page et texte de la question uniquement */
+        #questionsContent.compact .question-card:not(.expanded) {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) > *:not(.question-header) {
+            display: none;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) .question-header {
+            margin-bottom: 0;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) .question-content {
+            font-size: 14px;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) .question-meta {
+            display: none;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) .question-info .info-item:not(.info-id):not(.info-page) {
+            display: none;
+        }
+
+        .card-details-btn {
+            font-size: 12px;
+            padding: 3px 10px;
+            margin-left: auto;
+        }
+
+        /* Le bouton de détails par carte n'a d'utilité qu'en mode réduit */
+        #questionsContent:not(.compact) .card-details-btn {
+            display: none;
+        }
+
         .question-card {
             background: white;
             border: 1px solid #e0e0e0;

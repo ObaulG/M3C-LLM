@@ -9,6 +9,46 @@ let currentDocumentTitle = null;
 let allDocuments = [];
 let currentQuestions = [];
 let knowledgeItemsByQuestion = {};
+// Affichage réduit des cartes de question (ID, page et texte uniquement)
+let compactQuestionsView = localStorage.getItem('questionsCompactView') !== '0';
+
+/**
+ * Bascule entre l'affichage complet et l'affichage réduit des cartes de question.
+ */
+function toggleQuestionsView() {
+    compactQuestionsView = !compactQuestionsView;
+    localStorage.setItem('questionsCompactView', compactQuestionsView ? '1' : '0');
+    applyQuestionsView();
+}
+
+/**
+ * Déplie ou replie les informations détaillées d'une seule carte de question.
+ * @param {HTMLElement} btn - Le bouton cliqué, à l'intérieur de la carte
+ */
+function toggleQuestionDetails(btn) {
+    const card = btn.closest('.question-card');
+    if (!card) return;
+    card.classList.toggle('expanded');
+    const expanded = card.classList.contains('expanded');
+    btn.textContent = expanded ? 'Masquer les détails' : 'Voir les détails';
+    btn.title = expanded ? 'Replier cette question' : 'Afficher toutes les informations de cette question';
+}
+
+/**
+ * Applique le mode d'affichage courant aux cartes de question.
+ */
+function applyQuestionsView() {
+    const contentElement = document.getElementById('questionsContent');
+    if (!contentElement) return;
+    contentElement.classList.toggle('compact', compactQuestionsView);
+    const viewBtn = document.getElementById('compactViewBtn');
+    if (viewBtn) {
+        viewBtn.textContent = compactQuestionsView ? 'Affichage complet' : 'Affichage réduit';
+        viewBtn.title = compactQuestionsView
+            ? "Afficher toutes les informations des questions"
+            : "Afficher uniquement l'identifiant, la page et le texte des questions";
+    }
+}
 
 // Commandes personnalisées prédéfinies pour la génération groupée de réponses
 const BULK_PROMPT_COMMANDS = [
@@ -329,6 +369,60 @@ async function loadQuestions(documentId) {
 }
 
 /**
+ * Rafraîchit une seule carte de question sans recharger toute la page.
+ * Met à jour currentQuestions, remplace uniquement la carte ciblée et
+ * conserve la position de défilement ainsi que l'état déplié de la carte.
+ * @param {number} questionId - ID de la question à rafraîchir
+ * @returns {Promise<HTMLElement|null>} La carte rafraîchie, ou null en cas d'échec
+ */
+async function refreshQuestionCard(questionId) {
+    if (!currentDocumentId) return null;
+
+    const oldCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    if (!oldCard) return null;
+
+    const wasExpanded = oldCard.classList.contains('expanded');
+    const previousScroll = window.scrollY;
+
+    try {
+        const questionsResponse = await fetch(buildQuestionsUrl(currentDocumentId));
+        if (!questionsResponse.ok) return null;
+
+        const data = await questionsResponse.json();
+        const refreshedQuestion = (data.questions || []).find(
+            q => parseInt(q.question_id) === parseInt(questionId)
+        );
+        if (!refreshedQuestion) return null;
+
+        const updatedIndex = currentQuestions.findIndex(
+            q => parseInt(q.question_id) === parseInt(questionId)
+        );
+        if (updatedIndex !== -1) {
+            currentQuestions[updatedIndex] = refreshedQuestion;
+        }
+
+        // Remplacer uniquement la carte de la question modifiée
+        const newCardHtml = generateQuestionCardHtml(refreshedQuestion, currentQuestions.length);
+        oldCard.outerHTML = newCardHtml;
+        window.scrollTo(0, previousScroll);
+
+        const newCard = document.querySelector(`[data-question-id="${questionId}"]`);
+        if (newCard && wasExpanded) {
+            newCard.classList.add('expanded');
+            const detailsBtn = newCard.querySelector('.card-details-btn');
+            if (detailsBtn) {
+                detailsBtn.textContent = 'Masquer les détails';
+                detailsBtn.title = 'Replier cette question';
+            }
+        }
+        return newCard;
+    } catch (error) {
+        console.error('Erreur lors du rafraîchissement de la question:', error);
+        return null;
+    }
+}
+
+/**
  * Génère le HTML pour une seule carte de question
  * @param {Object} question - La question à rendre
  * @param {number} totalCount - Nombre total de questions
@@ -510,21 +604,22 @@ function generateQuestionCardHtml(question, totalCount) {
                         ${question.created_by ? `<span style="font-size: 12px; color: #999;">Créé par: ${question.created_by}</span>` : ''}
                     </div>
                     <div class="question-info">
-                        <span class="info-item" title="Identifiant de la question">
+                        <span class="info-item info-id" title="Identifiant de la question">
                             <strong>ID:</strong> ${question.question_id}
                         </span>
                         ${question.chunk_id ? `<span class="info-item" title="Identifiant du chunk">
                             <strong>Chunk:</strong> ${question.chunk_id}
                         </span>` : ''}
-                        ${question.page ? `<span class="info-item" title="Page du document">
+                        ${question.page ? `<span class="info-item info-page" title="Page du document">
                             <strong>Page:</strong> ${question.page}
                         </span>` : ''}
-                        ${question.page_number ? `<span class="info-item" title="Page du document">
+                        ${question.page_number ? `<span class="info-item info-page" title="Page du document">
                             <strong>Page:</strong> ${question.page_number}
                         </span>` : ''}
-                        ${question.num_page ? `<span class="info-item" title="Page du document">
+                        ${question.num_page ? `<span class="info-item info-page" title="Page du document">
                             <strong>Page:</strong> ${question.num_page}
                         </span>` : ''}
+                        <button class="btn btn-secondary card-details-btn" title="Afficher toutes les informations de cette question" onclick="toggleQuestionDetails(this)">Voir les détails</button>
                     </div>
                 </div>
             </div>
@@ -602,7 +697,10 @@ function displayQuestions(questions, count) {
     let headerHtml = `
         <div class="questions-header">
             <h2>${currentDocumentTitle ? escapeHtml(currentDocumentTitle) : 'Questions pour ce document'}</h2>
-            <span class="questions-count">${count} question(s) trouvée(s)</span>
+            <div class="questions-header-right">
+                <span class="questions-count">${count} question(s) trouvée(s)</span>
+                <button class="btn btn-secondary" id="compactViewBtn" onclick="toggleQuestionsView()"></button>
+            </div>
         </div>
         <div class="bulk-actions">
             <button class="btn" id="bulkMenuBtn" onclick="toggleBulkMenu()">⚙️ Actions groupées ▾</button>
@@ -647,6 +745,9 @@ function displayQuestions(questions, count) {
 
     // Afficher les chips de commandes personnalisées prédéfinies
     renderBulkPromptCommands();
+
+    // Appliquer le mode d'affichage courant (complet / réduit)
+    applyQuestionsView();
 }
 
 /**
@@ -739,32 +840,8 @@ async function setReferenceAnswer(questionId, answerId, button) {
             throw new Error(result.message || 'Échec de la déclaration de la référence');
         }
 
-        // Rafraîchir l'affichage de la question
-        if (currentDocumentId) {
-            const questionsResponse = await fetch(buildQuestionsUrl(currentDocumentId));
-            if (questionsResponse.ok) {
-                const data = await questionsResponse.json();
-                const refreshedQuestion = (data.questions || []).find(
-                    q => parseInt(q.question_id) === parseInt(questionId)
-                );
-                if (refreshedQuestion) {
-                    const updatedIndex = currentQuestions.findIndex(
-                        q => parseInt(q.question_id) === parseInt(questionId)
-                    );
-                    if (updatedIndex !== -1) {
-                        currentQuestions[updatedIndex] = refreshedQuestion;
-                    }
-                    // Remplacer uniquement la carte de la question modifiée
-                    const oldCard = document.querySelector(`[data-question-id="${questionId}"]`);
-                    if (oldCard) {
-                        const previousScroll = window.scrollY;
-                        const newCardHtml = generateQuestionCardHtml(refreshedQuestion, currentQuestions.length);
-                        oldCard.outerHTML = newCardHtml;
-                        window.scrollTo(0, previousScroll);
-                    }
-                }
-            }
-        }
+        // Rafraîchir l'affichage de la question sans recharger toute la page
+        await refreshQuestionCard(questionId);
     } catch (error) {
         console.error('Erreur lors de la déclaration de la réponse de référence:', error);
         alert('Une erreur est survenue: ' + error.message);
@@ -1856,34 +1933,8 @@ async function saveQuestionChanges(questionId) {
         const result = await response.json();
         
         if (result.success) {
-            // Rafraîchir uniquement la question mise à jour, sans recharger toute la page
-            let refreshedCard = null;
-            if (currentDocumentId) {
-                const questionsResponse = await fetch(buildQuestionsUrl(currentDocumentId));
-                if (questionsResponse.ok) {
-                    const data = await questionsResponse.json();
-                    const refreshedQuestion = (data.questions || []).find(
-                        q => parseInt(q.question_id) === parseInt(questionId)
-                    );
-                    if (refreshedQuestion) {
-                        const updatedIndex = currentQuestions.findIndex(
-                            q => parseInt(q.question_id) === parseInt(questionId)
-                        );
-                        if (updatedIndex !== -1) {
-                            currentQuestions[updatedIndex] = refreshedQuestion;
-                        }
-                        // Remplacer uniquement la carte de la question modifiée
-                        const oldCard = document.querySelector(`[data-question-id="${questionId}"]`);
-                        if (oldCard) {
-                            const previousScroll = window.scrollY;
-                            const newCardHtml = generateQuestionCardHtml(refreshedQuestion, currentQuestions.length);
-                            oldCard.outerHTML = newCardHtml;
-                            window.scrollTo(0, previousScroll);
-                            refreshedCard = document.querySelector(`[data-question-id="${questionId}"]`);
-                        }
-                    }
-                }
-            }
+            // Rafraîchir uniquement la carte de la question mise à jour, sans recharger toute la page
+            const newCard = await refreshQuestionCard(questionId);
 
             // Afficher un message de succès
             const editStatus = document.createElement('div');
@@ -1892,8 +1943,8 @@ async function saveQuestionChanges(questionId) {
             editStatus.style.marginTop = '10px';
             editStatus.style.fontWeight = 'bold';
             editStatus.textContent = 'Modifications sauvegardées avec succès !';
-            const newCard = refreshedCard || document.querySelector(`[data-question-id="${questionId}"]`);
-            if (newCard) newCard.appendChild(editStatus);
+            const card = newCard || document.querySelector(`[data-question-id="${questionId}"]`);
+            if (card) card.appendChild(editStatus);
         } else {
             alert(`Erreur: ${result.message || 'Échec de la sauvegarde'}`);
         }
@@ -2154,7 +2205,8 @@ async function deleteAllAnswersForQuestion(questionId, button) {
 
         const data = await response.json();
         console.log(`✅ ${data.message}`);
-        await loadQuestions(currentDocumentId);
+        // Mettre à jour uniquement la carte concernée, sans recharger toute la page
+        await refreshQuestionCard(questionId);
     } catch (error) {
         console.error('Erreur lors de la suppression des réponses:', error);
         alert('❌ Erreur lors de la suppression des réponses : ' + error.message);

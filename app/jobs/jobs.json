@@ -43476,5 +43476,1493 @@
     "total_items": 20,
     "processed_items": 20,
     "id_embeddings_missing": []
+  },
+  "c7da418b-e355-4d92-893c-925f5ff6ad20": {
+    "job_id": "c7da418b-e355-4d92-893c-925f5ff6ad20",
+    "job_type": "qa-generation",
+    "document_categories": [
+      "validated-documents"
+    ],
+    "status": "completed_with_errors",
+    "created_at": "2026-10-30T18:33:43.322356",
+    "updated_at": "2026-10-30T18:44:56.190207",
+    "parameters": {
+      "num_questions_per_doc": 3,
+      "model_name": "mistral/mistral-medium",
+      "document_id": 29,
+      "num_answers_per_question": 1,
+      "chunk_id": null,
+      "user_prompt": null
+    },
+    "progress": {
+      "74ce24a6-628f-4c62-bbb5-e617c56a859e": {
+        "chunk_id": "74ce24a6-628f-4c62-bbb5-e617c56a859e",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "99187725-7dbd-4878-9b15-7ff237f525cf": {
+        "chunk_id": "99187725-7dbd-4878-9b15-7ff237f525cf",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "bbb7526c-e7a8-45fd-ac10-eb7c040997e1": {
+        "chunk_id": "bbb7526c-e7a8-45fd-ac10-eb7c040997e1",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "92ca8ceb-91fe-4345-998c-43f3f1152d30": {
+        "chunk_id": "92ca8ceb-91fe-4345-998c-43f3f1152d30",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "e5bce709-b6b9-46e6-9a48-9a813aba441b": {
+        "chunk_id": "e5bce709-b6b9-46e6-9a48-9a813aba441b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4a30d889-7ade-4bee-9563-0fdc1f47448d": {
+        "chunk_id": "4a30d889-7ade-4bee-9563-0fdc1f47448d",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "d004e072-4169-471f-91e5-3632b671261c": {
+        "chunk_id": "d004e072-4169-471f-91e5-3632b671261c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0a660ecd-dee7-496a-b2dc-1f60bb9c0009": {
+        "chunk_id": "0a660ecd-dee7-496a-b2dc-1f60bb9c0009",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a24f6846-5b9e-435e-a755-efd6787ff6e9": {
+        "chunk_id": "a24f6846-5b9e-435e-a755-efd6787ff6e9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "469266b3-8e32-40de-af8f-ece47eaa237c": {
+        "chunk_id": "469266b3-8e32-40de-af8f-ece47eaa237c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e95b69c0-dc22-44bf-80a3-8907f1b065d9": {
+        "chunk_id": "e95b69c0-dc22-44bf-80a3-8907f1b065d9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f3c6cb7e-ac62-40d8-82a3-04a18ba1cee4": {
+        "chunk_id": "f3c6cb7e-ac62-40d8-82a3-04a18ba1cee4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "eab08cd4-35da-4abd-879e-1d6b326a9708": {
+        "chunk_id": "eab08cd4-35da-4abd-879e-1d6b326a9708",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "26185b70-12e0-436e-bb44-ac35ce5b5c48": {
+        "chunk_id": "26185b70-12e0-436e-bb44-ac35ce5b5c48",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "71049f83-3c48-4f87-bc44-e7c4699cb543": {
+        "chunk_id": "71049f83-3c48-4f87-bc44-e7c4699cb543",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "2865d49a-2441-4c70-999c-7820d98a08fe": {
+        "chunk_id": "2865d49a-2441-4c70-999c-7820d98a08fe",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "645dd0d9-6640-4fa4-879e-c453e0e7dde4": {
+        "chunk_id": "645dd0d9-6640-4fa4-879e-c453e0e7dde4",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "d4e4fe2d-9d12-4844-ab7b-d559864c5160": {
+        "chunk_id": "d4e4fe2d-9d12-4844-ab7b-d559864c5160",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "2f00f42d-2194-4b94-ab75-0b2d6c55903b": {
+        "chunk_id": "2f00f42d-2194-4b94-ab75-0b2d6c55903b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7d2e3a22-2fd7-45ed-b05e-6461bc2b3373": {
+        "chunk_id": "7d2e3a22-2fd7-45ed-b05e-6461bc2b3373",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "15da291d-90d6-45fd-bf93-35e1bd6b7bbf": {
+        "chunk_id": "15da291d-90d6-45fd-bf93-35e1bd6b7bbf",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7cc3aeb1-d19d-4ad4-80ab-98e4e5a88e38": {
+        "chunk_id": "7cc3aeb1-d19d-4ad4-80ab-98e4e5a88e38",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3a2a12c7-28a4-4f82-adfb-e3e0d8b75d8e": {
+        "chunk_id": "3a2a12c7-28a4-4f82-adfb-e3e0d8b75d8e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "461dc979-e598-451f-9403-32a34e263040": {
+        "chunk_id": "461dc979-e598-451f-9403-32a34e263040",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "6e1d3539-da06-4608-85b1-3c0cd0475cd4": {
+        "chunk_id": "6e1d3539-da06-4608-85b1-3c0cd0475cd4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f4897923-46c4-4a11-9a71-b3d7efeb2399": {
+        "chunk_id": "f4897923-46c4-4a11-9a71-b3d7efeb2399",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "2bf4ccb5-bb7a-4494-9a2d-86db715a8b2f": {
+        "chunk_id": "2bf4ccb5-bb7a-4494-9a2d-86db715a8b2f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "5ec4d297-0382-4c55-9299-6277a461dc02": {
+        "chunk_id": "5ec4d297-0382-4c55-9299-6277a461dc02",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f59b3eff-9e67-456e-917a-26d93efee543": {
+        "chunk_id": "f59b3eff-9e67-456e-917a-26d93efee543",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ab0173fb-7e75-4d28-b32b-8e0bfe021446": {
+        "chunk_id": "ab0173fb-7e75-4d28-b32b-8e0bfe021446",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "290b93cd-e56c-4bf0-9796-13f9ac721f4f": {
+        "chunk_id": "290b93cd-e56c-4bf0-9796-13f9ac721f4f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "2d3233a0-c339-4071-98dd-65c322c9bb07": {
+        "chunk_id": "2d3233a0-c339-4071-98dd-65c322c9bb07",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "10b37676-e22e-4b5c-b632-873a787a143c": {
+        "chunk_id": "10b37676-e22e-4b5c-b632-873a787a143c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9d9dcfe9-b527-4429-9aff-4a41280a3472": {
+        "chunk_id": "9d9dcfe9-b527-4429-9aff-4a41280a3472",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e9488131-1173-46c4-b077-663bc6ab0e15": {
+        "chunk_id": "e9488131-1173-46c4-b077-663bc6ab0e15",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e4bcddc2-c0e8-485c-8a11-aa664679bdca": {
+        "chunk_id": "e4bcddc2-c0e8-485c-8a11-aa664679bdca",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "72914309-b1e6-4421-b0d8-4d7e98836f3f": {
+        "chunk_id": "72914309-b1e6-4421-b0d8-4d7e98836f3f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "914c1e8c-715f-4ead-9b5f-657cc0624198": {
+        "chunk_id": "914c1e8c-715f-4ead-9b5f-657cc0624198",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "04845e72-393f-4c6b-bc23-eec2da592b31": {
+        "chunk_id": "04845e72-393f-4c6b-bc23-eec2da592b31",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "9d2210a1-9496-4984-85ae-cd755c996e9f": {
+        "chunk_id": "9d2210a1-9496-4984-85ae-cd755c996e9f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "daaf15fe-4535-47cb-bdee-c791a15ab925": {
+        "chunk_id": "daaf15fe-4535-47cb-bdee-c791a15ab925",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "bf2cf056-2290-4419-abb6-d18b7e6cc955": {
+        "chunk_id": "bf2cf056-2290-4419-abb6-d18b7e6cc955",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f479d6fc-3fd5-4b3e-8316-3553d76c53d4": {
+        "chunk_id": "f479d6fc-3fd5-4b3e-8316-3553d76c53d4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "b127dde2-5749-45e1-9733-13f6c2793cd8": {
+        "chunk_id": "b127dde2-5749-45e1-9733-13f6c2793cd8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "cf024543-1453-4e78-b76f-a654c15b7ac4": {
+        "chunk_id": "cf024543-1453-4e78-b76f-a654c15b7ac4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "232b0f41-73a7-462b-a0e1-5e85cb7a48a8": {
+        "chunk_id": "232b0f41-73a7-462b-a0e1-5e85cb7a48a8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "054cbb8e-4876-4040-b1d2-c5c54fbc0b6e": {
+        "chunk_id": "054cbb8e-4876-4040-b1d2-c5c54fbc0b6e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0b2fd4f4-1e80-4f96-95bf-9056f1e5ad66": {
+        "chunk_id": "0b2fd4f4-1e80-4f96-95bf-9056f1e5ad66",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "aee104a7-c18f-4040-b268-f46cf1857d88": {
+        "chunk_id": "aee104a7-c18f-4040-b268-f46cf1857d88",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f8e931d4-727d-419b-87f1-cde36d0f118a": {
+        "chunk_id": "f8e931d4-727d-419b-87f1-cde36d0f118a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9de122ed-4005-4503-baaf-d1ac17cf6288": {
+        "chunk_id": "9de122ed-4005-4503-baaf-d1ac17cf6288",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "466e8b0e-71e9-4091-b27c-e2da2a699175": {
+        "chunk_id": "466e8b0e-71e9-4091-b27c-e2da2a699175",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3256bf64-e689-4bc2-b5dd-1807ea783a33": {
+        "chunk_id": "3256bf64-e689-4bc2-b5dd-1807ea783a33",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e7c568e6-5674-4277-8198-4d3ab5deaee9": {
+        "chunk_id": "e7c568e6-5674-4277-8198-4d3ab5deaee9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1dfd434d-2533-45d2-be5e-0e2be151f943": {
+        "chunk_id": "1dfd434d-2533-45d2-be5e-0e2be151f943",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "24954f0c-d703-4065-a77e-88ca36c50ad6": {
+        "chunk_id": "24954f0c-d703-4065-a77e-88ca36c50ad6",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "603788ab-2e00-451c-81a4-ff3398317e17": {
+        "chunk_id": "603788ab-2e00-451c-81a4-ff3398317e17",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "dfa21fae-ece2-4cb5-9918-3e14307626a9": {
+        "chunk_id": "dfa21fae-ece2-4cb5-9918-3e14307626a9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "fb3b7f4f-33ea-4617-aae8-e71520cabff3": {
+        "chunk_id": "fb3b7f4f-33ea-4617-aae8-e71520cabff3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9644a6a1-5802-4def-9403-df40a383be1e": {
+        "chunk_id": "9644a6a1-5802-4def-9403-df40a383be1e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "6add5600-d436-4a11-9f36-082dab85ce0e": {
+        "chunk_id": "6add5600-d436-4a11-9f36-082dab85ce0e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "8eae9761-f1de-429f-a631-5354c2b26823": {
+        "chunk_id": "8eae9761-f1de-429f-a631-5354c2b26823",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9e700610-3895-4f45-9c8d-af96c003ad50": {
+        "chunk_id": "9e700610-3895-4f45-9c8d-af96c003ad50",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1c409aa2-fa48-42b5-bdda-9e2a188dc2d3": {
+        "chunk_id": "1c409aa2-fa48-42b5-bdda-9e2a188dc2d3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3fdf892d-534f-4bc4-8ee4-d6c742e0dffe": {
+        "chunk_id": "3fdf892d-534f-4bc4-8ee4-d6c742e0dffe",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c52a9ff3-9157-4602-9fd9-568511cc028f": {
+        "chunk_id": "c52a9ff3-9157-4602-9fd9-568511cc028f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "733b14f3-9216-43e2-bc8f-46d64548a043": {
+        "chunk_id": "733b14f3-9216-43e2-bc8f-46d64548a043",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a2629ab0-8c7d-41cd-83be-cfd1618c2e2d": {
+        "chunk_id": "a2629ab0-8c7d-41cd-83be-cfd1618c2e2d",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c0a06282-b354-425d-a42b-e0498e3a1515": {
+        "chunk_id": "c0a06282-b354-425d-a42b-e0498e3a1515",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c424fda4-79ea-4efa-89ae-98c6125d20fe": {
+        "chunk_id": "c424fda4-79ea-4efa-89ae-98c6125d20fe",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0790b035-45c5-46d0-9e8d-9ba09b455e52": {
+        "chunk_id": "0790b035-45c5-46d0-9e8d-9ba09b455e52",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "01d0211e-de56-4b25-ac72-64babe20491a": {
+        "chunk_id": "01d0211e-de56-4b25-ac72-64babe20491a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "21739335-a725-41dc-b133-5f9beddf3491": {
+        "chunk_id": "21739335-a725-41dc-b133-5f9beddf3491",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e0e4c1a1-f397-48e6-a7d8-8250be28e6e9": {
+        "chunk_id": "e0e4c1a1-f397-48e6-a7d8-8250be28e6e9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a8cbd6e0-e9d9-4985-98e6-46707ac970b4": {
+        "chunk_id": "a8cbd6e0-e9d9-4985-98e6-46707ac970b4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0a1f98df-2948-4e0a-aa54-3cea6b55d24f": {
+        "chunk_id": "0a1f98df-2948-4e0a-aa54-3cea6b55d24f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c510a933-01ae-43a2-be76-72d4b7b60ec9": {
+        "chunk_id": "c510a933-01ae-43a2-be76-72d4b7b60ec9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "491705e5-4988-4352-8702-5180f6a9dddb": {
+        "chunk_id": "491705e5-4988-4352-8702-5180f6a9dddb",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "22a4bf29-1d69-4f4b-a789-d68061c86983": {
+        "chunk_id": "22a4bf29-1d69-4f4b-a789-d68061c86983",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "16ab5395-6550-4a9c-a75e-9ce00bf1b98e": {
+        "chunk_id": "16ab5395-6550-4a9c-a75e-9ce00bf1b98e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1c1b5879-1202-4ed5-bddd-1bd68d5bf3b6": {
+        "chunk_id": "1c1b5879-1202-4ed5-bddd-1bd68d5bf3b6",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "82152a4b-db79-49e8-8bd0-a81f92bf7473": {
+        "chunk_id": "82152a4b-db79-49e8-8bd0-a81f92bf7473",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f734f05d-1648-4217-93a9-07fd78894cd7": {
+        "chunk_id": "f734f05d-1648-4217-93a9-07fd78894cd7",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "20cf4361-6ee8-41fc-95fc-097e560fa6dd": {
+        "chunk_id": "20cf4361-6ee8-41fc-95fc-097e560fa6dd",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1d616f7c-550c-4c7e-af6a-5bc48a331bf9": {
+        "chunk_id": "1d616f7c-550c-4c7e-af6a-5bc48a331bf9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3660bfb8-0f0c-4f2d-b522-0442260ea61f": {
+        "chunk_id": "3660bfb8-0f0c-4f2d-b522-0442260ea61f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7fdd09e3-b434-4b53-a852-a2818844cbb4": {
+        "chunk_id": "7fdd09e3-b434-4b53-a852-a2818844cbb4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "385d6076-faae-4564-b1a3-068b96a6c2bc": {
+        "chunk_id": "385d6076-faae-4564-b1a3-068b96a6c2bc",
+        "document_id": "29",
+        "questions_generated": 0,
+        "error": "Aucune question générée par le modèle",
+        "status": "failed"
+      },
+      "fef32d3d-243c-485a-81a3-6f684ffb908e": {
+        "chunk_id": "fef32d3d-243c-485a-81a3-6f684ffb908e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "153e8da9-e1dc-420c-9268-330bb53dae32": {
+        "chunk_id": "153e8da9-e1dc-420c-9268-330bb53dae32",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "10958862-3fd7-402f-ab42-01ce1e7bccdf": {
+        "chunk_id": "10958862-3fd7-402f-ab42-01ce1e7bccdf",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "eff192bf-c042-418c-bdf3-d87df19e3279": {
+        "chunk_id": "eff192bf-c042-418c-bdf3-d87df19e3279",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e6f5cd96-5d1f-4ae5-a02a-38f789d6dde7": {
+        "chunk_id": "e6f5cd96-5d1f-4ae5-a02a-38f789d6dde7",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "589e323e-ad85-4669-a780-a026142764a6": {
+        "chunk_id": "589e323e-ad85-4669-a780-a026142764a6",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4871f93b-eda0-4868-981e-a0fa37742aee": {
+        "chunk_id": "4871f93b-eda0-4868-981e-a0fa37742aee",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "18bb7c78-073b-44aa-aa11-e9524e0c42c5": {
+        "chunk_id": "18bb7c78-073b-44aa-aa11-e9524e0c42c5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4a0706e7-4d43-4b85-9214-ec50e3ed2ab3": {
+        "chunk_id": "4a0706e7-4d43-4b85-9214-ec50e3ed2ab3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "bf60e019-9a57-461e-a617-2e0cf8bd5d3c": {
+        "chunk_id": "bf60e019-9a57-461e-a617-2e0cf8bd5d3c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e67fc23f-8149-4ec6-8744-829183168b91": {
+        "chunk_id": "e67fc23f-8149-4ec6-8744-829183168b91",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "df28a561-6fb9-4bfa-8121-8f29f7bd19cd": {
+        "chunk_id": "df28a561-6fb9-4bfa-8121-8f29f7bd19cd",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ec216897-5858-44b0-9b10-146f95c7db2e": {
+        "chunk_id": "ec216897-5858-44b0-9b10-146f95c7db2e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ec8fe2a5-3085-4b10-8d0c-9c3639b64a01": {
+        "chunk_id": "ec8fe2a5-3085-4b10-8d0c-9c3639b64a01",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "07d8daf0-3c09-4280-9727-9ea2afe69ab9": {
+        "chunk_id": "07d8daf0-3c09-4280-9727-9ea2afe69ab9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e2e4289b-f246-46e9-af85-bb6c25845b8b": {
+        "chunk_id": "e2e4289b-f246-46e9-af85-bb6c25845b8b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9619084e-ea2f-4ff8-a87b-b972c7b98fa5": {
+        "chunk_id": "9619084e-ea2f-4ff8-a87b-b972c7b98fa5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "414a2ab0-361d-4dab-b4e5-59687a84ff95": {
+        "chunk_id": "414a2ab0-361d-4dab-b4e5-59687a84ff95",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "fe053c7a-d94d-47a9-9dfb-6cb25956973b": {
+        "chunk_id": "fe053c7a-d94d-47a9-9dfb-6cb25956973b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "56b2ff87-a4a6-43f7-a08f-4fef70518983": {
+        "chunk_id": "56b2ff87-a4a6-43f7-a08f-4fef70518983",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7182d780-62ec-4ffd-9c95-479c73515ef8": {
+        "chunk_id": "7182d780-62ec-4ffd-9c95-479c73515ef8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "227a5f5f-c4c8-4924-a43d-27b57aba0724": {
+        "chunk_id": "227a5f5f-c4c8-4924-a43d-27b57aba0724",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "81b41440-220c-4afa-bdd8-266420955e2f": {
+        "chunk_id": "81b41440-220c-4afa-bdd8-266420955e2f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "821c1140-de78-4b79-949a-04b72f9a4f85": {
+        "chunk_id": "821c1140-de78-4b79-949a-04b72f9a4f85",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f5e63227-0d08-47bc-b63d-c5535d32e14c": {
+        "chunk_id": "f5e63227-0d08-47bc-b63d-c5535d32e14c",
+        "document_id": "29",
+        "questions_generated": 2,
+        "error": null,
+        "status": "completed"
+      },
+      "8632b93a-9c8a-4f06-a8d5-69714c29c539": {
+        "chunk_id": "8632b93a-9c8a-4f06-a8d5-69714c29c539",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7633c82a-a233-40d6-bc9b-28473720e257": {
+        "chunk_id": "7633c82a-a233-40d6-bc9b-28473720e257",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a057a33f-67d7-4dce-91c8-a7141c5e3064": {
+        "chunk_id": "a057a33f-67d7-4dce-91c8-a7141c5e3064",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "93a9a53f-4ab5-483f-8e51-c2c78c315fd1": {
+        "chunk_id": "93a9a53f-4ab5-483f-8e51-c2c78c315fd1",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "67660dfa-389e-4e90-954f-214794284196": {
+        "chunk_id": "67660dfa-389e-4e90-954f-214794284196",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c28e0ce5-8f95-4984-a60a-512e9708ad5c": {
+        "chunk_id": "c28e0ce5-8f95-4984-a60a-512e9708ad5c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "53883beb-31cb-4721-8810-62954810d795": {
+        "chunk_id": "53883beb-31cb-4721-8810-62954810d795",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "d28ce7ea-e9dc-44c7-b609-b5021121334b": {
+        "chunk_id": "d28ce7ea-e9dc-44c7-b609-b5021121334b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "5c205b85-2600-401a-a7b2-d80166a47d0a": {
+        "chunk_id": "5c205b85-2600-401a-a7b2-d80166a47d0a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0763544e-1238-4de9-ace5-1b5aeac788a4": {
+        "chunk_id": "0763544e-1238-4de9-ace5-1b5aeac788a4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "bc85157b-1ffa-43f7-b014-da55fe16b534": {
+        "chunk_id": "bc85157b-1ffa-43f7-b014-da55fe16b534",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "d78d603b-27c1-48c0-9ff1-67203043f3ad": {
+        "chunk_id": "d78d603b-27c1-48c0-9ff1-67203043f3ad",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "b56cf438-e9de-4546-ad0d-1a59e9861425": {
+        "chunk_id": "b56cf438-e9de-4546-ad0d-1a59e9861425",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0f5616e6-8ce1-4dc4-8f79-0b7aeea3c171": {
+        "chunk_id": "0f5616e6-8ce1-4dc4-8f79-0b7aeea3c171",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "5f1de76a-3435-419a-9bdf-4584485be5f0": {
+        "chunk_id": "5f1de76a-3435-419a-9bdf-4584485be5f0",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "6130630b-f6f1-47cb-b593-599c0a67cdb2": {
+        "chunk_id": "6130630b-f6f1-47cb-b593-599c0a67cdb2",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "977de7f7-7909-43dd-b45b-625654e82b92": {
+        "chunk_id": "977de7f7-7909-43dd-b45b-625654e82b92",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ff02b735-1534-4bb7-999a-bd4c895740cf": {
+        "chunk_id": "ff02b735-1534-4bb7-999a-bd4c895740cf",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a75b2b1d-9291-4213-9a28-aea1293b3fa4": {
+        "chunk_id": "a75b2b1d-9291-4213-9a28-aea1293b3fa4",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "d8eb32e3-6c5d-4048-b5f6-392fb5d027b3": {
+        "chunk_id": "d8eb32e3-6c5d-4048-b5f6-392fb5d027b3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "46b50550-ea0c-4cb9-8652-252e3952aeb2": {
+        "chunk_id": "46b50550-ea0c-4cb9-8652-252e3952aeb2",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7e3b8112-7d08-4ac8-b7fc-ce614242dc42": {
+        "chunk_id": "7e3b8112-7d08-4ac8-b7fc-ce614242dc42",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a59cfa55-8ba4-4c4f-81bb-ed3888de38a0": {
+        "chunk_id": "a59cfa55-8ba4-4c4f-81bb-ed3888de38a0",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "af8a9ef8-b1fb-4a60-96ec-b9779db9d038": {
+        "chunk_id": "af8a9ef8-b1fb-4a60-96ec-b9779db9d038",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3940c578-9c9d-4874-8b10-7948b119a108": {
+        "chunk_id": "3940c578-9c9d-4874-8b10-7948b119a108",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "5051885f-e242-42cf-ae8f-5e6614e97a19": {
+        "chunk_id": "5051885f-e242-42cf-ae8f-5e6614e97a19",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e9e35ac8-c0cc-491e-97df-705127ee52c5": {
+        "chunk_id": "e9e35ac8-c0cc-491e-97df-705127ee52c5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "687c378a-762f-44a6-a547-1d73319e8a37": {
+        "chunk_id": "687c378a-762f-44a6-a547-1d73319e8a37",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "38527189-b6db-4257-b5f7-0d81db88d713": {
+        "chunk_id": "38527189-b6db-4257-b5f7-0d81db88d713",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e41d31aa-a74e-40cd-94c6-31e27b2149a5": {
+        "chunk_id": "e41d31aa-a74e-40cd-94c6-31e27b2149a5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "873fc938-1131-40c1-bd57-0925ec19c11b": {
+        "chunk_id": "873fc938-1131-40c1-bd57-0925ec19c11b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "8ad9123c-e531-4096-a8d4-1af694de7c60": {
+        "chunk_id": "8ad9123c-e531-4096-a8d4-1af694de7c60",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e327be96-163f-44b0-9bf6-272f0e33a5d3": {
+        "chunk_id": "e327be96-163f-44b0-9bf6-272f0e33a5d3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "fd5e8856-67c5-4a12-92be-6e54a577f7f8": {
+        "chunk_id": "fd5e8856-67c5-4a12-92be-6e54a577f7f8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "37662795-8946-450c-aa3c-c2b8d9e41589": {
+        "chunk_id": "37662795-8946-450c-aa3c-c2b8d9e41589",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "fd132b21-648a-4033-836c-38bb7134b3bb": {
+        "chunk_id": "fd132b21-648a-4033-836c-38bb7134b3bb",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "5ce4c0d2-f118-44ac-a8c3-3587731d6aca": {
+        "chunk_id": "5ce4c0d2-f118-44ac-a8c3-3587731d6aca",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "471909ca-5f04-4490-9cf5-ae7055d8077a": {
+        "chunk_id": "471909ca-5f04-4490-9cf5-ae7055d8077a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "166f9e60-d769-470a-81e5-5dfa7613c5e3": {
+        "chunk_id": "166f9e60-d769-470a-81e5-5dfa7613c5e3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "b0a4ff36-67df-4885-8cea-623dedac3f8b": {
+        "chunk_id": "b0a4ff36-67df-4885-8cea-623dedac3f8b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "61fd26b2-7ba2-4d9b-988d-40e58bdbeaff": {
+        "chunk_id": "61fd26b2-7ba2-4d9b-988d-40e58bdbeaff",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "0e0a7ba1-6eb4-420e-bdcc-e26f265e23d8": {
+        "chunk_id": "0e0a7ba1-6eb4-420e-bdcc-e26f265e23d8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "887f3157-d3e4-437e-bdda-acc29262917c": {
+        "chunk_id": "887f3157-d3e4-437e-bdda-acc29262917c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "84886cd6-40df-49c1-8648-f6029cfa9ef0": {
+        "chunk_id": "84886cd6-40df-49c1-8648-f6029cfa9ef0",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ab4d7a3e-7b19-4fbe-b2ae-dd2d54b0086f": {
+        "chunk_id": "ab4d7a3e-7b19-4fbe-b2ae-dd2d54b0086f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "7af91f6b-3a42-4db1-b655-8ce5add1beb3": {
+        "chunk_id": "7af91f6b-3a42-4db1-b655-8ce5add1beb3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a4e67f7a-ca10-4244-bcee-097850ab013c": {
+        "chunk_id": "a4e67f7a-ca10-4244-bcee-097850ab013c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ffc72ab0-4c04-43b1-81cf-c89d4c7dd0c2": {
+        "chunk_id": "ffc72ab0-4c04-43b1-81cf-c89d4c7dd0c2",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "bc5ad84c-6247-4496-9a16-c828c004a25b": {
+        "chunk_id": "bc5ad84c-6247-4496-9a16-c828c004a25b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3ef1c0c8-c081-434d-860c-296d4dd39c9f": {
+        "chunk_id": "3ef1c0c8-c081-434d-860c-296d4dd39c9f",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e86ffec2-a30d-486f-bb8d-5a905371fd4c": {
+        "chunk_id": "e86ffec2-a30d-486f-bb8d-5a905371fd4c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "77003b62-8811-4564-9388-674183318272": {
+        "chunk_id": "77003b62-8811-4564-9388-674183318272",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "b7dd99db-4ca9-43cd-b2a5-37470a849202": {
+        "chunk_id": "b7dd99db-4ca9-43cd-b2a5-37470a849202",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1e490d7c-37d2-474d-9777-219ed6c08082": {
+        "chunk_id": "1e490d7c-37d2-474d-9777-219ed6c08082",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4c10e35b-881f-44ec-a825-bf339df11dfd": {
+        "chunk_id": "4c10e35b-881f-44ec-a825-bf339df11dfd",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "e9a5b5e7-8738-409a-a208-71bd622f938e": {
+        "chunk_id": "e9a5b5e7-8738-409a-a208-71bd622f938e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "234e01ea-45c9-4159-9640-b5f3d6d937e5": {
+        "chunk_id": "234e01ea-45c9-4159-9640-b5f3d6d937e5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "bcac2e44-6e05-4348-9678-171986d3b719": {
+        "chunk_id": "bcac2e44-6e05-4348-9678-171986d3b719",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1756f261-d4e9-41fd-82d0-59643b6bc024": {
+        "chunk_id": "1756f261-d4e9-41fd-82d0-59643b6bc024",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "093bab96-f28b-4b2d-b4c0-0760617ead42": {
+        "chunk_id": "093bab96-f28b-4b2d-b4c0-0760617ead42",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "cfb6a49e-762e-41ad-8e6d-7d5bbd118d1a": {
+        "chunk_id": "cfb6a49e-762e-41ad-8e6d-7d5bbd118d1a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3b3aa7f3-940b-4b03-aa74-219fb6af801c": {
+        "chunk_id": "3b3aa7f3-940b-4b03-aa74-219fb6af801c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "cc219b96-a69c-440a-9530-a7ef5fc4bc42": {
+        "chunk_id": "cc219b96-a69c-440a-9530-a7ef5fc4bc42",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "05166b4d-9679-418a-9174-00cf1440e0c8": {
+        "chunk_id": "05166b4d-9679-418a-9174-00cf1440e0c8",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "93230306-4397-486d-9aaa-463a4d40b618": {
+        "chunk_id": "93230306-4397-486d-9aaa-463a4d40b618",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a4f09710-6614-4639-a1e4-86bf8fc3dc91": {
+        "chunk_id": "a4f09710-6614-4639-a1e4-86bf8fc3dc91",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "8360af5a-6a84-4912-b7e7-14401816ad2b": {
+        "chunk_id": "8360af5a-6a84-4912-b7e7-14401816ad2b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "fef04db8-ad05-4470-88bb-ad428cfce07b": {
+        "chunk_id": "fef04db8-ad05-4470-88bb-ad428cfce07b",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ed644937-e32b-4e42-a48b-91e94f6b433a": {
+        "chunk_id": "ed644937-e32b-4e42-a48b-91e94f6b433a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "c053eeff-402f-477f-935d-ad96cd6d1d4c": {
+        "chunk_id": "c053eeff-402f-477f-935d-ad96cd6d1d4c",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "045e3ca5-3620-4207-936a-76fd37a1f49d": {
+        "chunk_id": "045e3ca5-3620-4207-936a-76fd37a1f49d",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "ebe2b449-4b5b-4056-bb20-1c2a83b9329e": {
+        "chunk_id": "ebe2b449-4b5b-4056-bb20-1c2a83b9329e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4de51c6e-9f95-4ee2-a9f0-4aa36f51e6b3": {
+        "chunk_id": "4de51c6e-9f95-4ee2-a9f0-4aa36f51e6b3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "1fc18a46-1a61-4d7f-a257-ab83f074c359": {
+        "chunk_id": "1fc18a46-1a61-4d7f-a257-ab83f074c359",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "594eeb5d-29c3-4476-85b5-a2d3ad7fa573": {
+        "chunk_id": "594eeb5d-29c3-4476-85b5-a2d3ad7fa573",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "41d4b698-dc5e-4070-bfcf-66e67d1c93e1": {
+        "chunk_id": "41d4b698-dc5e-4070-bfcf-66e67d1c93e1",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9de7ca6d-0a7a-4b70-ac4d-911f77ed45a6": {
+        "chunk_id": "9de7ca6d-0a7a-4b70-ac4d-911f77ed45a6",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "4db73af5-2a54-4736-947f-8821f99e2065": {
+        "chunk_id": "4db73af5-2a54-4736-947f-8821f99e2065",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "20e48fbb-ebe8-4434-b373-936b52d920eb": {
+        "chunk_id": "20e48fbb-ebe8-4434-b373-936b52d920eb",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "365284a9-d4a3-4073-8480-4d0cd3febbe3": {
+        "chunk_id": "365284a9-d4a3-4073-8480-4d0cd3febbe3",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a1473d85-144c-43df-bb3a-3aed0d3a9d77": {
+        "chunk_id": "a1473d85-144c-43df-bb3a-3aed0d3a9d77",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "d648715a-7981-4edc-9c6b-29614ccd8b1e": {
+        "chunk_id": "d648715a-7981-4edc-9c6b-29614ccd8b1e",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "01ca0cbc-34f1-4434-801b-8d6a3d351a65": {
+        "chunk_id": "01ca0cbc-34f1-4434-801b-8d6a3d351a65",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a1114e15-f8a4-48ed-b521-3c7b282edb52": {
+        "chunk_id": "a1114e15-f8a4-48ed-b521-3c7b282edb52",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "2210c896-d05c-4815-9dfc-81af0c61ceb5": {
+        "chunk_id": "2210c896-d05c-4815-9dfc-81af0c61ceb5",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "f49cd0ac-516b-4afd-8ffb-6b049ee7cca6": {
+        "chunk_id": "f49cd0ac-516b-4afd-8ffb-6b049ee7cca6",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a5f68377-644c-4db9-a193-8905d11841fd": {
+        "chunk_id": "a5f68377-644c-4db9-a193-8905d11841fd",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "6f7d7dff-3a07-48e2-b850-72e8fc69b9a9": {
+        "chunk_id": "6f7d7dff-3a07-48e2-b850-72e8fc69b9a9",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "3141d42d-ab96-47a4-8201-a2c613a42829": {
+        "chunk_id": "3141d42d-ab96-47a4-8201-a2c613a42829",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "43281943-9a57-46df-8cc3-9e1f6d160841": {
+        "chunk_id": "43281943-9a57-46df-8cc3-9e1f6d160841",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "cf28630d-ceb2-422d-85d1-733caadb505a": {
+        "chunk_id": "cf28630d-ceb2-422d-85d1-733caadb505a",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "9718be82-cb54-4d95-87dd-5bcfd64239bb": {
+        "chunk_id": "9718be82-cb54-4d95-87dd-5bcfd64239bb",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "8db6ba5c-f88c-43c7-8176-dead3df6f1be": {
+        "chunk_id": "8db6ba5c-f88c-43c7-8176-dead3df6f1be",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "dcefa43c-9439-4586-9382-b451099dca5d": {
+        "chunk_id": "dcefa43c-9439-4586-9382-b451099dca5d",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      },
+      "a7db1704-dd00-4cd0-b148-58c9a2bfaf76": {
+        "chunk_id": "a7db1704-dd00-4cd0-b148-58c9a2bfaf76",
+        "document_id": "29",
+        "questions_generated": 3,
+        "error": null,
+        "status": "completed"
+      }
+    },
+    "error_message": null,
+    "total_documents": 208,
+    "processed_documents": 208,
+    "errors": [
+      "chunk 74ce24a6-628f-4c62-bbb5-e617c56a859e (doc: 29): Aucune question générée par le modèle",
+      "chunk 99187725-7dbd-4878-9b15-7ff237f525cf (doc: 29): Aucune question générée par le modèle",
+      "chunk 92ca8ceb-91fe-4345-998c-43f3f1152d30 (doc: 29): Aucune question générée par le modèle",
+      "chunk 645dd0d9-6640-4fa4-879e-c453e0e7dde4 (doc: 29): Aucune question générée par le modèle",
+      "chunk 04845e72-393f-4c6b-bc23-eec2da592b31 (doc: 29): Aucune question générée par le modèle",
+      "chunk 1c1b5879-1202-4ed5-bddd-1bd68d5bf3b6 (doc: 29): Aucune question générée par le modèle",
+      "chunk 385d6076-faae-4564-b1a3-068b96a6c2bc (doc: 29): Aucune question générée par le modèle"
+    ]
   }
 }
