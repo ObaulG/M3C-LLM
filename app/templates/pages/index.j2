@@ -400,18 +400,24 @@
                     </ul>
 
                 <p>
-                    Aussi, notre clef API Mistral n'offre qu'une quantité limitée de requêtes par minute. En cas d'utilisation de groupe,
-                    ou d'une fréquentation élevée (ce qui nous ferait fortement plaisir!), il serait compliqué de proposer une utilisation
-                    fluide pour tout le monde. Votre clef permet
-                </p>p>
+                    Aussi, notre clef API Mistral n'offre qu'une quantité limitée de requêtes par minute.
+                    En cas d'utilisation de groupe, ou d'une fréquentation élevée (ce qui nous ferait fortement plaisir!),
+                    il serait compliqué de proposer une utilisation fluide pour tout le monde. Plus de détail plus bas.
+                </p>
 
+            <p>
+                Merci encore pour votre visite. Après la première utilisation, vous pourrez également remplir notre
+                questionnaire (disponible prochainement).
+
+                Paul Pina-Gherardi - pina-gherardi_p@univ-corse.fr
+            </p>
             </div>
         {% endcall %}
 
     {# --- Interfaces utilisateur --- #}
         {% call section(id='interfaces', title='Interfaces Utilisateur',
                         title_icon='💻',
-                        extra='<span class="info-badge">6 interfaces disponibles</span>') %}
+                        extra='<span class="info-badge">3 interfaces disponibles</span>') %}
             <div class="cards-grid">
                 {{ feature_card(
                     title='Chatbot RAG',
@@ -424,11 +430,11 @@
 
                 {{ feature_card(
                     title='Médiation inversée',
-                    description="Interface permettant de sélectionner un document PDF et d'interagir avec son contenu via un chat intelligent. Visualisation du PDF intégrée.",
+                    description="Choisissez un document et faites-vous questionnez dessus. ",
                     href='question_session.html',
                     icon='📄',
                     category='user',
-                    features=['Sélection de documents PDF','Visualisation du PDF','Chat contextuel par document','Navigation facile','Recherche ciblée'],
+                    features=[],
                     modal_id='pdf-chat-info'
                 ) }}
 
@@ -525,8 +531,8 @@
 
         {# --- Footer --- #}
         <div class="home-footer">
-            <p><strong>M3C RAG Portail © 2026</strong> - Maison des Sciences de l'Homme Mondes Contemporains</p>
-            <p>Système RAG pour l'analyse documentaire intelligente</p>
+            <p><strong>M3C-LLM - 2026</strong> -</p>
+            <p>Plateforme de tests d'outils d'IA pour la médiation culturelle</p>
             <div class="footer-links">
                 <a href="#accueil">Accueil</a>
                 <a href="#tutoriel-mistral">Tutoriel Mistral</a>
@@ -534,7 +540,7 @@
                 <a href="m3c-chatbot.html">Chatbot</a>
                 <a href="tutorials.html">Documentation</a>
             </div>
-            <p style="margin-top: 15px; font-size: 12px;">Version 0.1.0 | FastAPI | Mistral AI | RAG Technology</p>
+            <p style="margin-top: 15px; font-size: 12px;">Version 0.1.0 | FastAPI | Mistral AI </p>
         </div>
     </div>
 </div>
@@ -562,7 +568,7 @@
 </div></div>
 
 <div id="pdf-chat-info" class="modal"><div class="modal-content"><span class="close" onclick="hideModal('pdf-chat-info')">&times;</span>
-    <h2>📄 PDF + Chat - Interface Documentaire</h2>
+    <h2>📄 Médiation inversée</h2>
     <div class="modal-section"><h3>📋 Description</h3><p>Interface permettant de travailler avec des documents PDF spécifiques. Sélectionnez un document et discutez de son contenu avec le chatbot.</p></div>
     <div class="modal-section"><h3>⚙️ Fonctionnalités clés</h3><ul>
         <li><strong>Sélection de PDF:</strong> Parcourez et sélectionnez parmi les documents disponibles</li>
