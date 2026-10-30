@@ -25,6 +25,10 @@
         if (form) form.style.display = 'none';
         if (loggedIn) loggedIn.style.display = 'flex';
         if (display) display.textContent = user.username || user.email || 'Utilisateur';
+        // Un utilisateur non global_admin sans cle API Mistral n'a acces qu'a
+        // l'index, la page de connexion et la page de profil.
+        var isGlobalAdmin = user.role === 'global_admin';
+        setNavLinksDisabled(!(isGlobalAdmin || user.has_mistral_api_key));
     }
 
     function showLoginForm() {
@@ -39,7 +43,7 @@
     // Les liens grisés ne sont plus cliquables tant que l'utilisateur n'est pas
     // connecté (la page reste de toute façon protégée côté serveur).
     function setNavLinksDisabled(disabled) {
-        var allowed = ['index.html', 'auth.html'];
+        var allowed = ['index.html', 'auth.html', 'profile.html'];
         var links = document.querySelectorAll('a.nav-link');
         links.forEach(function (link) {
             var href = (link.getAttribute('href') || '');
@@ -111,6 +115,18 @@
             })
             .then(function (data) { showLoggedIn(data.user); })
             .catch(function () { showLoginForm(); });
+        // Si une cle est presente en localStorage mais pas sur le compte
+        // serveur (ex : changement de navigateur), on la resynchronise.
+        if (window.mistralApiKey && window.mistralApiKey.has && window.mistralApiKey.has()) {
+            fetch('/api/auth/me', { credentials: 'same-origin' }).then(function (resp) {
+                if (!resp.ok) return null;
+                return resp.json();
+            }).then(function (data) {
+                if (data && data.user && data.user.role !== 'global_admin' && !data.user.has_mistral_api_key) {
+                    window.mistralApiKey.syncToServer(window.mistralApiKey.get());
+                }
+            }).catch(function () {});
+        }
         document.addEventListener('profile-widget-login', function () {
             setNavLinksDisabled(false);
         });

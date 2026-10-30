@@ -11,9 +11,24 @@
  * Stocke la clé API Mistral dans le localStorage.
  * @param {string} apiKey - La clé API à stocker
  */
+function syncMistralApiKeyToServer(apiKey) {
+    return fetch('/api/auth/mistral-api-key', {
+        method: apiKey ? 'PUT' : 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ mistral_api_key: apiKey || null })
+    }).then(function (resp) {
+        if (!resp.ok) throw new Error('Echec de la synchronisation de la cle API (' + resp.status + ')');
+        return resp.json();
+    });
+}
+
 function storeMistralApiKey(apiKey) {
     if (apiKey && apiKey.trim()) {
         localStorage.setItem('mistral_api_key', apiKey.trim());
+        syncMistralApiKeyToServer(apiKey.trim()).catch(function (err) {
+            console.error(err.message);
+        });
         return true;
     }
     return false;
@@ -32,6 +47,9 @@ function getMistralApiKey() {
  */
 function removeMistralApiKey() {
     localStorage.removeItem('mistral_api_key');
+    syncMistralApiKeyToServer(null).catch(function (err) {
+        console.error(err.message);
+    });
 }
 
 /**
@@ -210,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Exporter les fonctions pour les autres scripts
 window.mistralApiKey = {
     store: storeMistralApiKey,
+    syncToServer: syncMistralApiKeyToServer,
     get: getMistralApiKey,
     remove: removeMistralApiKey,
     has: hasMistralApiKey,
