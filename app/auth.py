@@ -12,6 +12,17 @@ from database.database import DB_CONFIG, get_db_connection
 _ACTIVE_TOKENS: Dict[str, Tuple[int, float]] = {}
 _TOKEN_TTL_SECONDS = 60 * 60 * 24
 
+# Cache (user_id -> (timestamp, role, has_mistral_api_key)) pour eviter une
+# requete DB a chaque appel du middleware d'acces.
+_USER_ACCESS_CACHE: Dict[int, Tuple[float, str, bool]] = {}
+_ACCESS_CACHE_TTL_SECONDS = 60
+
+GLOBAL_ADMIN_ROLE = "global_admin"
+
+
+def _invalidate_access_cache(user_id: int) -> None:
+    _USER_ACCESS_CACHE.pop(user_id, None)
+
 
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(
@@ -81,7 +92,7 @@ async def create_user(username: str, email: str, password: str, role: str = "use
 
                 await cur.execute(
                     """
-                    SELECT id, name, email, role, is_active, created
+                    SELECT id, name, email, role, is_active, created, mistral_api_key
                     FROM user
                     WHERE id = %s
                     """,
@@ -96,6 +107,7 @@ async def create_user(username: str, email: str, password: str, role: str = "use
                 "role": user[3],
                 "is_active": bool(user[4]),
                 "created_at": user[5].isoformat() if user[5] else None,
+                "has_mistral_api_key": bool(user[6]),
             }
             token = _issue_token(user["user_id"])
             return user, token
@@ -119,7 +131,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT id, name, email, password_hash, role, is_active, created
+                SELECT id, name, email, password_hash, role, is_active, created, mistral_api_key
                 FROM user
                 WHERE name = %s OR email = %s;
                 """,
@@ -128,7 +140,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
             row = await cur.fetchone()
         if row is None:
             raise ValueError("Identifiants incorrects.")
-        user_id, name, email, password_hash, role, is_active, created = row
+        user_id, name, email, password_hash, role, is_active, created, mistral_api_key = row
         if not is_active:
             raise ValueError("Ce compte est désactivé.")
         if not _verify_password(password, password_hash):
@@ -140,6 +152,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
             "role": role,
             "is_active": bool(is_active),
             "created_at": created.isoformat() if created else None,
+            "has_mistral_api_key": bool(mistral_api_key),
         }
         token = _issue_token(user_id)
         return user, token
@@ -150,7 +163,7 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT id, name, email, role, is_active, created
+                SELECT id, name, email, role, is_active, created, mistral_api_key
                 FROM user
                 WHERE id = %s;
                 """,
@@ -166,8 +179,49 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             "role": row[3],
             "is_active": bool(row[4]),
             "created_at": row[5].isoformat() if row[5] else None,
+            "has_mistral_api_key": bool(row[6]),
         }
 
+
+
+async def get_user_access_info(user_id: int) -> Optional[Dict[str, Any]]:
+    """Retourne le role et la presence d'une cle API Mistral pour un utilisateur.
+
+    Le resultat est mis en cache quelques secondes pour eviter une requete
+    DB a chaque requete HTTP du middleware. La cle elle-meme n'est jamais
+    retournee, seul un booleen.
+    """
+    now = time.time()
+    entry = _USER_ACCESS_CACHE.get(user_id)
+    if entry is not None and now - entry[0] < _ACCESS_CACHE_TTL_SECONDS:
+        return {"role": entry[1], "has_mistral_api_key": entry[2]}
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT role, mistral_api_key FROM user WHERE id = %s",
+                (user_id,),
+            )
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    info = {"role": row[0], "has_mistral_api_key": bool(row[1])}
+    _USER_ACCESS_CACHE[user_id] = (now, row[0], bool(row[1]))
+    return info
+
+
+async def set_user_mistral_api_key(user_id: int, api_key: Optional[str]) -> bool:
+    """Enregistre (ou efface si api_key est None/vide) la cle API Mistral d'un utilisateur."""
+    value = api_key if api_key else None
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "UPDATE user SET mistral_api_key = %s, modified = NOW() WHERE id = %s",
+                (value, user_id),
+            )
+            updated = cur.rowcount > 0
+    if updated:
+        _invalidate_access_cache(user_id)
+    return updated
 
 
 def _token_from_authorization(authorization: Optional[str]) -> Optional[str]:

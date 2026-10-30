@@ -269,6 +269,13 @@ async def initialize_database(app: FastAPI):
             while await cursor.nextset():
                 pass
         await conn.commit()
+    # Colonne de la cle API Mistral sur la table user (bases existantes sans la colonne)
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cursor:
+            await cursor.execute(
+                "ALTER TABLE user ADD COLUMN IF NOT EXISTS mistral_api_key VARCHAR(255) DEFAULT NULL"
+            )
+        await conn.commit()
     print("Tables vérifiées")
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])

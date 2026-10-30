@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS user (
     created_at TIMESTAMP DEFAULT NOW(),
     modified_at TIMESTAMP DEFAULT NOW(),
     validator BOOLEAN DEFAULT FALSE,
+    mistral_api_key VARCHAR(255) DEFAULT NULL,
     CONSTRAINT valid_role CHECK (role IN ('global_admin', 'admin',  'user'))
 );
 

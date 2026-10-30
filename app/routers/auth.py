@@ -36,6 +36,11 @@ class AuthUserResponse(BaseModel):
     role: str
     is_active: bool
     created_at: Optional[str] = None
+    has_mistral_api_key: bool = False
+
+
+class MistralApiKeyRequest(BaseModel):
+    mistral_api_key: Optional[str] = Field(default=None, max_length=255)
 
 
 class AuthResponse(BaseModel):
@@ -106,6 +111,43 @@ async def get_current_user(
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable.")
     return {"user": AuthUserResponse(**user)}
+
+
+def _authenticated_user_id(m3c_api_key: Optional[str], authorization: Optional[str]) -> int:
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifie.")
+    return user_id
+
+
+@router.put("/mistral-api-key")
+async def save_mistral_api_key(
+    request: MistralApiKeyRequest,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Enregistre (ou met a jour) la cle API Mistral de l'utilisateur connecte."""
+    user_id = _authenticated_user_id(m3c_api_key, authorization)
+    api_key = (request.mistral_api_key or "").strip() or None
+    updated = await auth.set_user_mistral_api_key(user_id, api_key)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable.")
+    return {"has_mistral_api_key": bool(api_key)}
+
+
+@router.delete("/mistral-api-key")
+async def delete_mistral_api_key(
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Supprime la cle API Mistral de l'utilisateur connecte."""
+    user_id = _authenticated_user_id(m3c_api_key, authorization)
+    updated = await auth.set_user_mistral_api_key(user_id, None)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable.")
+    return {"has_mistral_api_key": False}
 
 
 @router.post("/logout")

@@ -47,7 +47,8 @@ def get_mistral_api_key_from_request(
     if user_id is None:
         return None
     
-    # Vérifier si l'utilisateur est un global_admin
+    # Vérifier si l'utilisateur est un global_admin ou s'il a enregistré
+    # sa propre clé API Mistral dans son compte (table user)
     import asyncio
     from database.database import get_db_connection
     
@@ -55,13 +56,16 @@ def get_mistral_api_key_from_request(
         async with await get_db_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT role FROM user WHERE id = %s",
+                    "SELECT role, mistral_api_key FROM user WHERE id = %s",
                     (user_id,)
                 )
                 row = await cursor.fetchone()
                 if row and row[0] == 'global_admin':
                     # Retourner la clé serveur
                     return os.getenv('MISTRAL_API_KEY')
+                if row and row[1]:
+                    # Retourner la clé enregistrée dans le compte utilisateur
+                    return row[1]
                 return None
     
     # Exécuter la vérification de manière synchrone
@@ -188,13 +192,14 @@ async def async_require_mistral_api_key(
             detail="Clé API Mistral requise. Veuillez configurer votre clé API Mistral dans votre profil utilisateur, ou connectez-vous avec un compte administrateur (global_admin)."
         )
     
-    # Vérifier si l'utilisateur est un global_admin
+    # Vérifier si l'utilisateur est un global_admin (clé serveur) ou s'il
+    # a enregistré sa propre clé API Mistral dans son compte
     from database.database import get_db_connection
     
     async with await get_db_connection() as conn:
         async with conn.cursor() as cursor:
             await cursor.execute(
-                "SELECT role FROM user WHERE id = %s",
+                "SELECT role, mistral_api_key FROM user WHERE id = %s",
                 (user_id,)
             )
             row = await cursor.fetchone()
@@ -207,8 +212,10 @@ async def async_require_mistral_api_key(
                         detail="La clé API Mistral du serveur n'est pas configurée. Veuillez contacter l'administrateur."
                     )
                 return server_key
+            if row and row[1]:
+                return row[1]
     
-    # Si l'utilisateur n'est pas global_admin et n'a pas fourni de clé
+    # Si l'utilisateur n'est pas global_admin et n'a pas enregistré de clé
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Clé API Mistral requise. Veuillez configurer votre clé API Mistral dans votre profil utilisateur."
