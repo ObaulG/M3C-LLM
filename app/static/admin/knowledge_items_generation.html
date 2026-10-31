@@ -124,6 +124,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" id="allChunksToggle" onchange="onAllChunksToggle()">
+                        <span>Générer sur l'ensemble des chunks du document sélectionné</span>
+                    </label>
+                    <div class="description">Lorsque cette option est activée, la génération parcourt tous les chunks du document (le chunk individuel n'est plus requis)</div>
+                </div>
+
+                <div class="form-group">
                     <label>Contenu du chunk sélectionné</label>
                     <div id="chunkContentDisplay" class="chunk-content-display">
                         Sélectionnez un document puis un chunk pour afficher son contenu...
@@ -146,6 +154,9 @@
                 <div class="actions-bar">
                     <button class="btn" onclick="generateKnowledgeItems()" id="generateBtn">
                         ✨ Générer depuis le chunk
+                    </button>
+                    <button class="btn" onclick="generateKnowledgeItemsForDocument()" id="generateAllChunksBtn" disabled>
+                        ✨ Générer depuis tous les chunks du document
                     </button>
                     <button class="btn btn-secondary" onclick="generateKnowledgeItemsFromQuestions()" id="generateFromQuestionsBtn">
                         ✨ Générer depuis la question sélectionnée
@@ -295,6 +306,7 @@
                 chunkSelect.innerHTML = options;
                 chunkSelect.disabled = false;
                 chunkContentDisplay.textContent = 'Sélectionnez un chunk pour afficher son contenu...';
+                onAllChunksToggle();
 
                 chunkSelect.onchange = function() {
                     const selectedOption = this.options[this.selectedIndex];
@@ -332,6 +344,10 @@
         currentChunkId = null;
         currentChunkContent = null;
         resetChunkQuestions();
+        if (document.getElementById('allChunksToggle')) {
+            document.getElementById('allChunksToggle').checked = false;
+            onAllChunksToggle();
+        }
     }
 
     function resetChunkQuestions() {
@@ -423,6 +439,75 @@
         const emptyStar = '☆';
         if (level === null || level === undefined) return fullStar.repeat(3);
         return fullStar.repeat(level) + emptyStar.repeat(5 - level);
+    }
+
+    function onAllChunksToggle() {
+        const allChunks = document.getElementById('allChunksToggle').checked;
+        const chunkSelect = document.getElementById('chunkSelect');
+        chunkSelect.disabled = allChunks;
+        document.getElementById('generateBtn').disabled = allChunks;
+        document.getElementById('generateFromQuestionsBtn').disabled = allChunks;
+        document.getElementById('generateAllChunksBtn').disabled = !allChunks || !currentDocumentId;
+    }
+
+    async function generateKnowledgeItemsForDocument() {
+        if (!currentDocumentId) {
+            showAlert('Veuillez sélectionner un document.', 'error');
+            return;
+        }
+        if (!document.getElementById('allChunksToggle').checked) {
+            showAlert('Cochez l\'option « Générer sur l\'ensemble des chunks » pour utiliser ce mode.', 'error');
+            return;
+        }
+
+        const model = document.getElementById('modelSelect').value;
+        const generateBtn = document.getElementById('generateAllChunksBtn');
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Génération en cours...';
+        document.getElementById('loadingIndicator').classList.add('active');
+        document.getElementById('resultsSection').style.display = 'block';
+
+        try {
+            const response = await fetch(KNOWLEDGE_API + '/generate-for-document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    document_id: currentDocumentId,
+                    model: model
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error('HTTP ' + response.status + ' : ' + errText);
+            }
+            const data = await response.json();
+            generatedItems = data.knowledge_items || [];
+
+            const failedChunks = (data.chunk_statuses || []).filter(s => s.status === 'error');
+            document.getElementById('chunkColMeta').textContent =
+                `${data.count} item(s) — ${data.chunks_processed}/${data.chunks_total} chunk(s) — ${data.model} — ${data.generation_time}s`;
+
+            renderGeneratedItems(generatedItems, 'knowledgeItemsContainer');
+            document.getElementById('resultsSection').style.display = 'block';
+            updateColumnButtons();
+
+            if (failedChunks.length > 0) {
+                showAlert(`${generatedItems.length} knowledge_items générés, mais ${failedChunks.length} chunk(s) en erreur (ex: chunk ${failedChunks[0].chunk_id}).`, 'error');
+            } else if (generatedItems.length === 0) {
+                showAlert('Aucun knowledge_item extrait du document.', 'error');
+            } else {
+                showAlert(`${generatedItems.length} knowledge_items générés sur ${data.chunks_processed} chunk(s) du document.`, 'success');
+            }
+        } catch (error) {
+            console.error('Erreur génération document:', error);
+            showAlert('Erreur lors de la génération : ' + error.message, 'error');
+        } finally {
+            generateBtn.textContent = '✨ Générer depuis tous les chunks du document';
+            onAllChunksToggle();
+            document.getElementById('loadingIndicator').classList.remove('active');
+        }
     }
 
     async function generateKnowledgeItems() {
