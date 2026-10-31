@@ -126,6 +126,62 @@ class KnowledgeGenerationForDocumentResponse(BaseModel):
     generation_time: float = Field(..., description="Temps de génération en secondes")
 
 
+class KnowledgeGenerationJobModel(BaseModel):
+    """Modèle pour un job de génération de knowledge_items sur l'ensemble
+    des chunks d'un document."""
+    job_id: str = Field(..., description="ID unique du job")
+    job_type: str = Field(default="ki-generation", description="Type de job")
+    status: str = Field(
+        ...,
+        description="Statut du job: pending, running, completed, completed_with_errors, failed",
+    )
+    created_at: str = Field(..., description="Date de création (ISO format)")
+    updated_at: str = Field(..., description="Date de dernière mise à jour (ISO format)")
+    document_categories: List[str] = Field(
+        default_factory=list, description="Catégories de documents concernées"
+    )
+    total_documents: int = Field(
+        default=0, description="Nombre total de chunks à traiter"
+    )
+    processed_documents: int = Field(
+        default=0, description="Nombre de chunks déjà traités"
+    )
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Paramètres du job (document_id, model_name, source)",
+    )
+    progress: Dict[str, Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Progression détaillée par chunk (chunk_id -> statut, items générés)",
+    )
+    errors: List[str] = Field(
+        default_factory=list, description="Liste des erreurs rencontrées"
+    )
+    error_message: Optional[str] = Field(
+        default=None, description="Message d'erreur global si le job a échoué"
+    )
+
+
+class KnowledgeGenerationJobListResponse(BaseModel):
+    """Réponse pour la liste des jobs de génération de knowledge_items."""
+    jobs: List[KnowledgeGenerationJobModel] = Field(
+        default_factory=list, description="Liste de tous les jobs"
+    )
+    count: int = Field(default=0, description="Nombre total de jobs")
+
+
+class KnowledgeGenerationJobCreateResponse(BaseModel):
+    """Réponse pour la création d'un job de génération de knowledge_items."""
+    job_id: str = Field(..., description="ID du job créé")
+    message: str = Field(
+        default="Job de génération de knowledge_items créé avec succès",
+        description="Message de confirmation",
+    )
+    job: KnowledgeGenerationJobModel = Field(
+        ..., description="Détails du job créé"
+    )
+
+
 class KnowledgeGenerationFromQuestionsRequest(BaseModel):
     """Requête pour générer des knowledge_items à partir des questions/réponses
     associées à un chunk (mode comparaison avec l'extraction depuis le chunk)."""
