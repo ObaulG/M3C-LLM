@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déclarer mes connaissances - M3C-LLM</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .kd-body { padding: 20px; max-width: 900px; margin: 0 auto; text-align: left; }
+        .kd-intro { color: #555; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+        .kd-theme-select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; margin-bottom: 20px; }
+        .kd-item { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; margin-bottom: 12px; }
+        .kd-proposition { font-size: 15px; margin-bottom: 10px; }
+        .kd-summary { font-size: 13px; color: #666; margin-bottom: 10px; }
+        .kd-status-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .kd-status-btn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+        .kd-status-btn:hover { border-color: #888; }
+        .kd-status-btn.selected { background: #35507a; color: #fff; border-color: #35507a; }
+        .kd-status-btn.saved { opacity: 0.85; }
+        .kd-status-labels { font-size: 12px; color: #888; margin-top: 6px; }
+        .kd-loading, .kd-empty { text-align: center; padding: 40px; color: #666; font-size: 15px; }
+        .kd-error { background: #fff0f0; border: 1px solid #ffe0e0; color: #b74420; padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 14px; }
+        .kd-toast { position: fixed; bottom: 20px; right: 20px; background: #35507a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .kd-toast.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="kd-body">
+        <h1>Déclarer mes connaissances</h1>
+        <p class="kd-intro">
+            Indiquez votre niveau de familiarité avec les connaissances issues des thèmes de la médiathèque.
+            Vos déclarations alimentent votre profil et permettent d'adapter les contenus qui vous sont proposés.
+        </p>
+
+        <label for="themeSelect"><strong>Thème :</strong></label>
+        <select id="themeSelect" class="kd-theme-select">
+            <option value="">Chargement des thèmes...</option>
+        </select>
+
+        <div id="statusZone"></div>
+        <div id="itemsZone"><div class="kd-loading">Sélectionnez un thème pour afficher ses éléments de connaissance.</div></div>
+    </div>
+    <div id="toast" class="kd-toast"></div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const DECLARATIONS_API = API_BASE + '/api/knowledge-declarations';
+
+        const STATUS_LABELS = {
+            unknown: 'Je ne connais pas',
+            encountered: 'Déjà rencontré',
+            developing: 'En cours d\'apprentissage',
+            demonstrated: 'Je maîtrise'
+        };
+
+        function getAnonymousUserId() {
+            let anonymousId = localStorage.getItem('m3c_anonymous_id');
+            if (!anonymousId) {
+                anonymousId = crypto.randomUUID();
+                localStorage.setItem('m3c_anonymous_id', anonymousId);
+            }
+            return anonymousId;
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 3000);
+        }
+
+        async function loadThemes() {
+            const select = document.getElementById('themeSelect');
+            try {
+                const response = await fetch(DECLARATIONS_API + '/themes');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const themes = await response.json();
+                select.innerHTML = '';
+                if (!themes.length) {
+                    select.innerHTML = '<option value="">Aucun thème disponible</option>';
+                    return;
+                }
+                themes.forEach(theme => {
+                    const option = document.createElement('option');
+                    option.value = theme.theme_id;
+                    option.textContent = theme.theme_name + ' (' + theme.knowledge_items_count + ' connaissances)';
+                    select.appendChild(option);
+                });
+                select.addEventListener('change', loadThemeItems);
+                await loadThemeItems();
+            } catch (e) {
+                select.innerHTML = '<option value="">Erreur de chargement</option>';
+                document.getElementById('statusZone').innerHTML =
+                    '<div class="kd-error">Impossible de charger les thèmes : ' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        async function loadThemeItems() {
+            const themeId = document.getElementById('themeSelect').value;
+            const zone = document.getElementById('itemsZone');
+            if (!themeId) { zone.innerHTML = ''; return; }
+            zone.innerHTML = '<div class="kd-loading">Chargement des éléments de connaissance...</div>';
+            try {
+                const response = await fetch(DECLARATIONS_API + '/themes/' + themeId);
+                if (!response.ok) {
+                    const data = await response.json().catch(() => null);
+                    throw new Error((data && data.detail) || ('HTTP ' + response.status));
+                }
+                const items = await response.json();
+                if (!items.length) {
+                    zone.innerHTML = '<div class="kd-empty">Aucun élément de connaissance pour ce thème.</div>';
+                    return;
+                }
+                zone.innerHTML = '';
+                items.forEach(item => zone.appendChild(buildItemCard(item)));
+            } catch (e) {
+                zone.innerHTML = '<div class="kd-error">' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        function buildItemCard(item) {
+            const card = document.createElement('div');
+            card.className = 'kd-item';
+
+            const proposition = document.createElement('div');
+            proposition.className = 'kd-proposition';
+            proposition.textContent = item.proposition;
+            card.appendChild(proposition);
+
+            if (item.summary) {
+                const summary = document.createElement('div');
+                summary.className = 'kd-summary';
+                summary.textContent = item.summary;
+                card.appendChild(summary);
+            }
+
+            const buttons = document.createElement('div');
+            buttons.className = 'kd-status-buttons';
+            Object.entries(STATUS_LABELS).forEach(([status, label]) => {
+                const btn = document.createElement('button');
+                btn.className = 'kd-status-btn';
+                btn.textContent = label;
+                btn.dataset.status = status;
+                btn.dataset.knowledgeId = item.knowledge_id;
+                if (item.user_status === status) btn.classList.add('selected', 'saved');
+                btn.addEventListener('click', () => declareKnowledge(item.knowledge_id, status, card, btn));
+                buttons.appendChild(btn);
+            });
+            card.appendChild(buttons);
+            return card;
+        }
+
+        async function declareKnowledge(knowledgeId, status, card, clickedBtn) {
+            const themeId = document.getElementById('themeSelect').value;
+            try {
+                const response = await fetch(DECLARATIONS_API + '/declarations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        theme_id: parseInt(themeId, 10),
+                        knowledge_id: knowledgeId,
+                        declared_status: status,
+                        anonymous_id: getAnonymousUserId()
+                    })
+                });
+                const data = await response.json().catch(() => null);
+                if (!response.ok) throw new Error((data && data.detail) || ('HTTP ' + response.status));
+                card.querySelectorAll('.kd-status-btn').forEach(b => b.classList.remove('selected', 'saved'));
+                clickedBtn.classList.add('selected', 'saved');
+                showToast('Déclaration enregistrée');
+            } catch (e) {
+                showToast('Erreur : ' + e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadThemes);
+    </script>
+</body>
+</html>
