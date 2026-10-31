@@ -26,6 +26,7 @@ from database.database import (
     get_knowledge_items,
     get_knowledge_items_by_question_id,
     get_questions_by_chunk_id,
+    get_all_text_chunks,
     DB_CONFIG,
     VALID_TEXT_RESOURCE_ID,
 )
@@ -56,6 +57,9 @@ from agents.knowledge_item_agent import (
 
 from .models import (
     KnowledgeGenerationRequest,
+    KnowledgeGenerationForDocumentRequest,
+    KnowledgeGenerationForDocumentResponse,
+    ChunkGenerationStatusModel,
     KnowledgeGenerationFromQuestionsRequest,
     KnowledgeGenerationResponse,
     KnowledgeSaveRequest,
@@ -255,6 +259,84 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
         model=request.model,
         knowledge_items=knowledge_items,
         count=len(knowledge_items),
+        generation_time=round(generation_time, 3),
+    )
+
+
+@router.post(
+    "/generate-for-document",
+    response_model=KnowledgeGenerationForDocumentResponse,
+    summary="Génère des knowledge_items sur l'ensemble des chunks d'un document",
+    description="Extrait des knowledge_items (propositions vérifiables + entités + thèmes + "
+                "source) à partir de tous les chunks d'un document, chunk par chunk, via des "
+                "appels LLM (agents.knowledge_item_agent.generate_knowledge_items_from_chunk). "
+                "Un échec sur un chunk n'interrompt pas la génération : le statut de chaque "
+                "chunk est retourné dans chunk_statuses.",
+)
+async def generate_knowledge_items_for_document(request: KnowledgeGenerationForDocumentRequest):
+    """Génère des knowledge_items sur l'ensemble des chunks d'un document via un LLM."""
+    start_time = time.time()
+
+    try:
+        async with await get_db_connection() as conn:
+            chunks = await get_all_text_chunks(conn, request.document_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des chunks du document: {str(e)}",
+        )
+
+    if not chunks:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Aucun chunk trouvé pour le document {request.document_id}",
+        )
+
+    knowledge_items: List = []
+    chunk_statuses: List[ChunkGenerationStatusModel] = []
+
+    for chunk in chunks:
+        chunk_id = chunk["id"]
+        text = chunk.get("content", "")
+        if not text or not text.strip():
+            chunk_statuses.append(ChunkGenerationStatusModel(
+                chunk_id=str(chunk_id), status="empty", count=0,
+            ))
+            continue
+
+        try:
+            schemas = await generate_knowledge_items_from_chunk(
+                text=text,
+                chunk_id=str(chunk_id),
+                document_id=str(request.document_id),
+                page=chunk.get("num_page"),
+                position_in_page=chunk.get("position_in_page"),
+                model=request.model,
+            )
+            items = [_schema_to_model(s) for s in schemas]
+            knowledge_items.extend(items)
+            chunk_statuses.append(ChunkGenerationStatusModel(
+                chunk_id=str(chunk_id), status="success", count=len(items),
+            ))
+        except Exception as e:
+            print(f"Erreur lors de l'extraction des knowledge_items du chunk {chunk_id}: {e}")
+            chunk_statuses.append(ChunkGenerationStatusModel(
+                chunk_id=str(chunk_id), status="error", error=str(e),
+            ))
+
+    generation_time = time.time() - start_time
+    chunks_processed = sum(1 for s in chunk_statuses if s.status == "success")
+    chunks_failed = sum(1 for s in chunk_statuses if s.status == "error")
+
+    return KnowledgeGenerationForDocumentResponse(
+        document_id=request.document_id,
+        model=request.model,
+        knowledge_items=knowledge_items,
+        count=len(knowledge_items),
+        chunks_total=len(chunks),
+        chunks_processed=chunks_processed,
+        chunks_failed=chunks_failed,
+        chunk_statuses=chunk_statuses,
         generation_time=round(generation_time, 3),
     )
 

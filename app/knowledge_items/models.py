@@ -84,6 +84,43 @@ class KnowledgeGenerationRequest(BaseModel):
     )
 
 
+class KnowledgeGenerationForDocumentRequest(BaseModel):
+    """Requête pour générer des knowledge_items sur l'ensemble des chunks d'un document."""
+    document_id: int = Field(
+        ...,
+        description="ID du document (text_documents.id) dont tous les chunks seront analysés",
+    )
+    model: str = Field(
+        default="mistral-medium",
+        description="Modèle LLM à utiliser pour l'extraction",
+    )
+
+
+class ChunkGenerationStatusModel(BaseModel):
+    """Statut de la génération pour un chunk d'un document."""
+    chunk_id: str = Field(..., description="ID du chunk analysé")
+    status: str = Field(..., description="Statut: success, empty, error")
+    count: int = Field(default=0, description="Nombre de knowledge_items extraits du chunk")
+    error: Optional[str] = Field(default=None, description="Message d'erreur éventuel")
+
+
+class KnowledgeGenerationForDocumentResponse(BaseModel):
+    """Réponse contenant les knowledge_items générés pour l'ensemble des chunks d'un document."""
+    document_id: int = Field(..., description="ID du document analysé")
+    model: str = Field(..., description="Modèle LLM utilisé")
+    knowledge_items: List[KnowledgeItemModel] = Field(
+        default_factory=list, description="knowledge_items extraits (tous chunks confondus)"
+    )
+    count: int = Field(default=0, description="Nombre total de knowledge_items extraits")
+    chunks_total: int = Field(default=0, description="Nombre de chunks du document")
+    chunks_processed: int = Field(default=0, description="Nombre de chunks traités avec succès")
+    chunks_failed: int = Field(default=0, description="Nombre de chunks en erreur")
+    chunk_statuses: List[ChunkGenerationStatusModel] = Field(
+        default_factory=list, description="Statut de génération par chunk"
+    )
+    generation_time: float = Field(..., description="Temps de génération en secondes")
+
+
 class KnowledgeGenerationFromQuestionsRequest(BaseModel):
     """Requête pour générer des knowledge_items à partir des questions/réponses
     associées à un chunk (mode comparaison avec l'extraction depuis le chunk)."""
