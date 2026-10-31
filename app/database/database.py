@@ -2784,3 +2784,264 @@ async def record_knowledge_items_evaluation_observations(
         await conn.rollback()
         return []
     return created_observation_ids
+
+
+async def get_knowledge_items_by_theme(
+    conn,
+    theme_id: int,
+    limit: int = 50,
+) -> List[Dict]:
+    """
+    Liste les lments de connaissance associs  un thme (knowledge_item_themes).
+
+    Args:
+        conn: Connexion MySQL.
+        theme_id: Identifiant du thme (themes.id).
+        limit: Nombre maximum d'lments retourns.
+
+    Returns:
+        Liste de dicts {id, proposition, summary, relevance}.
+    """
+    query = """
+        SELECT ki.id, ki.proposition, ki.summary, kit.relevance
+        FROM knowledge_items ki
+        JOIN knowledge_item_themes kit ON kit.knowledge_id = ki.id
+        WHERE kit.theme_id = %s
+        ORDER BY kit.relevance DESC, ki.id
+        LIMIT %s
+    """
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute(query, (theme_id, limit))
+        rows = await cur.fetchall()
+    for row in rows:
+        if row.get("relevance") is not None:
+            row["relevance"] = float(row["relevance"])
+    return rows
+
+
+async def get_user_knowledge_states_for_items(
+    conn,
+    user_id: str,
+    knowledge_ids: List[int],
+) -> Dict[int, Dict]:
+    """
+    Rcupre les tats de connaissance d'un utilisateur pour un ensemble
+    d'lments de connaissance (user_knowledge_states).
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Identifiant de l'utilisateur (VARCHAR(100)).
+        knowledge_ids: Liste d'identifiants d'lments de connaissance.
+
+    Returns:
+        Dict {knowledge_id: {status, score, confidence, updated_at}}.
+    """
+    if not knowledge_ids:
+        return {}
+    placeholders = ", ".join(["%s"] * len(knowledge_ids))
+    query = f"""
+        SELECT knowledge_id, status, score, confidence, updated_at
+        FROM user_knowledge_states
+        WHERE user_id = %s AND knowledge_id IN ({placeholders})
+    """
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute(query, (user_id, *knowledge_ids))
+        rows = await cur.fetchall()
+    result: Dict[int, Dict] = {}
+    for row in rows:
+        result[row["knowledge_id"]] = {
+            "status": row["status"],
+            "score": float(row["score"]) if row.get("score") is not None else None,
+            "confidence": float(row["confidence"]) if row.get("confidence") is not None else None,
+            "updated_at": row["updated_at"].isoformat() if row.get("updated_at") else None,
+        }
+    return result
+
+
+async def record_knowledge_declaration(
+    conn,
+    user_id: str,
+    theme_id: int,
+    theme_name: str,
+    knowledge_id: int,
+    knowledge_proposition: str,
+    declared_status: str,
+    anonymous_id: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Enregistre une dclaration de connaissance d'un visiteur pour un lment
+    de connaissance d'un thme donn.
+
+    Conforme au modle utilisateur/connaissances/observations : une observation
+    dclarative (specific_type='knowledge_declaration') cible  la fois le
+    thme et l'lment de connaissance, porte le statut dclar dans son
+    payload, puis met  jour user_knowledge_states avec le niveau de
+    familiarit dclar (confidence 0.6 : dclaration explicite du visiteur).
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Identifiant de l'utilisateur (str(user_id) ou identifiant anonyme).
+        theme_id: Identifiant du thme dclar.
+        theme_name: Nom du thme (pour le contexte de l'observation).
+        knowledge_id: Identifiant de l'lment de connaissance dclar.
+        knowledge_proposition: Proposition de l'lment de connaissance.
+        declared_status: Statut dclar : 'unknown', 'encountered', 'developing', 'demonstrated'.
+        anonymous_id: Identifiant anonyme persistant si visiteur non connect.
+        metadata: Mtadonnes supplmentaires (page d'origine, etc.).
+
+    Returns:
+        ID de l'observation cre, ou None en cas d'erreur.
+    """
+    declared_scores = {
+        "unknown": 0.0,
+        "encountered": 0.3,
+        "developing": 0.6,
+        "demonstrated": 0.9,
+    }
+    declared_score = declared_scores.get(declared_status, 0.0)
+
+    context: Dict[str, Any] = dict(metadata or {})
+    context.update({
+        "page": "knowledge_declaration.html",
+        "theme_id": theme_id,
+        "theme_name": theme_name,
+        "knowledge_id": knowledge_id,
+        "declared_status": declared_status,
+    })
+    if anonymous_id:
+        context["anonymous_id"] = anonymous_id
+
+    payload = {
+        "event": "knowledge_declaration",
+        "theme_id": theme_id,
+        "theme_name": theme_name,
+        "knowledge_id": knowledge_id,
+        "knowledge_proposition": knowledge_proposition,
+        "declared_status": declared_status,
+        "declared_score": declared_score,
+        "origin": "visitor_declaration",
+    }
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO observations
+                    (user_id, observation_type, specific_type, timestamp, context, confidence, is_raw)
+                VALUES (%s, 'declarative', 'knowledge_declaration', CURRENT_TIMESTAMP, %s, 0.6, TRUE)
+                """,
+                (user_id[:100], json.dumps(context)),
+            )
+            observation_id = cur.lastrowid
+
+            await cur.execute(
+                """
+                INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                VALUES (%s, 'structured', %s, %s)
+                """,
+                (
+                    observation_id,
+                    json.dumps(payload),
+                    json.dumps({"origin": "visitor_declaration"}),
+                ),
+            )
+
+            await cur.execute(
+                """
+                INSERT IGNORE INTO observation_targets (observation_id, target_type, target_id, weight)
+                VALUES (%s, 'theme', %s, 1.0), (%s, 'knowledge', %s, 1.0)
+                """,
+                (observation_id, str(theme_id), observation_id, str(knowledge_id)),
+            )
+
+            await cur.execute(
+                """
+                INSERT INTO user_knowledge_states
+                    (user_id, knowledge_id, status, score, confidence, last_interaction_at)
+                VALUES (%s, %s, %s, %s, 0.6, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE
+                    score = VALUES(score),
+                    status = VALUES(status),
+                    confidence = 0.6,
+                    last_interaction_at = CURRENT_TIMESTAMP
+                """,
+                (user_id, knowledge_id, declared_status, declared_score),
+            )
+        await conn.commit()
+        return observation_id
+    except Exception as e:
+        print(f"Erreur enregistrement dclaration de connaissance pour user_id={user_id}: {e}")
+        await conn.rollback()
+        return None
+
+
+async def record_document_prior_read_declaration(
+    conn,
+    user_id: str,
+    resource_id: int,
+    already_read: bool,
+    anonymous_id: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Enregistre la declaration d'un visiteur indiquant s'il a deja consulte
+    ou lu un document avant sa visite. Observation declarative
+    (specific_type='document_prior_read') sans cible knowledge/theme/entity :
+    le document est identifie par resource_id dans le contexte et le payload.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Identifiant de l'utilisateur (str(user_id) ou identifiant anonyme).
+        resource_id: Identifiant du document (table value, resource_id).
+        already_read: True si le visiteur declare avoir deja lu/consulte le document.
+        anonymous_id: Identifiant anonyme persistant si visiteur non connecte.
+        metadata: Metadonnees supplementaires (page d'origine, etc.).
+
+    Returns:
+        ID de l'observation creee, ou None en cas d'erreur.
+    """
+    context: Dict[str, Any] = dict(metadata or {})
+    context.update({
+        "resource_id": resource_id,
+        "already_read": already_read,
+    })
+    if anonymous_id:
+        context["anonymous_id"] = anonymous_id
+
+    payload = {
+        "event": "document_prior_read_declaration",
+        "resource_id": resource_id,
+        "already_read": already_read,
+        "origin": "visitor_declaration",
+    }
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO observations
+                    (user_id, observation_type, specific_type, timestamp, context, confidence, is_raw)
+                VALUES (%s, 'declarative', 'document_prior_read', CURRENT_TIMESTAMP, %s, 0.6, TRUE)
+                """,
+                (user_id[:100], json.dumps(context)),
+            )
+            observation_id = cur.lastrowid
+
+            await cur.execute(
+                """
+                INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                VALUES (%s, 'structured', %s, %s)
+                """,
+                (
+                    observation_id,
+                    json.dumps(payload),
+                    json.dumps({"origin": "visitor_declaration"}),
+                ),
+            )
+        await conn.commit()
+        return observation_id
+    except Exception as e:
+        print(f"Erreur enregistrement declaration de lecture prealable pour user_id={user_id}: {e}")
+        await conn.rollback()
+        return None

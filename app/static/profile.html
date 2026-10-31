@@ -800,8 +800,7 @@
                     html += '<div class="knowledge-item-card">' +
                         '<div class="ki-proposition">' + esc(ki.proposition) + '</div>' +
                         '<span class="status-badge status-' + esc(statusKey) + '">' + esc(STATUS_LABELS[statusKey] || statusKey) + '</span>' +
-                        '<div class="ki-meta"><span>Maîtrise : ' + formatScore(ki.score) + '</span>' +
-                        '<span>Confiance : ' + formatScore(ki.confidence) + '</span></div>' +
+                        '<div class="ki-meta"><span>Confiance : ' + formatScore(ki.confidence) + '</span></div>' +
                         '</div>';
                 });
                 html += '</div>';

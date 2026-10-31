@@ -15,11 +15,8 @@
             {{ format_status(knowledge_item.status) }}
         </span>
         
-        {# Score et confiance #}
+        {# Confiance #}
         <div class="knowledge-item-scores">
-            <span class="score-item">
-                <strong>Maîtrise:</strong> {{ format_score(knowledge_item.score) }}
-            </span>
             <span class="score-item">
                 <strong>Confiance:</strong> {{ format_score(knowledge_item.confidence) }}
             </span>

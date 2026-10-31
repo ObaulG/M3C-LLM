@@ -145,6 +145,8 @@ async function selectDocument(docId, resId) {
     const pdfUrl = `http://localhost:8000/get_pdf/by_id?resource_id=${resId}`;
     loadPDF(pdfUrl);
 
+    showPriorReadWidget(resId, 'question_session.html');
+
     // Masquer le sélecteur et afficher le visualiseur
     documentSelector.style.display = 'none';
     pdfViewer.style.display = 'block';

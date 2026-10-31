@@ -78,6 +78,7 @@ from routers.auth import router as auth_router
 from mistral_api_key_manager import async_require_mistral_api_key
 from routers.observations import router as observations_router
 from routers.observations_admin import router as observations_admin_router
+from routers.knowledge_declarations import router as knowledge_declarations_router
 from routers.sessions import router as sessions_router
 from routers.evaluations import router as evaluations_router
 from routers.models import router as models_router
@@ -195,6 +196,7 @@ app.include_router(profile_router)
 app.include_router(auth_router)
 app.include_router(observations_router)
 app.include_router(observations_admin_router)
+app.include_router(knowledge_declarations_router)
 app.include_router(sessions_router)
 app.include_router(evaluations_router)
 app.include_router(question_answer_router)
