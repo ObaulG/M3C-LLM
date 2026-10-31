@@ -52,6 +52,29 @@
     .compare-column .col-meta { font-size: 12px; color: #666; font-weight: normal; }
     .compare-column .col-actions { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .compare-empty { color: #888; font-size: 13px; padding: 15px; text-align: center; }
+    .progress-container { margin-top: 15px; }
+    .progress-bar { height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); transition: width 0.3s; }
+    .progress-text { text-align: center; font-size: 12px; color: #666; margin-top: 5px; }
+    .job-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .job-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .job-id { font-weight: 600; color: #b74420; font-size: 14px; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-running { background: #cce5ff; color: #004085; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-failed { background: #f8d7da; color: #721c24; }
+    .status-completed_with_errors { background: #ffeeba; color: #856404; }
+    .status-cancelled { background: #e2e3e5; color: #383d41; }
+    .job-meta { font-size: 12px; color: #666; }
+    .job-parameters { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px; }
+    .job-parameters span { margin-right: 15px; }
+    .job-parameters strong { color: #b74420; }
+    .document-list { margin-top: 15px; }
+    .document-item { padding: 10px; margin: 5px 0; border-left: 3px solid #e0e0e0; background: #f8f9fa; border-radius: 4px; }
+    .document-item.completed { border-left-color: #28a745; }
+    .document-item.failed { border-left-color: #dc3545; }
+    .document-item.pending { border-left-color: #ffc107; }
     @media (max-width: 768px) { .compare-grid { grid-template-columns: 1fr; } }
     @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
 </style>
@@ -124,11 +147,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                        <input type="checkbox" id="allChunksToggle" onchange="onAllChunksToggle()">
+                    <label for="allChunksToggle" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; width:auto;">
                         <span>Générer sur l'ensemble des chunks du document sélectionné</span>
+                        <input type="checkbox" id="allChunksToggle" onchange="onAllChunksToggle()">
                     </label>
                     <div class="description">Lorsque cette option est activée, la génération parcourt tous les chunks du document (le chunk individuel n'est plus requis)</div>
+                    <div id="allChunksSourceSelector" style="display:none; margin-top:10px;">
+                        <label style="display:inline-flex; align-items:center; gap:6px; margin-right:20px; cursor:pointer;">
+                            <input type="radio" name="allChunksSource" value="chunks" checked>
+                            <span>À partir du texte des chunks</span>
+                        </label>
+                        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="radio" name="allChunksSource" value="questions">
+                            <span>À partir des questions disponibles</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -166,7 +199,22 @@
 
             <div class="loading" id="loadingIndicator">
                 <div class="spinner"></div>
-                <p>Génération en cours via le LLM, veuillez patienter...</p>
+                <p id="liveJobLabel">Génération en cours via le LLM, veuillez patienter...</p>
+                <div class="progress-container" id="jobProgressContainer" style="display:none;">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+                <div id="liveJobDetails" style="margin-top: 12px; font-size: 13px; color: #555; text-align: left;
+                    background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px;
+                    max-height: 220px; overflow-y: auto; display:none;">
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h3 class="section-title">Historique des Jobs</h3>
+                <div id="jobsContainer">
+                    <p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération lancé depuis cette page. Lancez une génération sur l'ensemble des chunks pour commencer.</p>
+                </div>
             </div>
 
             <div class="results-section" id="resultsSection" style="display:none;">
@@ -224,6 +272,8 @@
     const KNOWLEDGE_API = API_BASE + '/api/admin/knowledge-items';
     const DOCUMENTS_API = API_BASE + '/api/documents';
     const QUESTIONS_API = API_BASE + '/api/admin/questions';
+    let currentJobId = null;
+    let jobRefreshInterval = null;
     let currentDocumentId = null;
     let currentChunkId = null;
     let currentChunkContent = null;
@@ -448,6 +498,12 @@
         document.getElementById('generateBtn').disabled = allChunks;
         document.getElementById('generateFromQuestionsBtn').disabled = allChunks;
         document.getElementById('generateAllChunksBtn').disabled = !allChunks || !currentDocumentId;
+        document.getElementById('allChunksSourceSelector').style.display = allChunks ? 'block' : 'none';
+    }
+
+    function getAllChunksSource() {
+        const checked = document.querySelector('input[name="allChunksSource"]:checked');
+        return checked ? checked.value : 'chunks';
     }
 
     async function generateKnowledgeItemsForDocument() {
@@ -456,17 +512,16 @@
             return;
         }
         if (!document.getElementById('allChunksToggle').checked) {
-            showAlert('Cochez l\'option « Générer sur l\'ensemble des chunks » pour utiliser ce mode.', 'error');
+            showAlert("Cochez l'option « Générer sur l'ensemble des chunks » pour utiliser ce mode.", 'error');
             return;
         }
 
         const model = document.getElementById('modelSelect').value;
+        const source = getAllChunksSource();
         const generateBtn = document.getElementById('generateAllChunksBtn');
 
         generateBtn.disabled = true;
         generateBtn.textContent = 'Génération en cours...';
-        document.getElementById('loadingIndicator').classList.add('active');
-        document.getElementById('resultsSection').style.display = 'block';
 
         try {
             const response = await fetch(KNOWLEDGE_API + '/generate-for-document', {
@@ -474,7 +529,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     document_id: currentDocumentId,
-                    model: model
+                    model: model,
+                    source: source
                 })
             });
 
@@ -483,31 +539,227 @@
                 throw new Error('HTTP ' + response.status + ' : ' + errText);
             }
             const data = await response.json();
-            generatedItems = data.knowledge_items || [];
+            currentJobId = data.job_id;
 
-            const failedChunks = (data.chunk_statuses || []).filter(s => s.status === 'error');
-            document.getElementById('chunkColMeta').textContent =
-                `${data.count} item(s) — ${data.chunks_processed}/${data.chunks_total} chunk(s) — ${data.model} — ${data.generation_time}s`;
+            document.getElementById('resultsSection').style.display = 'none';
+            const loading = document.getElementById('loadingIndicator');
+            loading.classList.add('active');
+            document.getElementById('jobProgressContainer').style.display = 'block';
+            document.getElementById('liveJobDetails').style.display = 'block';
+            document.getElementById('liveJobDetails').innerHTML = '';
+            document.getElementById('liveJobLabel').textContent = 'Job créé, démarrage du traitement...';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            startJobAutoRefresh();
+        } catch (error) {
+            console.error('Erreur lancement job génération document:', error);
+            showAlert('Erreur lors du lancement de la génération : ' + error.message, 'error');
+            generateBtn.disabled = false;
+            generateBtn.textContent = '✨ Générer depuis tous les chunks du document';
+        }
+    }
 
-            renderGeneratedItems(generatedItems, 'knowledgeItemsContainer');
-            document.getElementById('resultsSection').style.display = 'block';
-            updateColumnButtons();
+    function startJobAutoRefresh() {
+        if (jobRefreshInterval) {
+            clearInterval(jobRefreshInterval);
+        }
+        refreshKnowledgeJob();
+        jobRefreshInterval = setInterval(async () => {
+            await refreshKnowledgeJob();
+        }, 2000);
+    }
 
-            if (failedChunks.length > 0) {
-                showAlert(`${generatedItems.length} knowledge_items générés, mais ${failedChunks.length} chunk(s) en erreur (ex: chunk ${failedChunks[0].chunk_id}).`, 'error');
-            } else if (generatedItems.length === 0) {
-                showAlert('Aucun knowledge_item extrait du document.', 'error');
-            } else {
-                showAlert(`${generatedItems.length} knowledge_items générés sur ${data.chunks_processed} chunk(s) du document.`, 'success');
+    function stopJobAutoRefresh() {
+        if (jobRefreshInterval) {
+            clearInterval(jobRefreshInterval);
+            jobRefreshInterval = null;
+        }
+    }
+
+    async function refreshKnowledgeJob() {
+        try {
+            if (!currentJobId) {
+                stopJobAutoRefresh();
+                return;
+            }
+            const response = await fetch(KNOWLEDGE_API + '/jobs/' + currentJobId);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            const job = await response.json();
+
+            document.getElementById('jobsContainer').innerHTML = renderKnowledgeJobCard(job);
+            updateKnowledgeJobProgress(job);
+
+            if (!['pending', 'running'].includes(job.status)) {
+                stopJobAutoRefresh();
             }
         } catch (error) {
-            console.error('Erreur génération document:', error);
-            showAlert('Erreur lors de la génération : ' + error.message, 'error');
-        } finally {
-            generateBtn.textContent = '✨ Générer depuis tous les chunks du document';
-            onAllChunksToggle();
-            document.getElementById('loadingIndicator').classList.remove('active');
+            console.error('Erreur lors du rafraîchissement du job:', error);
         }
+    }
+
+    function updateKnowledgeJobProgress(job) {
+        const loading = document.getElementById('loadingIndicator');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const label = document.getElementById('liveJobLabel');
+        const details = document.getElementById('liveJobDetails');
+        if (!loading || !progressFill || !progressText || !label || !details) return;
+
+        if (!['pending', 'running'].includes(job.status)) {
+            const statusText = getKnowledgeJobStatusText(job.status);
+            label.textContent = `Génération terminée (${statusText.toLowerCase()})`;
+            progressFill.style.width = '100%';
+            progressText.textContent = '100%';
+            const total = job.total_documents || 0;
+            const done = job.processed_documents || 0;
+            const items = Object.values(job.progress || {})
+                .reduce((sum, p) => sum + (p.items_generated || 0), 0);
+            const errors = (job.errors || []).length;
+            details.innerHTML =
+                `<div>📊 ${done}/${total} chunks traités — ${items} knowledge_item(s) généré(s)` +
+                (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
+
+            if (job.status === 'completed' && errors === 0) {
+                showAlert(`${items} knowledge_item(s) générés sur ${done} chunk(s) du document. ` +
+                    `⚠️ Les items générés en mode job ne sont pas affichés ci-dessus ; ` +
+                    `utilisez la sauvegarde depuis l'historique des jobs après intégration future.`, 'success');
+            } else if (job.status === 'failed') {
+                showAlert('Le job de génération a échoué : ' + (job.error_message || 'voir détails'), 'error');
+            } else {
+                showAlert(`${items} knowledge_item(s) générés, ${errors} erreur(s) rencontrée(s).`, 'error');
+            }
+
+            setTimeout(() => loading.classList.remove('active'), 4000);
+            document.getElementById('generateAllChunksBtn').textContent = '✨ Générer depuis tous les chunks du document';
+            onAllChunksToggle();
+            return;
+        }
+
+        loading.classList.add('active');
+
+        const total = job.total_documents || 0;
+        const done = job.processed_documents || 0;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        progressFill.style.width = percent + '%';
+        progressText.textContent = `${percent}% (${done}/${total} chunks)`;
+
+        const params = job.parameters || {};
+        const cible = params.document_id ? `document ${params.document_id}` : 'N/A';
+        const sourceTxt = params.source === 'questions' ? 'questions disponibles' : 'texte des chunks';
+        label.textContent = `Génération en cours (${cible}, source : ${sourceTxt}) — ${getKnowledgeJobStatusText(job.status).toLowerCase()}...`;
+
+        const progressEntries = Object.values(job.progress || {});
+        const itemsGenerated = progressEntries.reduce((sum, p) => sum + (p.items_generated || 0), 0);
+        const completedChunks = progressEntries.filter(p => p.status === 'completed').length;
+        const emptyChunks = progressEntries.filter(p => p.status === 'empty').length;
+        const failedChunks = progressEntries.filter(p => p.status === 'failed').length;
+
+        let detailsHtml =
+            `<div>📊 ${done}/${total} chunks traités — ✅ ${completedChunks} générés` +
+            (emptyChunks > 0 ? ` — ⏭️ ${emptyChunks} vides` : '') +
+            (failedChunks > 0 ? ` — ⚠️ ${failedChunks} en échec` : '') +
+            ` — 🧠 ${itemsGenerated} knowledge_item(s) généré(s)</div>`;
+
+        const lastChunks = progressEntries.slice(-5);
+        if (lastChunks.length > 0) {
+            detailsHtml += '<div style="margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;"><strong>Derniers chunks traités :</strong>';
+            lastChunks.forEach(p => {
+                const icon = p.status === 'completed' ? '✅' : (p.status === 'empty' ? '⏭️' : (p.status === 'failed' ? '❌' : '⏳'));
+                const info = p.status === 'empty' ? 'aucune source disponible' : `${p.items_generated || 0} item(s)`;
+                detailsHtml += `<div>${icon} Chunk ${p.chunk_id || 'N/A'} — ${info}` +
+                    (p.error ? ` — ⚠️ ${escapeHtml(p.error)}` : '') + '</div>';
+            });
+            detailsHtml += '</div>';
+        }
+
+        const errors = job.errors || [];
+        if (errors.length > 0) {
+            detailsHtml += `<div style="margin-top: 8px; color: #dc3545;"><strong>⚠️ ${errors.length} erreur(s) :</strong>`;
+            errors.slice(-3).forEach(e => {
+                detailsHtml += `<div>• ${escapeHtml(e)}</div>`;
+            });
+            detailsHtml += '</div>';
+        }
+
+        details.innerHTML = detailsHtml;
+    }
+
+    function getKnowledgeJobStatusText(status) {
+        const statusMap = {
+            'pending': 'En attente',
+            'running': 'En cours',
+            'completed': 'Terminé',
+            'completed_with_errors': 'Terminé (avec erreurs)',
+            'failed': 'Échoué',
+            'cancelled': 'Annulé'
+        };
+        return statusMap[status] || status;
+    }
+
+    function getKnowledgeJobStatusClass(status) {
+        const classMap = {
+            'pending': 'status-pending',
+            'running': 'status-running',
+            'completed': 'status-completed',
+            'completed_with_errors': 'status-completed_with_errors',
+            'failed': 'status-failed',
+            'cancelled': 'status-cancelled'
+        };
+        return classMap[status] || 'status-pending';
+    }
+
+    function renderKnowledgeJobCard(job) {
+        const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
+        const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
+        const statusText = getKnowledgeJobStatusText(job.status);
+        const statusClass = getKnowledgeJobStatusClass(job.status);
+
+        let parametersHtml = '';
+        if (job.parameters && Object.keys(job.parameters).length > 0) {
+            parametersHtml = '<div class="job-parameters"><strong>Paramètres:</strong>';
+            parametersHtml += `<span><strong>Document:</strong> ${job.parameters.document_id || 'N/A'}</span>`;
+            parametersHtml += `<span><strong>Modèle:</strong> ${job.parameters.model_name || 'N/A'}</span>`;
+            parametersHtml += `<span><strong>Source:</strong> ${job.parameters.source === 'questions' ? 'questions' : 'chunks'}</span>`;
+            parametersHtml += '</div>';
+        }
+
+        let progressHtml = '';
+        if (job.progress && Object.keys(job.progress).length > 0) {
+            progressHtml = '<div class="document-list"><strong>Chunks:</strong>';
+            for (const [chunkId, progress] of Object.entries(job.progress)) {
+                const docClass = progress.status === 'completed' ? 'completed' : progress.status === 'failed' ? 'failed' : 'pending';
+                progressHtml += `
+                    <div class="document-item ${docClass}">
+                        <div class="doc-id">Chunk ID: ${progress.chunk_id || chunkId}</div>
+                        <div class="doc-stats">
+                            ✓ ${progress.items_generated || 0} item(s) | Statut: ${progress.status || 'N/A'}
+                        </div>
+                        ${progress.error ? `<div class="doc-error">❌ ${escapeHtml(progress.error)}</div>` : ''}
+                    </div>
+                `;
+            }
+            progressHtml += '</div>';
+        }
+
+        return `
+            <div class="job-card">
+                <div class="job-header">
+                    <span class="job-id">Job: ${job.job_id.substring(0, 8)}...</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="job-meta">
+                    Créé: ${createdDate} | Mis à jour: ${updatedDate} |
+                    ${job.processed_documents || 0}/${job.total_documents || 0} chunks
+                </div>
+                ${parametersHtml}
+                ${progressHtml}
+                ${job.status === 'running' ?
+                    '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitement en cours...</div>' : ''}
+            </div>
+        `;
     }
 
     async function generateKnowledgeItems() {

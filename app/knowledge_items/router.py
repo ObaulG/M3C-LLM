@@ -11,6 +11,7 @@ Ce router permet de :
 La persistance s'appuie sur la fonction existante
 save_knowledge_candidates_to_db du module agents.knowledge_element_extractor.
 """
+import asyncio
 import time
 from typing import Optional, List
 
@@ -55,10 +56,20 @@ from agents.knowledge_item_agent import (
     QAItemSchema,
 )
 
+from .generation_job_services import (
+    create_knowledge_generation_job,
+    get_knowledge_generation_job,
+    get_all_knowledge_generation_jobs,
+    get_latest_knowledge_generation_job,
+    process_knowledge_generation_job,
+)
 from .models import (
     KnowledgeGenerationRequest,
     KnowledgeGenerationForDocumentRequest,
     KnowledgeGenerationForDocumentResponse,
+    KnowledgeGenerationJobModel,
+    KnowledgeGenerationJobListResponse,
+    KnowledgeGenerationJobCreateResponse,
     ChunkGenerationStatusModel,
     KnowledgeGenerationFromQuestionsRequest,
     KnowledgeGenerationResponse,
@@ -265,80 +276,95 @@ async def generate_knowledge_items(request: KnowledgeGenerationRequest):
 
 @router.post(
     "/generate-for-document",
-    response_model=KnowledgeGenerationForDocumentResponse,
-    summary="Génère des knowledge_items sur l'ensemble des chunks d'un document",
-    description="Extrait des knowledge_items (propositions vérifiables + entités + thèmes + "
-                "source) à partir de tous les chunks d'un document, chunk par chunk, via des "
-                "appels LLM (agents.knowledge_item_agent.generate_knowledge_items_from_chunk). "
-                "Un échec sur un chunk n'interrompt pas la génération : le statut de chaque "
-                "chunk est retourné dans chunk_statuses.",
+    response_model=KnowledgeGenerationJobCreateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Lance un job de génération de knowledge_items sur l'ensemble des chunks d'un document",
+    description="Crée un job de génération de knowledge_items pour tous les chunks d'un document, "
+                "exécuté en arrière-plan. La source peut être le texte des chunks "
+                "(source='chunks') ou les questions/réponses disponibles (source='questions'). "
+                "La progression peut être suivie en direct via les endpoints /jobs.",
 )
 async def generate_knowledge_items_for_document(request: KnowledgeGenerationForDocumentRequest):
-    """Génère des knowledge_items sur l'ensemble des chunks d'un document via un LLM."""
-    start_time = time.time()
-
-    try:
-        async with await get_db_connection() as conn:
-            chunks = await get_all_text_chunks(conn, request.document_id)
-    except Exception as e:
+    """Crée un job de génération de knowledge_items sur l'ensemble des chunks
+    d'un document, exécuté en arrière-plan."""
+    if request.source not in ("chunks", "questions"):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la récupération des chunks du document: {str(e)}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="source invalide : utiliser 'chunks' ou 'questions'",
         )
 
-    if not chunks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Aucun chunk trouvé pour le document {request.document_id}",
-        )
-
-    knowledge_items: List = []
-    chunk_statuses: List[ChunkGenerationStatusModel] = []
-
-    for chunk in chunks:
-        chunk_id = chunk["id"]
-        text = chunk.get("content", "")
-        if not text or not text.strip():
-            chunk_statuses.append(ChunkGenerationStatusModel(
-                chunk_id=str(chunk_id), status="empty", count=0,
-            ))
-            continue
-
-        try:
-            schemas = await generate_knowledge_items_from_chunk(
-                text=text,
-                chunk_id=str(chunk_id),
-                document_id=str(request.document_id),
-                page=chunk.get("num_page"),
-                position_in_page=chunk.get("position_in_page"),
-                model=request.model,
-            )
-            items = [_schema_to_model(s) for s in schemas]
-            knowledge_items.extend(items)
-            chunk_statuses.append(ChunkGenerationStatusModel(
-                chunk_id=str(chunk_id), status="success", count=len(items),
-            ))
-        except Exception as e:
-            print(f"Erreur lors de l'extraction des knowledge_items du chunk {chunk_id}: {e}")
-            chunk_statuses.append(ChunkGenerationStatusModel(
-                chunk_id=str(chunk_id), status="error", error=str(e),
-            ))
-
-    generation_time = time.time() - start_time
-    chunks_processed = sum(1 for s in chunk_statuses if s.status == "success")
-    chunks_failed = sum(1 for s in chunk_statuses if s.status == "error")
-
-    return KnowledgeGenerationForDocumentResponse(
+    job_id = create_knowledge_generation_job(
         document_id=request.document_id,
         model=request.model,
-        knowledge_items=knowledge_items,
-        count=len(knowledge_items),
-        chunks_total=len(chunks),
-        chunks_processed=chunks_processed,
-        chunks_failed=chunks_failed,
-        chunk_statuses=chunk_statuses,
-        generation_time=round(generation_time, 3),
+        source=request.source,
     )
+
+    job = get_knowledge_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la création du job",
+        )
+
+    asyncio.create_task(process_knowledge_generation_job(job_id))
+
+    return KnowledgeGenerationJobCreateResponse(
+        job_id=job_id,
+        message="Job de génération de knowledge_items créé avec succès",
+        job=KnowledgeGenerationJobModel(**job),
+    )
+
+
+@router.get(
+    "/jobs",
+    response_model=KnowledgeGenerationJobListResponse,
+    summary="Liste tous les jobs de génération de knowledge_items",
+    description="Retourne la liste complète des jobs de génération de knowledge_items "
+                "sur l'ensemble des chunks d'un document.",
+)
+async def list_knowledge_generation_jobs():
+    """Liste tous les jobs de génération de knowledge_items."""
+    jobs = get_all_knowledge_generation_jobs()
+    job_list = [KnowledgeGenerationJobModel(**job) for job in jobs.values()]
+    return KnowledgeGenerationJobListResponse(
+        jobs=job_list,
+        count=len(job_list),
+    )
+
+
+@router.get(
+    "/jobs/latest",
+    response_model=KnowledgeGenerationJobModel,
+    summary="Récupère le dernier job de génération de knowledge_items",
+    description="Retourne le job de génération de knowledge_items le plus récent.",
+)
+async def get_latest_knowledge_generation_job_endpoint():
+    """Récupère le dernier job de génération de knowledge_items."""
+    job = get_latest_knowledge_generation_job()
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucun job de génération de knowledge_items trouvé",
+        )
+    return KnowledgeGenerationJobModel(**job)
+
+
+@router.get(
+    "/jobs/{job_id}",
+    response_model=KnowledgeGenerationJobModel,
+    summary="Récupère un job de génération de knowledge_items par son ID",
+    description="Retourne les détails et la progression d'un job de génération "
+                "de knowledge_items, permettant le suivi en direct.",
+)
+async def get_knowledge_generation_job_by_id(job_id: str):
+    """Récupère un job de génération de knowledge_items par son ID."""
+    job = get_knowledge_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job {job_id} introuvable",
+        )
+    return KnowledgeGenerationJobModel(**job)
 
 
 @router.post(
