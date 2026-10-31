@@ -21,6 +21,7 @@ from database.database import (
     get_knowledge_items_by_theme,
     get_user_knowledge_states_for_items,
     record_knowledge_declaration,
+    record_document_prior_read_declaration,
 )
 
 router = APIRouter(prefix="/api/knowledge-declarations", tags=["Knowledge Declarations"])
@@ -75,10 +76,70 @@ def _resolve_user_identifier(
     return None, None
 
 
+class DocumentPriorReadRequest(BaseModel):
+    resource_id: int = Field(..., description="Identifiant du document (table value, resource_id)", ge=1)
+    already_read: bool = Field(..., description="True si le visiteur declare avoir deja consulte ou lu le document avant sa visite")
+    anonymous_id: Optional[str] = Field(None, description="Identifiant anonyme persistant (localStorage), ignore si l'utilisateur est connecte", max_length=100)
+    metadata: Optional[Dict] = Field(None, description="Metadonnees supplementaires (page d'origine, etc.)")
+
+
+class DocumentPriorReadResponse(BaseModel):
+    observation_id: int = Field(..., description="Identifiant de l'observation declarative creee")
+    resource_id: int = Field(..., description="Identifiant du document concerne")
+    already_read: bool = Field(..., description="Valeur declaree enregistree")
+
+
+@router.post(
+    "/document-prior-read",
+    response_model=DocumentPriorReadResponse,
+    summary="Enregistre la declaration de lecture prealable d'un document",
+)
+async def declare_document_prior_read(
+    request: DocumentPriorReadRequest,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """
+    Enregistre la reponse d'un visiteur indiquant s'il a deja consulte ou lu
+    un document avant sa visite. Visiteurs connectes et anonymes acceptes.
+    Le bouton Fermer du widget n'envoie aucun appel a cette route.
+    """
+    user_id, obs_user_id = _resolve_user_identifier(
+        m3c_api_key, authorization, request.anonymous_id
+    )
+    if obs_user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Aucun identifiant disponible : veuillez vous connecter ou fournir un anonymous_id.",
+        )
+
+    async with await get_db_connection() as conn:
+        observation_id = await record_document_prior_read_declaration(
+            conn,
+            user_id=obs_user_id,
+            resource_id=request.resource_id,
+            already_read=request.already_read,
+            anonymous_id=request.anonymous_id if user_id is None else None,
+            metadata=request.metadata,
+        )
+
+    if observation_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de l'enregistrement de la declaration.",
+        )
+
+    return DocumentPriorReadResponse(
+        observation_id=observation_id,
+        resource_id=request.resource_id,
+        already_read=request.already_read,
+    )
+
+
 @router.get(
     "/themes",
     response_model=List[ThemeOption],
-    summary="Liste les thmes ayant des lments de connaissance",
+    summary="Liste les themes ayant des elements de connaissance",
 )
 async def list_themes_with_knowledge(
     search: Optional[str] = Query(None, description="Filtre optionnel sur le nom du thme", max_length=200),

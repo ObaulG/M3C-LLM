@@ -2974,3 +2974,74 @@ async def record_knowledge_declaration(
         print(f"Erreur enregistrement dclaration de connaissance pour user_id={user_id}: {e}")
         await conn.rollback()
         return None
+
+
+async def record_document_prior_read_declaration(
+    conn,
+    user_id: str,
+    resource_id: int,
+    already_read: bool,
+    anonymous_id: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> Optional[int]:
+    """
+    Enregistre la declaration d'un visiteur indiquant s'il a deja consulte
+    ou lu un document avant sa visite. Observation declarative
+    (specific_type='document_prior_read') sans cible knowledge/theme/entity :
+    le document est identifie par resource_id dans le contexte et le payload.
+
+    Args:
+        conn: Connexion MySQL.
+        user_id: Identifiant de l'utilisateur (str(user_id) ou identifiant anonyme).
+        resource_id: Identifiant du document (table value, resource_id).
+        already_read: True si le visiteur declare avoir deja lu/consulte le document.
+        anonymous_id: Identifiant anonyme persistant si visiteur non connecte.
+        metadata: Metadonnees supplementaires (page d'origine, etc.).
+
+    Returns:
+        ID de l'observation creee, ou None en cas d'erreur.
+    """
+    context: Dict[str, Any] = dict(metadata or {})
+    context.update({
+        "resource_id": resource_id,
+        "already_read": already_read,
+    })
+    if anonymous_id:
+        context["anonymous_id"] = anonymous_id
+
+    payload = {
+        "event": "document_prior_read_declaration",
+        "resource_id": resource_id,
+        "already_read": already_read,
+        "origin": "visitor_declaration",
+    }
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO observations
+                    (user_id, observation_type, specific_type, timestamp, context, confidence, is_raw)
+                VALUES (%s, 'declarative', 'document_prior_read', CURRENT_TIMESTAMP, %s, 0.6, TRUE)
+                """,
+                (user_id[:100], json.dumps(context)),
+            )
+            observation_id = cur.lastrowid
+
+            await cur.execute(
+                """
+                INSERT INTO observation_payloads (observation_id, payload_type, payload, metadata)
+                VALUES (%s, 'structured', %s, %s)
+                """,
+                (
+                    observation_id,
+                    json.dumps(payload),
+                    json.dumps({"origin": "visitor_declaration"}),
+                ),
+            )
+        await conn.commit()
+        return observation_id
+    except Exception as e:
+        print(f"Erreur enregistrement declaration de lecture prealable pour user_id={user_id}: {e}")
+        await conn.rollback()
+        return None

@@ -247,6 +247,7 @@ function createShowPdfButton(source) {
         pdfIframe.height = '100%';
         pdfIframe.style.border = 'none';
         divIframe.style.display = "flex";
+        showPriorReadWidget(resource_id, 'm3c-chatbot.html');
 
         await recordDocumentOpen(resource_id, numPage);
     };
