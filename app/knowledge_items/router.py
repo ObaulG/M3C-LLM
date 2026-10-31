@@ -292,27 +292,74 @@ async def generate_knowledge_items_for_document(request: KnowledgeGenerationForD
             detail=f"Aucun chunk trouvé pour le document {request.document_id}",
         )
 
+    if request.source not in ("chunks", "questions"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="source invalide : utiliser 'chunks' ou 'questions'",
+        )
+
     knowledge_items: List = []
     chunk_statuses: List[ChunkGenerationStatusModel] = []
 
     for chunk in chunks:
         chunk_id = chunk["id"]
         text = chunk.get("content", "")
-        if not text or not text.strip():
-            chunk_statuses.append(ChunkGenerationStatusModel(
-                chunk_id=str(chunk_id), status="empty", count=0,
-            ))
-            continue
+
+        if request.source == "chunks":
+            if not text or not text.strip():
+                chunk_statuses.append(ChunkGenerationStatusModel(
+                    chunk_id=str(chunk_id), status="empty", count=0,
+                ))
+                continue
+        else:
+            try:
+                async with await get_db_connection() as conn:
+                    questions = await get_questions_by_chunk_id(conn, str(chunk_id))
+            except Exception as e:
+                print(f"Erreur lors de la récupération des questions du chunk {chunk_id}: {e}")
+                chunk_statuses.append(ChunkGenerationStatusModel(
+                    chunk_id=str(chunk_id), status="error", error=str(e),
+                ))
+                continue
+            if not questions:
+                chunk_statuses.append(ChunkGenerationStatusModel(
+                    chunk_id=str(chunk_id), status="empty", count=0,
+                ))
+                continue
 
         try:
-            schemas = await generate_knowledge_items_from_chunk(
-                text=text,
-                chunk_id=str(chunk_id),
-                document_id=str(request.document_id),
-                page=chunk.get("num_page"),
-                position_in_page=chunk.get("position_in_page"),
-                model=request.model,
-            )
+            if request.source == "chunks":
+                schemas = await generate_knowledge_items_from_chunk(
+                    text=text,
+                    chunk_id=str(chunk_id),
+                    document_id=str(request.document_id),
+                    page=chunk.get("num_page"),
+                    position_in_page=chunk.get("position_in_page"),
+                    model=request.model,
+                )
+            else:
+                qa_items = [
+                    QAItemSchema(
+                        question_id=q.get("question_id"),
+                        question=q.get("content", ""),
+                        answers=[a.get("content", "") for a in (q.get("answers") or [])],
+                    )
+                    for q in questions
+                    if q.get("content") and q.get("content").strip()
+                ]
+                if not qa_items:
+                    chunk_statuses.append(ChunkGenerationStatusModel(
+                        chunk_id=str(chunk_id), status="empty", count=0,
+                    ))
+                    continue
+                schemas = await generate_knowledge_items_from_questions(
+                    qa_items=qa_items,
+                    chunk_id=str(chunk_id),
+                    document_id=str(request.document_id),
+                    page=chunk.get("num_page"),
+                    position_in_page=chunk.get("position_in_page"),
+                    model=request.model,
+                )
             items = [_schema_to_model(s) for s in schemas]
             knowledge_items.extend(items)
             chunk_statuses.append(ChunkGenerationStatusModel(

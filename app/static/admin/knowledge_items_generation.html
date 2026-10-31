@@ -124,11 +124,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                        <input type="checkbox" id="allChunksToggle" onchange="onAllChunksToggle()">
+                    <label for="allChunksToggle" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; width:auto;">
                         <span>Générer sur l'ensemble des chunks du document sélectionné</span>
+                        <input type="checkbox" id="allChunksToggle" onchange="onAllChunksToggle()">
                     </label>
                     <div class="description">Lorsque cette option est activée, la génération parcourt tous les chunks du document (le chunk individuel n'est plus requis)</div>
+                    <div id="allChunksSourceSelector" style="display:none; margin-top:10px;">
+                        <label style="display:inline-flex; align-items:center; gap:6px; margin-right:20px; cursor:pointer;">
+                            <input type="radio" name="allChunksSource" value="chunks" checked>
+                            <span>À partir du texte des chunks</span>
+                        </label>
+                        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="radio" name="allChunksSource" value="questions">
+                            <span>À partir des questions disponibles</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -448,6 +458,12 @@
         document.getElementById('generateBtn').disabled = allChunks;
         document.getElementById('generateFromQuestionsBtn').disabled = allChunks;
         document.getElementById('generateAllChunksBtn').disabled = !allChunks || !currentDocumentId;
+        document.getElementById('allChunksSourceSelector').style.display = allChunks ? 'block' : 'none';
+    }
+
+    function getAllChunksSource() {
+        const checked = document.querySelector('input[name="allChunksSource"]:checked');
+        return checked ? checked.value : 'chunks';
     }
 
     async function generateKnowledgeItemsForDocument() {
@@ -474,7 +490,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     document_id: currentDocumentId,
-                    model: model
+                    model: model,
+                    source: getAllChunksSource()
                 })
             });
 

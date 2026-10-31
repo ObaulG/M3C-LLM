@@ -94,6 +94,11 @@ class KnowledgeGenerationForDocumentRequest(BaseModel):
         default="mistral-medium",
         description="Modèle LLM à utiliser pour l'extraction",
     )
+    source: str = Field(
+        default="chunks",
+        description="Source de la génération : 'chunks' (texte des chunks) ou "
+                    "'questions' (questions/réponses disponibles pour chaque chunk)",
+    )
 
 
 class ChunkGenerationStatusModel(BaseModel):
