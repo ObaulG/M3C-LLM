@@ -3308,14 +3308,17 @@ async def get_all_questions_for_indexing() -> List[Dict]:
                 SELECT
                     q.question_id,
                     q.content,
-                    q.document_id,
+                    GROUP_CONCAT(DISTINCT tc.document_id) as document_ids,
                     q.status,
                     q.difficulty_level,
                     q.created_at,
                     qa.content as main_answer
                 FROM text_questions q
                 LEFT JOIN text_question_answers qa ON q.question_id = qa.question_id AND qa.is_correct = TRUE
+                LEFT JOIN text_question_chunks qc ON q.question_id = qc.question_id
+                LEFT JOIN text_chunks tc ON qc.chunk_id = tc.id
                 WHERE q.status IN ('generated', 'validated', 'pending')
+                GROUP BY q.question_id, q.content, q.status, q.difficulty_level, q.created_at, qa.content
             """)
             rows = await cur.fetchall()
 
@@ -3323,7 +3326,8 @@ async def get_all_questions_for_indexing() -> List[Dict]:
                 {
                     "question_id": row[0],
                     "content": row[1],
-                    "document_id": row[2],
+                    "document_id": row[2].split(",")[0] if row[2] else None,
+                    "document_ids": row[2].split(",") if row[2] else [],
                     "status": row[3],
                     "difficulty_level": row[4],
                     "created_at": row[5],
