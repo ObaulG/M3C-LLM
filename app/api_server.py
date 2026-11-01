@@ -86,6 +86,8 @@ from routers.questions_admin import router as questions_admin_router
 from routers.feedback import router as feedback_router
 # Import du router de profil utilisateur
 from profile.router import router as profile_router
+# Import du router de gestion des sessions de questions
+from routers.question_sessions import router as question_sessions_router
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -198,6 +200,7 @@ app.include_router(observations_router)
 app.include_router(observations_admin_router)
 app.include_router(knowledge_declarations_router)
 app.include_router(sessions_router)
+app.include_router(question_sessions_router)
 app.include_router(evaluations_router)
 app.include_router(question_answer_router)
 app.include_router(models_router)

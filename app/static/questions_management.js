@@ -2333,3 +2333,522 @@ async function bulkGenerateAnswers() {
 
     await loadQuestions(currentDocumentId);
 }
+
+// ============================================================================
+// GESTION DES SESSIONS DE QUESTIONS
+// ============================================================================
+
+// Variables globales pour la gestion des sessions
+let currentEditingSession = null;
+let currentDocumentSessions = [];
+let availableQuestions = [];
+let selectedQuestionsForAddition = new Set();
+
+// Ouvre la modal de gestion des sessions
+function openSessionsModal() {
+    if (!currentDocumentId) {
+        alert("Veuillez d'abord sélectionner un document.");
+        return;
+    }
+    loadSessionsForDocument(currentDocumentId);
+    document.getElementById('sessionsModal').classList.add('active');
+}
+
+// Ferme la modal de gestion des sessions
+function closeSessionsModal() {
+    document.getElementById('sessionsModal').classList.remove('active');
+    document.getElementById('sessionEditor').style.display = 'none';
+}
+
+// Charge les sessions pour un document
+async function loadSessionsForDocument(documentId) {
+    try {
+        const response = await fetch(`/api/question-sessions/document/${documentId}`);
+        if (response.ok) {
+            currentDocumentSessions = await response.json();
+            renderSessionsList();
+        } else {
+            console.error("Erreur lors du chargement des sessions:", response.status);
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+    }
+}
+
+// Affiche la liste des sessions
+function renderSessionsList() {
+    const sessionsListElement = document.getElementById('sessionsList');
+    if (!sessionsListElement) return;
+
+    if (currentDocumentSessions.length === 0) {
+        sessionsListElement.innerHTML = '<p>Aucune session définie pour ce document. <button class="btn btn-primary" onclick="createNewSession()">Créer une nouvelle session</button></p>';
+        return;
+    }
+
+    let html = `
+        <div class="sessions-header">
+            <h3>Sessions pour ce document</h3>
+            <button class="btn btn-primary" onclick="createNewSession()">+ Nouvelle Session</button>
+        </div>
+    `;
+
+    currentDocumentSessions.forEach(session => {
+        const questionsCount = session.questions ? session.questions.length : 0;
+        const createdAt = new Date(session.created_at).toLocaleDateString('fr-FR');
+        html += `
+            <div class="session-item" onclick="editSession(${session.session_id})">
+                <div class="session-info">
+                    <div class="session-title">${escapeHtml(session.title)}</div>
+                    <div class="session-description">${escapeHtml(session.description || 'Aucune description')}</div>
+                    <div class="session-meta">
+                        <span>${questionsCount} questions</span>
+                        <span>Créée le ${createdAt}</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button class="btn btn-edit-session" onclick="event.stopPropagation(); editSession(${session.session_id})">Éditer</button>
+                    <button class="btn btn-delete-session" onclick="event.stopPropagation(); deleteSession(${session.session_id})">Supprimer</button>
+                </div>
+            </div>
+        `;
+    });
+
+    sessionsListElement.innerHTML = html;
+}
+
+// Crée une nouvelle session
+function createNewSession() {
+    currentEditingSession = {
+        session_id: null,
+        title: "Nouvelle Session",
+        description: "",
+        document_id: currentDocumentId,
+        questions: []
+    };
+    openEditSessionModal();
+}
+
+// Ouvre la modal d'édition de session
+function openEditSessionModal() {
+    document.getElementById('editSessionModal').classList.add('active');
+    document.getElementById('sessionTitle').value = currentEditingSession.title;
+    document.getElementById('sessionDescription').value = currentEditingSession.description || "";
+    renderSessionQuestions();
+    setupDragAndDrop();
+}
+
+// Ferme la modal d'édition de session
+function closeEditSessionModal() {
+    document.getElementById('editSessionModal').classList.remove('active');
+    currentEditingSession = null;
+}
+
+// Affiche les questions de la session en cours d'édition
+function renderSessionQuestions() {
+    const container = document.getElementById('sessionQuestionsContainer');
+    if (!container) return;
+
+    if (currentEditingSession.questions.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center;">Aucune question dans cette session. Ajoutez-en avec le bouton ci-dessous.</p>';
+        return;
+    }
+
+    let html = '';
+    currentEditingSession.questions.forEach((q, index) => {
+        const displayContent = q.content.length > 100
+            ? escapeHtml(q.content.substring(0, 100)) + '...'
+            : escapeHtml(q.content);
+        const page = q.page || q.metadata?.page || "N/A";
+
+        html += `
+            <div class="session-question-item" draggable="true" data-question-id="${q.question_id}">
+                <div class="question-content">
+                    <span class="question-id">[ID: ${q.question_id}]</span>
+                    <span class="question-page">[Page: ${page}]</span>
+                    <span class="question-text">${displayContent}</span>
+                </div>
+                <button class="remove-question-btn" onclick="removeQuestionFromSession(${q.question_id}, event)">×</button>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Charge une session pour édition
+async function editSession(sessionId) {
+    try {
+        const response = await fetch(`/api/question-sessions/${sessionId}`);
+        if (response.ok) {
+            currentEditingSession = await response.json();
+            openEditSessionModal();
+        } else {
+            console.error("Erreur lors du chargement de la session:", response.status);
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+    }
+}
+
+// Supprime une session
+async function deleteSession(sessionId) {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette session ?")) {
+        return;
+    }
+    try {
+        const response = await fetch(`/api/question-sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.ok) {
+            loadSessionsForDocument(currentDocumentId);
+        } else {
+            alert("Erreur lors de la suppression de la session.");
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la suppression de la session.");
+    }
+}
+
+// Supprime une question de la session
+function removeQuestionFromSession(questionId, event) {
+    event.stopPropagation();
+    if (!currentEditingSession) return;
+
+    currentEditingSession.questions = currentEditingSession.questions.filter(
+        q => q.question_id !== questionId
+    );
+    renderSessionQuestions();
+}
+
+// Sauvegarde la session
+async function saveSession() {
+    if (!currentEditingSession) return;
+
+    const title = document.getElementById('sessionTitle').value.trim();
+    const description = document.getElementById('sessionDescription').value.trim();
+
+    if (!title) {
+        alert("Le titre de la session est obligatoire.");
+        return;
+    }
+
+    currentEditingSession.title = title;
+    currentEditingSession.description = description;
+
+    // Extraire l'ordre des questions depuis le DOM
+    const questionElements = document.querySelectorAll('#sessionQuestionsContainer .session-question-item');
+    const orderedQuestionIds = Array.from(questionElements).map(el => parseInt(el.dataset.questionId));
+
+    // Mettre à jour l'ordre dans currentEditingSession
+    const questionsMap = new Map(currentEditingSession.questions.map(q => [q.question_id, q]));
+    currentEditingSession.questions = orderedQuestionIds.map((id, index) => ({
+        ...questionsMap.get(id),
+        order_index: index
+    }));
+
+    try {
+        const url = currentEditingSession.session_id
+            ? `/api/question-sessions/${currentEditingSession.session_id}`
+            : `/api/question-sessions/`;
+        const method = currentEditingSession.session_id ? 'PUT' : 'POST';
+
+        const requestData = {
+            title: currentEditingSession.title,
+            description: currentEditingSession.description,
+            document_id: currentEditingSession.document_id,
+            question_ids: orderedQuestionIds
+        };
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (response.ok) {
+            const savedSession = await response.json();
+            closeEditSessionModal();
+            loadSessionsForDocument(currentDocumentId);
+        } else {
+            alert("Erreur lors de la sauvegarde de la session.");
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la sauvegarde de la session.");
+    }
+}
+
+// Ouvre la modal pour ajouter des questions
+function showAddQuestionsModal() {
+    if (!currentEditingSession) return;
+    loadAvailableQuestions();
+    document.getElementById('addQuestionsModal').classList.add('active');
+}
+
+// Ferme la modal pour ajouter des questions
+function closeAddQuestionsModal() {
+    document.getElementById('addQuestionsModal').classList.remove('active');
+    selectedQuestionsForAddition.clear();
+}
+
+// Charge les questions disponibles (filtrées)
+async function loadAvailableQuestions() {
+    try {
+        // Récupérer toutes les questions du document
+        const response = await fetch(`/api/questions?document_id=${currentDocumentId}`);
+        if (response.ok) {
+            const data = await response.json();
+            availableQuestions = data.questions || [];
+
+            // Exclure les questions déjà dans la session
+            const sessionQuestionIds = new Set(
+                currentEditingSession.questions.map(q => q.question_id)
+            );
+            availableQuestions = availableQuestions.filter(
+                q => !sessionQuestionIds.has(q.question_id)
+            );
+
+            renderAvailableQuestions();
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+    }
+}
+
+// Affiche les questions disponibles
+function renderAvailableQuestions() {
+    const container = document.getElementById('availableQuestionsContainer');
+    if (!container) return;
+
+    if (availableQuestions.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center;">Aucune question disponible à ajouter.</p>';
+        return;
+    }
+
+    let html = '';
+    availableQuestions.forEach(q => {
+        const isSelected = selectedQuestionsForAddition.has(q.question_id);
+        const displayContent = q.content.length > 150
+            ? escapeHtml(q.content.substring(0, 150)) + '...'
+            : escapeHtml(q.content);
+        const page = q.page || q.metadata?.page || "N/A";
+
+        html += `
+            <div class="available-question-item ${isSelected ? 'selected' : ''} no-edit-buttons"
+                 data-question-id="${q.question_id}"
+                 onclick="toggleSelectQuestion(${q.question_id})">
+                <div class="question-header">
+                    <div>
+                        <span class="question-id">[ID: ${q.question_id}]</span>
+                        <span class="question-page">[Page: ${page}]</span>
+                    </div>
+                    <button class="add-question-btn" onclick="event.stopPropagation(); addQuestionToSessionDirectly(${q.question_id})">+ Ajouter</button>
+                </div>
+                <div class="question-content">${displayContent}</div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Sélectionne/désélectionne une question
+function toggleSelectQuestion(questionId) {
+    if (selectedQuestionsForAddition.has(questionId)) {
+        selectedQuestionsForAddition.delete(questionId);
+    } else {
+        selectedQuestionsForAddition.add(questionId);
+    }
+    renderAvailableQuestions();
+}
+
+// Ajoute une question à la session directement (par clic)
+function addQuestionToSessionDirectly(questionId) {
+    if (!currentEditingSession) return;
+
+    // Vérifier que la question n'est pas déjà dans la session
+    if (currentEditingSession.questions.some(q => q.question_id == questionId)) {
+        alert("Cette question est déjà dans la session.");
+        return;
+    }
+
+    // Trouver la question dans availableQuestions
+    const question = availableQuestions.find(q => q.question_id == questionId);
+    if (!question) {
+        alert("Question non trouvée.");
+        return;
+    }
+
+    // Ajouter à la session
+    currentEditingSession.questions.push({
+        question_id: question.question_id,
+        content: question.content,
+        page: question.page || question.metadata?.page,
+        order_index: currentEditingSession.questions.length
+    });
+
+    // Rafraîchir l'affichage
+    renderSessionQuestions();
+    renderAvailableQuestions();
+}
+
+// Applique les filtres sur les questions disponibles
+async function applyQuestionsFilters() {
+    const keyword = document.getElementById('searchQuestionKeyword').value.trim();
+    const page = document.getElementById('searchQuestionPage').value.trim();
+
+    try {
+        let url = `/api/questions?document_id=${currentDocumentId}`;
+        if (keyword) {
+            url += `&keyword=${encodeURIComponent(keyword)}`;
+        }
+        if (page) {
+            url += `&page=${encodeURIComponent(page)}`;
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            availableQuestions = data.questions || [];
+
+            // Exclure les questions déjà dans la session
+            const sessionQuestionIds = new Set(
+                currentEditingSession.questions.map(q => q.question_id)
+            );
+            availableQuestions = availableQuestions.filter(
+                q => !sessionQuestionIds.has(q.question_id)
+            );
+
+            renderAvailableQuestions();
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+    }
+}
+
+// Réinitialise les filtres des questions
+function resetQuestionsFilters() {
+    document.getElementById('searchQuestionKeyword').value = '';
+    document.getElementById('searchQuestionPage').value = '';
+    document.getElementById('searchQuestionNatural').value = '';
+    loadAvailableQuestions();
+}
+
+// Recherche des questions par langage naturel (RAG)
+async function searchQuestionsByNaturalLanguage() {
+    const query = document.getElementById('searchQuestionNatural').value.trim();
+    if (!query) {
+        alert("Veuillez entrer une requête de recherche.");
+        return;
+    }
+
+    // Vérifier qu'un document est sélectionné
+    if (!currentDocumentId) {
+        alert("Veuillez d'abord sélectionner un document.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/question-sessions/search-questions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                k: 10,
+                document_id: currentDocumentId
+            })
+        });
+
+        if (response.ok) {
+            const results = await response.json();
+            availableQuestions = results;
+            renderAvailableQuestions();
+        } else {
+            alert("Erreur lors de la recherche.");
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la recherche.");
+    }
+}
+
+// Configure le drag and drop pour les questions dans les sessions
+function setupDragAndDrop() {
+    document.addEventListener('dragstart', function(e) {
+        if (e.target.classList.contains('session-question-item')) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.questionId);
+        }
+    });
+
+    document.addEventListener('dragend', function(e) {
+        if (e.target.classList.contains('session-question-item')) {
+            e.target.classList.remove('dragging');
+        }
+    });
+
+    const container = document.getElementById('sessionQuestionsContainer');
+    if (!container) return;
+
+    container.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        container.classList.add('drag-over');
+    });
+
+    container.addEventListener('dragleave', function(e) {
+        container.classList.remove('drag-over');
+    });
+
+    container.addEventListener('drop', function(e) {
+        e.preventDefault();
+        container.classList.remove('drag-over');
+        const questionId = e.dataTransfer.getData('text/plain');
+        if (questionId) {
+            // Vérifier que la question n'est pas déjà dans la session
+            if (!currentEditingSession.questions.some(q => q.question_id == questionId)) {
+                // Ajouter la question à la session
+                const question = availableQuestions.find(q => q.question_id == questionId);
+                if (question) {
+                    currentEditingSession.questions.push({
+                        question_id: question.question_id,
+                        content: question.content,
+                        page: question.page || question.metadata?.page,
+                        order_index: currentEditingSession.questions.length
+                    });
+                    renderSessionQuestions();
+                }
+            }
+        }
+    });
+}
+
+// Affiche le bouton de gestion des sessions quand un document est sélectionné
+function showManageSessionsButton() {
+    const btn = document.getElementById('manageSessionsBtn');
+    if (btn) {
+        btn.style.display = 'inline-block';
+    }
+}
+
+// Masque le bouton de gestion des sessions
+function hideManageSessionsButton() {
+    const btn = document.getElementById('manageSessionsBtn');
+    if (btn) {
+        btn.style.display = 'none';
+    }
+}
+
+// Modifie la fonction selectDocument pour afficher le bouton de gestion des sessions
+const originalSelectDocument = window.selectDocument;
+window.selectDocument = async function(documentId) {
+    if (originalSelectDocument) {
+        await originalSelectDocument(documentId);
+    }
+    showManageSessionsButton();
+};

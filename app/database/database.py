@@ -974,6 +974,14 @@ async def save_question_to_db(
                 VALUES (%s, %s, %s, %s)
             """, (question_id, answer, True, None))
 
+        # 4. Indexer la question dans Qdrant avec sa première réponse comme réponse principale
+        if answers:
+            await index_question_in_qdrant(
+                question_id=question_id,
+                content=question,
+                main_answer=answers[0] if answers else None
+            )
+
         await conn.commit()
 
 
@@ -1966,6 +1974,7 @@ async def update_question_and_answers(
 ) -> Optional[Dict]:
     """
     Met à jour une question et ses réponses en base de données.
+    Met également à jour l'index Qdrant si la question ou une réponse principale a été modifiée.
     
     Args:
         conn: Connexion à la base de données asyncpg
@@ -2026,7 +2035,38 @@ async def update_question_and_answers(
                         VALUES (%s, %s, %s, %s)
                     """, (question_id, content, is_correct, 1))
         
-        # 5. Récupérer la question mise à jour avec ses réponses
+        # 5. Mettre à jour Qdrant si la question ou une réponse principale a été modifiée
+        if question_content is not None or (answers and any(a.get("is_correct") for a in answers)):
+            # Récupérer la question
+            await cur.execute("SELECT content FROM text_questions WHERE question_id = %s", (question_id,))
+            question_row = await cur.fetchone()
+            if not question_row:
+                return None
+
+            # Récupérer la réponse principale (is_correct=True)
+            main_answer = None
+            if answers:
+                for answer in answers:
+                    if answer.get("is_correct"):
+                        main_answer = answer.get("content")
+                        break
+            else:
+                await cur.execute(
+                    "SELECT content FROM text_question_answers WHERE question_id = %s AND is_correct = TRUE LIMIT 1",
+                    (question_id,)
+                )
+                answer_row = await cur.fetchone()
+                if answer_row:
+                    main_answer = answer_row[0]
+
+            # Mettre à jour Qdrant
+            await index_question_in_qdrant(
+                question_id=question_id,
+                content=question_row[0] if question_content is None else question_content,
+                main_answer=main_answer
+            )
+        
+        # 6. Récupérer la question mise à jour avec ses réponses
         updated_question = await get_question_by_id(conn, question_id, include_answers=True)
         
         return updated_question
@@ -3045,3 +3085,610 @@ async def record_document_prior_read_declaration(
         print(f"Erreur enregistrement declaration de lecture prealable pour user_id={user_id}: {e}")
         await conn.rollback()
         return None
+
+
+# ============================================================================
+# CONSTANTES POUR L'INDEXATION DES QUESTIONS DANS QDRANT
+# ============================================================================
+
+QUESTIONS_COLLECTION_PREFIX = "questions"
+MISTRAL_EMBED_MODEL = "mistral-embed"  # Modèle Mistral pour les embeddings
+MISTRAL_EMBED_DIMENSION = 384          # Dimension des embeddings mistral-embed
+
+
+# ============================================================================
+# FONCTIONS POUR L'INDEXATION DES QUESTIONS DANS QDRANT
+# ============================================================================
+
+async def ensure_questions_qdrant_collection(embedder_name: str = MISTRAL_EMBED_MODEL, dimension: int = MISTRAL_EMBED_DIMENSION) -> str:
+    """
+    Crée la collection Qdrant pour les questions si elle n'existe pas.
+    Retourne le nom de la collection.
+    """
+    collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{embedder_name}-{dimension}"
+    try:
+        qdrant_client.get_collection(collection_name)
+    except:
+        qdrant_client.create_collection(
+            collection_name=collection_name,
+            vectors_config=models.VectorParams(
+                size=dimension,
+                distance=models.Distance.COSINE
+            )
+        )
+    return collection_name
+
+
+async def is_question_indexed_in_qdrant(question_id: int, collection_name: str = None) -> bool:
+    """
+    Vérifie si une question est déjà indexée dans Qdrant.
+    """
+    if collection_name is None:
+        collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
+
+    try:
+        result = qdrant_client.get_points(
+            collection_name=collection_name,
+            ids=[str(question_id)],
+            with_payload=False,
+            with_vectors=False
+        )
+        return len(result.points) > 0
+    except Exception as e:
+        print(f"Erreur lors de la vérification de l'indexation de la question {question_id}: {e}")
+        return False
+
+
+async def generate_question_embedding(
+    question_content: str,
+    main_answer: str = None,
+    api_key: Optional[str] = None
+) -> List[float]:
+    """
+    Génère un embedding pour une question + sa réponse principale via l'API Mistral.
+    """
+    from embedders.api.MistralEmbedder import MistralEmbedder
+
+    text_to_embed = question_content
+    if main_answer:
+        text_to_embed = f"Question: {question_content}\nRéponse: {main_answer}"
+
+    embedder = MistralEmbedder(
+        api_key=api_key or os.getenv("MISTRAL_API_KEY"),
+        model=MISTRAL_EMBED_MODEL,
+        dimension=MISTRAL_EMBED_DIMENSION
+    )
+
+    try:
+        embedding = embedder.embed(text_to_embed)
+        return embedding
+    except Exception as e:
+        print(f"Erreur lors de la génération de l'embedding: {e}")
+        raise
+
+
+async def index_question_in_qdrant(
+    question_id: int,
+    content: str,
+    main_answer: str = None,
+    document_id: int = None,
+    metadata: dict = None,
+    collection_name: str = None,
+    api_key: Optional[str] = None
+) -> bool:
+    """
+    Indexe une question dans Qdrant avec son embedding.
+    Si la question existe déjà, elle est mise à jour (upsert).
+    """
+    if collection_name is None:
+        collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
+
+    await ensure_questions_qdrant_collection(MISTRAL_EMBED_MODEL, MISTRAL_EMBED_DIMENSION)
+
+    try:
+        embedding = await generate_question_embedding(content, main_answer, api_key)
+
+        payload = {
+            "question_id": question_id,
+            "content": content,
+            "type": "question"
+        }
+        if main_answer:
+            payload["main_answer"] = main_answer
+        if document_id:
+            payload["document_id"] = document_id
+        if metadata:
+            payload["metadata"] = metadata
+
+        qdrant_client.upsert(
+            collection_name=collection_name,
+            points=[
+                models.PointStruct(
+                    id=str(question_id),
+                    vector=embedding,
+                    payload=payload
+                )
+            ]
+        )
+        return True
+    except Exception as e:
+        print(f"Erreur lors de l'indexation de la question {question_id} dans Qdrant: {e}")
+        return False
+
+
+async def delete_question_from_qdrant(question_id: int, collection_name: str = None) -> bool:
+    """
+    Supprime une question de Qdrant.
+    """
+    if collection_name is None:
+        collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
+
+    try:
+        qdrant_client.delete(
+            collection_name=collection_name,
+            points_selector=models.PointIdsList(
+                points=[str(question_id)]
+            )
+        )
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la suppression de la question {question_id} de Qdrant: {e}")
+        return False
+
+
+async def search_questions_in_qdrant(
+    query_embedding: List[float],
+    k: int = 5,
+    document_id: int = None,
+    collection_name: str = None
+) -> List[Dict]:
+    """
+    Recherche des questions similaires dans Qdrant.
+    Retourne les k questions les plus pertinentes avec leur score de similarité.
+    """
+    if collection_name is None:
+        collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
+
+    try:
+        query_filter = None
+        if document_id is not None:
+            query_filter = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="document_id",
+                        match=models.MatchValue(value=str(document_id))
+                    )
+                ]
+            )
+
+        results = await asyncio.to_thread(
+            qdrant_client.query_points,
+            collection_name=collection_name,
+            query=query_embedding,
+            limit=k,
+            query_filter=query_filter,
+            with_payload=True,
+            with_vectors=False
+        )
+
+        return [
+            {
+                "question_id": int(point.payload.get("question_id")),
+                "content": point.payload.get("content"),
+                "main_answer": point.payload.get("main_answer"),
+                "document_id": point.payload.get("document_id"),
+                "similarity": point.score,
+                "metadata": point.payload.get("metadata", {})
+            }
+            for point in results.points
+        ]
+    except Exception as e:
+        print(f"Erreur lors de la recherche dans Qdrant: {e}")
+        return []
+
+
+async def get_all_questions_for_indexing() -> List[Dict]:
+    """
+    Récupère toutes les questions de la base MySQL avec leur réponse principale.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT
+                    q.question_id,
+                    q.content,
+                    q.document_id,
+                    q.status,
+                    q.difficulty_level,
+                    q.created_at,
+                    qa.content as main_answer
+                FROM text_questions q
+                LEFT JOIN text_question_answers qa ON q.question_id = qa.question_id AND qa.is_correct = TRUE
+                WHERE q.status IN ('generated', 'validated', 'pending')
+            """)
+            rows = await cur.fetchall()
+
+            return [
+                {
+                    "question_id": row[0],
+                    "content": row[1],
+                    "document_id": row[2],
+                    "status": row[3],
+                    "difficulty_level": row[4],
+                    "created_at": row[5],
+                    "main_answer": row[6] if row[6] else None
+                }
+                for row in rows
+            ]
+
+# ============================================================================
+# FONCTIONS DE GESTION DES SESSIONS DE QUESTIONS
+# ============================================================================
+
+async def create_question_session(
+    title: str,
+    description: str,
+    document_id: int,
+    created_by: int = None
+) -> int:
+    """Crée une nouvelle session de questions et retourne son ID."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO question_sessions (title, description, document_id, created_by)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (title, description, document_id, created_by)
+            )
+            return cur.lastrowid
+
+
+async def update_question_session(
+    session_id: int,
+    title: str = None,
+    description: str = None
+) -> bool:
+    """Met à jour le titre et/ou la description d'une session."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            updates = []
+            params = []
+            if title is not None:
+                updates.append("title = %s")
+                params.append(title)
+            if description is not None:
+                updates.append("description = %s")
+                params.append(description)
+            if not updates:
+                return False
+            params.append(session_id)
+            query = f"UPDATE question_sessions SET {', '.join(updates)} WHERE session_id = %s"
+            await cur.execute(query, params)
+            return cur.rowcount > 0
+
+
+async def delete_question_session(session_id: int) -> bool:
+    """Supprime une session et toutes ses questions associées."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("DELETE FROM question_sessions WHERE session_id = %s", (session_id,))
+            return cur.rowcount > 0
+
+
+async def get_question_sessions(
+    document_id: int = None,
+    created_by: int = None
+) -> List[Dict]:
+    """Récupère toutes les sessions (optionnellement filtrées par document ou utilisateur)."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            query = """
+                SELECT session_id, title, description, document_id, created_by, created_at, updated_at
+                FROM question_sessions
+            """
+            params = []
+            if document_id is not None:
+                query += " WHERE document_id = %s"
+                params.append(document_id)
+            if created_by is not None:
+                if document_id is not None:
+                    query += " AND created_by = %s"
+                else:
+                    query += " WHERE created_by = %s"
+                params.append(created_by)
+            query += " ORDER BY created_at DESC"
+            await cur.execute(query, params)
+            rows = await cur.fetchall()
+            return [
+                {
+                    "session_id": row[0],
+                    "title": row[1],
+                    "description": row[2],
+                    "document_id": row[3],
+                    "created_by": row[4],
+                    "created_at": row[5],
+                    "updated_at": row[6]
+                }
+                for row in rows
+            ]
+
+
+async def get_question_session_by_id(session_id: int) -> Optional[Dict]:
+    """Récupère une session par son ID avec ses questions ordonnées."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # Récupérer la session
+            await cur.execute(
+                "SELECT session_id, title, description, document_id, created_by, created_at, updated_at FROM question_sessions WHERE session_id = %s",
+                (session_id,)
+            )
+            session_row = await cur.fetchone()
+            if not session_row:
+                return None
+
+            # Récupérer les questions de la session (ordonnées)
+            await cur.execute(
+                """
+                SELECT q.question_id, q.content, qsq.order_index
+                FROM question_session_questions qsq
+                JOIN text_questions q ON qsq.question_id = q.question_id
+                WHERE qsq.session_id = %s
+                ORDER BY qsq.order_index
+                """,
+                (session_id,)
+            )
+            questions = await cur.fetchall()
+
+            return {
+                "session_id": session_row[0],
+                "title": session_row[1],
+                "description": session_row[2],
+                "document_id": session_row[3],
+                "created_by": session_row[4],
+                "created_at": session_row[5],
+                "updated_at": session_row[6],
+                "questions": [
+                    {
+                        "question_id": q[0],
+                        "content": q[1],
+                        "order_index": q[2]
+                    }
+                    for q in questions
+                ]
+            }
+
+
+async def add_questions_to_session(
+    session_id: int,
+    question_ids: List[int]
+) -> bool:
+    """Ajoute des questions à une session (à la fin de la liste)."""
+    if not question_ids:
+        return False
+
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # Récupérer l'order_index maximal actuel
+            await cur.execute(
+                "SELECT MAX(order_index) FROM question_session_questions WHERE session_id = %s",
+                (session_id,)
+            )
+            max_order = await cur.fetchone()
+            next_order = (max_order[0] or 0) + 1
+
+            # Insérer les nouvelles questions
+            data = [
+                (session_id, qid, next_order + i)
+                for i, qid in enumerate(question_ids)
+            ]
+            await cur.executemany(
+                """
+                INSERT INTO question_session_questions (session_id, question_id, order_index)
+                VALUES (%s, %s, %s)
+                """,
+                data
+            )
+            return cur.rowcount > 0
+
+
+async def update_session_questions_order(
+    session_id: int,
+    ordered_question_ids: List[int]
+) -> bool:
+    """
+    Met à jour l'ordre des questions dans une session.
+    Valide que toutes les questions existent dans la base.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # Récupérer toutes les questions de la session actuelle
+            await cur.execute(
+                "SELECT question_id FROM question_session_questions WHERE session_id = %s",
+                (session_id,)
+            )
+            current_questions = [row[0] for row in await cur.fetchall()]
+
+            # Vérifier que ordered_question_ids est un sous-ensemble de current_questions
+            if not set(ordered_question_ids).issubset(set(current_questions)):
+                return False
+
+            # Mettre à jour l'ordre
+            for order_index, question_id in enumerate(ordered_question_ids):
+                await cur.execute(
+                    """
+                    UPDATE question_session_questions
+                    SET order_index = %s
+                    WHERE session_id = %s AND question_id = %s
+                    """,
+                    (order_index, session_id, question_id)
+                )
+            return True
+
+
+async def remove_questions_from_session(
+    session_id: int,
+    question_ids: List[int]
+) -> bool:
+    """Supprime des questions d'une session."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                DELETE FROM question_session_questions
+                WHERE session_id = %s AND question_id IN %s
+                """,
+                (session_id, tuple(question_ids))
+            )
+            return cur.rowcount > 0
+
+
+async def validate_question_ids_exist(question_ids: List[int]) -> bool:
+    """
+    Vérifie que toutes les questions dans la liste existent dans text_questions.
+    """
+    if not question_ids:
+        return True
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT COUNT(*) FROM text_questions WHERE question_id IN %s",
+                (tuple(question_ids),)
+            )
+            count = await cur.fetchone()
+            return count[0] == len(question_ids)
+
+# ============================================================================
+# FONCTIONS SUPPLÉMENTAIRES POUR LA GESTION DES QUESTIONS AVEC QDRANT
+# ============================================================================
+
+async def insert_question(
+    content: str,
+    status: str = "generated",
+    difficulty_level: int = None,
+    created_by: int = None,
+    document_id: int = None,
+    answers: Optional[List[Dict]] = None
+) -> int:
+    """
+    Insère une nouvelle question et ses réponses, et l'indexe dans Qdrant.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # Insérer la question
+            await cur.execute(
+                """
+                INSERT INTO text_questions (content, status, difficulty_level, created_by, document_id)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (content, status, difficulty_level, created_by, document_id)
+            )
+            question_id = cur.lastrowid
+
+            # Insérer les réponses si fournies
+            if answers:
+                for answer in answers:
+                    await cur.execute(
+                        """
+                        INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (question_id, answer.get("content"), answer.get("is_correct", False), created_by)
+                    )
+
+            # Récupérer la réponse principale (is_correct=True)
+            main_answer = None
+            if answers:
+                for answer in answers:
+                    if answer.get("is_correct"):
+                        main_answer = answer.get("content")
+                        break
+
+            # Indexer dans Qdrant
+            await index_question_in_qdrant(
+                question_id=question_id,
+                content=content,
+                main_answer=main_answer,
+                document_id=document_id
+            )
+
+            return question_id
+
+
+async def delete_question(question_id: int) -> bool:
+    """
+    Supprime une question et ses réponses de MySQL et de Qdrant.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            try:
+                # Supprimer les réponses associées
+                await cur.execute(
+                    "DELETE FROM text_question_answers WHERE question_id = %s",
+                    (question_id,)
+                )
+
+                # Supprimer la question
+                await cur.execute(
+                    "DELETE FROM text_questions WHERE question_id = %s",
+                    (question_id,)
+                )
+
+                # Supprimer de Qdrant
+                await delete_question_from_qdrant(question_id)
+
+                return cur.rowcount > 0
+            except Exception as e:
+                print(f"Erreur lors de la suppression de la question {question_id}: {e}")
+                return False
+
+
+async def delete_question_answer(answer_id: int) -> bool:
+    """
+    Supprime une réponse et met à jour Qdrant si c'était la réponse principale.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # Récupérer la question et la réponse
+            await cur.execute(
+                "SELECT question_id, is_correct FROM text_question_answers WHERE answer_id = %s",
+                (answer_id,)
+            )
+            row = await cur.fetchone()
+            if not row:
+                return False
+
+            question_id, is_correct = row
+
+            # Supprimer la réponse
+            await cur.execute(
+                "DELETE FROM text_question_answers WHERE answer_id = %s",
+                (answer_id,)
+            )
+
+            # Si c'était la réponse principale, mettre à jour Qdrant
+            if is_correct:
+                # Récupérer la nouvelle réponse principale (si elle existe)
+                await cur.execute(
+                    "SELECT content FROM text_question_answers WHERE question_id = %s AND is_correct = TRUE LIMIT 1",
+                    (question_id,)
+                )
+                new_main_answer = await cur.fetchone()
+
+                # Récupérer le contenu de la question
+                await cur.execute(
+                    "SELECT content FROM text_questions WHERE question_id = %s",
+                    (question_id,)
+                )
+                question_row = await cur.fetchone()
+                if not question_row:
+                    return False
+
+                # Mettre à jour Qdrant
+                await index_question_in_qdrant(
+                    question_id=question_id,
+                    content=question_row[0],
+                    main_answer=new_main_answer[0] if new_main_answer else None
+                )
+
+            return True
