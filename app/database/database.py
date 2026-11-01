@@ -3093,7 +3093,7 @@ async def record_document_prior_read_declaration(
 
 QUESTIONS_COLLECTION_PREFIX = "questions"
 MISTRAL_EMBED_MODEL = "mistral-embed"  # Modèle Mistral pour les embeddings
-MISTRAL_EMBED_DIMENSION = 384          # Dimension des embeddings mistral-embed
+MISTRAL_EMBED_DIMENSION = 1024          # Dimension des embeddings mistral-embed
 
 
 # ============================================================================

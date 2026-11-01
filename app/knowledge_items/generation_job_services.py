@@ -162,7 +162,7 @@ async def process_knowledge_generation_job(job_id: str):
                 )
             else:
                 async with await get_db_connection() as conn:
-                    questions = await get_questions_by_chunk_id(conn, chunk_id)
+                    questions = await get_questions_by_chunk_id(chunk_id, conn)
                 qa_items = [
                     QAItemSchema(
                         question_id=q.get("question_id"),

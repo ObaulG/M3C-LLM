@@ -28,7 +28,7 @@ from database.database import (
 )
 
 
-async def index_all_questions(batch_size: int = 100):
+async def index_all_questions(batch_size: int = 1024):
     """
     Indexe toutes les questions de la base MySQL dans Qdrant.
     
@@ -124,7 +124,7 @@ async def index_all_questions(batch_size: int = 100):
 
 if __name__ == "__main__":
     # Configurer le batch size (100 par défaut)
-    batch_size = 100
+    batch_size = 1024
     if len(sys.argv) > 1:
         try:
             batch_size = int(sys.argv[1])
