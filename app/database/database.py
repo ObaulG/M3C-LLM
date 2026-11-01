@@ -3119,6 +3119,16 @@ async def ensure_questions_qdrant_collection(embedder_name: str = MISTRAL_EMBED_
     return collection_name
 
 
+def _question_point_id(question_id: int) -> str:
+    """
+    ID de point Qdrant déterministe pour une question.
+
+    Qdrant n'accepte que des entiers non signés ou des UUID comme ID de point,
+    donc on dérive un UUID5 stable du question_id.
+    """
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"question-{question_id}"))
+
+
 async def is_question_indexed_in_qdrant(question_id: int, collection_name: str = None) -> bool:
     """
     Vérifie si une question est déjà indexée dans Qdrant.
@@ -3127,13 +3137,13 @@ async def is_question_indexed_in_qdrant(question_id: int, collection_name: str =
         collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
 
     try:
-        result = qdrant_client.get_points(
+        result = qdrant_client.retrieve(
             collection_name=collection_name,
-            ids=[str(question_id)],
+            ids=[_question_point_id(question_id)],
             with_payload=False,
             with_vectors=False
         )
-        return len(result.points) > 0
+        return len(result) > 0
     except Exception as e:
         print(f"Erreur lors de la vérification de l'indexation de la question {question_id}: {e}")
         return False
@@ -3184,6 +3194,7 @@ async def index_question_in_qdrant(
         collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
 
     await ensure_questions_qdrant_collection(MISTRAL_EMBED_MODEL, MISTRAL_EMBED_DIMENSION)
+    print(f"Collection {collection_name} vérifiée.")
 
     try:
         embedding = await generate_question_embedding(content, main_answer, api_key)
@@ -3204,7 +3215,7 @@ async def index_question_in_qdrant(
             collection_name=collection_name,
             points=[
                 models.PointStruct(
-                    id=str(question_id),
+                    id=_question_point_id(question_id),
                     vector=embedding,
                     payload=payload
                 )
@@ -3227,7 +3238,7 @@ async def delete_question_from_qdrant(question_id: int, collection_name: str = N
         qdrant_client.delete(
             collection_name=collection_name,
             points_selector=models.PointIdsList(
-                points=[str(question_id)]
+                points=[_question_point_id(question_id)]
             )
         )
         return True
