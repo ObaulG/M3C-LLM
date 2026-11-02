@@ -266,9 +266,6 @@ async function simpleQuery(params) {
 		const headers = {
 			'Content-Type': 'application/json',
 		};
-		if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
-			headers['X-Mistral-Api-Key'] = mistralApiKey.get();
-		}
 		const response = await fetch(route_to_fetch, {
 			method: 'POST',
 			headers: headers,
@@ -308,9 +305,6 @@ async function compareQuery(params) {
 		const headers = {
 			'Content-Type': 'application/json',
 		};
-		if (typeof mistralApiKey !== 'undefined' && mistralApiKey.has()) {
-			headers['X-Mistral-Api-Key'] = mistralApiKey.get();
-		}
 		const response = await fetch(API_URL_COMPARE, {
 			method: 'POST',
 			headers: headers,

@@ -551,7 +551,7 @@
                 <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
                         Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI. 
-                        <strong>Cette clé est stockée uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.
+                        <strong>Cette clé est enregistrée de façon sécurisée sur le serveur</strong>, associée à votre compte, et n'est jamais stockée dans votre navigateur.
                     </p>
                     
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -581,8 +581,8 @@
                 <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
                         Pour utiliser pleinement les fonctionnalités de ce portail, vous devez configurer votre clé API Mistral AI.
-                        Cette clé est <strong>stockée uniquement dans votre navigateur</strong> (et enregistrée sur votre compte
-                        si vous êtes connecté) pour être utilisée dans vos requêtes.
+                        Cette clé est <strong>enregistrée de façon sécurisée sur le serveur</strong>, associée à votre
+                        compte, pour être utilisée dans vos requêtes.
                     </p>
                     <ol style="margin-left: 20px; color: #555; line-height: 1.7;">
                         <li><strong>Créer un compte sur Mistral AI</strong> : rendez-vous sur <a href="https://mistral.ai/" target="_blank" style="color: #b74420;">https://mistral.ai/</a> et cliquez sur "Sign Up" / "S'inscrire" (email, compte Google ou GitHub).</li>
@@ -1006,12 +1006,15 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateApiKeyStatus() {
-    const apiKey = localStorage.getItem('mistral_api_key');
     const apiKeyStatus = document.getElementById('apiKeyStatus');
     const profileApiStatus = document.getElementById('profileApiStatus');
-    
-    if (apiKeyStatus && profileApiStatus) {
-        if (apiKey && apiKey.length > 0) {
+
+    if (!apiKeyStatus || !profileApiStatus) {
+        return;
+    }
+
+    window.mistralApiKey.fetchStatus().then(function (status) {
+        if (status && status.has_api_key) {
             profileApiStatus.textContent = '✓';
             profileApiStatus.style.color = '#28a745';
             apiKeyStatus.innerHTML = '<span id="profileApiStatus" style="font-size: 16px; color: #28a745;">✓</span> Clé API configurée';
@@ -1020,7 +1023,7 @@ function updateApiKeyStatus() {
             profileApiStatus.style.color = '#dc3545';
             apiKeyStatus.innerHTML = '<span id="profileApiStatus" style="font-size: 16px; color: #dc3545;">✗</span> Clé API non configurée';
         }
-    }
+    });
 }
 </script>
 {% endblock %}

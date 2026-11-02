@@ -21,11 +21,15 @@ Deux prototypes sont disponibles :
 | created | datetime | NO | | NULL | |
 | modified | datetime | YES | | NULL | |
 | password_hash | varchar(60) | YES | | NULL | |
-| mistral_api_key | varchar(255) | YES | | NULL | | Clé API Mistral personnelle (rôles user/guest) |
 | role | varchar(190) | NO | | NULL | |
 | is_active | tinyint(1) | NO | | NULL | |
 
 > **Note**: Le champ `name` correspond au nom d'utilisateur (username).
+
+> **Note**: La clé API Mistral personnelle (rôles user/guest) est stockée dans
+> la table dédiée `user_mistral_api_keys` (voir
+> `app/database/sql_tables_scripts/create_user_mistral_api_keys.sql`), séparée
+> de la table `user`.
 
 
 

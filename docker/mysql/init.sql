@@ -563,3 +563,20 @@ CREATE TABLE IF NOT EXISTS chatbot_feedbacks (
     CONSTRAINT chk_cbf_rating_relevance   CHECK (rating_relevance   IS NULL OR rating_relevance   BETWEEN 1 AND 5),
     CONSTRAINT chk_cbf_rating_formulation CHECK (rating_formulation IS NULL OR rating_formulation BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =============================================================================
+-- CLE API MISTRAL PERSONNELLE
+-- (source : app/database/sql_tables_scripts/create_user_mistral_api_keys.sql)
+-- =============================================================================
+-- Stocke la cle API Mistral de chaque utilisateur dans une table dediee,
+-- separee de la table `user` (que l'application ne modifie pas).
+-- Remarque : la cle etrangere vers user(id) est omise, la table user n'etant
+-- pas creee ici (table externe geree ailleurs).
+
+CREATE TABLE IF NOT EXISTS user_mistral_api_keys (
+    user_id INT NOT NULL COMMENT 'Identifiant de la table user',
+    mistral_api_key VARCHAR(255) NOT NULL COMMENT 'Cle API Mistral personnelle de l''utilisateur',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de creation de la ligne',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de derniere modification',
+    PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
