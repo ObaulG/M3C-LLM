@@ -252,8 +252,15 @@ Vos données sont persistées dans :
 DB_PASSWORD=votre_mot_de_passe_complexe_et_long
 MYSQL_ROOT_PASSWORD=autre_mot_de_passe_complexe_et_long
 MISTRAL_API_KEY=votre_clé_api_secrète
+REQUIRE_USER_MISTRAL_API_KEY=true
 GOOGLE_API_KEY=votre_clé_api_google
 ```
+
+> **Variable `REQUIRE_USER_MISTRAL_API_KEY`** : quand elle vaut `true`
+> (défaut), chaque utilisateur normal (rôle `user`/`guest`) doit enregistrer sa
+> propre clé API Mistral dans son profil. Mettez `false` pour que les
+> utilisateurs sans clé personnelle utilisent la clé du serveur
+> (`MISTRAL_API_KEY`), par exemple une clé payante fournie par l'administrateur.
 
 > **🔒 Bonne pratique** : Utilisez des mots de passe de 20 caractères minimum avec des caractères spéciaux.
 

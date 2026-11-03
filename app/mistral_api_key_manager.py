@@ -20,12 +20,26 @@ import auth
 SERVER_KEY_ROLES = ("global_admin", "admin")
 
 
+def user_mistral_api_key_required() -> bool:
+    """
+    Indique si les utilisateurs normaux (user/guest) doivent obligatoirement
+    fournir leur propre clé API Mistral.
+
+    Contrôlé par la variable d'environnement REQUIRE_USER_MISTRAL_API_KEY
+    (défaut : true). Quand la valeur est "false"/"0"/"no", un utilisateur
+    sans clé personnelle utilise la clé interne du serveur (MISTRAL_API_KEY).
+    """
+    return os.getenv("REQUIRE_USER_MISTRAL_API_KEY", "true").strip().lower() not in ("false", "0", "no", "off")
+
+
 async def _resolve_user_api_key(user_id: int) -> Tuple[Optional[str], Optional[str]]:
     """
     Retourne (clé API, rôle) pour un utilisateur authentifié.
 
     - admin/global_admin -> clé du serveur (env MISTRAL_API_KEY)
-    - user/guest -> table user_mistral_api_keys
+    - user/guest -> table user_mistral_api_keys ; si aucune clé personnelle
+      n'est enregistrée et que REQUIRE_USER_MISTRAL_API_KEY est désactivé,
+      la clé du serveur est utilisée
     """
     from database.database import get_db_connection
 
@@ -45,6 +59,8 @@ async def _resolve_user_api_key(user_id: int) -> Tuple[Optional[str], Optional[s
         return None, None
     role, user_key = row[0], row[1]
     if role in SERVER_KEY_ROLES:
+        return os.getenv('MISTRAL_API_KEY'), role
+    if not user_key and not user_mistral_api_key_required():
         return os.getenv('MISTRAL_API_KEY'), role
     return user_key, role
 
@@ -228,6 +244,11 @@ async def async_require_mistral_api_key(
         )
 
     if not api_key:
+        if not user_mistral_api_key_required():
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="La clé API Mistral du serveur n'est pas configurée. Veuillez contacter l'administrateur."
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Clé API Mistral requise. Veuillez configurer votre clé API Mistral dans votre profil utilisateur."
