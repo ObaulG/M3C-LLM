@@ -258,9 +258,11 @@ GOOGLE_API_KEY=votre_clé_api_google
 
 > **Variable `REQUIRE_USER_MISTRAL_API_KEY`** : quand elle vaut `true`
 > (défaut), chaque utilisateur normal (rôle `user`/`guest`) doit enregistrer sa
-> propre clé API Mistral dans son profil. Mettez `false` pour que les
-> utilisateurs sans clé personnelle utilisent la clé du serveur
-> (`MISTRAL_API_KEY`), par exemple une clé payante fournie par l'administrateur.
+> propre clé API Mistral dans son profil. Mettez `false` pour que la clé du
+> serveur (`MISTRAL_API_KEY`), par exemple une clé payante fournie par
+> l'administrateur, soit utilisée pour tous les utilisateurs — la clé du serveur
+> est alors prioritaire, la clé personnelle servant de repli si la clé serveur
+> n'est pas configurée.
 
 > **🔒 Bonne pratique** : Utilisez des mots de passe de 20 caractères minimum avec des caractères spéciaux.
 

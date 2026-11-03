@@ -37,9 +37,9 @@ async def _resolve_user_api_key(user_id: int) -> Tuple[Optional[str], Optional[s
     Retourne (clé API, rôle) pour un utilisateur authentifié.
 
     - admin/global_admin -> clé du serveur (env MISTRAL_API_KEY)
-    - user/guest -> table user_mistral_api_keys ; si aucune clé personnelle
-      n'est enregistrée et que REQUIRE_USER_MISTRAL_API_KEY est désactivé,
-      la clé du serveur est utilisée
+    - user/guest -> table user_mistral_api_keys ; si REQUIRE_USER_MISTRAL_API_KEY
+      est désactivé, la clé du serveur est prioritaire (la clé personnelle
+      sert de repli si la clé serveur n'est pas configurée)
     """
     from database.database import get_db_connection
 
@@ -60,8 +60,8 @@ async def _resolve_user_api_key(user_id: int) -> Tuple[Optional[str], Optional[s
     role, user_key = row[0], row[1]
     if role in SERVER_KEY_ROLES:
         return os.getenv('MISTRAL_API_KEY'), role
-    if not user_key and not user_mistral_api_key_required():
-        return os.getenv('MISTRAL_API_KEY'), role
+    if not user_mistral_api_key_required():
+        return os.getenv('MISTRAL_API_KEY') or user_key, role
     return user_key, role
 
 
