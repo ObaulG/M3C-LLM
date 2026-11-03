@@ -75,6 +75,9 @@ services:
       SOLR_ENABLED: ${SOLR_ENABLED:-0}
       # clefs API
       MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+      # Obliger les utilisateurs normaux à fournir leur propre clé Mistral
+      # (mettre "false" pour utiliser la clé du serveur pour tous)
+      REQUIRE_USER_MISTRAL_API_KEY: ${REQUIRE_USER_MISTRAL_API_KEY:-true}
       GROQ_API_KEY: ${GROQ_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:

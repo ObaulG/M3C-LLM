@@ -127,9 +127,11 @@ async def get_my_mistral_api_key(
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
     stored = await auth.get_user_mistral_api_key(user_id)
+    from mistral_api_key_manager import user_mistral_api_key_required
     return {
         "has_api_key": bool(stored),
         "masked": (stored[:4] + "…" + stored[-4:]) if stored and len(stored) > 8 else None,
+        "required": user_mistral_api_key_required(),
     }
 
 

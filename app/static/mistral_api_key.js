@@ -199,6 +199,9 @@ function maybeShowMistralApiKeyBanner() {
         if (!status || status.has_api_key) {
             return;
         }
+        if (status.required === false) {
+            return;
+        }
         if (document.getElementById('mistralApiKeyBanner')) {
             return;
         }
@@ -352,6 +355,10 @@ function updateApiKeyStatusDisplay() {
                 apiStatus.textContent = '\u2713';
                 apiStatus.title = 'Clé API Mistral configurée';
                 apiStatus.style.color = '#28a745';
+            } else if (status && status.required === false) {
+                apiStatus.textContent = '\u2713';
+                apiStatus.title = 'Clé API Mistral non requise : la clé du serveur est utilisée';
+                apiStatus.style.color = '#28a745';
             } else {
                 apiStatus.textContent = '\u2717';
                 apiStatus.title = 'Clé API Mistral non configurée';
@@ -362,6 +369,8 @@ function updateApiKeyStatusDisplay() {
         if (apiKeyStatus) {
             if (hasKey) {
                 apiKeyStatus.innerHTML = '<span style="font-size: 16px; color: #28a745;">\u2713</span> Clé API configurée';
+            } else if (status && status.required === false) {
+                apiKeyStatus.innerHTML = '<span style="font-size: 16px; color: #28a745;">\u2713</span> Clé API non requise : la clé du serveur est utilisée';
             } else {
                 apiKeyStatus.innerHTML = '<span style="font-size: 16px; color: #dc3545;">\u2717</span> Clé API non configurée';
             }
