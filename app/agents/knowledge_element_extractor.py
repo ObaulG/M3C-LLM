@@ -244,12 +244,12 @@ def create_fallback_knowledge_prompt() -> SystemPromptGenerator:
     )
 
 
-def get_knowledge_extractor_agent(model: str = "mistral-medium"):
+def get_knowledge_extractor_agent(model: str = "mistral-large-4"):
     """
     Crée et retourne un agent d'extraction de connaissances structurées.
     
     Args:
-        model: Nom du modèle LLM à utiliser (par défaut: mistral-medium)
+        model: Nom du modèle LLM à utiliser (par défaut: mistral-large-4)
     
     Returns:
         AtomicAgent configuré pour l'extraction de connaissances
@@ -378,7 +378,7 @@ async def extract_knowledge_elements(text: str,
                                     document_id: Optional[str] = None,
                                     page: Optional[int] = None, 
                                     position_in_page: Optional[int] = None,
-                                    model: str = "mistral-medium") -> List[KnowledgeItemCandidate]:
+                                    model: str = "mistral-large-4") -> List[KnowledgeItemCandidate]:
     """
     Extrait les éléments de connaissance depuis un chunk de texte en utilisant un LLM.
     

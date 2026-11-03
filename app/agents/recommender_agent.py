@@ -47,7 +47,7 @@ if recommendation_system_prompt_generator is None:
     recommendation_system_prompt_generator = _FALLBACK_PROMPT
 
 
-def get_recommendation_agent(model: str = "mistral-medium"):
+def get_recommendation_agent(model: str = "mistral-large-4"):
     """
     Cree et retourne un agent specialise dans la recommandation de documents.
     """

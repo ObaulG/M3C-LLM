@@ -21,7 +21,7 @@ class QuestionGenerationRequest(BaseModel):
         description="Nombre de réponses à générer par question"
     )
     model_name: str = Field(
-        default="mistral/mistral-medium",
+        default="mistral/mistral-large-4",
         description="Nom du modèle LLM à utiliser pour la génération au format <provider>/<model_name>"
     )
     document_id: Optional[int] = Field(
@@ -103,7 +103,7 @@ class QuestionGenerationJob(BaseModel):
                 "updated_at": "2024-01-15T10:35:00",
                 "total_documents": 2,
                 "processed_documents": 1,
-                "parameters": {"num_questions_per_doc": 3, "model_name": "mistral-medium"},
+                "parameters": {"num_questions_per_doc": 3, "model_name": "mistral-large-4"},
                 "progress": {
                     "116738": {
                         "resource_id": 116738,

@@ -300,7 +300,7 @@ def _load_system_prompt_from_questions(prompt_name: str = "from_questions") -> S
 # ============================================================================
 
 def get_knowledge_item_agent(
-    model: str = "mistral-medium",
+    model: str = "mistral-large-4",
     async_mode: bool = True,
     prompt_name: str = "default",
 ) -> AtomicAgent:
@@ -338,7 +338,7 @@ def get_knowledge_item_agent(
 
 
 def get_knowledge_item_agent_from_questions(
-    model: str = "mistral-medium",
+    model: str = "mistral-large-4",
     async_mode: bool = True,
     prompt_name: str = "from_questions",
 ) -> AtomicAgent:
@@ -346,7 +346,7 @@ def get_knowledge_item_agent_from_questions(
     partir des questions/réponses associées à un chunk.
 
     Args:
-        model: Nom du modèle LLM à utiliser (par défaut: mistral-medium).
+        model: Nom du modèle LLM à utiliser (par défaut: mistral-large-4).
         async_mode: Si True, le client Mistral est asynchrone (run_async).
         prompt_name: Nom du prompt à charger depuis knowledge_item.yaml
                      ("from_questions" par défaut).
@@ -385,7 +385,7 @@ async def generate_knowledge_items_from_chunk(
     document_id: Optional[str] = None,
     page: Optional[int] = None,
     position_in_page: Optional[int] = None,
-    model: str = "mistral-medium",
+    model: str = "mistral-large-4",
     prompt_name: str = "default",
 ) -> List[KnowledgeItemSchema]:
     """Génère des knowledge_items à partir d'un chunk de texte via l'agent.
@@ -438,7 +438,7 @@ async def generate_knowledge_items_from_questions(
     document_id: Optional[str] = None,
     page: Optional[int] = None,
     position_in_page: Optional[int] = None,
-    model: str = "mistral-medium",
+    model: str = "mistral-large-4",
     prompt_name: str = "from_questions",
 ) -> List[KnowledgeItemSchema]:
     """Génère des knowledge_items à partir des questions/réponses associées

@@ -7,7 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 if __name__ == '__main__':
     llm = ChatMistralAI(
-        model="mistral-medium-latest",
+        model="mistral-large-4",
         temperature=0.7,
         max_retries=2,
         mistral_api_key=os.getenv("MISTRAL_API_KEY"),

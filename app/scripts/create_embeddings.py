@@ -19,7 +19,7 @@ CHUNK_CHAR_SIZE = 2700
 
 # Initialisation des modèles
 llm = ChatMistralAI(
-    model="mistral-medium-latest",
+    model="mistral-large-4",
     temperature=0.7,
     max_retries=2,
     mistral_api_key=os.getenv("MISTRAL_API_KEY"),

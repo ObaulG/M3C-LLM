@@ -10,7 +10,7 @@ import time
 # Configuration
 BASE_URL = "http://localhost:8000"
 DOCUMENT_ID = "8a672d2ae6f2abfa4434e0f4145a9aa77bbc6d56"
-MODEL = "mistral-medium"
+MODEL = "mistral-large-4"
 QUESTIONS_FILE = "test-questions-rag.txt"
 RESPONSES_FILE = "reponses-test-rag-8a672d2a.txt"
 SESSION_FILE = "session-8a672d2a.csv"

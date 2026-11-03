@@ -70,7 +70,7 @@ class ArtifactRemovalResult(BaseIOSchema):
     )
 
 
-def get_chunk_summariser_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_chunk_summariser_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     loaded = get_prompt("summariser", "chunk_summariser", max_words=max_words)
     fallback = SystemPromptGenerator(
@@ -99,7 +99,7 @@ def get_chunk_summariser_agent(model: str = "mistral-medium", max_words: int = 1
     )
 
 
-def get_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_summaries_merger_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     loaded = get_prompt("summariser", "summaries_merger", max_words=max_words)
     fallback = SystemPromptGenerator(
@@ -129,7 +129,7 @@ def get_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 1
     )
 
 
-def get_context_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_context_summaries_merger_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     loaded = get_prompt("summariser", "context_summaries_merger", max_words=max_words)
     fallback = SystemPromptGenerator(
@@ -159,7 +159,7 @@ def get_context_summaries_merger_agent(model: str = "mistral-medium", max_words:
     )
 
 
-def get_artifact_removal_prompt_generator(model: str = "mistral-medium"):
+def get_artifact_removal_prompt_generator(model: str = "mistral-large-4"):
     client = get_mistral_client()
     loaded = get_prompt("summariser", "artifact_removal")
     fallback = SystemPromptGenerator(

@@ -10,7 +10,7 @@ from google.genai import types
 
 MISTRAL_MODELS = [
     "ministral-3b-2410", "ministral-8b-2410", "open-mistral-7b", "open-mistral-nemo",
-    "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
+    "mistral-tiny", "mistral-small", "mistral-large-4", "mistral-large-2411"
 ]
 GOOGLE_MODELS = ["gemini-3.5-flash-lite"]
 OLLAMA_MODELS = ["ministral-3:3b", "mistral:7b",

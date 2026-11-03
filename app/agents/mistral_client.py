@@ -153,7 +153,7 @@ class MistralAPIMonitor:
         known_limits = {
             "mistral-tiny": {"rpm": 1000, "tpm": 500000},
             "mistral-small": {"rpm": 500, "tpm": 300000},
-            "mistral-medium": {"rpm": 200, "tpm": 200000},
+            "mistral-large-4": {"rpm": 200, "tpm": 200000},
             "mistral-large": {"rpm": 100, "tpm": 100000},
             "mistral-embed": {"rpm": 1000, "tpm": 1000000}
         }
@@ -198,7 +198,7 @@ class MistralAPIMonitor:
         pricing = {
             "mistral-tiny": 0.25,
             "mistral-small": 0.50,
-            "mistral-medium": 1.00,
+            "mistral-large-4": 1.00,
             "mistral-large": 2.00,
             "mistral-embed": 0.10
         }
@@ -238,7 +238,7 @@ class MistralAPIMonitor:
         pricing = {
             "mistral-tiny": 0.25,
             "mistral-small": 0.50,
-            "mistral-medium": 1.00,
+            "mistral-large-4": 1.00,
             "mistral-large": 2.00,
             "mistral-embed": 0.10
         }

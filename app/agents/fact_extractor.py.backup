@@ -35,7 +35,7 @@ system_prompt_generator = SystemPromptGenerator(
     ],
 )
 
-def get_fact_analyser_agent(model: str = "mistral-medium"):
+def get_fact_analyser_agent(model: str = "mistral-large-4"):
     client = get_mistral_client()
     agent = AtomicAgent[FactExtractionInput, FactExtractionOutput](
         config=AgentConfig(

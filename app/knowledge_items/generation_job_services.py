@@ -94,7 +94,7 @@ async def process_knowledge_generation_job(job_id: str):
 
     parameters = job.get("parameters", {})
     document_id = parameters.get("document_id")
-    model_name = parameters.get("model_name") or "mistral-medium"
+    model_name = parameters.get("model_name") or "mistral-large-4"
     source = parameters.get("source") or "chunks"
 
     errors = []

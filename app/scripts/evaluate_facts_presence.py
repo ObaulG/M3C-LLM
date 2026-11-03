@@ -91,8 +91,8 @@ async def main():
     parser.add_argument("--input", type=str, required=True,
                         help="CSV des réponses visiteurs (colonnes: question_id, reponse)")
     parser.add_argument("--output", type=str, default=None, help="Chemin du CSV de résultats")
-    parser.add_argument("--model", type=str, default="mistral-medium",
-                        help="Modèle pour le jugement de présence (défaut: mistral-medium)")
+    parser.add_argument("--model", type=str, default="mistral-large-4",
+                        help="Modèle pour le jugement de présence (défaut: mistral-large-4)")
     args = parser.parse_args()
 
     input_path = Path(args.input)

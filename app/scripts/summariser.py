@@ -16,7 +16,7 @@ class Summariser():
 
     """
     def __init__(self,
-                 model: str = "mistral-medium",
+                 model: str = "mistral-large-4",
                  window_size: int = 120000,
                  max_chunk_size: int = 1000,
                  max_summary_len: int = 1000,

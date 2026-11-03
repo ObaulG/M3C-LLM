@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 models_evaluator = ["ministral-3b-latest",
                     "ministral-8b-latest",
                     "mistral-small-latest",
-                    "mistral-medium-latest",
+                    "mistral-large-4",
                     "mistral-large-2411",
                     "mistral-large-latest"
                     ]

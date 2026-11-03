@@ -36,7 +36,7 @@ class SelectedQuestionsList(BaseModel):
     questions: List[SelectedQuestion]
 
 class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestionsList]):
-    def __init__(self, model: str = "mistral-medium"):
+    def __init__(self, model: str = "mistral-large-4"):
         # Initialiser l'agent QA pour générer des questions si nécessaire
         self.qa_agent = get_qa_agent(model)
 
@@ -118,7 +118,7 @@ class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestion
             for qa in response.questions_answers
         ]
 
-def get_question_selector_agent(model: str = "mistral-medium") -> QuestionSelectorAgent:
+def get_question_selector_agent(model: str = "mistral-large-4") -> QuestionSelectorAgent:
     """
     Fabrique pour obtenir l'agent de sélection de questions.
     """

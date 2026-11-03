@@ -57,7 +57,7 @@ _FALLBACK_PROMPT = SystemPromptGenerator(
 
 
 class QuestionSelectorAgent(AtomicAgent[QuestionSelectionInput, SelectedQuestionsList]):
-    def __init__(self, model: str = "mistral-medium"):
+    def __init__(self, model: str = "mistral-large-4"):
         from .prompt_loader import get_prompt
         
         # Initialiser l'agent QA pour generer des questions si necessaire
