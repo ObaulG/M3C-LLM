@@ -66,18 +66,18 @@ class TokenMonitoringSummariser(Summariser):
             
             # Utiliser le moniteur de tokens pour l'appel au summariser
             user_input = ChunkSummaryRequestInput(chunk_text=chunk)
-            response, input_tokens, output_tokens = monitor_agent_call(
+            response, usage_info = monitor_agent_call(
                 agent=self.summariser,
                 user_input=user_input
             )
             
             # Mettre à jour les compteurs globaux
-            self.total_input_tokens += input_tokens.total
-            self.total_output_tokens += output_tokens
+            self.total_input_tokens += usage_info.input_tokens
+            self.total_output_tokens += usage_info.output_tokens
             self.call_count += 1
             
             # Afficher les informations pour ce chunk (optionnel)
-            print(f"  Chunk {i+1}: Entrée={input_tokens.total} tokens, Sortie={output_tokens} tokens")
+            print(f"  Chunk {i+1}: Entrée={usage_info.input_tokens} tokens, Sortie={usage_info.output_tokens} tokens")
             
             # Réinitialiser l'historique comme dans la méthode originale
             self.summariser.reset_history()
@@ -108,7 +108,7 @@ class TokenMonitoringSummariser(Summariser):
                 if index_start == 0:
                     # Premier résumé sans contexte
                     user_input = MergeSummariesRequestInput(summaries=chunk_summaries[:index_end])
-                    response, input_tokens, output_tokens = monitor_agent_call(
+                    response, usage_info = monitor_agent_call(
                         agent=self.merger,
                         user_input=user_input
                     )
@@ -119,18 +119,18 @@ class TokenMonitoringSummariser(Summariser):
                         summaries=chunk_summaries[index_start:index_end],
                         context=context
                     )
-                    response, input_tokens, output_tokens = monitor_agent_call(
+                    response, usage_info = monitor_agent_call(
                         agent=self.merger_with_context,
                         user_input=user_input
                     )
                 
                 # Mettre à jour les compteurs globaux
-                self.total_input_tokens += input_tokens.total
-                self.total_output_tokens += output_tokens
+                self.total_input_tokens += usage_info.input_tokens
+                self.total_output_tokens += usage_info.output_tokens
                 self.call_count += 1
                 
                 # Afficher les informations pour cette fusion (optionnel)
-                print(f"  Fusion {nb_summaries+1}: Entrée={input_tokens.total} tokens, Sortie={output_tokens} tokens")
+                print(f"  Fusion {nb_summaries+1}: Entrée={usage_info.input_tokens} tokens, Sortie={usage_info.output_tokens} tokens")
                 
                 nb_summaries += 1
                 new_summaries.append(response)

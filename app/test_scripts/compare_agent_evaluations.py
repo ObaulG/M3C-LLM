@@ -258,7 +258,7 @@ class AgentEvaluatorComparator:
 
         try:
             # Utiliser le moniteur de tokens pour l'évaluation
-            response, input_tokens, output_tokens = await monitor_agent_call_async(
+            response, usage_info = await monitor_agent_call_async(
                 agent, input_data, "run_async"
             )
         except Exception as e:
@@ -272,13 +272,13 @@ class AgentEvaluatorComparator:
         if response is not None:
             data_dict["score"] = response.score
             data_dict["feedback"] = response.feedback
-            data_dict["input_tokens_total"] = input_tokens.total
-            data_dict["input_tokens_system"] = input_tokens.system_prompt
-            data_dict["input_tokens_history"] = input_tokens.history
-            data_dict["input_tokens_tools"] = input_tokens.tools
-            data_dict["output_tokens"] = output_tokens
-            data_dict["total_tokens"] = input_tokens.total + output_tokens
-            data_dict["model_used"] = input_tokens.model
+            data_dict["input_tokens_total"] = usage_info.input_tokens
+            data_dict["input_tokens_system"] = None
+            data_dict["input_tokens_history"] = None
+            data_dict["input_tokens_tools"] = None
+            data_dict["output_tokens"] = usage_info.output_tokens
+            data_dict["total_tokens"] = usage_info.input_tokens + usage_info.output_tokens
+            data_dict["model_used"] = usage_info.model
             print(f"{config["model"]}: ({response.score}) {response.feedback}")
         else:
             data_dict["error"] = str(error)

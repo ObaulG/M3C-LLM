@@ -569,7 +569,7 @@ class QuestionAnswerEvaluator:
                             evaluation_input, 
                             "run_async"
                         )
-                        eval_result, token_count, output_tokens = result
+                        eval_result, usage_info = result
                         exec_time = time.time() - start_time
                         
                         return IndividualEvaluation(
@@ -692,7 +692,7 @@ class QuestionAnswerEvaluator:
                         evaluation_input,
                         "run_async"
                     )
-                    eval_result, token_count, output_tokens = result
+                    eval_result, usage_info = result
                     exec_time = time.time() - start_time
 
                     judgements = [

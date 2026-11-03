@@ -35,7 +35,7 @@ async def evaluate_answer(request: EvaluateRequestInput):
         print(f"[{datetime.now().isoformat()}] Évaluation de réponse demandée avec modèle: {request.model}")
         
         # Utiliser le modèle spécifié ou le modèle par défaut
-        provider, model = tuple(request.model.split("/")) if request.model else ("mistral", "mistral-small")
+        provider, model = tuple(request.model.split("/")) if request.model else ("mistral", "mistral-small-2603")
         # Créer un agent avec le modèle spécifié
         evaluator = get_evaluator_agent(model, provider=provider, async_mode=True)
         evaluation = await evaluator.run_async(request)

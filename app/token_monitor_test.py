@@ -16,7 +16,7 @@ def test_token_monitoring():
     print("=" * 60)
     
     # Initialiser l'agent QA
-    qa_agent = get_qa_agent(model="mistral-medium")
+    qa_agent = get_qa_agent(model="mistral-small-2603")
     
     # Créer une entrée utilisateur
     user_input = QuestionRequestInput(
@@ -27,14 +27,14 @@ def test_token_monitoring():
     print("Appel de l'agent avec surveillance des tokens...")
     
     # Appeler l'agent avec surveillance des tokens
-    response, input_tokens, output_tokens = monitor_agent_call(
+    response, usage_info = monitor_agent_call(
         agent=qa_agent, 
         user_input=user_input
         # method="run" est la valeur par défaut
     )
     
     # Afficher les informations de tokens
-    print_token_info(input_tokens, output_tokens, "run")
+    print_token_info(usage_info.input_tokens, usage_info.output_tokens, "run")
     
     # Afficher la réponse
     print("Réponse de l'agent:")
@@ -44,7 +44,7 @@ def test_token_monitoring():
         print(f"A{i+1}: {qa.answer_text}")
         print()
     
-    return response, input_tokens, output_tokens
+    return response, usage_info
 
 async def test_async_token_monitoring():
     """Teste le moniteur de tokens avec un appel asynchrone."""
@@ -62,7 +62,7 @@ def main():
     """Fonction principale pour exécuter les tests."""
     try:
         # Test synchrone
-        response, input_tokens, output_tokens = test_token_monitoring()
+        response, usage_info = test_token_monitoring()
         
         # Test asynchrone (commenté car nécessite une configuration spécifique)
         # asyncio.run(test_async_token_monitoring())

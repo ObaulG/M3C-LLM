@@ -192,6 +192,9 @@ async def submit_question_session_message(request: QuestionSessionMessage,
     start_time = time.time()
     total_input_tokens = 0
     total_output_tokens = 0
+    total_cached_tokens = 0
+    total_cost_eur = 0.0
+    has_cost = False
     session_id = request.session_id
     user_message = request.user_message
 
@@ -216,16 +219,20 @@ async def submit_question_session_message(request: QuestionSessionMessage,
     message_ev_agent = getattr(app.state, "message_ev_agent", None)
     if message_ev_agent is None:
         raise HTTPException(status_code=500, detail="Agent de type de message non initialisé")
-    result, token_count_result, output_tokens = monitor_agent_call(message_ev_agent,
-                                                                   user_input=MessageTypeRequestInput(
-                                                                              current_question=question["content"],
-                                                                              reference_answers=reference_answers,
-                                                                              user_message=user_message
-                                                                   ),
-                                                                   method = "run")
+    result, message_usage = monitor_agent_call(message_ev_agent,
+                                               user_input=MessageTypeRequestInput(
+                                                          current_question=question["content"],
+                                                          reference_answers=reference_answers,
+                                                          user_message=user_message
+                                               ),
+                                               method = "run")
     message_type = result.message_type
-    total_input_tokens += token_count_result
-    total_output_tokens += output_tokens
+    total_input_tokens += message_usage.input_tokens
+    total_output_tokens += message_usage.output_tokens
+    total_cached_tokens += message_usage.cached_tokens
+    if message_usage.cost_eur is not None:
+        has_cost = True
+        total_cost_eur += message_usage.cost_eur
     logging.info("Message type determined : {message_type}".format(message_type=message_type),)
     new_question = False
     is_finished = False
@@ -260,10 +267,14 @@ async def submit_question_session_message(request: QuestionSessionMessage,
             ]
             eval_results = await asyncio.gather(*coroutines)
             for result in eval_results:
-                evaluation, token_count_result, output_tokens = result
+                evaluation, usage = result
                 evaluations.append(evaluation)
-                total_input_tokens += token_count_result
-                total_output_tokens += output_tokens
+                total_input_tokens += usage.input_tokens
+                total_output_tokens += usage.output_tokens
+                total_cached_tokens += usage.cached_tokens
+                if usage.cost_eur is not None:
+                    has_cost = True
+                    total_cost_eur += usage.cost_eur
 
             # Stocker les évaluations individuelles avec leurs modèles
             individual_evaluations = []
@@ -380,7 +391,12 @@ async def submit_question_session_message(request: QuestionSessionMessage,
         # TODO: il sera à modifier plus tard.
         metadata={"token_usage":{
                 "input_tokens": total_input_tokens,
-                "output_tokens": total_output_tokens,}}
+                "output_tokens": total_output_tokens,},
+                "usage_details": {
+                    "input_tokens": total_input_tokens,
+                    "cached_tokens": total_cached_tokens,
+                    "output_tokens": total_output_tokens,},
+                **({"cost_eur": round(total_cost_eur, 8)} if has_cost else {})}
     )
     return session_response
 
