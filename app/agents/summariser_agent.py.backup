@@ -69,7 +69,7 @@ class ArtifactRemovalResult(BaseIOSchema):
         description="The processed text with artifacts removed."
     )
 
-def get_chunk_summariser_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_chunk_summariser_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     return AtomicAgent[ChunkSummaryRequestInput, ChunkSummaryResult](
         config=AgentConfig(
@@ -95,7 +95,7 @@ def get_chunk_summariser_agent(model: str = "mistral-medium", max_words: int = 1
         )
     )
 
-def get_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_summaries_merger_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     return AtomicAgent[MergeSummariesRequestInput, MergedSummaryResult](
         config=AgentConfig(
@@ -122,7 +122,7 @@ def get_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 1
         )
     )
 
-def get_context_summaries_merger_agent(model: str = "mistral-medium", max_words: int = 100):
+def get_context_summaries_merger_agent(model: str = "mistral-large-4", max_words: int = 100):
     client = get_mistral_client()
     return AtomicAgent[MergeSummariesRequestInput, MergedSummaryResult](
         config=AgentConfig(
@@ -149,7 +149,7 @@ def get_context_summaries_merger_agent(model: str = "mistral-medium", max_words:
         )
     )
 
-def get_artifact_removal_prompt_generator(model: str = "mistral-medium"):
+def get_artifact_removal_prompt_generator(model: str = "mistral-large-4"):
     client = get_mistral_client()
     return AtomicAgent[ArtifactRemovalRequestInput, ArtifactRemovalResult](
         config=AgentConfig(

@@ -148,7 +148,7 @@ class MediationSessionEvaluator:
         
         # Liste des modèles disponibles
         self.available_models = {
-            "mistral": ["mistral-small-latest", "mistral-medium", "mistral-large-2411"],
+            "mistral": ["mistral-small-latest", "mistral-large-4", "mistral-large-2411"],
             "ministral": ["ministral-3b-latest", "ministral-8b-latest"]
         }
         
@@ -363,7 +363,7 @@ class MediationSessionEvaluator:
                 final_evaluator_model="ministral-3b-latest"
             ),
             SessionEvaluationConfig(
-                evaluator_models=["mistral-medium"],
+                evaluator_models=["mistral-large-4"],
                 nb_evaluators=1,
                 with_final_evaluator=False,
                 final_evaluator_model="ministral-3b-latest"

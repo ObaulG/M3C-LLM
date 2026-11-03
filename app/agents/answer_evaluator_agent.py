@@ -140,7 +140,7 @@ final_evaluation_system_prompt_generator = SystemPromptGenerator(
     ],
 )
 
-def get_final_evaluator_agent(model: str = "mistral-medium",
+def get_final_evaluator_agent(model: str = "mistral-large-4",
                               provider: str = "mistral",
                               async_mode: bool = False):
     client = create_client(provider, model, async_mode, instructor_mode=instructor.Mode.JSON)
@@ -154,7 +154,7 @@ def get_final_evaluator_agent(model: str = "mistral-medium",
     )
     return final_evaluation_agent
 
-def get_evaluator_agent(model: str = "mistral-medium",
+def get_evaluator_agent(model: str = "mistral-large-4",
                         provider: str = "mistral",
                         async_mode: bool = False,
                         custom_system_prompt_generator=None):

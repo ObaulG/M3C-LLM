@@ -39,7 +39,7 @@ recommendation_system_prompt_generator = SystemPromptGenerator(
     ],
 )
 
-def get_recommendation_agent(model: str = "mistral-medium"):
+def get_recommendation_agent(model: str = "mistral-large-4"):
     """
     Crée et retourne un agent spécialisé dans la recommandation de documents.
     """

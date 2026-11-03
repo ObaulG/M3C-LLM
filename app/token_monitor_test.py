@@ -16,7 +16,7 @@ def test_token_monitoring():
     print("=" * 60)
     
     # Initialiser l'agent QA
-    qa_agent = get_qa_agent(model="mistral-medium")
+    qa_agent = get_qa_agent(model="mistral-large-4")
     
     # Créer une entrée utilisateur
     user_input = QuestionRequestInput(

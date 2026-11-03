@@ -12,7 +12,7 @@ Ce script:
 6. Génère un rapport détaillé avec toutes les évaluations
 
 Modèles utilisés:
-- Distants (Mistral): mistral-small-latest, ministral-3b-latest, ministral-8b-latest, mistral-medium
+- Distants (Mistral): mistral-small-latest, ministral-3b-latest, ministral-8b-latest, mistral-large-4
 - Locaux (Ollama): ministral-3:3b, cas/ministral-8b-instruct-2410_q4km, llama3.1:8b
 
 Auteur: Généré par Mistral Vibe

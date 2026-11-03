@@ -12,8 +12,7 @@ gouranshitera/bloom-1b1,ollama,bloom-1b1
 gouranshitera/bloomz-1b7,ollama,bloomz-1b7
 mistral-tiny,mistral,Mistral Tiny
 mistral-small,mistral,Mistral Small
-mistral-medium,mistral,Mistral Medium
-mistral-medium-latest,mistral,Mistral Medium (latest)
+mistral-large-4,mistral,Mistral Large 4
 mistral-large-2411,mistral,Mistral Large 2411
 mistral-large-2512,mistral,Mistral Large 2512
 ministral-3b-2410,mistral,MiniStral 3B 2410

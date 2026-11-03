@@ -16,7 +16,7 @@ class TokenMonitoringSummariser(Summariser):
     pour chaque appel aux agents.
     """
     
-    def __init__(self, model: str = "mistral-medium"):
+    def __init__(self, model: str = "mistral-large-4"):
         super().__init__(model=model)
         self.total_input_tokens = 0
         self.total_output_tokens = 0
@@ -162,7 +162,7 @@ def main():
     print("=" * 60)
     
     # Utiliser la classe étendue avec surveillance des tokens
-    summariser = TokenMonitoringSummariser("mistral-medium-latest")
+    summariser = TokenMonitoringSummariser("mistral-large-4")
     
     # Résumer le document avec surveillance des tokens
     summary = summariser.summarise_with_token_monitoring(DOCUMENT_ID, os.path.join(FOLDER, DOCUMENT_ID))

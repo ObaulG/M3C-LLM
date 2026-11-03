@@ -136,7 +136,7 @@
             <mxRectangle width="93" height="20" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="3bo-EeLYkTesDY-BVvNa-2" value="mistral-medium (API)" style="connectable=0;recursiveResize=0;strokeColor=#97D077;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontSize=6;" parent="A0alvm5Icl3ECjXGK4nP-21" vertex="1">
+        <mxCell id="3bo-EeLYkTesDY-BVvNa-2" value="mistral-large-4 (API)" style="connectable=0;recursiveResize=0;strokeColor=#97D077;fillColor=inherit;align=center;whiteSpace=wrap;html=1;fontSize=6;" parent="A0alvm5Icl3ECjXGK4nP-21" vertex="1">
           <mxGeometry x="256" width="93" height="20" as="geometry">
             <mxRectangle width="93" height="20" as="alternateBounds" />
           </mxGeometry>

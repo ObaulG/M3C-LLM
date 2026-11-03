@@ -469,7 +469,7 @@ class AgentEvaluatorComparator:
         print(f"  - Nombre de questions: {len(session_data)}")
         print(f"  - Évaluations par question: {len(self.agents_config)}")
         print(f"  - Total d'évaluations: {len(session_data) * len(self.agents_config)}")
-        print(f"  - Modèles utilisés: mistral-small, mistral-medium, mistral-large")
+        print(f"  - Modèles utilisés: mistral-small, mistral-large-4, mistral-large")
         print(f"  - Types d'agents: base, strict, bienveillant, pedagogique, creatif, minimaliste")
         print(f"{'='*80}\n")
 

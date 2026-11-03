@@ -63,7 +63,7 @@ if system_prompt_generator is None:
     system_prompt_generator = _FALLBACK_PROMPT
 
 
-def get_fact_analyser_agent(model: str = "mistral-medium"):
+def get_fact_analyser_agent(model: str = "mistral-large-4"):
     client = get_mistral_client()
     agent = AtomicAgent[FactExtractionInput, FactExtractionOutput](
         config=AgentConfig(
@@ -119,7 +119,7 @@ if _fact_presence_prompt is None:
     _fact_presence_prompt = _FALLBACK_PRESENCE_PROMPT
 
 
-def get_fact_presence_agent(model: str = "mistral-medium",
+def get_fact_presence_agent(model: str = "mistral-large-4",
                             provider: str = "mistral",
                             async_mode: bool = False):
     from .instructor_factory import create_client
@@ -170,7 +170,7 @@ if _answer_facts_prompt is None:
     _answer_facts_prompt = _FALLBACK_ANSWER_FACTS_PROMPT
 
 
-def get_answer_facts_agent(provider: str = "mistral", model: str = "mistral-medium"):
+def get_answer_facts_agent(provider: str = "mistral", model: str = "mistral-large-4"):
     client = create_client(provider, model)
     agent = AtomicAgent[FactExtractionInput, AnswerFactsExtractionOutput](
         config=AgentConfig(

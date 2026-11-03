@@ -22,7 +22,7 @@ from embedders import get_embedder_instance
 MISTRAL_MODELS = [
     "ministral-3b-2410", "ministral-8b-2410", "ministral-3b-2512", "ministral-8b-2512", "ministral-14b-2512",
     "open-mistral-7b", "open-mistral-nemo",
-    "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
+    "mistral-tiny", "mistral-small", "mistral-large-4", "mistral-large-2411"
 ]
 #GEMINI_MODELS = [
 #    "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemma-3-1b", "gemma-3-2b",
