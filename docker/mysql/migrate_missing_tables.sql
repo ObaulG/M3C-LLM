@@ -935,18 +935,31 @@ ORDER BY uks.user_id, uks.score DESC, uks.confidence DESC;
 -- =============================================================================
 -- MIGRATION : clé API Mistral personnelle + rôle "guest"
 -- =============================================================================
--- La table `user` (externe à ce script) gagne une colonne pour stocker la
--- clé API Mistral de l'utilisateur. Les rôles "admin"/"global_admin" utilisent
--- la clé interne du serveur ; les rôles "user"/"guest" doivent fournir la leur.
--- Idempotent : la colonne n'est ajoutée que si elle n'existe pas.
+-- La clé API Mistral de l'utilisateur est stockée dans une table dédiée
+-- `user_mistral_api_keys`, séparée de la table `user` (que ce script ne
+-- modifie plus). Les rôles "admin"/"global_admin" utilisent la clé interne du
+-- serveur ; les rôles "user"/"guest" doivent fournir la leur.
+-- Idempotent : si une ancienne colonne `user.mistral_api_key` existe, ses
+-- valeurs sont copiées dans la nouvelle table (une seule fois).
+
+CREATE TABLE IF NOT EXISTS user_mistral_api_keys (
+    user_id INT NOT NULL COMMENT 'Identifiant de la table user',
+    mistral_api_key VARCHAR(255) NOT NULL COMMENT 'Clé API Mistral personnelle de l''utilisateur',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création de la ligne',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de dernière modification',
+    PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET @col_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS
                     WHERE TABLE_SCHEMA = DATABASE()
                       AND TABLE_NAME = 'user'
                       AND COLUMN_NAME = 'mistral_api_key');
-SET @sql := IF(@col_exists = 0,
-    'ALTER TABLE user ADD COLUMN mistral_api_key VARCHAR(255) NULL AFTER password_hash',
-    'SELECT "colonne mistral_api_key deja presente" AS info');
+SET @sql := IF(@col_exists > 0,
+    'INSERT INTO user_mistral_api_keys (user_id, mistral_api_key)
+     SELECT id, mistral_api_key FROM user
+     WHERE mistral_api_key IS NOT NULL
+     ON DUPLICATE KEY UPDATE mistral_api_key = VALUES(mistral_api_key)',
+    'SELECT "aucune colonne user.mistral_api_key a migrer" AS info');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;

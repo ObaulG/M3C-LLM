@@ -7,8 +7,8 @@ Ce module fournit des utilitaires pour :
   1. la clé fournie directement par le client (paramètre `mistral_api_key`) ;
   2. sinon, selon le rôle de l'utilisateur authentifié :
      - `global_admin` / `admin` : la clé interne du serveur (MISTRAL_API_KEY) ;
-     - `user` / `guest` : la clé personnelle stockée dans la colonne
-       `mistral_api_key` de la table `user`.
+     - `user` / `guest` : la clé personnelle stockée dans la table dédiée
+       `user_mistral_api_keys`.
 """
 
 import os
@@ -25,14 +25,19 @@ async def _resolve_user_api_key(user_id: int) -> Tuple[Optional[str], Optional[s
     Retourne (clé API, rôle) pour un utilisateur authentifié.
 
     - admin/global_admin -> clé du serveur (env MISTRAL_API_KEY)
-    - user/guest -> colonne mistral_api_key de la table user
+    - user/guest -> table user_mistral_api_keys
     """
     from database.database import get_db_connection
 
     async with await get_db_connection() as conn:
         async with conn.cursor() as cursor:
             await cursor.execute(
-                "SELECT role, mistral_api_key FROM user WHERE id = %s",
+                """
+                SELECT u.role, k.mistral_api_key
+                FROM user u
+                LEFT JOIN user_mistral_api_keys k ON k.user_id = u.id
+                WHERE u.id = %s
+                """,
                 (user_id,)
             )
             row = await cursor.fetchone()

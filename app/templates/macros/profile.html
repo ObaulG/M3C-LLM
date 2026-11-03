@@ -36,7 +36,7 @@
         <span class="close" onclick="hideMistralApiModal()">&times;</span>
         <h2>🔑 Configurer la clé API Mistral</h2>
         <div class="modal-section">
-            <p>Votre clé API Mistral est stockée <strong>uniquement dans votre navigateur</strong> et n'est jamais envoyée à notre serveur.</p>
+            <p>Votre clé API Mistral est <strong>enregistrée de façon sécurisée sur le serveur</strong>, associée à votre compte. Elle n'est jamais stockée dans votre navigateur.</p>
             <p>Elle sera utilisée automatiquement pour toutes vos requêtes aux modèles Mistral AI.</p>
         </div>
         <div class="modal-section">
@@ -58,7 +58,7 @@
 <script>
 function showMistralApiModal() {
     document.getElementById('mistralApiModal').style.display = 'block';
-    document.getElementById('mistralApiKeyInput').value = localStorage.getItem('mistral_api_key') || '';
+    document.getElementById('mistralApiKeyInput').value = '';
     document.body.style.overflow = 'hidden';
 }
 
@@ -70,7 +70,7 @@ function hideMistralApiModal() {
 function saveMistralApiKey() {
     const apiKey = document.getElementById('mistralApiKeyInput').value.trim();
     const messageDiv = document.getElementById('mistralApiMessage');
-    
+
     if (!apiKey) {
         messageDiv.textContent = 'Veuillez entrer une clé API.';
         messageDiv.style.display = 'block';
@@ -78,55 +78,68 @@ function saveMistralApiKey() {
         messageDiv.style.color = '#856404';
         return;
     }
-    
-    // Simple validation: Mistral API keys typically start with 'x' and have specific format
-    if (!apiKey.startsWith('x') || apiKey.length < 30) {
+
+    // Validation basique : les clés Mistral commencent par 'mstrl'
+    if (!apiKey.startsWith('mstrl') || apiKey.length < 30) {
         messageDiv.textContent = 'La clé API semble invalide. Vérifiez que vous avez copié la bonne clé.';
         messageDiv.style.display = 'block';
         messageDiv.style.background = '#f8d7da';
         messageDiv.style.color = '#721c24';
         return;
     }
-    
-    localStorage.setItem('mistral_api_key', apiKey);
-    messageDiv.textContent = 'Clé API enregistrée avec succès !';
-    messageDiv.style.display = 'block';
-    messageDiv.style.background = '#d4edda';
-    messageDiv.style.color = '#155724';
-    
-    // Update the profile widget to show API key is configured
-    updateProfileWidgetApiStatus();
-    
-    setTimeout(hideMistralApiModal, 1500);
+
+    window.mistralApiKey.save(apiKey).then(function (ok) {
+        if (ok) {
+            messageDiv.textContent = 'Clé API enregistrée avec succès !';
+            messageDiv.style.display = 'block';
+            messageDiv.style.background = '#d4edda';
+            messageDiv.style.color = '#155724';
+            updateProfileWidgetApiStatus();
+            setTimeout(hideMistralApiModal, 1500);
+        } else {
+            messageDiv.textContent = "Impossible d'enregistrer la clé. Êtes-vous connecté ?";
+            messageDiv.style.display = 'block';
+            messageDiv.style.background = '#f8d7da';
+            messageDiv.style.color = '#721c24';
+        }
+    });
 }
 
 function clearMistralApiKey() {
-    localStorage.removeItem('mistral_api_key');
-    document.getElementById('mistralApiKeyInput').value = '';
-    const messageDiv = document.getElementById('mistralApiMessage');
-    messageDiv.textContent = 'Clé API effacée.';
-    messageDiv.style.display = 'block';
-    messageDiv.style.background = '#d4edda';
-    messageDiv.style.color = '#155724';
-    
-    // Update the profile widget to show API key is not configured
-    updateProfileWidgetApiStatus();
+    window.mistralApiKey.clear().then(function (ok) {
+        document.getElementById('mistralApiKeyInput').value = '';
+        const messageDiv = document.getElementById('mistralApiMessage');
+        if (ok) {
+            messageDiv.textContent = 'Clé API effacée.';
+            messageDiv.style.display = 'block';
+            messageDiv.style.background = '#d4edda';
+            messageDiv.style.color = '#155724';
+        } else {
+            messageDiv.textContent = "Impossible d'effacer la clé. Êtes-vous connecté ?";
+            messageDiv.style.display = 'block';
+            messageDiv.style.background = '#f8d7da';
+            messageDiv.style.color = '#721c24';
+        }
+        updateProfileWidgetApiStatus();
+    });
 }
 
 function updateProfileWidgetApiStatus() {
-    const apiKey = localStorage.getItem('mistral_api_key');
-    const apiStatus = document.getElementById('profileApiStatus');
-    if (apiStatus) {
-        if (apiKey) {
-            apiStatus.textContent = '✓';
-            apiStatus.title = 'Clé API Mistral configurée';
-            apiStatus.style.color = '#28a745';
-        } else {
-            apiStatus.textContent = '✗';
-            apiStatus.title = 'Clé API Mistral non configurée';
-            apiStatus.style.color = '#dc3545';
+    window.mistralApiKey.fetchStatus().then(function (status) {
+        const hasKey = !!(status && status.has_api_key);
+        const apiStatus = document.getElementById('profileApiStatus');
+        if (apiStatus) {
+            if (hasKey) {
+                apiStatus.textContent = '\u2713';
+                apiStatus.title = 'Clé API Mistral configurée';
+                apiStatus.style.color = '#28a745';
+            } else {
+                apiStatus.textContent = '\u2717';
+                apiStatus.title = 'Clé API Mistral non configurée';
+                apiStatus.style.color = '#dc3545';
+            }
         }
-    }
+    });
 }
 
 // Load API key status on page load

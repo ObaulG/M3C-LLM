@@ -176,10 +176,11 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
 
 
 async def get_user_mistral_api_key(user_id: int) -> Optional[str]:
+    """Retourne la clé API Mistral de l'utilisateur (table user_mistral_api_keys)."""
     async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
             await cur.execute(
-                "SELECT mistral_api_key FROM user WHERE id = %s;",
+                "SELECT mistral_api_key FROM user_mistral_api_keys WHERE user_id = %s;",
                 (user_id,),
             )
             row = await cur.fetchone()
@@ -189,12 +190,27 @@ async def get_user_mistral_api_key(user_id: int) -> Optional[str]:
 
 
 async def set_user_mistral_api_key(user_id: int, api_key: Optional[str]) -> None:
+    """Enregistre (ou efface) la clé API Mistral de l'utilisateur.
+
+    La clé est stockée dans la table dédiée `user_mistral_api_keys`, sans
+    modifier la table `user`.
+    """
     async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(
-                "UPDATE user SET mistral_api_key = %s, modified = NOW() WHERE id = %s;",
-                (api_key if api_key else None, user_id),
-            )
+            if api_key:
+                await cur.execute(
+                    """
+                    INSERT INTO user_mistral_api_keys (user_id, mistral_api_key)
+                    VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE mistral_api_key = VALUES(mistral_api_key);
+                    """,
+                    (user_id, api_key),
+                )
+            else:
+                await cur.execute(
+                    "DELETE FROM user_mistral_api_keys WHERE user_id = %s;",
+                    (user_id,),
+                )
 
 
 def _token_from_authorization(authorization: Optional[str]) -> Optional[str]:
