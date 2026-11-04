@@ -194,9 +194,10 @@ async def evaluate_answer(
 ) -> UserEvaluationResponse:
 
     #1. récupérer la question et les réponses
-    question = await get_question_by_id(await get_db_connection(),
-                                        question_id,
-                                        include_answers=True)
+    async with await get_db_connection() as conn:
+        question = await get_question_by_id(conn,
+                                            question_id,
+                                            include_answers=True)
     # vérifier que les réponses existent
     all_reference_answers = [answer["content"] for answer in question["answers"]]
 
