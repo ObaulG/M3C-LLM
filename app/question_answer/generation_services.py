@@ -260,7 +260,8 @@ async def generate_questions_single_answer_for_chunk(
     num_questions: int,
     model_name: str,
     max_retries: int = 2,
-    user_prompt: Optional[str] = None
+    user_prompt: Optional[str] = None,
+    usage_sink: Optional[list] = None
 ) -> Tuple[qa_single_agent.QuestionAnswerList, Optional[str]]:
     import instructor
     """
@@ -302,7 +303,10 @@ async def generate_questions_single_answer_for_chunk(
                 num_questions=num_questions
             )
             print("Essai de génération :")
-            response = agent.run(input_schema)
+            from agents.token_monitor import monitor_agent_call
+            response, usage_info = monitor_agent_call(agent, input_schema)
+            if usage_sink is not None:
+                usage_sink.append(usage_info.to_metadata())
             questions_generated = len(response.QA_list) if response else 0
             print(questions_generated, "questions/réponses générées")
             print(type(response), response)

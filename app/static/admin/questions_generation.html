@@ -171,6 +171,14 @@
     .compare-model-card .model-meta { font-size: 11px; color: #888; font-weight: normal; }
     .compare-fact { background: #eef7ee; border-left: 3px solid #28a745; padding: 6px 10px; border-radius: 4px; margin: 5px 0; font-size: 13px; }
     .compare-fact.optional { background: #fff8e6; border-left-color: #ffc107; }
+    .facts-details { margin: 6px 0; }
+    .facts-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: #b74420; background: #f6efe9; border: 1px solid #e6d5cd; border-radius: 6px; padding: 6px 10px; user-select: none; }
+    .facts-details summary:hover { background: #fbe9e4; }
+    .facts-details[open] summary { border-radius: 6px 6px 0 0; }
+    .facts-details .facts-body { border: 1px solid #e6d5cd; border-top: none; border-radius: 0 0 6px 6px; padding: 4px 8px; }
+    .token-usage { font-size: 12px; color: #555; background: #f4f1ec; border: 1px dashed #cbb9a9; border-radius: 6px; padding: 6px 10px; margin-top: 8px; line-height: 1.6; }
+    .token-usage .token-title { font-weight: 600; color: #7a5c3e; }
+    .token-usage .token-cost { font-weight: 600; color: #b74420; }
     .compare-knowledge { background: #eef2fb; border-left: 3px solid #4a6fd4; padding: 6px 10px; border-radius: 4px; margin: 5px 0; font-size: 13px; }
     .compare-error { color: #dc3545; font-size: 13px; padding: 8px; background: #fdecee; border-radius: 4px; }
     @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
@@ -1477,6 +1485,9 @@
         }
 
         let html = `<h3 class="section-title">Résultats de la Comparaison (${escapeHtml(job.status || '')})</h3>`;
+        if (results.token_usage) {
+            html += renderTokenUsageBlock(results.token_usage, 'Consommation totale du job');
+        }
         for (const chunk of results.chunks) {
             html += `<div class="compare-chunk-card">
                 <div class="chunk-summary">📄 <strong>Chunk ${chunk.chunk_id}</strong> — Document ${chunk.document_id ?? 'N/A'} · Page ${chunk.num_page ?? 'N/A'}</div>`;
@@ -1491,14 +1502,22 @@
                 if (model.error) {
                     html += `<div class="compare-error">${escapeHtml(model.error)}</div>`;
                 }
+                if (model.token_usage && model.token_usage.calls > 0) {
+                    html += renderTokenUsageBlock(model.token_usage, 'Consommation de tokens');
+                }
                 for (const qa of model.qa || []) {
                     html += `<div class="question-text" style="margin: 10px 0 2px;">❓ ${escapeHtml(qa.question)}</div>
                         <div class="answer-text">${escapeHtml(qa.answer)}</div>`;
                     if (qa.facts_error) {
                         html += `<div class="compare-error">Faits: ${escapeHtml(qa.facts_error)}</div>`;
                     }
-                    for (const fact of qa.facts || []) {
-                        html += `<div class="compare-fact ${fact.importance === 'optional' ? 'optional' : ''}">✅ ${escapeHtml(fact.content)} <span class="model-meta">(${escapeHtml(fact.importance || 'essential')})</span></div>`;
+                    const facts = qa.facts || [];
+                    if (facts.length > 0) {
+                        html += `<details class="facts-details"><summary>✅ ${facts.length} fait${facts.length > 1 ? 's' : ''} relevé${facts.length > 1 ? 's' : ''} — cliquer pour étendre</summary><div class="facts-body">`;
+                        for (const fact of facts) {
+                            html += `<div class="compare-fact ${fact.importance === 'optional' ? 'optional' : ''}">✅ ${escapeHtml(fact.content)} <span class="model-meta">(${escapeHtml(fact.importance || 'essential')})</span></div>`;
+                        }
+                        html += `</div></details>`;
                     }
                 }
                 if (model.knowledge_elements_error) {
@@ -1516,6 +1535,22 @@
             html += `</div>`;
         }
         container.innerHTML = html;
+    }
+
+    function renderTokenUsageBlock(usage, title) {
+        const inputTokens = usage.input_tokens ?? 0;
+        const outputTokens = usage.output_tokens ?? 0;
+        const cachedTokens = usage.cached_tokens ?? 0;
+        const totalTokens = usage.total_tokens ?? (inputTokens + outputTokens);
+        let costHtml = '<span class="model-meta">coût indisponible (modèle non tarifé)</span>';
+        if (usage.cost_eur !== null && usage.cost_eur !== undefined) {
+            costHtml = `<span class="token-cost">${Number(usage.cost_eur).toFixed(6).replace('.', ',')} €</span>`;
+        }
+        return `<div class="token-usage">
+            <span class="token-title">📊 ${escapeHtml(title)} (${usage.calls ?? 0} appel${(usage.calls || 0) > 1 ? 's' : ''} LLM)</span><br>
+            Entrée : <strong>${inputTokens.toLocaleString('fr-FR')}</strong> tokens · Sortie : <strong>${outputTokens.toLocaleString('fr-FR')}</strong> tokens · Cache : <strong>${cachedTokens.toLocaleString('fr-FR')}</strong> tokens · Total : <strong>${totalTokens.toLocaleString('fr-FR')}</strong> tokens<br>
+            Somme dépensée (estimée) : ${costHtml}
+        </div>`;
     }
 
     function downloadCompareResultsJson() {
