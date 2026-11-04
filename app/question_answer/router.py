@@ -693,7 +693,7 @@ async def require_admin_or_expert(
             detail="Authentification requise.",
         )
     user = await auth.get_user_by_id(user_id)
-    role = (user or {}).get("role")
+    role = str((user or {}).get("role") or "").strip().lower()
     if role not in ("global_admin", "admin", "validator"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
