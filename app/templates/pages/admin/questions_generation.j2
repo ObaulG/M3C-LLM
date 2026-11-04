@@ -1264,7 +1264,7 @@
     });
 
     // ========================================================================
-    // COMPARAISON MULTI-MODÈLES (RÉSERVÉE ADMINS / EXPERTS)
+    // COMPARAISON MULTI-MODÈLES
     // ========================================================================
 
     let compareCurrentJobId = null;
@@ -1273,16 +1273,8 @@
     let compareSelectedDocuments = new Set();
     let compareChunksByDoc = {};
 
-    const COMPARE_ALLOWED_ROLES = ['global_admin', 'admin', 'validator'];
-
     async function initCompareSection() {
         try {
-            const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
-            if (!response.ok) return;
-            const data = await response.json();
-            const role = data && data.user ? data.user.role : null;
-            if (!COMPARE_ALLOWED_ROLES.includes(role)) return;
-
             const section = document.getElementById('compareSection');
             if (section) section.style.display = 'block';
 

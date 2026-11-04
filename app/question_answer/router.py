@@ -674,14 +674,14 @@ async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small
 
 
 # ============================================================================
-# GÉNÉRATION COMPARATIVE MULTI-MODÈLES (RÉSERVÉE ADMINS ET EXPERTS)
+# GÉNÉRATION COMPARATIVE MULTI-MODÈLES
 # ============================================================================
 
-async def require_admin_or_expert(
+async def require_authenticated_user(
     m3c_api_key: Optional[str] = Cookie(default=None),
     authorization: Optional[str] = None,
 ):
-    """Dépendance FastAPI : restreint l'accès aux rôles admin, global_admin et validator (experts)."""
+    """Dépendance FastAPI : exige un utilisateur authentifié, sans contrainte de rôle."""
     import auth
 
     user_id = auth.user_id_from_token(m3c_api_key)
@@ -693,12 +693,6 @@ async def require_admin_or_expert(
             detail="Authentification requise.",
         )
     user = await auth.get_user_by_id(user_id)
-    role = (user or {}).get("role")
-    if role not in ("global_admin", "admin", "validator"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Fonctionnalité réservée aux administrateurs et aux experts.",
-        )
     return user
 
 
@@ -706,10 +700,9 @@ async def require_admin_or_expert(
     "/compare-generation/chunks/{document_id}",
     summary="Chunks d'un document pour la comparaison multi-modèles",
     description="Retourne les chunks d'un document (text_chunks) avec un aperçu de leur contenu, "
-                "pour la sélection multi-chunks/multi-documents de la génération comparative. "
-                "Réservé aux administrateurs et experts.",
+                "pour la sélection multi-chunks/multi-documents de la génération comparative.",
 )
-async def get_compare_chunks(document_id: int, user: dict = Depends(require_admin_or_expert)):
+async def get_compare_chunks(document_id: int, user: dict = Depends(require_authenticated_user)):
     """Liste les chunks d'un document pour la sélection dans la comparaison multi-modèles."""
     try:
         async with await get_db_connection() as conn:
@@ -746,11 +739,11 @@ async def get_compare_chunks(document_id: int, user: dict = Depends(require_admi
     description="Pour chaque chunk sélectionné et chaque modèle (au moins 3), génère les questions/réponses, "
                 "puis les faits de chaque réponse, ainsi que les éléments de connaissance. "
                 "Aucune donnée n'est sauvegardée en base : les résultats restent en mémoire et sont "
-                "consultables via /compare-generation/jobs/{job_id}. Réservé aux administrateurs et experts.",
+                "consultables via /compare-generation/jobs/{job_id}.",
 )
 async def compare_generation(
     request: CompareGenerationRequest,
-    user: dict = Depends(require_admin_or_expert),
+    user: dict = Depends(require_authenticated_user),
 ):
     """
     Lance un job de génération comparative : questions/réponses puis faits,
@@ -791,9 +784,9 @@ async def compare_generation(
     "/compare-generation/jobs/{job_id}",
     summary="Résultats d'un job de génération comparative",
     description="Retourne l'état et les résultats (en mémoire, non persistés en base) d'un job "
-                "de génération comparative. Réservé aux administrateurs et experts.",
+                "de génération comparative.",
 )
-async def get_compare_generation_job_endpoint(job_id: str, user: dict = Depends(require_admin_or_expert)):
+async def get_compare_generation_job_endpoint(job_id: str, user: dict = Depends(require_authenticated_user)):
     """Récupère un job de génération comparative avec ses résultats."""
     job = get_compare_generation_job(job_id)
     if not job:
