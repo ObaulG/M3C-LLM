@@ -1,4 +1,5 @@
 import os
+import functools
 from typing import Union, Literal, Optional
 import instructor
 from instructor import Instructor, AsyncInstructor
@@ -80,6 +81,59 @@ def _create_gemma_client(
         use_async=async_mode,
     )
 
+def _flatten_reasoning_content(completion):
+    """
+    Aplatit le contenu des réponses des modèles de raisonnement Mistral
+    (ex. mistral-large-4), qui renvoient message.content sous forme de liste
+    de chunks (ThinkChunk/TextChunk) au lieu d'une chaîne unique.
+
+    Conserve uniquement les chunks de type texte (le "thinking" est exclu),
+    faute de quoi la validation JSON d'Instructor échoue avec une erreur
+    json_type (input_type=list).
+    """
+    for choice in getattr(completion, "choices", None) or []:
+        message = getattr(choice, "message", None)
+        content = getattr(message, "content", None)
+        if not isinstance(content, list):
+            continue
+        parts = []
+        for chunk in content:
+            if isinstance(chunk, dict):
+                chunk_type = chunk.get("type")
+                chunk_text = chunk.get("text")
+            else:
+                chunk_type = getattr(chunk, "type", None)
+                chunk_text = getattr(chunk, "text", None)
+            if chunk_type == "text" and isinstance(chunk_text, str):
+                parts.append(chunk_text)
+        message.content = "".join(parts)
+    return completion
+
+
+def _patch_mistral_completions(client, async_mode: bool):
+    """
+    Enveloppe client.chat.completions.create pour aplatir systématiquement
+    le contenu des réponses avant qu'Instructor ne les valide.
+    """
+    completions = client.chat.completions
+    original_create = completions.create
+
+    if async_mode:
+        @functools.wraps(original_create)
+        async def create(*args, **kwargs):
+            return _flatten_reasoning_content(await original_create(*args, **kwargs))
+    else:
+        @functools.wraps(original_create)
+        def create(*args, **kwargs):
+            return _flatten_reasoning_content(original_create(*args, **kwargs))
+
+    try:
+        completions.create = create
+    except AttributeError:
+        object.__setattr__(completions, "create", create)
+    return client
+
+
 def _create_mistral_client(async_mode: bool, instructor_mode) -> Union[Instructor, AsyncInstructor]:
     """Crée un client Mistral."""
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -89,8 +143,10 @@ def _create_mistral_client(async_mode: bool, instructor_mode) -> Union[Instructo
             detail="La clé API Mistral n'est pas définie. Veuillez configurer la variable d'environnement MISTRAL_API_KEY."
         )
 
+    mistral_client = _patch_mistral_completions(Mistral(api_key=MISTRAL_API_KEY), async_mode)
+
     client = instructor.from_mistral(
-        Mistral(api_key=MISTRAL_API_KEY),
+        mistral_client,
         use_async=async_mode,
         mode=instructor_mode,
     )

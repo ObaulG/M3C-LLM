@@ -463,9 +463,11 @@ async def extract_knowledge_fallback(text: str,
     from atomic_agents import BaseIOSchema
     
     class FallbackInput(BaseIOSchema):
+        """Paragraphe de texte dont les faits doivent être extraits."""
         paragraph: str
     
     class FallbackOutput(BaseIOSchema):
+        """Liste de faits extraits du paragraphe."""
         facts: List[str]
     
     try:
