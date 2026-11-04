@@ -106,7 +106,7 @@ async def _determine_message_type(
     )
     
     # Appel à l'agent avec monitoring des tokens (comme dans api_server.py)
-    result, token_count_result, output_tokens = monitor_agent_call(
+    result, usage_info = monitor_agent_call(
         message_ev_agent,
         user_input=input_data,
         method="run"
@@ -122,8 +122,8 @@ async def _determine_message_type(
         result.message_type,
         result.confidence,
         result.explanation,
-        token_count_result,
-        output_tokens
+        usage_info.input_tokens,
+        usage_info.output_tokens
     )
 
 
@@ -144,10 +144,10 @@ async def _evaluate_answer_single_model(question_id: int,
     provider, model_name = tuple(model.split("/"))
     evaluator = get_evaluator_agent(model_name, provider=provider, async_mode=True)
     start_time = time.time()
-    result, input_tokens, output_tokens = await monitor_agent_call_async(evaluator, evaluation_input, "run_async")
+    result, usage_info = await monitor_agent_call_async(evaluator, evaluation_input, "run_async")
     end_time = time.time()
     time_elapsed = end_time - start_time
-    evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(result, input_tokens, output_tokens)
+    evaluation_result = from_AgentEvaluationResult_to_EvaluationResult(result, usage_info.input_tokens, usage_info.output_tokens)
 
     if logging_csv:
         log_response_to_csv(evaluation_input, evaluation_result, question_id, time_elapsed)
@@ -167,7 +167,7 @@ async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_loggin
     final_evaluator = get_final_evaluator_agent(async_mode=True)
 
     # 4. Appeler l'agent avec monitoring des tokens
-    result, input_tokens, output_tokens = await monitor_agent_call_async(
+    result, usage_info = await monitor_agent_call_async(
         final_evaluator,
         list_agent_evaluation,
         "run_async"
@@ -177,8 +177,8 @@ async def _aggregate_evaluations(evaluations: List[EvaluationResult], csv_loggin
     return from_AgentEvaluationResult_to_EvaluationResult(
         result,
         model="final_evaluator",
-        input_tokens=input_tokens,
-        output_tokens=output_tokens
+        input_tokens=usage_info.input_tokens,
+        output_tokens=usage_info.output_tokens
     )
 # ============================================================================
 # Fonction principale

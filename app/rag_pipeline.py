@@ -18,11 +18,17 @@ from database import ensure_qdrant_collection, get_resource_basic_metadata, get_
     get_resource_id_from_document_id, get_chunk_embeddings_with_metadata_qdrant
 from embedders import get_embedder_instance
 
+try:
+    from app.pricing import compute_cost_eur, usage_from_langchain_message
+except ImportError:
+    from pricing import compute_cost_eur, usage_from_langchain_message
+
 # Listes des modèles (déjà définies)
+# 5 modèles Mistral principaux, identifiants versionnés officiels
+# (cf. fiches docs.mistral.ai, politique de cycle de vie : éviter les alias -latest)
 MISTRAL_MODELS = [
-    "ministral-3b-2410", "ministral-8b-2410", "ministral-3b-2512", "ministral-8b-2512", "ministral-14b-2512",
-    "open-mistral-7b", "open-mistral-nemo",
-    "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large-2411"
+    "ministral-3b-2512", "ministral-8b-2512", "ministral-14b-2512",
+    "mistral-small-2603", "mistral-large-4"
 ]
 #GEMINI_MODELS = [
 #    "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemma-3-1b", "gemma-3-2b",
@@ -99,7 +105,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                            prompt: str,
                            model: str,
                            api_key: Optional[str] = None,
-                           **kwargs) -> tuple[BaseMessage, float, float]:
+                           **kwargs) -> tuple[BaseMessage, float, float, Optional[dict]]:
         """Asynchronously queries a language model (LLM) with a given prompt and returns its response along with processing time.
 
         Args:
@@ -109,10 +115,13 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                       These can include parameters like temperature, max_tokens, etc.
 
         Returns:
-            tuple[BaseMessage, float, float]:
+            tuple[BaseMessage, float, float, Optional[dict]]:
                 - BaseMessage: The response object returned by the language model.
                 - float: The processing time (in seconds) taken by the LLM to generate the response.
                 - float: The estimated energy consumption of the LLM request (local only) in Wh.
+                - dict: Consommation réelle et coût estimé de la requête
+                  ({input_tokens, cached_tokens, output_tokens, cost_eur, cost_detail}),
+                  ou None si aucune information d'usage n'est disponible.
         """
         # Si chat_history est fourni, construire la liste complète des messages
 
@@ -120,11 +129,11 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         if 'chat_history' in kwargs and kwargs['chat_history']:
             messages = kwargs.pop('chat_history')
             messages.append({"role": "user", "content": prompt})
-            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, messages, api_key=api_key)
+            answer, total_time, consumed_energy_Wh, usage_info = await self._invoke_llm(model, messages, api_key=api_key)
         else:
-            answer, total_time, consumed_energy_Wh = await self._invoke_llm(model, prompt, api_key=api_key)
+            answer, total_time, consumed_energy_Wh, usage_info = await self._invoke_llm(model, prompt, api_key=api_key)
 
-        return answer, total_time, consumed_energy_Wh
+        return answer, total_time, consumed_energy_Wh, usage_info
 
 
     async def query_rag(self,
@@ -136,7 +145,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                         k: int = 3,
                         specified_document_id: Optional[int]=None,
                         api_key: Optional[str] = None,
-                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float, Optional[float]]:
+                        **kwargs) -> tuple[BaseMessage, List[RAGSource], float, Optional[float], Optional[dict]]:
         """
         if preprocess_data does not contain the keys final_prompt and sources,
         then this function executes the preprocess.
@@ -149,9 +158,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             print("before rag_preprocess")
             final_prompt, sources = await self.rag_preprocess(prompt, reranking, k, specified_document_id, api_key=api_key)
             print("preprocess done")
-        answer, total_time, consumed_energy_Wh = await self.query_simple(final_prompt, model, api_key=api_key, **kwargs)
+        answer, total_time, consumed_energy_Wh, usage_info = await self.query_simple(final_prompt, model, api_key=api_key, **kwargs)
         print(answer)
-        return answer, sources, total_time, consumed_energy_Wh
+        return answer, sources, total_time, consumed_energy_Wh, usage_info
 
 
     def _init_llm_instances(self, load_local:bool = False):
@@ -398,12 +407,15 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             raise ValueError(f"Erreur lors du prétraitement RAG : {e}")
 
 
-    async def _invoke_llm(self, model: str, prompt, api_key: Optional[str] = None) -> tuple[AIMessage, float]:
+    async def _invoke_llm(self, model: str, prompt, api_key: Optional[str] = None) -> tuple[AIMessage, float, float, Optional[dict]]:
         """
         Encapsule ainvoke, en ajoutant le temps d'execution.
         Accepte soit un prompt string, soit une liste de messages (pour l'historique).
         Si `api_key` est fourni, un client LLM temporaire est créé avec cette clé
         (clé personnelle de l'utilisateur) au lieu de la clé interne du serveur.
+        Extrait également la consommation réelle (tokens d'entrée, en cache, de sortie)
+        fournie par le fournisseur, et calcule le coût estimé de la requête en euros
+        à partir de la grille tarifaire de config/models/models.csv.
         """
         print("calling", model)
         consumed_energy = 0
@@ -436,4 +448,36 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             torch.cuda.synchronize()
             consumed_energy = (pynvml.nvmlDeviceGetTotalEnergyConsumption(handle) - start_energy)/(1000*3600)
             print(consumed_energy, "Wh")
-        return answer, elapsed_time, consumed_energy
+
+        usage_info = self._extract_usage_and_cost(model, answer)
+        return answer, elapsed_time, consumed_energy, usage_info
+
+    def _extract_usage_and_cost(self, model: str, answer) -> Optional[dict]:
+        """
+        Extrait la consommation réelle de la réponse LangChain (tokens d'entrée,
+        en cache et de sortie) et calcule le coût estimé en euros pour le modèle
+        donné. Retourne None si aucune information d'usage n'est disponible.
+        """
+        try:
+            usage = usage_from_langchain_message(answer)
+            if usage is None:
+                return None
+            cost_detail = compute_cost_eur(
+                model,
+                input_tokens=usage["input_tokens"],
+                cached_tokens=usage["cached_tokens"],
+                output_tokens=usage["output_tokens"],
+            )
+            usage_info = {
+                "input_tokens": usage["input_tokens"],
+                "cached_tokens": usage["cached_tokens"],
+                "output_tokens": usage["output_tokens"],
+                "usage_source": "api",
+            }
+            if cost_detail is not None:
+                usage_info["cost_eur"] = cost_detail["total_eur"]
+                usage_info["cost_detail"] = cost_detail
+            return usage_info
+        except Exception as e:
+            print("Extraction usage/coût impossible:", e)
+            return None

@@ -7,17 +7,116 @@ Cet utilitaire peut être utilisé pour envelopper les appels aux agents et four
 des informations détaillées sur l'utilisation des tokens.
 """
 
-from typing import TypeVar, Any, Callable, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import TypeVar, Any, Callable, Optional, Tuple, Dict
 from atomic_agents import AtomicAgent, BaseIOSchema
 from atomic_agents.utils.token_counter import get_token_counter, TokenCountResult
 import logging
 from functools import wraps
+
+try:
+    from app.pricing import compute_cost_eur, usage_from_mistral_completion
+except ImportError:
+    from pricing import compute_cost_eur, usage_from_mistral_completion
 
 # Type variables pour les schémas d'entrée/sortie
 InputSchema = TypeVar('InputSchema', bound=BaseIOSchema)
 OutputSchema = TypeVar('OutputSchema', bound=BaseIOSchema)
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TokenUsageInfo:
+    """
+    Consommation d'un appel à un agent AtomicAgent, avec le coût estimé
+    de la requête en euros lorsque le modèle est présent dans la grille
+    tarifaire (config/models/models.csv).
+
+    Attributes:
+        input_tokens: Nombre total de tokens d'entrée (cache inclus)
+        output_tokens: Nombre de tokens de sortie
+        cached_tokens: Nombre de tokens d'entrée servis depuis le cache de prompt
+        model: Identifiant du modèle utilisé
+        usage_source: "api" si la consommation provient de la réponse du
+            fournisseur (client Mistral), "estimated" si elle est estimée localement
+        cost_eur: Coût total estimé de la requête en euros (None si le
+            modèle n'est pas tarifé)
+        cost_detail: Détail du coût (input, cache, output) en euros
+    """
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cached_tokens: int = 0
+    model: str = ""
+    usage_source: str = "estimated"
+    cost_eur: Optional[float] = None
+    cost_detail: Optional[Dict[str, float]] = field(default=None)
+
+    def to_metadata(self) -> Dict[str, Any]:
+        """Représentation sous forme de métadonnées de réponse."""
+        metadata: Dict[str, Any] = {
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "cached_tokens": self.cached_tokens,
+            "usage_source": self.usage_source,
+        }
+        if self.cost_eur is not None:
+            metadata["cost_eur"] = self.cost_eur
+            metadata["cost_detail"] = self.cost_detail
+        return metadata
+
+
+def _last_completion_of(agent) -> Any:
+    """
+    Récupère la dernière completion brute renvoyée par le client
+    sous-jacent de l'agent (client Instructor), si disponible.
+    """
+    client = getattr(agent, "client", None)
+    if client is None:
+        return None
+    for attr in ("last_completion", "_last_completion"):
+        completion = getattr(client, attr, None)
+        if completion is not None:
+            return completion
+    return None
+
+
+def _usage_info_for(agent, estimated_input_tokens: int, output_tokens: int) -> TokenUsageInfo:
+    """
+    Construit les informations de consommation d'un appel d'agent. Tente
+    d'abord de lire la consommation réelle fournie par le fournisseur
+    (usage de la dernière completion du client Mistral, incluant les
+    tokens en cache), puis retombe sur le comptage local estimé. Calcule
+    ensuite le coût estimé en euros à partir du modèle.
+    """
+    model = getattr(agent, "model", "") or ""
+    usage_info = TokenUsageInfo(
+        input_tokens=estimated_input_tokens,
+        output_tokens=output_tokens,
+        model=model,
+        usage_source="estimated",
+    )
+
+    completion = _last_completion_of(agent)
+    if completion is not None:
+        usage = usage_from_mistral_completion(completion)
+        if usage is not None:
+            usage_info.input_tokens = usage["input_tokens"]
+            usage_info.cached_tokens = usage["cached_tokens"]
+            usage_info.output_tokens = usage["output_tokens"]
+            usage_info.usage_source = "api"
+
+    cost_detail = compute_cost_eur(
+        model,
+        input_tokens=usage_info.input_tokens,
+        cached_tokens=usage_info.cached_tokens,
+        output_tokens=usage_info.output_tokens,
+    )
+    if cost_detail is not None:
+        usage_info.cost_eur = cost_detail["total_eur"]
+        usage_info.cost_detail = cost_detail
+
+    return usage_info
 
 
 def _count_user_input_tokens(agent: AtomicAgent[InputSchema, OutputSchema], 
@@ -53,7 +152,7 @@ def _count_user_input_tokens(agent: AtomicAgent[InputSchema, OutputSchema],
 
 def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema], 
                      user_input: Optional[InputSchema] = None,
-                     method: str = "run") -> Tuple[OutputSchema, int, int]:
+                     method: str = "run") -> Tuple[OutputSchema, TokenUsageInfo]:
     """
     Enveloppe un appel SYNCHRONE à un agent AtomicAgent et retourne les informations de tokens.
     
@@ -65,8 +164,8 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
     Returns:
         Tuple contenant:
         - La réponse de l'agent (OutputSchema)
-        - Le nombre total de tokens d'entrée (int)
-        - Le nombre de tokens de sortie (int)
+        - TokenUsageInfo: consommation de l'appel (tokens d'entrée/sortie,
+          tokens en cache, source de la mesure) et coût estimé en euros
     
     Example:
         ```python
@@ -77,10 +176,12 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
         user_input = {"message": "Génère 3 questions.", "document": "mon_document"}
         
         # Utilisation avec la méthode run
-        response, input_tokens, output_tokens = monitor_agent_call(qa_agent, user_input, "run")
+        response, usage_info = monitor_agent_call(qa_agent, user_input, "run")
         
-        print(f"Tokens d'entrée: {input_tokens}")
-        print(f"Tokens de sortie: {output_tokens}")
+        print(f"Tokens d'entrée: {usage_info.input_tokens}")
+        print(f"Tokens de sortie: {usage_info.output_tokens}")
+        if usage_info.cost_eur is not None:
+            print(f"Coût estimé: {usage_info.cost_eur} €")
         print(f"Réponse: {response}")
         ```
     """
@@ -105,12 +206,13 @@ def monitor_agent_call(agent: AtomicAgent[InputSchema, OutputSchema],
     # Compter les tokens de sortie
     output_tokens = _count_output_tokens(agent, response)
     
-    return response, input_tokens_total, output_tokens
+    usage_info = _usage_info_for(agent, input_tokens_total, output_tokens)
+    return response, usage_info
 
 
 async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema], 
                                 user_input: Optional[InputSchema] = None,
-                                method: str = "run_async") -> Tuple[OutputSchema, int, int]:
+                                method: str = "run_async") -> Tuple[OutputSchema, TokenUsageInfo]:
     """
     Enveloppe un appel ASYNCHRONE à un agent AtomicAgent et retourne les informations de tokens.
     
@@ -122,8 +224,8 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
     Returns:
         Tuple contenant:
         - La réponse de l'agent (OutputSchema)
-        - Le nombre total de tokens d'entrée (int)
-        - Le nombre de tokens de sortie (int)
+        - TokenUsageInfo: consommation de l'appel (tokens d'entrée/sortie,
+          tokens en cache, source de la mesure) et coût estimé en euros
     
     Example:
         ```python
@@ -134,10 +236,12 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
         user_input = {"message": "Génère 3 questions.", "document": "mon_document"}
         
         # Utilisation avec la méthode run_async
-        response, input_tokens, output_tokens = await monitor_agent_call_async(qa_agent, user_input, "run_async")
+        response, usage_info = await monitor_agent_call_async(qa_agent, user_input, "run_async")
         
-        print(f"Tokens d'entrée: {input_tokens}")
-        print(f"Tokens de sortie: {output_tokens}")
+        print(f"Tokens d'entrée: {usage_info.input_tokens}")
+        print(f"Tokens de sortie: {usage_info.output_tokens}")
+        if usage_info.cost_eur is not None:
+            print(f"Coût estimé: {usage_info.cost_eur} €")
         print(f"Réponse: {response}")
         ```
     """
@@ -162,7 +266,8 @@ async def monitor_agent_call_async(agent: AtomicAgent[InputSchema, OutputSchema]
     # Compter les tokens de sortie
     output_tokens = _count_output_tokens(agent, response)
     
-    return response, input_tokens_total, output_tokens
+    usage_info = _usage_info_for(agent, input_tokens_total, output_tokens)
+    return response, usage_info
 
 
 def _count_output_tokens(agent: AtomicAgent[InputSchema, OutputSchema], 

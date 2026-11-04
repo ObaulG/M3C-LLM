@@ -26,20 +26,20 @@ def generate_questions_with_token_monitoring(document_id: str, num_questions: in
     )
     
     # Appeler l'agent avec surveillance des tokens
-    response, input_tokens, output_tokens = monitor_agent_call(
+    response, usage_info = monitor_agent_call(
         agent=qa_agent,
         user_input=user_input
         # method="run" est la valeur par défaut
     )
     
     # Afficher les informations de tokens (optionnel)
-    print_token_info(input_tokens, output_tokens, "run")
+    print_token_info(usage_info.input_tokens, usage_info.output_tokens, "run")
     
     # Retourner la réponse et les informations de tokens
     return {
         "response": response,
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens
+        "input_tokens": usage_info.input_tokens,
+        "output_tokens": usage_info.output_tokens
     }
 
 def generate_questions_original(document_id: str, num_questions: int = 3):

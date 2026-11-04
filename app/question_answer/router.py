@@ -306,7 +306,7 @@ class GenerateAnswersRequest(BaseModel):
     document_context: Optional[str] = Field(default=None, description="Contexte du document (requis si question_id absent)")
     question_id: Optional[int] = Field(default=None, description="ID de la question existante : la question et son contexte (chunks) sont récupérés en base")
     num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
-    model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
+    model_name: str = Field(default="mistral-small-2603", description="Modèle LLM à utiliser")
     user_prompt: Optional[str] = Field(
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération des réponses au contenu du document"
@@ -605,7 +605,7 @@ async def update_fact_importance(fact_id: int, request: UpdateFactImportanceRequ
     description="Extrait les affirmations constituant une réponse de référence via l'agent fact_extractor, "
                 "remplace les faits existants dans text_answer_facts et retourne les faits générés."
 )
-async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small"):
+async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small-2603"):
     """
     Génère les faits d'une réponse de référence et les sauvegarde en base.
     """

@@ -26,7 +26,7 @@ class QASingleRequest(BaseModel):
     document: str = Field(..., description="Texte du document/chunk sur lequel générer des questions", min_length=10)
     num_questions: int = Field(3, description="Nombre de questions à générer", ge=1, le=10)
     num_answers: Optional[int] = Field(1, description="Nombre de réponses par question à générer", ge=1, le=10)
-    model: Optional[str] = Field("mistral-small", description="Modèle LLM à utiliser")
+    model: Optional[str] = Field("mistral-small-2603", description="Modèle LLM à utiliser")
 
 
 class QASinglePair(BaseModel):

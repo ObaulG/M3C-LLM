@@ -255,24 +255,24 @@ class MediationSessionEvaluator:
             logger.info("Evaluation terminée. Début du traitement des résultats")
             # Traiter les résultats
             for result in eval_results:
-                evaluation, token_count_result, output_tokens = result
+                evaluation, usage = result
                 evaluations.append(evaluation)
-                total_input_tokens += token_count_result.total
-                total_output_tokens += output_tokens
+                total_input_tokens += usage.input_tokens
+                total_output_tokens += usage.output_tokens
                 
             eval_time = time.time() - eval_start_time
             
             # Consolider les évaluations si plusieurs évaluateurs
             if len(evaluations) > 1 and config.with_final_evaluator:
                 final_eval_start = time.time()
-                final_evaluation, token_count_result, output_tokens = monitor_agent_call(
+                final_evaluation, final_usage = monitor_agent_call(
                     final_evaluator,
                     ListAgentEvaluationResult(evaluations=evaluations),
                     "run"
                 )
                 final_eval_time = time.time() - final_eval_start
-                total_input_tokens += token_count_result.total
-                total_output_tokens += output_tokens
+                total_input_tokens += final_usage.input_tokens
+                total_output_tokens += final_usage.output_tokens
                 
                 # Track final evaluator time
                 final_model_name = f"final_{config.final_evaluator_model}"

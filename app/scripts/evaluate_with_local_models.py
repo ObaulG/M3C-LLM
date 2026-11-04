@@ -93,7 +93,7 @@ async def evaluate_row_with_model(row: dict, model: str) -> dict:
     
     try:
         # Utiliser monitor_agent_call_async pour obtenir les informations de tokens
-        result, input_token_result, output_tokens = await monitor_agent_call_async(
+        result, usage_info = await monitor_agent_call_async(
             evaluator,
             user_input=input_data,
             method="run_async"
@@ -114,9 +114,9 @@ async def evaluate_row_with_model(row: dict, model: str) -> dict:
     
     # Ajouter les métriques de performance
     new_row['execution_time_seconds'] = f"{execution_time:.4f}"
-    new_row['input_tokens'] = input_token_result
-    new_row['output_tokens'] = output_tokens
-    new_row['total_tokens'] = input_token_result + output_tokens
+    new_row['input_tokens'] = usage_info.input_tokens
+    new_row['output_tokens'] = usage_info.output_tokens
+    new_row['total_tokens'] = usage_info.input_tokens + usage_info.output_tokens
     
     return new_row
 

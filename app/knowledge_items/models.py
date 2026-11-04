@@ -79,7 +79,7 @@ class KnowledgeGenerationRequest(BaseModel):
         description="ID du document (text_documents.id) auquel appartient le chunk"
     )
     model: str = Field(
-        default="mistral-medium",
+        default="mistral-large-4",
         description="Modèle LLM à utiliser pour l'extraction"
     )
 
@@ -91,7 +91,7 @@ class KnowledgeGenerationForDocumentRequest(BaseModel):
         description="ID du document (text_documents.id) dont tous les chunks seront analysés",
     )
     model: str = Field(
-        default="mistral-medium",
+        default="mistral-large-4",
         description="Modèle LLM à utiliser pour l'extraction",
     )
     source: str = Field(
@@ -203,7 +203,7 @@ class KnowledgeGenerationFromQuestionsRequest(BaseModel):
         description="Paires question/réponses à analyser (une seule si question_id est fourni)",
     )
     model: str = Field(
-        default="mistral-medium",
+        default="mistral-large-4",
         description="Modèle LLM à utiliser pour l'extraction",
     )
 

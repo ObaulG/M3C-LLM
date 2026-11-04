@@ -38,7 +38,7 @@ from app.jobs.manager import (
 
 def create_question_generation_job(
     num_questions_per_doc: int = 3,
-    model_name: str = "mistral-small",
+    model_name: str = "mistral-small-2603",
     document_id: Optional[int] = None,
     num_answers_per_question: int = 1,
     chunk_id: Optional[int] = None,
@@ -352,7 +352,7 @@ async def process_question_generation_job(job_id: str):
     parameters = job.get("parameters", {})
     num_questions = parameters.get("num_questions_per_doc", 3)
     # note: le provider est indiqué comme dans la syntaxe d'instructor
-    model_name = parameters.get("model_name") or "mistral/mistral-small"
+    model_name = parameters.get("model_name") or "mistral/mistral-small-2603"
     document_id = parameters.get("document_id")  # ID du document spécifique (optionnel)
     chunk_id = parameters.get("chunk_id")  # ID du chunk spécifique (optionnel, prioritaire)
     num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
