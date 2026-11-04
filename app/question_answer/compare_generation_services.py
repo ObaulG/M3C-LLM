@@ -38,7 +38,7 @@ def _split_model_name(model_name: str) -> Tuple[str, str]:
 
 
 def create_compare_generation_job(
-    chunk_ids: List[int],
+    chunk_ids: List[str],
     models: List[str],
     num_questions: int = 3,
     user_prompt: Optional[str] = None,

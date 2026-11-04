@@ -823,7 +823,7 @@ async def get_chunks_for_document(
             "character_count": row[4],
             "token_count": row[5]} for row in rows]
 
-async def get_chunk_by_id(conn, chunk_id: int) -> Optional[Dict]:
+async def get_chunk_by_id(conn, chunk_id: str) -> Optional[Dict]:
     """
     Récupère un chunk spécifique par son ID.
     

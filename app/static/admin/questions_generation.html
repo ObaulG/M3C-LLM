@@ -1373,7 +1373,7 @@
     }
 
     function getCompareSelectedChunkIds() {
-        return [...document.querySelectorAll('.compare-chunk-checkbox:checked')].map(cb => parseInt(cb.value, 10));
+        return [...document.querySelectorAll('.compare-chunk-checkbox:checked')].map(cb => cb.value);
     }
 
     async function startCompareGeneration() {
