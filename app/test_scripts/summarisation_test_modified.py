@@ -32,40 +32,40 @@ def main():
     def summariser_run_with_tokens(user_input):
         """Version avec surveillance des tokens pour le summariser."""
         nonlocal total_input_tokens, total_output_tokens, total_calls
-        response, input_tokens, output_tokens = monitor_agent_call(
+        response, usage_info = monitor_agent_call(
             agent=summariser.summariser,
             user_input=user_input
         )
-        total_input_tokens += input_tokens.total
-        total_output_tokens += output_tokens
+        total_input_tokens += usage_info.input_tokens
+        total_output_tokens += usage_info.output_tokens
         total_calls += 1
-        print(f"  [TOKENS] Summariser: Entrée={input_tokens.total}, Sortie={output_tokens}")
+        print(f"  [TOKENS] Summariser: Entrée={usage_info.input_tokens}, Sortie={usage_info.output_tokens}")
         return response
     
     def merger_run_with_tokens(user_input):
         """Version avec surveillance des tokens pour le merger."""
         nonlocal total_input_tokens, total_output_tokens, total_calls
-        response, input_tokens, output_tokens = monitor_agent_call(
+        response, usage_info = monitor_agent_call(
             agent=summariser.merger,
             user_input=user_input
         )
-        total_input_tokens += input_tokens.total
-        total_output_tokens += output_tokens
+        total_input_tokens += usage_info.input_tokens
+        total_output_tokens += usage_info.output_tokens
         total_calls += 1
-        print(f"  [TOKENS] Merger: Entrée={input_tokens.total}, Sortie={output_tokens}")
+        print(f"  [TOKENS] Merger: Entrée={usage_info.input_tokens}, Sortie={usage_info.output_tokens}")
         return response
     
     def merger_with_context_run_with_tokens(user_input):
         """Version avec surveillance des tokens pour le merger avec contexte."""
         nonlocal total_input_tokens, total_output_tokens, total_calls
-        response, input_tokens, output_tokens = monitor_agent_call(
+        response, usage_info = monitor_agent_call(
             agent=summariser.merger_with_context,
             user_input=user_input
         )
-        total_input_tokens += input_tokens.total
-        total_output_tokens += output_tokens
+        total_input_tokens += usage_info.input_tokens
+        total_output_tokens += usage_info.output_tokens
         total_calls += 1
-        print(f"  [TOKENS] Merger+Context: Entrée={input_tokens.total}, Sortie={output_tokens}")
+        print(f"  [TOKENS] Merger+Context: Entrée={usage_info.input_tokens}, Sortie={usage_info.output_tokens}")
         return response
     
     # Remplacer les méthodes

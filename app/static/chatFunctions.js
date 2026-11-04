@@ -53,6 +53,7 @@ function createResponseHeader(response) {
     const totalTime = response.total_time;
     const inputTokens = response.metadata?.token_usage?.input_tokens;
     const outputTokens = response.metadata?.token_usage?.output_tokens;
+    const costEur = response.metadata?.cost_eur;
     const consumedEnergyWh = response.metadata?.consumed_energy_Wh;
 
     let parts = [];
@@ -67,6 +68,10 @@ function createResponseHeader(response) {
 
     if (inputTokens !== undefined && outputTokens !== undefined) {
         parts.push(`<strong>Tokens :</strong> ${inputTokens} (in) / ${outputTokens} (out)`);
+    }
+
+    if (costEur !== undefined && costEur !== null) {
+        parts.push(`<strong>Coût :</strong> ${costEur.toFixed(4)} €`);
     }
 
     if (consumedEnergyWh !== undefined && consumedEnergyWh > 0.0) {
@@ -498,4 +503,4 @@ function createLLMResponsesTabs(responses, chatContainer) {
 
 
 
-}
+}

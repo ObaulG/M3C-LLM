@@ -36,7 +36,7 @@ def get_evaluator_agent():
     """Retourne l'agent message_evaluator_agent, en l'initialisant si nécessaire."""
     global _message_evaluator_agent
     if _message_evaluator_agent is None:
-        _message_evaluator_agent = get_message_type_agent("ministral-3b-2410")
+        _message_evaluator_agent = get_message_type_agent("ministral-3b-2512")
     return _message_evaluator_agent
 
 
@@ -83,7 +83,7 @@ async def evaluate_message_type(request: EvaluateMessageTypeRequest):
         message_evaluator_agent = get_evaluator_agent()
         print("envoi de l'appel")
         # Appel synchrone à l'agent
-        result, token_count_result, output_tokens = monitor_agent_call(
+        result, usage_info = monitor_agent_call(
             message_evaluator_agent,
             user_input=input_data,
             method="run"

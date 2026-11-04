@@ -170,7 +170,7 @@ async def lifespan(app: FastAPI):
     initialize_rag(app)
     initialize_evaluators(app)
     await initialize_database(app)
-    app.state.message_ev_agent = get_message_type_agent("ministral-3b-2410")
+    app.state.message_ev_agent = get_message_type_agent("ministral-3b-2512")
     yield
     # Shutdown (si nécessaire)
     print("Arrêt du serveur : sauvegarde des sessions...")
@@ -351,14 +351,14 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
         print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}\n ModÃ¨le: {request.models[0]}")
-        answer, total_time, consumed_energy_Wh = await rag_pipeline.query_simple(
+        answer, total_time, consumed_energy_Wh, usage_info = await rag_pipeline.query_simple(
             prompt=request.question,
             model=request.models[0],
             api_key=resolved_api_key
         )
         # Construire la réponse
         user_id = auth.user_id_from_token(m3c_api_key)
-        response = await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, user_id)
+        response = await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, usage_info, user_id)
         print(f"[{datetime.now().isoformat()}] Réponse générée")
         return response
     except Exception as e:
@@ -394,7 +394,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
         doc_id = request.rag_monodocument_id
         if request.rag_monodocument_id:
             doc_id = get_document_id_from_resource_id(await get_db_connection(), request.rag_monodocument_id)
-        answer, retrieval_results, total_time, consumed_energy_Wh = await rag_pipeline.query_rag(
+        answer, retrieval_results, total_time, consumed_energy_Wh, usage_info = await rag_pipeline.query_rag(
             prompt=request.question,
             model=request.models[0],
             k=request.k,
@@ -411,7 +411,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
         )
     user_id = auth.user_id_from_token(m3c_api_key)
-    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, user_id)
+    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, usage_info, user_id)
     return response
 
 @app.post("/api/query/rag/tutorial",
@@ -587,13 +587,13 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
     user_id = auth.user_id_from_token(m3c_api_key)
     responses_list = []
     model_temp_list = request.models[::]
-    for i, (answer, total_time, consumed_energy_Wh) in enumerate(answers):
+    for i, (answer, total_time, consumed_energy_Wh, usage_info) in enumerate(answers):
         # and assign a list with 1 element
         request.models = [model_temp_list[i]]
         if request.use_rag:
             responses_list.append(await _build_query_rag_response(request, answer, best_documents, total_time, consumed_energy_Wh, user_id))
         else:
-            responses_list.append(await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, user_id))
+            responses_list.append(await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, usage_info, user_id))
     print(f"[{datetime.now().isoformat()}] Réponses générées pour tous les modÃ¨les")
     return QueryCompareResponse(
         responses=responses_list,
@@ -644,7 +644,7 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
             #print(history_text)
             prompt_with_history = f"Historique de la session:\n{history_text}\n\nNouvelle question: {request.question}"
             print(f"{len(session_messages)} messages dans la session")
-        answer, retrieval_results, total_time, consumed_energy_Wh = await rag_pipeline.query_rag(
+        answer, retrieval_results, total_time, consumed_energy_Wh, usage_info = await rag_pipeline.query_rag(
             prompt=prompt_with_history,
             model=request.models[0],
             k=request.k,
@@ -672,7 +672,7 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
     sessions_router.rag_session_manager.add_interaction(session_id=request.session_id,
                                                         interaction=rag_interaction)
     user_id = auth.user_id_from_token(m3c_api_key)
-    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, user_id)
+    response = await _build_query_rag_response(request, answer, retrieval_results, total_time, consumed_energy_Wh, usage_info, user_id)
     return response
 
 
@@ -730,6 +730,26 @@ async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
     return final_prompt, best_documents
 
 
+def _usage_cost_metadata(usage_info: Optional[dict]) -> dict:
+    """Construit les métadonnées de consommation et de coût d'une requête
+    LLM à partir des informations extraites par _invoke_llm. Retourne un
+    dictionnaire vide si aucune information n'est disponible."""
+    if not usage_info:
+        return {}
+    metadata = {
+        "usage_details": {
+            "input_tokens": usage_info.get("input_tokens"),
+            "cached_tokens": usage_info.get("cached_tokens"),
+            "output_tokens": usage_info.get("output_tokens"),
+            "usage_source": usage_info.get("usage_source"),
+        }
+    }
+    if usage_info.get("cost_eur") is not None:
+        metadata["cost_eur"] = usage_info["cost_eur"]
+        metadata["cost_detail"] = usage_info.get("cost_detail")
+    return metadata
+
+
 async def _persist_chatbot_message_async(request: QueryRequest,
                                           answer: BaseMessage,
                                           total_time: float,
@@ -780,6 +800,7 @@ async def _build_query_simple_response(request: QueryRequest,
                                  answer: BaseMessage,
                                  total_time: float,
                                  consumed_energy_Wh: float,
+                                 usage_info: Optional[dict] = None,
                                  user_id: Optional[int] = None) -> QueryResponse:
     # Persister la réponse en BDD avant de la renvoyer (non bloquant)
     message_id = await _persist_chatbot_message_async(
@@ -793,7 +814,8 @@ async def _build_query_simple_response(request: QueryRequest,
             "k": request.k,
             "token_usage": answer.usage_metadata,
             "consumed_energy_Wh": consumed_energy_Wh,
-            "message_id": message_id
+            "message_id": message_id,
+            **_usage_cost_metadata(usage_info)
         },
         timestamp=datetime.now().isoformat()
     )
@@ -804,6 +826,7 @@ async def _build_query_rag_response(request: QueryRequest,
                               retrieval_results: list[RAGSource],
                               total_time: float,
                               consumed_energy_Wh: float,
+                              usage_info: Optional[dict] = None,
                               user_id: Optional[int] = None) -> QueryResponse:
     # useful data :
     # response_metadata={
@@ -836,7 +859,8 @@ async def _build_query_rag_response(request: QueryRequest,
             "num_sources": len(retrieval_results),
             "token_usage": answer.usage_metadata,
             "consumed_energy_Wh": consumed_energy_Wh,
-            "message_id": message_id
+            "message_id": message_id,
+            **_usage_cost_metadata(usage_info)
         },
         timestamp=datetime.now().isoformat()
     )

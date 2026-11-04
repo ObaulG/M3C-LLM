@@ -21,7 +21,7 @@ class QuestionGenerationRequest(BaseModel):
         description="Nombre de réponses à générer par question"
     )
     model_name: str = Field(
-        default="mistral/mistral-medium",
+        default="mistral/mistral-large-4",
         description="Nom du modèle LLM à utiliser pour la génération au format <provider>/<model_name>"
     )
     document_id: Optional[int] = Field(
@@ -36,6 +36,30 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
     )
+
+class CompareGenerationRequest(BaseModel):
+    """Requête pour la génération comparative multi-modèles (admins/experts)."""
+    chunk_ids: List[int] = Field(
+        default_factory=list,
+        min_length=1,
+        description="IDs des chunks (text_chunks.id) à traiter, issus d'un ou plusieurs documents."
+    )
+    models: List[str] = Field(
+        default_factory=list,
+        min_length=3,
+        description="Au moins 3 modèles LLM au format <provider>/<model_name> à comparer."
+    )
+    num_questions_per_chunk: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Nombre de questions/réponses à générer par chunk et par modèle."
+    )
+    user_prompt: Optional[str] = Field(
+        default=None,
+        description="Instructions personnalisées optionnelles, transmises à l'agent QA."
+    )
+
 
 class QuestionGenerationResult(BaseModel):
     """Résultat de génération pour un document."""
@@ -103,7 +127,7 @@ class QuestionGenerationJob(BaseModel):
                 "updated_at": "2024-01-15T10:35:00",
                 "total_documents": 2,
                 "processed_documents": 1,
-                "parameters": {"num_questions_per_doc": 3, "model_name": "mistral-medium"},
+                "parameters": {"num_questions_per_doc": 3, "model_name": "mistral-large-4"},
                 "progress": {
                     "116738": {
                         "resource_id": 116738,

@@ -4,16 +4,18 @@ Router FastAPI pour la génération de questions sur les documents validés.
 import asyncio
 from typing import Optional, List
 
+import database
 from pydantic import BaseModel, Field
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Cookie, Depends
 from fastapi.responses import JSONResponse
 
 from .models import (
     QuestionGenerationRequest,
     QuestionGenerationResponse,
     QuestionGenerationJob,
-    QuestionGenerationJobListResponse
+    QuestionGenerationJobListResponse,
+    CompareGenerationRequest,
 )
 from .generation_services import (
     create_question_generation_job,
@@ -21,6 +23,11 @@ from .generation_services import (
     get_all_question_generation_jobs,
     process_question_generation_job,
     get_latest_question_generation_job
+)
+from .compare_generation_services import (
+    create_compare_generation_job,
+    get_compare_generation_job,
+    process_compare_generation_job,
 )
 from database.database import VALID_TEXT_RESOURCE_ID, get_db_connection, get_questions_by_chunk_id
 
@@ -306,7 +313,7 @@ class GenerateAnswersRequest(BaseModel):
     document_context: Optional[str] = Field(default=None, description="Contexte du document (requis si question_id absent)")
     question_id: Optional[int] = Field(default=None, description="ID de la question existante : la question et son contexte (chunks) sont récupérés en base")
     num_answers: int = Field(default=1, ge=1, le=10, description="Nombre de réponses à générer")
-    model_name: str = Field(default="mistral-small", description="Modèle LLM à utiliser")
+    model_name: str = Field(default="mistral-small-2603", description="Modèle LLM à utiliser")
     user_prompt: Optional[str] = Field(
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération des réponses au contenu du document"
@@ -605,7 +612,7 @@ async def update_fact_importance(fact_id: int, request: UpdateFactImportanceRequ
     description="Extrait les affirmations constituant une réponse de référence via l'agent fact_extractor, "
                 "remplace les faits existants dans text_answer_facts et retourne les faits générés."
 )
-async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small"):
+async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small-2603"):
     """
     Génère les faits d'une réponse de référence et les sauvegarde en base.
     """
@@ -664,3 +671,134 @@ async def generate_answer_facts(answer_id: int, model_name: str = "mistral-small
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la génération des faits: {str(e)}"
         )
+
+
+# ============================================================================
+# GÉNÉRATION COMPARATIVE MULTI-MODÈLES (RÉSERVÉE ADMINS ET EXPERTS)
+# ============================================================================
+
+async def require_admin_or_expert(
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Dépendance FastAPI : restreint l'accès aux rôles admin, global_admin et validator (experts)."""
+    import auth
+
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentification requise.",
+        )
+    user = await auth.get_user_by_id(user_id)
+    role = (user or {}).get("role")
+    if role not in ("global_admin", "admin", "validator"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Fonctionnalité réservée aux administrateurs et aux experts.",
+        )
+    return user
+
+
+@router.get(
+    "/compare-generation/chunks/{document_id}",
+    summary="Chunks d'un document pour la comparaison multi-modèles",
+    description="Retourne les chunks d'un document (text_chunks) avec un aperçu de leur contenu, "
+                "pour la sélection multi-chunks/multi-documents de la génération comparative. "
+                "Réservé aux administrateurs et experts.",
+)
+async def get_compare_chunks(document_id: int, user: dict = Depends(require_admin_or_expert)):
+    """Liste les chunks d'un document pour la sélection dans la comparaison multi-modèles."""
+    try:
+        async with await get_db_connection() as conn:
+            chunks = await database.get_all_text_chunks(conn, document_id)
+    except Exception as e:
+        print(f"Erreur dans get_compare_chunks: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des chunks: {str(e)}",
+        )
+
+    return JSONResponse(content={
+        "document_id": document_id,
+        "chunks": [
+            {
+                "chunk_id": c["id"],
+                "document_id": c.get("document_id"),
+                "num_page": c.get("num_page"),
+                "position_in_page": c.get("position_in_page"),
+                "character_count": c.get("character_count"),
+                "token_count": c.get("token_count"),
+                "preview": (c.get("content") or "")[:200],
+            }
+            for c in chunks
+        ],
+        "count": len(chunks),
+    })
+
+
+@router.post(
+    "/compare-generation",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Lance la génération comparative multi-modèles",
+    description="Pour chaque chunk sélectionné et chaque modèle (au moins 3), génère les questions/réponses, "
+                "puis les faits de chaque réponse, ainsi que les éléments de connaissance. "
+                "Aucune donnée n'est sauvegardée en base : les résultats restent en mémoire et sont "
+                "consultables via /compare-generation/jobs/{job_id}. Réservé aux administrateurs et experts.",
+)
+async def compare_generation(
+    request: CompareGenerationRequest,
+    user: dict = Depends(require_admin_or_expert),
+):
+    """
+    Lance un job de génération comparative : questions/réponses puis faits,
+    plus éléments de connaissance, pour chaque chunk et chaque modèle.
+    """
+    if len(set(request.models)) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sélectionnez au moins 3 modèles distincts à comparer.",
+        )
+
+    job_id = create_compare_generation_job(
+        chunk_ids=request.chunk_ids,
+        models=request.models,
+        num_questions=request.num_questions_per_chunk,
+        user_prompt=request.user_prompt,
+    )
+    job = get_compare_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la création du job de comparaison",
+        )
+
+    asyncio.create_task(process_compare_generation_job(job_id))
+
+    return JSONResponse(
+        status_code=status.HTTP_202_ACCEPTED,
+        content={
+            "job_id": job_id,
+            "message": "Job de génération comparative créé avec succès",
+            "status": job.get("status"),
+        },
+    )
+
+
+@router.get(
+    "/compare-generation/jobs/{job_id}",
+    summary="Résultats d'un job de génération comparative",
+    description="Retourne l'état et les résultats (en mémoire, non persistés en base) d'un job "
+                "de génération comparative. Réservé aux administrateurs et experts.",
+)
+async def get_compare_generation_job_endpoint(job_id: str, user: dict = Depends(require_admin_or_expert)):
+    """Récupère un job de génération comparative avec ses résultats."""
+    job = get_compare_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job de comparaison {job_id} introuvable",
+        )
+    return JSONResponse(content=job)
