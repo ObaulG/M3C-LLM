@@ -39,10 +39,10 @@ class QuestionGenerationRequest(BaseModel):
 
 class CompareGenerationRequest(BaseModel):
     """Requête pour la génération comparative multi-modèles (admins/experts)."""
-    chunk_ids: List[int] = Field(
+    chunk_ids: List[str] = Field(
         default_factory=list,
         min_length=1,
-        description="IDs des chunks (text_chunks.id) à traiter, issus d'un ou plusieurs documents."
+        description="IDs des chunks (text_chunks.id, VARCHAR/UUID) à traiter, issus d'un ou plusieurs documents."
     )
     models: List[str] = Field(
         default_factory=list,
