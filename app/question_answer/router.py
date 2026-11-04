@@ -40,7 +40,8 @@ router = APIRouter(prefix="/api/admin/questions", tags=["Admin", "Questions"])
     status_code=status.HTTP_202_ACCEPTED,
     summary="Lance la génération de questions",
     description="Crée un job de génération de questions pour un chunk spécifique, un document spécifique ou tous les documents validés (VALID_TEXT_RESOURCE_ID). "
-                "Le job est exécuté en arrière-plan et peut être suivi via les endpoints /jobs."
+                "Le job est exécuté en arrière-plan et peut être suivi via les endpoints /jobs. "
+                "Avec use_batch=true, les requêtes sont envoyées à l'API Batch de Mistral (recommandé pour les travaux massifs)."
 )
 async def generate_questions(request: QuestionGenerationRequest):
     """
@@ -65,7 +66,8 @@ async def generate_questions(request: QuestionGenerationRequest):
         model_name=request.model_name,
         document_id=request.document_id,
         chunk_id=request.chunk_id,
-        user_prompt=request.user_prompt
+        user_prompt=request.user_prompt,
+        use_batch=request.use_batch
     )
     
     job = get_question_generation_job(job_id)

@@ -42,7 +42,8 @@ def create_question_generation_job(
     document_id: Optional[int] = None,
     num_answers_per_question: int = 1,
     chunk_id: Optional[int] = None,
-    user_prompt: Optional[str] = None
+    user_prompt: Optional[str] = None,
+    use_batch: bool = False
 ) -> str:
     """
     Crée un nouveau job de génération de questions.
@@ -54,6 +55,7 @@ def create_question_generation_job(
         num_answers_per_question: Nombre de réponses à générer par question (défaut: 10)
         chunk_id: ID du chunk spécifique à traiter (optionnel). Prioritaire sur document_id.
         user_prompt: Instructions personnalisées de l'utilisateur (optionnel), transmises à l'agent QA
+        use_batch: Si True, utilise l'API Batch de Mistral au lieu des appels chunk par chunk
         
     Returns:
         job_id: L'ID unique du job créé
@@ -68,7 +70,8 @@ def create_question_generation_job(
             "document_id": document_id,
             "num_answers_per_question": num_answers_per_question,
             "chunk_id": chunk_id,
-            "user_prompt": user_prompt
+            "user_prompt": user_prompt,
+            "use_batch": use_batch
         },
         total_documents=0  # sera mis à jour lors du traitement avec le nombre de chunks
     )
@@ -330,6 +333,206 @@ async def generate_questions_single_answer_for_chunk(
     return None, f"Échec après {max_retries} tentatives"
 
 
+async def _get_existing_questions_count_for_chunk(chunk_id: str) -> int:
+    """
+    Compte les questions existantes pour un chunk.
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                SELECT COUNT(*)
+                FROM text_question_chunks qc
+                JOIN text_questions q ON qc.question_id = q.question_id
+                WHERE qc.chunk_id = %s
+            """, (str(chunk_id),))
+            result = await cur.fetchone()
+            return result[0] if result else 0
+
+
+async def _process_question_generation_job_batch(
+    job_id: str,
+    all_chunks: List[Dict],
+    num_questions: int,
+    model_name: str,
+    user_prompt: Optional[str] = None
+):
+    """
+    Traite un job de génération de questions via l'API Batch de Mistral.
+
+    Les chunks ayant déjà 3+ questions sont ignorés. Les autres sont regroupés
+    dans un fichier de requêtes envoyé à l'API Batch, puis les Q/R obtenues
+    sont sauvegardées en base comme en mode standard.
+    """
+    from .batch_services import build_batch_request_line, run_batch_generation
+
+    errors = []
+    progress = {}
+    processed_chunks = 0
+    total_chunks = len(all_chunks)
+
+    # Filtrer les chunks à traiter (même règle que le mode standard)
+    chunks_to_process = []
+    for chunk in all_chunks:
+        chunk_id = str(chunk.get("id", "unknown"))
+        document_id = str(chunk.get("document_id", "unknown"))
+        try:
+            existing_count = await _get_existing_questions_count_for_chunk(chunk_id)
+            if existing_count >= 3:
+                print(f"Chunk {chunk_id} a déjà {existing_count} questions, ignoré pour le batch")
+                progress[chunk_id] = {
+                    "chunk_id": chunk_id,
+                    "document_id": document_id,
+                    "questions_generated": 0,
+                    "error": "Déjà 3+ questions existantes",
+                    "status": "skipped"
+                }
+                processed_chunks += 1
+                update_question_generation_job(
+                    job_id=job_id,
+                    status="running",
+                    progress=progress,
+                    processed_documents=processed_chunks,
+                    errors=errors
+                )
+            else:
+                chunks_to_process.append(chunk)
+        except Exception as e:
+            errors.append(f"chunk {chunk_id} (doc: {document_id}): {str(e)}")
+            progress[chunk_id] = {
+                "chunk_id": chunk_id,
+                "document_id": document_id,
+                "questions_generated": 0,
+                "error": str(e),
+                "status": "failed"
+            }
+            processed_chunks += 1
+            update_question_generation_job(
+                job_id=job_id,
+                status="running",
+                progress=progress,
+                processed_documents=processed_chunks,
+                errors=errors
+            )
+
+    if not chunks_to_process:
+        update_question_generation_job(
+            job_id=job_id,
+            status="completed" if not errors else "completed_with_errors",
+            progress=progress,
+            processed_documents=processed_chunks,
+            errors=errors
+        )
+        print(f"Job {job_id} terminé: aucun chunk à traiter en batch")
+        return
+
+    # Construire les requêtes batch (une par chunk)
+    try:
+        provider, model = model_name.split("/") if "/" in model_name else ("mistral", model_name)
+        request_lines = [
+            build_batch_request_line(
+                custom_id=str(chunk.get("id", "unknown")),
+                chunk_content=chunk.get("content", ""),
+                num_questions=num_questions,
+                model=model,
+                user_prompt=user_prompt
+            )
+            for chunk in chunks_to_process
+        ]
+    except ValueError as e:
+        error_message = f"Erreur préparation du batch: {e}"
+        print(error_message)
+        update_question_generation_job(
+            job_id=job_id,
+            status="failed",
+            progress=progress,
+            processed_documents=processed_chunks,
+            errors=[error_message],
+            error_message=error_message
+        )
+        return
+
+    print(f"[batch] {len(request_lines)} requêtes batch à envoyer pour le job {job_id}")
+
+    async def on_batch_status(batch_status: str, batch_job: dict):
+        progress["_batch"] = {
+            "batch_job_id": batch_job.get("id"),
+            "status": batch_status,
+            "requests": len(request_lines)
+        }
+        update_question_generation_job(
+            job_id=job_id,
+            status="running",
+            progress=progress,
+            processed_documents=processed_chunks,
+            errors=errors
+        )
+
+    # Exécuter le cycle batch Mistral (upload, job, polling, résultats)
+    results, batch_errors = await run_batch_generation(
+        request_lines=request_lines,
+        model=model,
+        on_status=on_batch_status
+    )
+    errors.extend(batch_errors)
+    progress.pop("_batch", None)
+
+    # Sauvegarder les Q/R obtenues, chunk par chunk
+    for chunk in chunks_to_process:
+        chunk_id = str(chunk.get("id", "unknown"))
+        document_id = str(chunk.get("document_id", "unknown"))
+        qa_pairs = results.get(chunk_id)
+        error = None
+        questions_generated = 0
+
+        if qa_pairs:
+            try:
+                async with await get_db_connection() as conn:
+                    for qa in qa_pairs:
+                        await save_question_to_db(
+                            question=qa["question"],
+                            answers=[qa["answer"]],
+                            chunk_id=chunk_id,
+                            conn=conn,
+                            difficulty_level=3,
+                            model=model_name
+                        )
+                questions_generated = len(qa_pairs)
+            except Exception as e:
+                error = f"Erreur sauvegarde: {str(e)}"
+        elif not errors or not any(f"chunk {chunk_id}" in err for err in errors):
+            error = "Aucun résultat batch pour ce chunk"
+
+        progress[chunk_id] = {
+            "chunk_id": chunk_id,
+            "document_id": document_id,
+            "questions_generated": questions_generated,
+            "error": error,
+            "status": "completed" if not error else "failed"
+        }
+        if error:
+            errors.append(f"chunk {chunk_id} (doc: {document_id}): {error}")
+        processed_chunks += 1
+        update_question_generation_job(
+            job_id=job_id,
+            status="running",
+            progress=progress,
+            processed_documents=processed_chunks,
+            errors=errors
+        )
+
+    # Job terminé
+    final_status = "completed" if not errors else "completed_with_errors"
+    update_question_generation_job(
+        job_id=job_id,
+        status=final_status,
+        progress=progress,
+        processed_documents=processed_chunks,
+        errors=errors
+    )
+
+    print(f"Job batch {job_id} terminé: {final_status} ({processed_chunks}/{total_chunks})")
+
+
 async def process_question_generation_job(job_id: str):
     """
     Traite un job de génération de questions en arrière-plan.
@@ -357,6 +560,7 @@ async def process_question_generation_job(job_id: str):
     chunk_id = parameters.get("chunk_id")  # ID du chunk spécifique (optionnel, prioritaire)
     num_answers = parameters.get("num_answers_per_question", 1)  # Nombre de réponses par question
     user_prompt = parameters.get("user_prompt")  # Instructions personnalisées de l'utilisateur (optionnel)
+    use_batch = parameters.get("use_batch", False)  # Mode batch Mistral (optionnel)
     
     errors = []
     progress = job.get("progress", {})
@@ -399,6 +603,17 @@ async def process_question_generation_job(job_id: str):
         status="running",
         processed_documents=0
     )
+    
+    # Mode batch : toutes les requêtes sont envoyées à l'API Batch de Mistral en une fois
+    if use_batch:
+        await _process_question_generation_job_batch(
+            job_id=job_id,
+            all_chunks=all_chunks,
+            num_questions=num_questions,
+            model_name=model_name,
+            user_prompt=user_prompt
+        )
+        return
     
     # Traiter chaque chunk
     for chunk in all_chunks:

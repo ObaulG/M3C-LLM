@@ -36,6 +36,11 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
     )
+    use_batch: bool = Field(
+        default=False,
+        description="Si True, utilise l'API Batch de Mistral (recommandé pour les travaux massifs : requêtes regroupées, coût réduit, traitement asynchrone). "
+                    "Si False, génération chunk par chunk via l'agent standard."
+    )
 
 class CompareGenerationRequest(BaseModel):
     """Requête pour la génération comparative multi-modèles (admins/experts)."""
