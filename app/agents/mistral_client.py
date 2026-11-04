@@ -289,7 +289,9 @@ def get_mistral_client(async_mode: bool = False) -> Mistral:
         )
 
     # Initialiser le client Mistral avec Instructor
-    client = instructor.from_mistral(Mistral(api_key=MISTRAL_API_KEY),
+    from .instructor_factory import _patch_mistral_completions
+    mistral_client = _patch_mistral_completions(Mistral(api_key=MISTRAL_API_KEY), async_mode)
+    client = instructor.from_mistral(mistral_client,
                                      use_async=async_mode)
     
     # Initialiser le moniteur global si ce n'est pas déjà fait

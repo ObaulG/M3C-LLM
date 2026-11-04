@@ -110,27 +110,44 @@ def _flatten_reasoning_content(completion):
     return completion
 
 
-def _patch_mistral_completions(client, async_mode: bool):
+def _patch_mistral_completions(client, async_mode: bool = False):
     """
-    Enveloppe client.chat.completions.create pour aplatir systématiquement
-    le contenu des réponses avant qu'Instructor ne les valide.
+    Enveloppe les méthodes de complétion du SDK Mistral réellement appelées
+    par Instructor (chat.complete / chat.complete_async, ainsi que
+    chat.completions.create) pour aplatir systématiquement le contenu des
+    réponses avant qu'Instructor ne les valide.
     """
-    completions = client.chat.completions
-    original_create = completions.create
+    chat = client.chat
 
-    if async_mode:
-        @functools.wraps(original_create)
-        async def create(*args, **kwargs):
-            return _flatten_reasoning_content(await original_create(*args, **kwargs))
-    else:
+    original_complete = chat.complete
+    original_complete_async = chat.complete_async
+
+    @functools.wraps(original_complete)
+    def complete(*args, **kwargs):
+        return _flatten_reasoning_content(original_complete(*args, **kwargs))
+
+    @functools.wraps(original_complete_async)
+    async def complete_async(*args, **kwargs):
+        return _flatten_reasoning_content(await original_complete_async(*args, **kwargs))
+
+    for name, fn in (("complete", complete), ("complete_async", complete_async)):
+        try:
+            setattr(chat, name, fn)
+        except AttributeError:
+            object.__setattr__(chat, name, fn)
+
+    completions = getattr(chat, "completions", None)
+    if completions is not None and hasattr(completions, "create"):
+        original_create = completions.create
+
         @functools.wraps(original_create)
         def create(*args, **kwargs):
             return _flatten_reasoning_content(original_create(*args, **kwargs))
 
-    try:
-        completions.create = create
-    except AttributeError:
-        object.__setattr__(completions, "create", create)
+        try:
+            completions.create = create
+        except AttributeError:
+            object.__setattr__(completions, "create", create)
     return client
 
 
