@@ -70,6 +70,9 @@ SOLR_ENABLED = os.getenv("SOLR_ENABLED", "0") == "1"
 if SOLR_ENABLED:
     from solr.router import router as solr_router
 
+print("REQUIRE_USER_MISTRAL_API_KEY =", os.getenv("REQUIRE_USER_MISTRAL_API_KEY"))
+print("MISTRAL_API_KEY configurée :", bool(os.getenv("MISTRAL_API_KEY")))
+
 # Import du router de consultation des documents et de leurs chunks
 from documents.router import router as documents_router
 

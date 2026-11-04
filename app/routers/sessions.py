@@ -51,9 +51,7 @@ router = APIRouter(prefix="/api/sessions", tags=["Sessions"])
 
 # modèles et providers des agents évaluateurs ; l'ordre est important :
 # models_evaluator[i] correspond à app.state.evaluators[i]
-models_evaluator = [("ministral-8b-latest", "mistral"),
-                    ("ministral-14b-2512", "mistral"),
-                    ("ministral-3b-latest", "mistral")]
+models_evaluator = [("ministral-14b-2512", "mistral")]
 
 question_session_manager = QuestionSessionManager()
 rag_session_manager = RAGSessionManager()
