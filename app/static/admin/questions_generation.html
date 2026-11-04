@@ -251,6 +251,15 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="generationMode">Mode de génération</label>
+                    <select id="generationMode">
+                        <option value="standard">Standard (chunk par chunk)</option>
+                        <option value="batch">Batch Mistral (recommandé pour les travaux massifs, coût réduit)</option>
+                    </select>
+                    <div class="description">Le mode batch regroupe toutes les requêtes et les envoie à l'API Batch de Mistral en une seule fois ; le traitement est asynchrone et peut prendre plus de temps, mais à un coût réduit.</div>
+                </div>
+
+                <div class="form-group">
                     <label for="documentSelect">Document spécifique (optionnel)</label>
                     <select id="documentSelect">
                         <option value="">Tous les documents validés</option>
@@ -572,6 +581,7 @@
         const documentId = document.getElementById('documentSelect').value;
         const chunkId = document.getElementById('chunkSelect').value;
         const userPrompt = document.getElementById('userPrompt').value.trim();
+        const useBatch = document.getElementById('generationMode').value === 'batch';
 
         if (!documentId && !chunkId) {
             alert('❌ Veuillez sélectionner un document (ou un chunk spécifique) pour lancer la génération.');
@@ -582,7 +592,8 @@
             ? `le chunk ${chunkId}`
             : `tous les chunks du document ${documentId}`;
         const promptInfo = userPrompt ? `\n\nInstructions personnalisées : « ${userPrompt.substring(0, 120)}${userPrompt.length > 120 ? '...' : ''} »` : '';
-        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.${promptInfo}\n\nVoulez-vous continuer ?`)) {
+        const modeInfo = useBatch ? '\n\nMode : Batch Mistral (API Batch, traitement asynchrone).' : '';
+        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.${promptInfo}${modeInfo}\n\nVoulez-vous continuer ?`)) {
             return;
         }
 
@@ -602,7 +613,8 @@
                     model_name: modelName,
                     document_id: documentId ? parseInt(documentId) : null,
                     chunk_id: chunkId ? parseInt(chunkId) : null,
-                    user_prompt: userPrompt || null
+                    user_prompt: userPrompt || null,
+                    use_batch: useBatch
                 })
             });
 
