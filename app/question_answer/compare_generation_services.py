@@ -134,9 +134,8 @@ async def process_compare_generation_job(job_id: str):
             "error": None,
         }
         try:
-            conn = await get_db_connection()
-            chunk = await database.get_chunk_by_id(conn, chunk_id)
-            await conn.close()
+            async with await get_db_connection() as conn:
+                chunk = await database.get_chunk_by_id(conn, chunk_id)
 
             if not chunk:
                 raise ValueError(f"Chunk {chunk_id} introuvable")

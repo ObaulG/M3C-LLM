@@ -67,8 +67,8 @@ async def evaluate_message_type(request: EvaluateMessageTypeRequest):
     """
     try:
         # Récupérer la question depuis la BDD pour obtenir les réponses de référence
-        conn = await get_db_connection()
-        question = await get_question_by_id(conn, request.question_id, include_answers=True)
+        async with await get_db_connection() as conn:
+            question = await get_question_by_id(conn, request.question_id, include_answers=True)
         
         # Extraire TOUTES les réponses de référence de manière sécurisée
         answers = question.get("answers", [])

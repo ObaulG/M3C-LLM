@@ -181,38 +181,34 @@ async def get_resource_extracted_text(resource_id: int) -> Optional[str]:
     Returns:
         Le texte extrait ou None si non trouvé
     """
-    conn = None
     try:
-        conn = await get_db_connection()
-        async with conn.cursor() as cur:
-            await cur.execute("""
-                SELECT extracted_text 
-                FROM resource 
-                WHERE item_id = %s
-                LIMIT 1
-            """, (resource_id,))
-            result = await cur.fetchone()
-            if result and result[0]:
-                return result[0]
-            
-            # Essayer aussi avec resource_id directement
-            await cur.execute("""
-                SELECT extracted_text 
-                FROM resource 
-                WHERE resource_id = %s
-                LIMIT 1
-            """, (resource_id,))
-            result = await cur.fetchone()
-            if result and result[0]:
-                return result[0]
-            
-            return None
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT extracted_text 
+                    FROM resource 
+                    WHERE item_id = %s
+                    LIMIT 1
+                """, (resource_id,))
+                result = await cur.fetchone()
+                if result and result[0]:
+                    return result[0]
+                
+                # Essayer aussi avec resource_id directement
+                await cur.execute("""
+                    SELECT extracted_text 
+                    FROM resource 
+                    WHERE resource_id = %s
+                    LIMIT 1
+                """, (resource_id,))
+                result = await cur.fetchone()
+                if result and result[0]:
+                    return result[0]
+                
+                return None
     except Exception as e:
         print(f"Erreur lors de la récupération de extracted_text pour {resource_id}: {e}")
         return None
-    finally:
-        if conn:
-            await conn.close()
 
 
 async def get_chunk_id_for_resource(resource_id: int) -> Optional[str]:
@@ -226,39 +222,35 @@ async def get_chunk_id_for_resource(resource_id: int) -> Optional[str]:
     Returns:
         Un chunk_id ou None si non trouvé
     """
-    conn = None
     try:
-        conn = await get_db_connection()
-        async with conn.cursor() as cur:
-            # Chercher dans chunks table
-            await cur.execute("""
-                SELECT id 
-                FROM chunks 
-                WHERE document_id = %s
-                LIMIT 1
-            """, (str(resource_id),))
-            result = await cur.fetchone()
-            if result:
-                return str(result[0])
-            
-            # Chercher dans text_chunks table
-            await cur.execute("""
-                SELECT id 
-                FROM text_chunks 
-                WHERE document_id = %s
-                LIMIT 1
-            """, (str(resource_id),))
-            result = await cur.fetchone()
-            if result:
-                return str(result[0])
-            
-            return None
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                # Chercher dans chunks table
+                await cur.execute("""
+                    SELECT id 
+                    FROM chunks 
+                    WHERE document_id = %s
+                    LIMIT 1
+                """, (str(resource_id),))
+                result = await cur.fetchone()
+                if result:
+                    return str(result[0])
+                
+                # Chercher dans text_chunks table
+                await cur.execute("""
+                    SELECT id 
+                    FROM text_chunks 
+                    WHERE document_id = %s
+                    LIMIT 1
+                """, (str(resource_id),))
+                result = await cur.fetchone()
+                if result:
+                    return str(result[0])
+                
+                return None
     except Exception as e:
         print(f"Erreur lors de la récupération de chunk_id pour {resource_id}: {e}")
         return None
-    finally:
-        if conn:
-            await conn.close()
 
 
 async def generate_questions_single_answer_for_chunk(
@@ -364,9 +356,8 @@ async def process_question_generation_job(job_id: str):
 
     # Si un chunk_id spécifique est fourni, ne traiter que ce chunk
     if chunk_id:
-        conn = await get_db_connection()
-        chunk = await database.get_chunk_by_id(conn, chunk_id)
-        await conn.close()
+        async with await get_db_connection() as conn:
+            chunk = await database.get_chunk_by_id(conn, chunk_id)
         
         if chunk:
             all_chunks = [chunk]
