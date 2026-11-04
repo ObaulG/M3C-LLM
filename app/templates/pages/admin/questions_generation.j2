@@ -156,6 +156,24 @@
     }
     #userPrompt:focus { outline: none; border-color: #b74420; }
     .prompt-command-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+    #compareSection { border: 1px solid #d9c2b8; border-radius: 10px; padding: 20px; margin-top: 25px; background: #fffdfc; }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 15px; }
+    @media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-check-list { max-height: 260px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 6px; padding: 8px; background: #fdfdfd; font-size: 13px; }
+    .compare-check-list label { display: flex; align-items: flex-start; gap: 8px; padding: 4px 6px; border-radius: 4px; cursor: pointer; line-height: 1.5; }
+    .compare-check-list label:hover { background: #fbe9e4; }
+    .compare-check-list label.doc-label { font-weight: 600; color: #b74420; }
+    .compare-check-list .chunk-preview { display: block; color: #888; font-size: 11px; font-weight: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px; }
+    #compareModels { width: 100%; border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px; font-size: 13px; }
+    .compare-chunk-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .compare-chunk-card .chunk-summary { font-size: 12px; color: #666; margin-bottom: 10px; }
+    .compare-model-card { border: 1px solid #e6d5cd; border-left: 4px solid #b74420; border-radius: 6px; padding: 12px; margin-bottom: 10px; background: #fffaf8; }
+    .compare-model-card .model-title { font-weight: 600; color: #b74420; font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .compare-model-card .model-meta { font-size: 11px; color: #888; font-weight: normal; }
+    .compare-fact { background: #eef7ee; border-left: 3px solid #28a745; padding: 6px 10px; border-radius: 4px; margin: 5px 0; font-size: 13px; }
+    .compare-fact.optional { background: #fff8e6; border-left-color: #ffc107; }
+    .compare-knowledge { background: #eef2fb; border-left: 3px solid #4a6fd4; padding: 6px 10px; border-radius: 4px; margin: 5px 0; font-size: 13px; }
+    .compare-error { color: #dc3545; font-size: 13px; padding: 8px; background: #fdecee; border-radius: 4px; }
     @media (max-width: 768px) { .main_container { flex-direction: column; } .sidebar { width: 100%; height: auto; } .nav-links { flex-wrap: wrap; justify-content: center; } }
 </style>
 {% endblock %}
@@ -296,6 +314,54 @@
                 <div id="jobsContainer">
                     <p style="text-align: center; color: #666; padding: 40px;">Aucun job de génération trouvé. Lancez une nouvelle génération pour commencer.</p>
                 </div>
+            </div>
+
+            <div class="results-section" id="compareSection" style="display: none;">
+                <h3 class="section-title">🔬 Comparaison Multi-Modèles (Questions/Réponses, Faits et Éléments de Connaissance)</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                    Sélectionnez des chunks issus d'un ou plusieurs documents, puis au moins 3 modèles.
+                    La génération comparative ne sauvegarde rien en base de données : les résultats restent en mémoire
+                    et peuvent être téléchargés en JSON.
+                </p>
+
+                <div class="compare-grid">
+                    <div class="compare-col">
+                        <div class="form-group">
+                            <label>1. Documents (sélection multiple)</label>
+                            <div id="compareDocumentsList" class="compare-check-list">Chargement des documents...</div>
+                        </div>
+                        <div class="form-group">
+                            <label>2. Chunks des documents sélectionnés</label>
+                            <div id="compareChunksList" class="compare-check-list">
+                                <p style="color: #888; font-size: 13px;">Cochez un ou plusieurs documents pour afficher leurs chunks.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="compare-col">
+                        <div class="form-group">
+                            <label for="compareModels">3. Modèles LLM à comparer (au moins 3, Ctrl+clic / Cmd+clic)</label>
+                            <select id="compareModels" multiple size="8"></select>
+                            <div class="description">Sélectionnez au moins 3 modèles distincts dans la liste.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="compareNumQuestions">Nombre de questions par chunk et par modèle</label>
+                            <input type="number" id="compareNumQuestions" value="3" min="1" max="10">
+                        </div>
+                        <button class="btn" onclick="startCompareGeneration()" id="compareGenerateBtn">⚖️ Lancer la Comparaison</button>
+                        <button class="btn btn-secondary" onclick="downloadCompareResultsJson()" id="compareDownloadBtn" style="margin-left: 10px; display: none;">💾 Télécharger le JSON</button>
+                    </div>
+                </div>
+
+                <div class="loading" id="compareLoadingIndicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p id="compareStatusLabel">Comparaison en cours, veuillez patienter...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="compareProgressFill" style="width: 0%"></div></div>
+                        <div class="progress-text" id="compareProgressText">0%</div>
+                    </div>
+                </div>
+
+                <div id="compareResultsContainer"></div>
             </div>
         </div>
     </div>
@@ -1194,7 +1260,276 @@
         updateExportButtonVisibility();
         renderPromptCommands();
         loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
+        initCompareSection();
     });
+
+    // ========================================================================
+    // COMPARAISON MULTI-MODÈLES (RÉSERVÉE ADMINS / EXPERTS)
+    // ========================================================================
+
+    let compareCurrentJobId = null;
+    let comparePollInterval = null;
+    let compareLatestResults = null;
+    let compareSelectedDocuments = new Set();
+    let compareChunksByDoc = {};
+
+    const COMPARE_ALLOWED_ROLES = ['global_admin', 'admin', 'validator'];
+
+    async function initCompareSection() {
+        try {
+            const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
+            if (!response.ok) return;
+            const data = await response.json();
+            const role = data && data.user ? data.user.role : null;
+            if (!COMPARE_ALLOWED_ROLES.includes(role)) return;
+
+            const section = document.getElementById('compareSection');
+            if (section) section.style.display = 'block';
+
+            await loadCompareDocuments();
+            loadModelsIntoSelect(document.getElementById('compareModels'), { prefixProvider: true });
+        } catch (error) {
+            console.warn('Comparaison multi-modèles indisponible :', error);
+        }
+    }
+
+    async function loadCompareDocuments() {
+        const container = document.getElementById('compareDocumentsList');
+        if (!container) return;
+        try {
+            const response = await fetch(QUESTIONS_API + '/valid-documents');
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const data = await response.json();
+            const documents = data.documents || [];
+            if (documents.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Aucun document validé disponible.</p>';
+                return;
+            }
+            container.innerHTML = documents.map(doc =>
+                `<label class="doc-label"><input type="checkbox" value="${doc.document_id}" onchange="onCompareDocumentToggle(this)">
+                    ${escapeHtml(doc.title || 'Document ' + doc.document_id)} <span style="font-weight: normal; color: #888;">(Doc ${doc.document_id})</span>
+                </label>`
+            ).join('');
+        } catch (error) {
+            container.innerHTML = '<p style="color: #dc3545;">Erreur lors du chargement des documents.</p>';
+        }
+    }
+
+    async function onCompareDocumentToggle(checkbox) {
+        const documentId = checkbox.value;
+        if (checkbox.checked) {
+            compareSelectedDocuments.add(documentId);
+            if (!compareChunksByDoc[documentId]) {
+                try {
+                    const response = await fetch(QUESTIONS_API + '/compare-generation/chunks/' + documentId);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+                    compareChunksByDoc[documentId] = data.chunks || [];
+                } catch (error) {
+                    console.error('Erreur chargement chunks document ' + documentId, error);
+                    compareChunksByDoc[documentId] = [];
+                }
+            }
+        } else {
+            compareSelectedDocuments.delete(documentId);
+            for (const chunk of compareChunksByDoc[documentId] || []) {
+                compareSelectedChunks.delete(String(chunk.chunk_id));
+            }
+        }
+        renderCompareChunks();
+    }
+
+    let compareSelectedChunks = new Set();
+
+    function renderCompareChunks() {
+        const container = document.getElementById('compareChunksList');
+        if (!container) return;
+        const documentIds = [...compareSelectedDocuments].sort((a, b) => a - b);
+        if (documentIds.length === 0) {
+            container.innerHTML = '<p style="color: #888; font-size: 13px;">Cochez un ou plusieurs documents pour afficher leurs chunks.</p>';
+            return;
+        }
+        let html = '';
+        for (const docId of documentIds) {
+            const chunks = compareChunksByDoc[docId] || [];
+            if (chunks.length === 0) {
+                html += `<div class="doc-label" style="padding: 4px 6px;">Document ${docId}<span style="font-weight: normal; color: #dc3545;"> — aucun chunk trouvé</span></div>`;
+                continue;
+            }
+            html += `<div class="doc-label" style="padding: 4px 6px;">Document ${docId}</div>`;
+            for (const chunk of chunks) {
+                const label = `Chunk ${chunk.chunk_id} · page ${chunk.num_page ?? 'N/A'} (${chunk.character_count} car.)`;
+                const checked = compareSelectedChunks.has(String(chunk.chunk_id)) ? 'checked' : '';
+                html += `<label>
+                    <input type="checkbox" class="compare-chunk-checkbox" value="${chunk.chunk_id}" data-document-id="${docId}" ${checked} onchange="compareSelectedChunks.add(this.value); if (!this.checked) compareSelectedChunks.delete(this.value);">
+                    <span>${escapeHtml(label)}<span class="chunk-preview" title="${escapeHtml(chunk.preview || '')}">${escapeHtml(chunk.preview || '')}</span></span>
+                </label>`;
+            }
+        }
+        container.innerHTML = html;
+    }
+
+    function getCompareSelectedChunkIds() {
+        return [...document.querySelectorAll('.compare-chunk-checkbox:checked')].map(cb => parseInt(cb.value, 10));
+    }
+
+    async function startCompareGeneration() {
+        const chunkIds = getCompareSelectedChunkIds();
+        const models = [...document.getElementById('compareModels').selectedOptions].map(o => o.value);
+        const numQuestions = parseInt(document.getElementById('compareNumQuestions').value, 10) || 3;
+
+        if (chunkIds.length === 0) {
+            alert('Sélectionnez au moins un chunk.');
+            return;
+        }
+        if (new Set(models).size < 3) {
+            alert('Sélectionnez au moins 3 modèles distincts dans la liste.');
+            return;
+        }
+
+        const generateBtn = document.getElementById('compareGenerateBtn');
+        generateBtn.disabled = true;
+        document.getElementById('compareLoadingIndicator').style.display = 'block';
+        document.getElementById('compareResultsContainer').innerHTML = '';
+        document.getElementById('compareDownloadBtn').style.display = 'none';
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/compare-generation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chunk_ids: chunkIds,
+                    models: models,
+                    num_questions_per_chunk: numQuestions
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erreur API: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            compareCurrentJobId = data.job_id;
+            comparePollInterval = setInterval(pollCompareJob, 3000);
+            updateCompareProgress(0, chunkIds.length, 'pending');
+        } catch (error) {
+            alert(' Erreur: ' + error.message);
+            stopComparePolling();
+        }
+    }
+
+    function stopComparePolling() {
+        if (comparePollInterval) {
+            clearInterval(comparePollInterval);
+            comparePollInterval = null;
+        }
+        const generateBtn = document.getElementById('compareGenerateBtn');
+        if (generateBtn) generateBtn.disabled = false;
+    }
+
+    async function pollCompareJob() {
+        if (!compareCurrentJobId) return;
+        try {
+            const response = await fetch(QUESTIONS_API + '/compare-generation/jobs/' + compareCurrentJobId);
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const job = await response.json();
+
+            const total = job.total_documents || (job.parameters && job.parameters.chunk_ids ? job.parameters.chunk_ids.length : 0);
+            updateCompareProgress(job.processed_documents || 0, total, job.status, job.errors);
+
+            if (['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(job.status)) {
+                stopComparePolling();
+                document.getElementById('compareLoadingIndicator').style.display = 'none';
+                compareLatestResults = job.results || null;
+                renderCompareResults(job);
+                if (compareLatestResults) {
+                    document.getElementById('compareDownloadBtn').style.display = 'inline-block';
+                }
+            }
+        } catch (error) {
+            console.error('Erreur suivi du job de comparaison:', error);
+            stopComparePolling();
+            document.getElementById('compareLoadingIndicator').style.display = 'none';
+        }
+    }
+
+    function updateCompareProgress(processed, total, status, errors) {
+        const percent = total > 0 ? Math.round((processed / total) * 100) : 0;
+        document.getElementById('compareProgressFill').style.width = percent + '%';
+        document.getElementById('compareProgressText').textContent = percent + '%';
+        const label = document.getElementById('compareStatusLabel');
+        if (label) {
+            label.textContent = `Comparaison en cours... ${processed}/${total || '?'} chunks traités (${status})` +
+                (errors && errors.length ? ` — ${errors.length} erreur(s)` : '');
+        }
+    }
+
+    function renderCompareResults(job) {
+        const container = document.getElementById('compareResultsContainer');
+        const results = job.results;
+        if (!results || !results.chunks || results.chunks.length === 0) {
+            container.innerHTML = `<div class="compare-error">Aucun résultat disponible pour le job ${escapeHtml(job.job_id || '')}.</div>`;
+            return;
+        }
+
+        let html = `<h3 class="section-title">Résultats de la Comparaison (${escapeHtml(job.status || '')})</h3>`;
+        for (const chunk of results.chunks) {
+            html += `<div class="compare-chunk-card">
+                <div class="chunk-summary">📄 <strong>Chunk ${chunk.chunk_id}</strong> — Document ${chunk.document_id ?? 'N/A'} · Page ${chunk.num_page ?? 'N/A'}</div>`;
+            if (chunk.error) {
+                html += `<div class="compare-error">${escapeHtml(chunk.error)}</div>`;
+            }
+            for (const model of chunk.models || []) {
+                html += `<div class="compare-model-card">
+                    <div class="model-title">🤖 ${escapeHtml(model.model)}
+                        <span class="model-meta">${model.generation_time ?? 'N/A'}s</span>
+                    </div>`;
+                if (model.error) {
+                    html += `<div class="compare-error">${escapeHtml(model.error)}</div>`;
+                }
+                for (const qa of model.qa || []) {
+                    html += `<div class="question-text" style="margin: 10px 0 2px;">❓ ${escapeHtml(qa.question)}</div>
+                        <div class="answer-text">${escapeHtml(qa.answer)}</div>`;
+                    if (qa.facts_error) {
+                        html += `<div class="compare-error">Faits: ${escapeHtml(qa.facts_error)}</div>`;
+                    }
+                    for (const fact of qa.facts || []) {
+                        html += `<div class="compare-fact ${fact.importance === 'optional' ? 'optional' : ''}">✅ ${escapeHtml(fact.content)} <span class="model-meta">(${escapeHtml(fact.importance || 'essential')})</span></div>`;
+                    }
+                }
+                if (model.knowledge_elements_error) {
+                    html += `<div class="compare-error">Éléments de connaissance: ${escapeHtml(model.knowledge_elements_error)}</div>`;
+                }
+                if ((model.knowledge_elements || []).length > 0) {
+                    html += `<div class="prompt-command-title" style="margin-top: 10px;">🧩 Éléments de connaissance / compétences</div>`;
+                    for (const item of model.knowledge_elements) {
+                        const proposition = item.proposition || item.content || '';
+                        html += `<div class="compare-knowledge">${escapeHtml(proposition)}</div>`;
+                    }
+                }
+                html += `</div>`;
+            }
+            html += `</div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function downloadCompareResultsJson() {
+        if (!compareLatestResults) {
+            alert('Aucun résultat de comparaison à télécharger.');
+            return;
+        }
+        const blob = new Blob([JSON.stringify(compareLatestResults, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `comparaison_modeles_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

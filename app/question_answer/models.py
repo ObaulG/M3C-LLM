@@ -37,6 +37,30 @@ class QuestionGenerationRequest(BaseModel):
         description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
     )
 
+class CompareGenerationRequest(BaseModel):
+    """Requête pour la génération comparative multi-modèles (admins/experts)."""
+    chunk_ids: List[int] = Field(
+        default_factory=list,
+        min_length=1,
+        description="IDs des chunks (text_chunks.id) à traiter, issus d'un ou plusieurs documents."
+    )
+    models: List[str] = Field(
+        default_factory=list,
+        min_length=3,
+        description="Au moins 3 modèles LLM au format <provider>/<model_name> à comparer."
+    )
+    num_questions_per_chunk: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Nombre de questions/réponses à générer par chunk et par modèle."
+    )
+    user_prompt: Optional[str] = Field(
+        default=None,
+        description="Instructions personnalisées optionnelles, transmises à l'agent QA."
+    )
+
+
 class QuestionGenerationResult(BaseModel):
     """Résultat de génération pour un document."""
     resource_id: int = Field(..., description="ID du document (resource_id)")
