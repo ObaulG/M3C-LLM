@@ -52,7 +52,9 @@ def create_client(
     elif provider == "ollama":
         return _create_ollama_client(async_mode, extra_body, instructor_mode)
     elif provider == "google" or provider == "gemini":
-        if instructor_mode == instructor.Mode.JSON:
+        if instructor_mode == instructor.Mode.TOOLS:
+            instructor_mode = instructor.Mode.GENAI_TOOLS
+        elif instructor_mode == instructor.Mode.JSON:
             instructor_mode = instructor.Mode.GENAI_STRUCTURED_OUTPUTS
         return _create_gemma_client(async_mode, instructor_mode)
     else:
