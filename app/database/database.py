@@ -2,6 +2,7 @@ from typing import Optional, List, Dict, Any, Tuple
 import asyncio
 import json
 import os
+import weakref
 import aiomysql
 import uuid
 from qdrant_client import QdrantClient, models
@@ -31,10 +32,93 @@ VALID_TEXT_RESOURCE_ID = [317, 116723, 116789, 116805, 116729, 116806, 116781, 1
                           116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
 #VALID_TEXT_RESOURCE_ID = [116738, 116782]
 
-# Connexion à la base de données MySQL
+# Pool de connexions à la base de données MySQL
+_DB_POOL = None
+_DB_POOL_LOOP = None
+
+
+class _CompletedAwaitable:
+    def __await__(self):
+        return iter(())
+
+
+class _AwaitableACM:
+    __slots__ = ("_coro", "_obj")
+
+    def __init__(self, coro):
+        self._coro = coro
+        self._obj = None
+
+    def __await__(self):
+        return self._coro.__await__()
+
+    async def __aenter__(self):
+        self._obj = await self._coro
+        return self._obj
+
+    async def __aexit__(self, *exc):
+        return await self._obj.__aexit__(*exc)
+
+
+class _PooledConnection:
+    __slots__ = ("_conn", "_pool", "_released", "_finalizer", "__weakref__")
+
+    def __init__(self, conn, pool):
+        self._conn = conn
+        self._pool = pool
+        self._released = False
+        self._finalizer = weakref.finalize(self, _PooledConnection._cleanup, pool, conn)
+
+    @staticmethod
+    def _cleanup(pool, conn):
+        if not conn.closed:
+            pool.release(conn)
+
+    def _release(self):
+        if not self._released:
+            self._released = True
+            self._finalizer.detach()
+            conn, pool = self._conn, self._pool
+            if not conn.closed:
+                pool.release(conn)
+
+    def __getattr__(self, name):
+        attr = getattr(self._conn, name)
+        if asyncio.iscoroutinefunction(attr):
+            def wrapper(*args, **kwargs):
+                return _AwaitableACM(attr(*args, **kwargs))
+            return wrapper
+        return attr
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        self._release()
+        return False
+
+    def close(self):
+        self._release()
+        return _CompletedAwaitable()
+
+
+async def _get_db_pool():
+    global _DB_POOL, _DB_POOL_LOOP
+    loop = asyncio.get_running_loop()
+    if _DB_POOL is None or _DB_POOL.closed or _DB_POOL_LOOP is not loop:
+        if _DB_POOL is not None and not _DB_POOL.closed:
+            _DB_POOL.terminate()
+        _DB_POOL = await aiomysql.create_pool(
+            **DB_CONFIG, minsize=1, maxsize=20, pool_recycle=3600
+        )
+        _DB_POOL_LOOP = loop
+    return _DB_POOL
+
+
 async def get_db_connection():
-    loop = asyncio.get_event_loop()
-    return await aiomysql.connect(**DB_CONFIG, loop=loop)
+    pool = await _get_db_pool()
+    conn = await pool.acquire()
+    return _PooledConnection(conn, pool)
 
 
 # ============================================================================
