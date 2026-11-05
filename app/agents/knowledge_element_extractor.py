@@ -378,7 +378,8 @@ async def extract_knowledge_elements(text: str,
                                     document_id: Optional[str] = None,
                                     page: Optional[int] = None, 
                                     position_in_page: Optional[int] = None,
-                                    model: str = "mistral-medium") -> List[KnowledgeItemCandidate]:
+                                    model: str = "mistral-medium",
+                                    usage_sink: Optional[list] = None) -> List[KnowledgeItemCandidate]:
     """
     Extrait les éléments de connaissance depuis un chunk de texte en utilisant un LLM.
     
@@ -407,7 +408,13 @@ async def extract_knowledge_elements(text: str,
     )
     
     try:
-        result = await agent.run_async(input_data)
+        try:
+            from app.agents.token_monitor import monitor_agent_call_async
+        except ImportError:
+            from agents.token_monitor import monitor_agent_call_async
+        result, usage_info = await monitor_agent_call_async(agent, input_data)
+        if usage_sink is not None:
+            usage_sink.append(usage_info.to_metadata())
         candidates = result.to_candidates()
         
         # Valider et nettoyer les candidats
