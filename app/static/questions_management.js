@@ -2885,7 +2885,12 @@ async function saveSession() {
             cancelSessionEditing();
             loadSessionsForDocument(currentDocumentId);
         } else {
-            alert("Erreur lors de la sauvegarde de la session.");
+            let detail = "Erreur lors de la sauvegarde de la session.";
+            try {
+                const body = await response.json();
+                if (body && body.detail) detail = body.detail;
+            } catch (e) {}
+            alert(detail);
         }
     } catch (error) {
         console.error("Erreur:", error);
