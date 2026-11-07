@@ -451,24 +451,7 @@ function generateQuestionCardHtml(question, totalCount) {
     const llmAnswerContent = llmAnswer ? escapeHtml(llmAnswer.content) : '';
 
     // Formater les faits de réponse
-    const answerFactsHtml = (answer) => {
-        if (!answer.facts || answer.facts.length === 0) return '';
-        return `
-            <div class="answer-facts">
-                <div class="answer-facts-title">Faits de réponse (${answer.facts.length})</div>
-                <ul class="answer-facts-list">
-                    ${answer.facts.map(fact => `
-                        <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
-                            <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
-                                ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
-                            </span>
-                            <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>
-        `;
-    };
+    const answerFactsHtml = (answer) => answerFactsMarkup(answer.facts);
 
     // Formater les réponses
     const answersHtml = question.answers.length > 0 ? `
@@ -483,6 +466,7 @@ function generateQuestionCardHtml(question, totalCount) {
                     ${index === 0 ? '<span style="color: #007bff; margin-left: 10px;">[LLM]</span>' : ''}
                     ${answerId ? `<button class="btn btn-set-reference ${answer.is_correct ? 'is-reference' : ''}" onclick="setReferenceAnswer(${question.question_id}, ${answerId}, this)" title="Déclarer cette réponse comme réponse de référence">${answer.is_correct ? '★ Référence' : '☆ Référence'}</button>` : ''}
                     ${answerId ? `<button class="btn btn-generate-facts" onclick="generateAnswerFacts(${answerId}, this)" title="Générer les faits de réponse via l\'agent d\'extraction">✨ Faits</button>` : ''}
+                    ${answerId ? `<button class="btn btn-icon btn-edit-facts" onclick="toggleFactsEditMode(${answerId}, this)" title="Éditer les faits (modifier, supprimer, ajouter)">✏️</button>` : ''}
                     <div class="answer-facts-container">${answerFactsHtml(answer)}</div>
                     <div class="generation-status" id="facts-status-${answerId}" style="display: none;"></div>
                 </div>
@@ -864,6 +848,16 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Échappe une chaîne pour un attribut HTML (guillemets inclus).
+ * @param {string} text - Texte à échapper
+ * @returns {string} Texte échappé utilisable dans un attribut HTML
+ */
+function escapeAttr(text) {
+    if (text === null || text === undefined) return '';
+    return escapeHtml(String(text)).replace(/"/g, '&quot;');
 }
 
 /**
@@ -2050,6 +2044,289 @@ function renderKnowledgeItems(questionId, items) {
 }
 
 /**
+ * Génère le markup HTML (lecture seule) des faits d'une réponse.
+ * @param {Array} facts - Liste des faits (fact_id, content, importance)
+ * @returns {string} HTML de la section des faits
+ */
+function answerFactsMarkup(facts) {
+    if (!facts || facts.length === 0) return '';
+    return `
+        <div class="answer-facts">
+            <div class="answer-facts-title">Faits de réponse (${facts.length})</div>
+            <ul class="answer-facts-list">
+                ${facts.map(fact => `
+                    <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
+                        <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
+                            ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
+                        </span>
+                        <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+/**
+ * Génère le markup HTML (mode édition) des faits d'une réponse :
+ * chaque fait devient éditable (sauvegarde au blur), avec un petit
+ * bouton de suppression, plus un petit bouton d'ajout manuel.
+ * @param {number|string} answerId - ID de la réponse
+ * @returns {string} HTML de la section des faits en mode édition
+ */
+function answerFactsEditMarkup(answerId) {
+    const container = document.querySelector(`.answer-item[data-answer-id="${answerId}"] .answer-facts-container`);
+    const facts = container ? Array.from(container.querySelectorAll('.answer-fact-item')) : [];
+    const itemsHtml = facts.map(item => {
+        const factId = item.dataset.factId;
+        const content = item.querySelector('.answer-fact-content');
+        const text = content ? content.textContent : '';
+        const importance = item.classList.contains('importance-optional') ? 'optional' : 'essential';
+        return `
+                    <li class="answer-fact-item importance-${importance}" data-fact-id="${factId}">
+                        <span class="fact-importance-badge ${importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${factId ? `onclick="toggleFactImportance(${factId}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
+                            ${importance === 'optional' ? 'Facultatif' : 'Essentiel'}
+                        </span>
+                        <input type="text" class="fact-edit-input" value="${escapeAttr(text)}" data-original="${escapeAttr(text)}"
+                            onblur="saveFactContent(${factId}, this)"
+                            title="Modifier puis cliquer ailleurs pour sauvegarder" />
+                        <button class="btn btn-icon btn-delete-fact" onclick="deleteFact(${factId}, this)" title="Supprimer ce fait">🗑</button>
+                    </li>`;
+    }).join('');
+
+    return `
+        <div class="answer-facts facts-editing">
+            <div class="answer-facts-title">
+                Faits de réponse (édition)
+                <button class="btn btn-icon btn-add-fact" onclick="addFactInput(${answerId}, this)" title="Ajouter un fait manuellement">＋</button>
+            </div>
+            <ul class="answer-facts-list">
+                ${itemsHtml || '<li class="answer-fact-item answer-fact-empty">Aucun fait — cliquez sur ＋ pour en ajouter un.</li>'}
+            </ul>
+        </div>
+    `;
+}
+
+/**
+ * Bascule la zone des faits d'une réponse entre lecture seule et édition.
+ * @param {number|string} answerId - ID de la réponse
+ * @param {HTMLElement} button - Bouton ✏️ cliqué
+ */
+function toggleFactsEditMode(answerId, button) {
+    const answerItem = button.closest('.answer-item');
+    const factsContainer = answerItem ? answerItem.querySelector('.answer-facts-container') : null;
+    if (!factsContainer) return;
+
+    const isEditing = factsContainer.querySelector('.facts-editing');
+    if (isEditing) {
+        const facts = collectFactsFromEditMarkup(factsContainer);
+        factsContainer.innerHTML = answerFactsMarkup(facts);
+        button.classList.remove('active');
+        button.title = "Éditer les faits (modifier, supprimer, ajouter)";
+    } else {
+        factsContainer.innerHTML = answerFactsEditMarkup(answerId);
+        button.classList.add('active');
+        button.title = "Terminer l'édition des faits";
+        const firstInput = factsContainer.querySelector('.fact-edit-input');
+        if (firstInput) firstInput.focus();
+    }
+}
+
+/**
+ * Reconstitue la liste des faits (lecture seule) depuis le markup d'édition.
+ * @param {HTMLElement} factsContainer - Conteneur des faits en mode édition
+ * @returns {Array} Liste de faits {fact_id, content, importance}
+ */
+function collectFactsFromEditMarkup(factsContainer) {
+    const facts = [];
+    factsContainer.querySelectorAll('.answer-fact-item[data-fact-id]').forEach(item => {
+        const input = item.querySelector('.fact-edit-input');
+        facts.push({
+            fact_id: item.dataset.factId ? Number(item.dataset.factId) : undefined,
+            content: input ? input.value : '',
+            importance: item.classList.contains('importance-optional') ? 'optional' : 'essential',
+        });
+    });
+    return facts;
+}
+
+/**
+ * Sauvegarde le contenu d'un fait au blur de son champ d'édition.
+ * @param {number} factId - ID du fait
+ * @param {HTMLInputElement} input - Champ édité
+ */
+async function saveFactContent(factId, input) {
+    if (input.dataset.deleted === '1') return;
+    const content = input.value.trim();
+    if (content === input.dataset.original) return;
+    if (!content) {
+        alert('Le contenu d\'un fait ne peut pas être vide.');
+        input.value = input.dataset.original;
+        return;
+    }
+
+    input.dataset.original = content;
+    input.classList.add('fact-saving');
+
+    try {
+        const response = await fetch(`/api/admin/questions/facts/${factId}/update-content`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) throw new Error(data.message || 'Échec de la mise à jour');
+        input.dataset.original = data.content;
+        input.value = data.content;
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde du fait:', error);
+        alert(`Erreur lors de la sauvegarde du fait : ${error.message}`);
+    } finally {
+        input.classList.remove('fact-saving');
+    }
+}
+
+/**
+ * Supprime un fait via l'API puis retire la ligne du DOM.
+ * @param {number} factId - ID du fait
+ * @param {HTMLElement} button - Petit bouton 🗑 cliqué
+ */
+async function deleteFact(factId, button) {
+    const factItem = button.closest('.answer-fact-item');
+    if (!factItem) return;
+    if (!confirm('Supprimer ce fait ?')) return;
+
+    const input = factItem.querySelector('.fact-edit-input');
+    if (input) input.dataset.deleted = '1';
+
+    button.disabled = true;
+    try {
+        const response = await fetch(`/api/admin/questions/facts/${factId}/delete`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) throw new Error(data.message || 'Échec de la suppression');
+
+        factItem.remove();
+        const list = button.closest('.answer-facts-list');
+        if (list && !list.querySelector('.answer-fact-item[data-fact-id]')) {
+            list.innerHTML = '<li class="answer-fact-item answer-fact-empty">Aucun fait — cliquez sur ＋ pour en ajouter un.</li>';
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression du fait:', error);
+        alert(`Erreur lors de la suppression du fait : ${error.message}`);
+        if (input) delete input.dataset.deleted;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+/**
+ * Ajoute un champ de saisie pour un nouveau fait (sauvegarde au blur).
+ * @param {number|string} answerId - ID de la réponse
+ * @param {HTMLElement} button - Petit bouton ＋ cliqué
+ */
+function addFactInput(answerId, button) {
+    const list = button.closest('.answer-facts').querySelector('.answer-facts-list');
+    if (!list) return;
+
+    const emptyItem = list.querySelector('.answer-fact-empty');
+    if (emptyItem) emptyItem.remove();
+
+    const li = document.createElement('li');
+    li.className = 'answer-fact-item importance-essential';
+    li.innerHTML = `
+        <span class="fact-importance-badge badge-essential" onclick="toggleNewFactImportance(this)" title="Cliquer pour basculer entre Essentiel et Facultatif">Essentiel</span>
+        <input type="text" class="fact-edit-input fact-new-input" value="" placeholder="Nouveau fait…"
+            onblur="saveNewFact(${answerId}, this)"
+            title="Saisir le fait puis cliquer ailleurs pour l'enregistrer" />
+    `;
+    list.appendChild(li);
+    const input = li.querySelector('.fact-edit-input');
+    input.focus();
+}
+
+/**
+ * Bascule localement l'importance d'un fait pas encore enregistré.
+ * @param {HTMLElement} badgeElement - Badge cliqué
+ */
+function toggleNewFactImportance(badgeElement) {
+    const factItem = badgeElement.closest('.answer-fact-item');
+    if (!factItem) return;
+    const isOptional = badgeElement.classList.contains('badge-optional');
+    badgeElement.classList.toggle('badge-optional', !isOptional);
+    badgeElement.classList.toggle('badge-essential', isOptional);
+    badgeElement.textContent = isOptional ? 'Essentiel' : 'Facultatif';
+    factItem.classList.toggle('importance-optional', !isOptional);
+    factItem.classList.toggle('importance-essential', isOptional);
+}
+
+/**
+ * Enregistre un nouveau fait saisi manuellement au blur de son champ.
+ * @param {number|string} answerId - ID de la réponse
+ * @param {HTMLInputElement} input - Champ de saisie du nouveau fait
+ */
+async function saveNewFact(answerId, input) {
+    const content = input.value.trim();
+    const li = input.closest('.answer-fact-item');
+    if (!content) {
+        if (li) li.remove();
+        return;
+    }
+
+    const badge = li.querySelector('.fact-importance-badge');
+    const importance = badge && badge.classList.contains('badge-optional') ? 'optional' : 'essential';
+    input.classList.add('fact-saving');
+    input.disabled = true;
+
+    try {
+        const response = await fetch(`/api/admin/questions/answers/${answerId}/add-fact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, importance })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Erreur ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) throw new Error(data.message || 'Échec de l\'ajout');
+
+        li.dataset.factId = data.fact_id;
+        input.dataset.original = data.content;
+        input.onblur = () => saveFactContent(data.fact_id, input);
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-icon btn-delete-fact';
+        delBtn.title = 'Supprimer ce fait';
+        delBtn.textContent = '🗑';
+        delBtn.onclick = () => deleteFact(data.fact_id, delBtn);
+        li.appendChild(delBtn);
+        badge.onclick = () => toggleFactImportance(data.fact_id, badge);
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du fait:', error);
+        alert(`Erreur lors de l\'ajout du fait : ${error.message}`);
+        if (li) li.remove();
+    } finally {
+        input.classList.remove('fact-saving');
+        input.disabled = false;
+    }
+}
+
+/**
  * Bascule l'importance d'un fait de réponse (Essentiel <-> Facultatif) via l'API
  * et applique la modification directement dans le DOM sans rechargement.
  * @param {number} factId - ID du fait dans text_answer_facts
@@ -2139,21 +2416,7 @@ async function generateAnswerFacts(answerId, button) {
         }
 
         if (data.success && data.facts && data.facts.length > 0 && factsContainer) {
-            factsContainer.innerHTML = `
-                <div class="answer-facts">
-                    <div class="answer-facts-title">Faits de réponse (${data.facts.length})</div>
-                    <ul class="answer-facts-list">
-                        ${data.facts.map(fact => `
-                            <li class="answer-fact-item importance-${escapeHtml(fact.importance || 'essential')}" data-fact-id="${fact.fact_id || ''}">
-                                <span class="fact-importance-badge ${fact.importance === 'optional' ? 'badge-optional' : 'badge-essential'}" ${fact.fact_id ? `onclick="toggleFactImportance(${fact.fact_id}, this)" title="Cliquer pour basculer entre Essentiel et Facultatif"` : ''}>
-                                    ${fact.importance === 'optional' ? 'Facultatif' : 'Essentiel'}
-                                </span>
-                                <span class="answer-fact-content">${escapeHtml(fact.content)}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            `;
+            factsContainer.innerHTML = answerFactsMarkup(data.facts);
         }
     } catch (error) {
         console.error('Erreur lors de la génération des faits:', error);
