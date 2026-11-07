@@ -238,6 +238,47 @@
         display: block;
     }
 
+    /* Panneau en colonne latérale : les questions restent consultables à côté */
+    .content-area.sessions-open {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .content-area.sessions-open > .header,
+    .content-area.sessions-open > .header-actions {
+        flex-basis: 100%;
+    }
+
+    .content-area.sessions-open .questions-container {
+        order: 1;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .content-area.sessions-open .sessions-panel.active {
+        order: 2;
+        flex: 0 0 400px;
+        max-width: 400px;
+        margin-left: 20px;
+        margin-bottom: 20px;
+        position: sticky;
+        top: 10px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+
+    @media (max-width: 1100px) {
+        .content-area.sessions-open .sessions-panel.active {
+            flex-basis: 100%;
+            max-width: none;
+            margin-left: 0;
+            position: static;
+            max-height: none;
+        }
+    }
+
     .sessions-panel-header {
         display: flex;
         justify-content: space-between;
@@ -638,7 +679,7 @@
                         </div>
                     </div>
                     <p class="session-editor-hint">
-                        Les questions du document sont listées ci-dessous : filtrez-les en direct avec la barre latérale,
+                        Les questions du document restent listées à côté du panneau : filtrez-les en direct avec la barre latérale,
                         puis cliquez sur « + Session » sur une question pour l'ajouter à la session.
                     </p>
                 </div>

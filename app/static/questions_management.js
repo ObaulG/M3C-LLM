@@ -2355,6 +2355,7 @@ function toggleSessionsPanel() {
             return;
         }
         panel.classList.add('active');
+        document.querySelector('.content-area')?.classList.add('sessions-open');
         loadSessionsForDocument(currentDocumentId);
     }
 }
@@ -2363,6 +2364,7 @@ function toggleSessionsPanel() {
 function closeSessionsPanel() {
     const panel = document.getElementById('sessionsPanel');
     if (panel) panel.classList.remove('active');
+    document.querySelector('.content-area')?.classList.remove('sessions-open');
     cancelSessionEditing();
 }
 
