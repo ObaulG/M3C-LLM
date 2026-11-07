@@ -1154,6 +1154,56 @@ async def update_answer_fact_importance(
     return updated
 
 
+async def update_answer_fact_content(
+    fact_id: int,
+    content: str,
+    conn,
+) -> bool:
+    """
+    Met à jour le contenu d'une affirmation (fait) de réponse.
+
+    Args:
+        fact_id (int): Identifiant de l'affirmation dans text_answer_facts.
+        content (str): Nouveau contenu de l'affirmation.
+        conn: Connexion à la base de données.
+
+    Returns:
+        bool: True si l'affirmation a été mise à jour, False sinon.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            UPDATE text_answer_facts
+            SET content = %s
+            WHERE fact_id = %s
+        """, (content, fact_id))
+        updated = cur.rowcount > 0
+        await conn.commit()
+    return updated
+
+
+async def delete_answer_fact(
+    fact_id: int,
+    conn,
+) -> bool:
+    """
+    Supprime une affirmation (fait) de réponse.
+
+    Args:
+        fact_id (int): Identifiant de l'affirmation dans text_answer_facts.
+        conn: Connexion à la base de données.
+
+    Returns:
+        bool: True si l'affirmation a été supprimée, False sinon.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            DELETE FROM text_answer_facts WHERE fact_id = %s
+        """, (fact_id,))
+        deleted = cur.rowcount > 0
+        await conn.commit()
+    return deleted
+
+
 async def get_facts_by_answer_ids(
     answer_ids: List[int],
     conn,

@@ -547,6 +547,42 @@ class GenerateAnswerFactsResponse(BaseModel):
     message: str
 
 
+class UpdateFactContentRequest(BaseModel):
+    """Requête pour mettre à jour le contenu d'un fait de réponse"""
+    content: str = Field(..., min_length=1, description="Nouveau contenu du fait")
+
+
+class UpdateFactContentResponse(BaseModel):
+    """Réponse après la mise à jour du contenu d'un fait"""
+    success: bool
+    fact_id: int
+    content: str
+    message: str
+
+
+class DeleteFactResponse(BaseModel):
+    """Réponse après la suppression d'un fait"""
+    success: bool
+    fact_id: int
+    message: str
+
+
+class AddAnswerFactRequest(BaseModel):
+    """Requête pour ajouter manuellement un fait à une réponse"""
+    content: str = Field(..., min_length=1, description="Contenu du fait")
+    importance: str = Field("essential", description="Importance du fait: essential ou optional")
+
+
+class AddAnswerFactResponse(BaseModel):
+    """Réponse après l'ajout manuel d'un fait"""
+    success: bool
+    answer_id: int
+    fact_id: int
+    content: str
+    importance: str
+    message: str
+
+
 class UpdateFactImportanceRequest(BaseModel):
     """Requête pour basculer l'importance d'un fait de réponse"""
     importance: str = Field(..., description="Nouvelle importance : " + "essential" + " ou " + "optional")
@@ -602,6 +638,134 @@ async def update_fact_importance(fact_id: int, request: UpdateFactImportanceRequ
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la mise à jour de l'importance: {str(e)}"
+        )
+
+
+@router.post(
+    "/facts/{fact_id}/update-content",
+    response_model=UpdateFactContentResponse,
+    summary="Met à jour le contenu d'un fait de réponse",
+    description="Modifie le contenu d'une affirmation dans text_answer_facts."
+)
+async def update_fact_content(fact_id: int, request: UpdateFactContentRequest):
+    """
+    Met à jour le contenu d'un fait de réponse en base.
+    """
+    from database.database import update_answer_fact_content
+
+    try:
+        async with await get_db_connection() as conn:
+            updated = await update_answer_fact_content(fact_id, request.content.strip(), conn)
+
+        if not updated:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Fait {fact_id} introuvable"
+            )
+
+        return UpdateFactContentResponse(
+            success=True,
+            fact_id=fact_id,
+            content=request.content.strip(),
+            message="Contenu mis à jour avec succès"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la mise à jour du contenu: {str(e)}"
+        )
+
+
+@router.post(
+    "/facts/{fact_id}/delete",
+    response_model=DeleteFactResponse,
+    summary="Supprime un fait de réponse",
+    description="Supprime une affirmation de text_answer_facts."
+)
+async def delete_fact(fact_id: int):
+    """
+    Supprime un fait de réponse en base.
+    """
+    from database.database import delete_answer_fact
+
+    try:
+        async with await get_db_connection() as conn:
+            deleted = await delete_answer_fact(fact_id, conn)
+
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Fait {fact_id} introuvable"
+            )
+
+        return DeleteFactResponse(
+            success=True,
+            fact_id=fact_id,
+            message="Fait supprimé avec succès"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression du fait: {str(e)}"
+        )
+
+
+@router.post(
+    "/answers/{answer_id}/add-fact",
+    response_model=AddAnswerFactResponse,
+    summary="Ajoute manuellement un fait à une réponse",
+    description="Insère une nouvelle affirmation dans text_answer_facts pour la réponse donnée."
+)
+async def add_answer_fact(answer_id: int, request: AddAnswerFactRequest):
+    """
+    Ajoute manuellement un fait à une réponse en base.
+    """
+    from database.database import insert_answer_facts
+
+    importance = request.importance if request.importance in ("essential", "optional") else "essential"
+
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT answer_id FROM text_question_answers WHERE answer_id = %s
+                """, (answer_id,))
+                row = await cur.fetchone()
+
+            if not row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Réponse {answer_id} introuvable"
+                )
+
+            fact_ids = await insert_answer_facts(
+                answer_id,
+                [{"content": request.content.strip(), "importance": importance}],
+                conn,
+                model="manual",
+            )
+
+        return AddAnswerFactResponse(
+            success=True,
+            answer_id=answer_id,
+            fact_id=fact_ids[0],
+            content=request.content.strip(),
+            importance=importance,
+            message="Fait ajouté avec succès"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'ajout du fait: {str(e)}"
         )
 
 
