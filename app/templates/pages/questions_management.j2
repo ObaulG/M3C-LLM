@@ -642,6 +642,39 @@
         background: #ebfbee;
         color: #2b8a3e;
     }
+
+    /* Zone d'aide dans la barre latérale */
+    .sidebar-help {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #444;
+    }
+
+    .sidebar-help summary {
+        cursor: pointer;
+        font-weight: bold;
+        color: #b74420;
+        margin-bottom: 8px;
+    }
+
+    .sidebar-help h4 {
+        font-size: 13px;
+        margin: 12px 0 4px;
+        color: #333;
+    }
+
+    .sidebar-help ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .sidebar-help li {
+        margin-bottom: 4px;
+    }
 </style>
 {% endblock %}
 
@@ -707,6 +740,35 @@
             <button class="btn" onclick="applyFilters()">Appliquer les filtres</button>
             <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 10px;">Réinitialiser</button>
         </div>
+
+        <details class="sidebar-help">
+            <summary>❓ Aide : actions disponibles</summary>
+            <p>Une fois un document sélectionné, ses questions s'affichent dans la zone principale. Pour chaque question, vous pouvez :</p>
+            <h4>Actions sur les questions</h4>
+            <ul>
+                <li><strong>Détails</strong> : déplier une question pour voir ses réponses, ses faits et ses métadonnées.</li>
+                <li><strong>✏️ Éditer</strong> : modifier le texte de la question ou de ses réponses, puis enregistrer ou annuler.</li>
+                <li><strong>🗑️ Supprimer</strong> : effacer une question ou l'ensemble de ses réponses.</li>
+                <li><strong>+ Session</strong> : ajouter la question à une session d'évaluation en cours d'édition.</li>
+                <li><strong>🧠 Items de connaissance</strong> : consulter les éléments de connaissance liés à la question.</li>
+            </ul>
+            <h4>Actions sur les réponses</h4>
+            <ul>
+                <li><strong>Générer des faits</strong> : produire automatiquement les faits justifiant une réponse.</li>
+                <li><strong>Éditer les faits</strong> : ajouter, modifier, supprimer ou marquer l'importance d'un fait.</li>
+                <li><strong>Réponse de référence</strong> : désigner une réponse comme référence correcte pour l'évaluation.</li>
+                <li><strong>⚖️ Évaluer</strong> : faire évaluer la réponse par le LLM sélectionné dans les filtres, puis enregistrer l'évaluation.</li>
+            </ul>
+            <h4>Actions groupées</h4>
+            <ul>
+                <li><strong>⚙️ Actions groupées</strong> : générer en masse des réponses (et optionnellement des faits) pour toutes les questions du document, avec un modèle et des instructions personnalisables.</li>
+            </ul>
+            <h4>Filtres</h4>
+            <ul>
+                <li>Affinez l'affichage par statut, difficulté, numéro de chunk ou nombre de résultats, puis « Appliquer les filtres ».</li>
+                <li>Choisissez le modèle LLM utilisé pour l'évaluation et celui utilisé pour la génération (réponses et faits).</li>
+            </ul>
+        </details>
     </div>
 
     <div class="content-area">
