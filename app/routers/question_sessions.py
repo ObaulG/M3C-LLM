@@ -104,10 +104,14 @@ async def verify_user_can_edit_sessions(user: dict = Depends(get_current_user_wi
     Vérifie que l'utilisateur a le droit d'éditer les sessions.
     Seuls les global_admin, admin et expert peuvent éditer.
     """
-    if user.get("role") not in ALLOWED_ROLES:
+    role = (user.get("role") or "").strip().lower()
+    if role not in ALLOWED_ROLES:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Seuls les {', '.join(ALLOWED_ROLES)} peuvent éditer les sessions."
+            detail=(
+                f"Seuls les {', '.join(ALLOWED_ROLES)} peuvent éditer les sessions. "
+                f"Utilisateur #{user.get('user_id')} connecté avec le rôle '{user.get('role')}'."
+            )
         )
     return user
 
