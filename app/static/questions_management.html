@@ -543,12 +543,18 @@
 
     .natural-search-container {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
         margin-bottom: 10px;
     }
 
-    .natural-search-container input {
-        flex: 1;
+    .natural-search-container input[type="text"] {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .natural-search-container .btn {
+        flex: 0 0 auto;
     }
 
     .natural-search-status {
