@@ -550,6 +550,30 @@
     .natural-search-container input {
         flex: 1;
     }
+
+    .natural-search-status {
+        font-size: 13px;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 5px;
+        background: #f1f3f5;
+        color: #495057;
+    }
+
+    .natural-search-status.searching {
+        background: #e7f5ff;
+        color: #1864ab;
+    }
+
+    .natural-search-status.error {
+        background: #fff5f5;
+        color: #c92a2a;
+    }
+
+    .natural-search-status.success {
+        background: #ebfbee;
+        color: #2b8a3e;
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="questions.css" />
@@ -672,9 +696,11 @@
                         <label>Recherche naturelle de questions (RAG)</label>
                         <div class="natural-search-container">
                             <input type="text" id="searchQuestionNatural" placeholder="Ex: Quelles sont les étapes de la médiation?">
+                            <input type="text" id="searchQuestionKeyword" placeholder="Filtrer par mot-clé (optionnel)">
                             <button class="btn" onclick="searchQuestionsByNaturalLanguage()">🔍 Rechercher</button>
                             <button class="btn btn-secondary" onclick="clearNaturalSearch()">Réinitialiser</button>
                         </div>
+                        <div class="natural-search-status" id="naturalSearchStatus" style="display: none;"></div>
                     </div>
                     <div class="form-group">
                         <label>Questions dans la session (drag'n drop pour réorganiser)</label>
