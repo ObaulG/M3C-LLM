@@ -321,6 +321,7 @@ async function loadQuestions(documentId) {
     try {
         loadingElement.classList.add('active');
         contentElement.innerHTML = '';
+        setNaturalSearchStatus('');
 
         const chunkFilter = document.getElementById('chunkFilter')?.value || '';
 
@@ -2658,10 +2659,28 @@ function addQuestionToSessionFromList(questionId) {
     updateSessionButtonOnCard(questionId);
 }
 
+// Affiche un message de statut sous la barre de recherche naturelle
+function setNaturalSearchStatus(message, type = '') {
+    const status = document.getElementById('naturalSearchStatus');
+    if (!status) return;
+    if (!message) {
+        status.style.display = 'none';
+        status.textContent = '';
+        status.className = 'natural-search-status';
+        return;
+    }
+    status.style.display = 'block';
+    status.textContent = message;
+    status.className = `natural-search-status ${type}`.trim();
+}
+
 // Réinitialise la recherche naturelle et recharge la liste filtrée des questions
 function clearNaturalSearch() {
     const input = document.getElementById('searchQuestionNatural');
     if (input) input.value = '';
+    const keywordInput = document.getElementById('searchQuestionKeyword');
+    if (keywordInput) keywordInput.value = '';
+    setNaturalSearchStatus('');
     if (currentDocumentId) {
         loadQuestions(currentDocumentId);
     }
@@ -2681,6 +2700,11 @@ async function searchQuestionsByNaturalLanguage() {
         return;
     }
 
+    const keywordInput = document.getElementById('searchQuestionKeyword');
+    const keyword = keywordInput ? keywordInput.value.trim() : '';
+
+    setNaturalSearchStatus('Recherche en cours…', 'searching');
+
     try {
         const response = await fetch('/api/question-sessions/search-questions', {
             method: 'POST',
@@ -2690,7 +2714,8 @@ async function searchQuestionsByNaturalLanguage() {
             body: JSON.stringify({
                 query: query,
                 k: 10,
-                document_id: currentDocumentId
+                document_id: currentDocumentId,
+                ...(keyword ? { keyword: keyword } : {})
             })
         });
 
@@ -2706,12 +2731,33 @@ async function searchQuestionsByNaturalLanguage() {
                 page: item.page || item.metadata?.page || null
             }));
             displayQuestions(questions, questions.length);
+            if (questions.length === 0) {
+                setNaturalSearchStatus(
+                    keyword
+                        ? `Aucune question trouvée pour « ${query} » avec le mot-clé « ${keyword} ».`
+                        : `Aucune question trouvée pour « ${query} ».`,
+                    'error'
+                );
+            } else {
+                setNaturalSearchStatus(
+                    `${questions.length} question(s) trouvée(s) pour « ${query} »` +
+                    (keyword ? ` (mot-clé « ${keyword} »)` : '') + '.',
+                    'success'
+                );
+            }
         } else {
-            alert("Erreur lors de la recherche.");
+            let detail = '';
+            try {
+                const err = await response.json();
+                if (err && err.detail) detail = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+            } catch (e) { /* réponse non JSON */ }
+            const message = `Erreur lors de la recherche (HTTP ${response.status})${detail ? ` : ${detail}` : '.'}`;
+            setNaturalSearchStatus(message, 'error');
+            console.error("Erreur lors de la recherche :", message);
         }
     } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de la recherche.");
+        setNaturalSearchStatus(`Erreur réseau lors de la recherche : ${error.message}`, 'error');
     }
 }
 

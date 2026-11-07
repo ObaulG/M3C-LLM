@@ -35,7 +35,16 @@
             margin-bottom: 10px;
         }
 
-        #questionsContent.compact .question-card:not(.expanded) > *:not(.question-header) {
+        #questionsContent.compact .question-card:not(.expanded) > *:not(.question-header):not(.edit-actions) {
+            display: none;
+        }
+
+        /* Affichage réduit : conserver le bouton « + Session » visible */
+        #questionsContent.compact .question-card:not(.expanded) .edit-actions {
+            margin-top: 8px;
+        }
+
+        #questionsContent.compact .question-card:not(.expanded) .edit-actions > *:not(.session-add-btn-container) {
             display: none;
         }
 
