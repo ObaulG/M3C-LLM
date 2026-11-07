@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS question_sessions (
     description TEXT,
     document_id INT,
     created_by INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
     is_active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES user(id) ON DELETE SET NULL,
     INDEX idx_question_sessions_document (document_id),
     INDEX idx_question_sessions_created_by (created_by)
 );
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS question_sessions (
 -- Table de liaison pour associer les questions à une session (avec ordre)
 CREATE TABLE IF NOT EXISTS question_session_questions (
     session_id INT NOT NULL,
-    question_id INT NOT NULL,
+    question_id BIGINT UNSIGNED NOT NULL,
     order_index INT NOT NULL,
     PRIMARY KEY (session_id, question_id),
     FOREIGN KEY (session_id) REFERENCES question_sessions(session_id) ON DELETE CASCADE,
