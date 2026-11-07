@@ -37,6 +37,7 @@
         margin-bottom: 20px;
     }
 
+    /* Styles pour l'édition des questions */
     .editable-question-text,
     .editable-answer-text {
         width: 100%;
@@ -629,12 +630,12 @@
         </a>
         <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
     </div>
-</div>
-            <div class="header-actions">
-                <button id="manageSessionsBtn" class="btn btn-manage-sessions" style="display: none;">
-                    ⚙️ Gestion des Sessions
-                </button>
-            </div>
+</div></div>
+
+        <div class="header-actions">
+            <button id="manageSessionsBtn" class="btn btn-manage-sessions" style="display: none;" onclick="openSessionsModal()">
+                ⚙️ Gestion des Sessions
+            </button>
         </div>
 
         <div class="questions-container">
@@ -751,7 +752,7 @@
             if (response.ok) {
                 const data = await response.json();
                 referenceAnswers = data.reference_answers || {};
-                console.log('✅ Réponses de référence chargées:', Object.keys(referenceAnswers).length, 'questions');
+                console.log('✓ Réponses de référence chargées:', Object.keys(referenceAnswers).length, 'questions');
                 console.log('IDs des questions avec référence:', Object.keys(referenceAnswers));
             } else {
                 console.warn('Aucune réponse de référence trouvée, mais cela est normal si le fichier CSV est vide');
