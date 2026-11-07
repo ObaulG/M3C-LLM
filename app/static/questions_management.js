@@ -2451,10 +2451,8 @@ function showSessionEditor() {
     document.getElementById('sessionDescription').value = currentEditingSession.description || "";
     renderSessionQuestions();
     setupDragAndDrop();
-    // Recharger la liste principale des questions pour afficher les boutons « + Session »
-    if (currentDocumentId) {
-        loadQuestions(currentDocumentId);
-    }
+    // Mettre à jour les boutons « + Session » des cartes existantes sans recharger la liste
+    refreshSessionButtonsOnCards();
 }
 
 // Ferme l'éditeur de session et restaure l'affichage normal des questions
@@ -2463,9 +2461,32 @@ function cancelSessionEditing() {
     if (editor) editor.style.display = 'none';
     const wasEditing = currentEditingSession !== null;
     currentEditingSession = null;
-    if (wasEditing && currentDocumentId) {
-        loadQuestions(currentDocumentId);
+    if (wasEditing) {
+        clearSessionButtonsOnCards();
     }
+}
+
+// Met à jour les boutons « + Session » des cartes affichées sans recharger la liste des questions
+function refreshSessionButtonsOnCards() {
+    document.querySelectorAll('#questionsContent .question-card').forEach(card => {
+        const editActions = card.querySelector('.edit-actions');
+        if (!editActions) return;
+        let container = card.querySelector('.session-add-btn-container');
+        if (!container) {
+            container = document.createElement('span');
+            container.className = 'session-add-btn-container';
+            editActions.insertBefore(container, editActions.firstChild);
+        }
+        const question = currentQuestions.find(q => q.question_id == card.dataset.questionId);
+        container.innerHTML = question ? buildSessionButtonHtml(question) : '';
+    });
+}
+
+// Retire les boutons « + Session » des cartes affichées sans recharger la liste des questions
+function clearSessionButtonsOnCards() {
+    document.querySelectorAll('#questionsContent .question-card .session-add-btn-container').forEach(container => {
+        container.remove();
+    });
 }
 
 // Affiche les questions de la session en cours d'édition
@@ -2703,7 +2724,7 @@ async function searchQuestionsByNaturalLanguage() {
     const keywordInput = document.getElementById('searchQuestionKeyword');
     const keyword = keywordInput ? keywordInput.value.trim() : '';
 
-    setNaturalSearchStatus('Recherche en cours…', 'searching');
+    setNaturalSearchStatus('Requête RAG envoyée au serveur, en attente des résultats…', 'searching');
 
     try {
         const response = await fetch('/api/question-sessions/search-questions', {
@@ -2714,14 +2735,13 @@ async function searchQuestionsByNaturalLanguage() {
             body: JSON.stringify({
                 query: query,
                 k: 10,
-                document_id: currentDocumentId,
-                ...(keyword ? { keyword: keyword } : {})
+                document_id: currentDocumentId
             })
         });
 
         if (response.ok) {
             const results = await response.json();
-            const questions = (Array.isArray(results) ? results : []).map(item => ({
+            let questions = (Array.isArray(results) ? results : []).map(item => ({
                 question_id: item.question_id,
                 content: item.content,
                 status: item.status || 'generated',
@@ -2730,6 +2750,15 @@ async function searchQuestionsByNaturalLanguage() {
                 chunk_id: item.chunk_id || '',
                 page: item.page || item.metadata?.page || null
             }));
+
+            // Filtrage par mot-clé effectué en local, sans requête serveur
+            if (keyword) {
+                const keywordLower = keyword.toLowerCase();
+                questions = questions.filter(question =>
+                    (question.content || '').toLowerCase().includes(keywordLower)
+                );
+            }
+
             displayQuestions(questions, questions.length);
             if (questions.length === 0) {
                 setNaturalSearchStatus(
@@ -2740,8 +2769,8 @@ async function searchQuestionsByNaturalLanguage() {
                 );
             } else {
                 setNaturalSearchStatus(
-                    `${questions.length} question(s) trouvée(s) pour « ${query} »` +
-                    (keyword ? ` (mot-clé « ${keyword} »)` : '') + '.',
+                    `Résultats appliqués à la page : ${questions.length} question(s) pour « ${query} »` +
+                    (keyword ? ` (mot-clé « ${keyword} » filtré en local)` : '') + '.',
                     'success'
                 );
             }
