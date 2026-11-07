@@ -144,13 +144,12 @@ async def init_question_session(document_id: int,
     # on détermine les questions qui seront posées. La sélection est faite à l'avance.
     # D'abord, essayer de récupérer les questions depuis les sessions dynamiques
     questions_ids = []
-    async with await get_db_connection() as conn:
-        sessions = await get_question_sessions(conn, document_id=document_id)
-        if sessions:
-            # Utiliser la première session trouvée pour ce document
-            first_session = await get_question_session_by_id(conn, sessions[0]["session_id"])
-            if first_session and first_session.get("questions"):
-                questions_ids = [q["question_id"] for q in first_session["questions"]]
+    sessions = await get_question_sessions(document_id=document_id)
+    if sessions:
+        # Utiliser la première session trouvée pour ce document
+        first_session = await get_question_session_by_id(sessions[0]["session_id"])
+        if first_session and first_session.get("questions"):
+            questions_ids = [q["question_id"] for q in first_session["questions"]]
 
     # Si aucune session dynamique n'existe, utiliser le fallback PREMADE_QUESTIONS_BY_DOCUMENT_ID
     if not questions_ids and document_id in PREMADE_QUESTIONS_BY_DOCUMENT_ID:

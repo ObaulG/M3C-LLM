@@ -168,14 +168,13 @@ async def get_sessions_by_document(
     Récupère toutes les sessions pour un document.
     Accessible à tous les utilisateurs connectés.
     """
-    async with await get_db_connection() as conn:
-        sessions = await get_question_sessions(conn, document_id=document_id)
-        # Pour chaque session, récupérer les questions
-        full_sessions = []
-        for session in sessions:
-            full_session = await get_question_session_by_id(session["session_id"])
-            full_sessions.append(QuestionSessionResponse(**full_session))
-        return full_sessions
+    sessions = await get_question_sessions(document_id=document_id)
+    # Pour chaque session, récupérer les questions
+    full_sessions = []
+    for session in sessions:
+        full_session = await get_question_session_by_id(session["session_id"])
+        full_sessions.append(QuestionSessionResponse(**full_session))
+    return full_sessions
 
 
 @router.get("/{session_id}", response_model=QuestionSessionResponse)
