@@ -2695,16 +2695,73 @@ function setNaturalSearchStatus(message, type = '') {
     status.className = `natural-search-status ${type}`.trim();
 }
 
-// Réinitialise la recherche naturelle et recharge la liste filtrée des questions
+// Réinitialise la recherche naturelle et réaffiche toutes les questions déjà chargées
 function clearNaturalSearch() {
     const input = document.getElementById('searchQuestionNatural');
     if (input) input.value = '';
     const keywordInput = document.getElementById('searchQuestionKeyword');
     if (keywordInput) keywordInput.value = '';
     setNaturalSearchStatus('');
-    if (currentDocumentId) {
-        loadQuestions(currentDocumentId);
+    filterQuestionsByIds(null);
+}
+
+/**
+ * Filtre les cartes de questions existantes à partir d'une liste d'identifiants.
+ * Les cartes ne sont ni recréées ni rechargées : elles sont simplement affichées
+ * ou masquées, ce qui conserve les réponses et l'état de chaque carte.
+ * @param {Array<number|string>|null} questionIds - Identifiants des questions à
+ * afficher. Passer null (ou un tableau vide) pour réafficher toutes les questions.
+ * @returns {number} Nombre de questions affichées
+ */
+function filterQuestionsByIds(questionIds) {
+    const contentElement = document.getElementById('questionsContent');
+    if (!contentElement) return 0;
+
+    const cards = Array.from(contentElement.querySelectorAll('.question-card'));
+
+    const removeEmptyState = () => {
+        const emptyState = document.getElementById('questionsFilterEmptyState');
+        if (emptyState) emptyState.remove();
+    };
+
+    const updateCount = (visible, filtered) => {
+        const countElement = contentElement.querySelector('.questions-count');
+        if (countElement) {
+            countElement.textContent = filtered
+                ? `${visible} question(s) affichée(s) sur ${cards.length}`
+                : `${cards.length} question(s) trouvée(s)`;
+        }
+    };
+
+    if (questionIds === null || questionIds === undefined || questionIds.length === 0) {
+        cards.forEach(card => { card.style.display = ''; });
+        removeEmptyState();
+        updateCount(cards.length, false);
+        return cards.length;
     }
+
+    const ids = new Set(questionIds.map(id => String(id)));
+    let visible = 0;
+    cards.forEach(card => {
+        const match = ids.has(String(card.dataset.questionId));
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+
+    removeEmptyState();
+    if (visible === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.id = 'questionsFilterEmptyState';
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <h3>Aucune question affichée</h3>
+            <p>Aucune question chargée ne correspond aux identifiants fournis.</p>
+        `;
+        contentElement.appendChild(emptyState);
+    }
+
+    updateCount(visible, true);
+    return visible;
 }
 
 // Recherche des questions par langage naturel (RAG)
@@ -2741,26 +2798,25 @@ async function searchQuestionsByNaturalLanguage() {
 
         if (response.ok) {
             const results = await response.json();
-            let questions = (Array.isArray(results) ? results : []).map(item => ({
-                question_id: item.question_id,
-                content: item.content,
-                status: item.status || 'generated',
-                difficulty_level: item.difficulty_level || null,
-                answers: item.answers || [],
-                chunk_id: item.chunk_id || '',
-                page: item.page || item.metadata?.page || null
-            }));
+            // La requête RAG renvoie une liste d'identifiants de questions :
+            // on filtre les cartes existantes, sans les recréer ni recharger la liste.
+            let questionIds = (Array.isArray(results) ? results : []).map(item =>
+                (item && typeof item === 'object') ? item.question_id : item
+            );
 
             // Filtrage par mot-clé effectué en local, sans requête serveur
             if (keyword) {
                 const keywordLower = keyword.toLowerCase();
-                questions = questions.filter(question =>
-                    (question.content || '').toLowerCase().includes(keywordLower)
-                );
+                questionIds = questionIds.filter(id => {
+                    const question = currentQuestions.find(
+                        q => String(q.question_id) === String(id)
+                    );
+                    return question && (question.content || '').toLowerCase().includes(keywordLower);
+                });
             }
 
-            displayQuestions(questions, questions.length);
-            if (questions.length === 0) {
+            const visibleCount = filterQuestionsByIds(questionIds);
+            if (visibleCount === 0) {
                 setNaturalSearchStatus(
                     keyword
                         ? `Aucune question trouvée pour « ${query} » avec le mot-clé « ${keyword} ».`
@@ -2769,7 +2825,7 @@ async function searchQuestionsByNaturalLanguage() {
                 );
             } else {
                 setNaturalSearchStatus(
-                    `Résultats appliqués à la page : ${questions.length} question(s) pour « ${query} »` +
+                    `Résultats appliqués à la page : ${visibleCount} question(s) pour « ${query} »` +
                     (keyword ? ` (mot-clé « ${keyword} » filtré en local)` : '') + '.',
                     'success'
                 );
