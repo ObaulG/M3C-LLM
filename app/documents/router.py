@@ -18,6 +18,7 @@ from database.database import (
     get_db_connection,
     get_all_documents,
     get_all_text_chunks,
+    get_question_sessions,
 )
 
 from .models import DocumentResponse, DocumentsListResponse
@@ -32,14 +33,31 @@ router = APIRouter(prefix="/api/documents", tags=["Documents"])
     description=(
         "Recupere la liste de tous les documents disponibles dans la base de donnees, "
         "avec leurs metadonnees (document_id, source_id, file_name, title, author, "
-        "dates de creation/mise a jour)."
+        "dates de creation/mise a jour). Le parametre with_question_sessions "
+        "permet de ne lister que les documents ayant des sessions de questions "
+        "predefinies."
     ),
 )
-async def get_document_list():
-    """Recupere la liste de tous les documents disponibles dans la base de donnees."""
+async def get_document_list(with_question_sessions: bool = False):
+    """Recupere la liste de tous les documents disponibles dans la base de donnees.
+
+    Si with_question_sessions est vrai, ne retourne que les documents possedant
+    au moins une session de questions predefinie (table question_sessions).
+    """
     try:
         async with await get_db_connection() as conn:
             documents = await get_all_documents(conn)
+
+        if with_question_sessions:
+            sessions = await get_question_sessions()
+            documents_with_sessions = {
+                session["document_id"] for session in sessions
+                if session["document_id"] is not None
+            }
+            documents = [
+                doc for doc in documents
+                if doc["document_id"] in documents_with_sessions
+            ]
 
         document_responses = []
         for doc in documents:

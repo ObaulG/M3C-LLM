@@ -26,7 +26,7 @@ function loadPDF(pdfUrl) {
 // Fonction pour charger la liste des documents
 async function loadDocuments() {
     try {
-        const response = await fetch(API_URL_DOCUMENTS);
+        const response = await fetch(`${API_URL_DOCUMENTS}?with_question_sessions=true`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -48,7 +48,7 @@ function populateDocumentList(documents) {
     documentList.innerHTML = '';
 
     if (documents.length === 0) {
-        documentList.innerHTML = '<li class="no-documents">Aucun document disponible</li>';
+        documentList.innerHTML = '<li class="no-documents">Aucun document avec une session de questions disponible</li>';
         return;
     }
 
@@ -57,7 +57,6 @@ function populateDocumentList(documents) {
         docItem.className = 'document-item';
         docItem.innerHTML = `
             <h4>${doc.title}</h4>
-            <p>Auteur(s): ${formatFileSize(doc.creator)}</p>
         `;
         docItem.onclick = () => selectDocument(doc.document_id, doc.source_id);
         documentList.appendChild(docItem);
@@ -93,12 +92,6 @@ function addQuestionToChat(sessionStatus, index) {
 
     // Ajout du message au chat
     addMessageToChat(messageWithPage, 'bot');
-}
-
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' octets';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' Ko';
-    return (bytes / (1024 * 1024)).toFixed(2) + ' Mo';
 }
 
 function formatDate(dateString) {
