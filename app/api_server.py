@@ -30,12 +30,9 @@ from database.chatbot_feedback_db import (
 from database.database import (get_db_connection,
                                get_document_id_from_resource_id,
                                M3C_BASE_URL, get_pdf_name_from_resource_id)
-from agents.token_monitor import *
-import asyncio
 from rag_session import RAGInteraction
 if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-import torch
 import uvicorn
 
 import api_visualization
@@ -45,7 +42,12 @@ from app.embedders.router import router as embedders_router
 
 import json
 import uuid
-from datetime import datetime
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Import du router d'indexing
 from indexing.router import router as indexing_router
@@ -70,8 +72,8 @@ SOLR_ENABLED = os.getenv("SOLR_ENABLED", "0") == "1"
 if SOLR_ENABLED:
     from solr.router import router as solr_router
 
-print("REQUIRE_USER_MISTRAL_API_KEY =", os.getenv("REQUIRE_USER_MISTRAL_API_KEY"))
-print("MISTRAL_API_KEY configurée :", bool(os.getenv("MISTRAL_API_KEY")))
+logger.info("REQUIRE_USER_MISTRAL_API_KEY = %s", os.getenv("REQUIRE_USER_MISTRAL_API_KEY"))
+logger.info("MISTRAL_API_KEY configurée : %s", bool(os.getenv("MISTRAL_API_KEY")))
 
 # Import du router de consultation des documents et de leurs chunks
 from documents.router import router as documents_router
@@ -173,9 +175,9 @@ async def lifespan(app: FastAPI):
     app.state.message_ev_agent = get_message_type_agent("ministral-3b-2512")
     yield
     # Shutdown (si nécessaire)
-    print("Arrêt du serveur : sauvegarde des sessions...")
+    logger.info("Arrêt du serveur : sauvegarde des sessions...")
     sessions_router.persist_sessions_on_shutdown(app)
-    print("Sauvegarde terminée.")
+    logger.info("Sauvegarde terminée.")
     pass
 # === APPLICATION FASTAPI ===
 app = FastAPI(
@@ -230,9 +232,9 @@ def initialize_rag(app: FastAPI):
     - L'ontologie
     - Les modÃ¨les d'embeddings et de reranking
     """
-    print("\n" + "=" * 60)
-    print("Système RAG")
-    print("=" * 60 + "\n")
+    logger.info("\n" + "=" * 60)
+    logger.info("Système RAG")
+    logger.info("=" * 60 + "\n")
 
     embedder_model_name = "mistral-embed"
     try:
@@ -246,7 +248,7 @@ def initialize_rag(app: FastAPI):
         
         return True
     except Exception as e:
-        print(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
+        logger.error(f"\nERREUR lors de l'initialisation du RAG: {e}\n")
         raise
 
 def initialize_evaluators(app: FastAPI, async_mode: bool = True):
@@ -278,7 +280,7 @@ async def initialize_database(app: FastAPI):
             while await cursor.nextset():
                 pass
         await conn.commit()
-    print("Tables vérifiées")
+    logger.info("Tables vérifiées")
 # === ENDPOINTS ===
 @app.get("/", tags=["Root"])
 async def root():
@@ -350,7 +352,7 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
         )
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}\n ModÃ¨le: {request.models[0]}")
+        logger.info(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}\n ModÃ¨le: {request.models[0]}")
         answer, total_time, consumed_energy_Wh, usage_info = await rag_pipeline.query_simple(
             prompt=request.question,
             model=request.models[0],
@@ -359,10 +361,10 @@ async def query_simple(request: QueryRequest, rag_pipeline: RagPipelineDep,
         # Construire la réponse
         user_id = auth.user_id_from_token(m3c_api_key)
         response = await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, usage_info, user_id)
-        print(f"[{datetime.now().isoformat()}] Réponse générée")
+        logger.info(f"[{datetime.now().isoformat()}] Réponse générée")
         return response
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        logger.error(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
@@ -385,10 +387,10 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
         HTTPException 503: Si le système RAG n'est pas initialisé
         HTTPException 500: Si une erreur se produit lors du traitement
     """
-    print(f"[DEBUG] header key reçue: len={len(x_mistral_api_key or '')}, prefix={(x_mistral_api_key or '')[:3]!r}")
+    logger.debug(f"[DEBUG] header key reçue: len={len(x_mistral_api_key or '')}, prefix={(x_mistral_api_key or '')[:3]!r}")
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
+        logger.info(f"\n[{datetime.now().isoformat()}] Nouvelle requête: {request.question}")
 
         # On obtient ici un resource_id, on veut le document_id correspondant
         doc_id = request.rag_monodocument_id
@@ -405,7 +407,7 @@ async def query_rag(request: QueryRequest, rag_pipeline: RagPipelineDep,
             api_key=resolved_api_key,
         )
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        logger.error(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
@@ -429,7 +431,7 @@ async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep
     """
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
+        logger.info(f"\n[{datetime.now().isoformat()}] Nouvelle requête RAG tutoriel: {request.question}")
 
         # On obtient ici un resource_id, on veut le document_id correspondant
         doc_id = request.rag_monodocument_id
@@ -449,9 +451,9 @@ async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep
             True,
             True
         )
-        print(type(prompt_embeddings))
+        logger.debug(type(prompt_embeddings))
         doc_embeddings = [chunk["embedding"] for chunk in best_50_chunks]
-        print("doc_embeddings", type(doc_embeddings), f"size: {len(doc_embeddings)}")
+        logger.debug("doc_embeddings %s size: %s", type(doc_embeddings), len(doc_embeddings))
         all_embedings = [prompt_embeddings] + doc_embeddings
 
         umap_response = await api_visualization.compute_umap_projection(api_visualization.UMAPRequest(
@@ -472,7 +474,7 @@ async def query_rag_tutorial(request: QueryRequest, rag_pipeline: RagPipelineDep
 
 
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        logger.error(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Erreur lors du traitement"
@@ -540,7 +542,7 @@ async def api_recommend_questions(
             detail=str(e)
         )
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR dans recommend_questions: {str(e)}")
+        logger.error(f"[{datetime.now().isoformat()}] ERREUR dans recommend_questions: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la recommandation de questions: {str(e)}"
@@ -568,7 +570,7 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
                                                                          k=request.k,
                                                                          specified_document_id=request.rag_monodocument_id,
                                                                          api_key=resolved_api_key)
-        print(best_documents)
+        logger.info(best_documents)
     # we keep the query_simple function to get the answer
     tasks = [
         rag_pipeline.query_simple(
@@ -594,7 +596,7 @@ async def query_compare(request: QueryRequest, rag_pipeline: RagPipelineDep,
             responses_list.append(await _build_query_rag_response(request, answer, best_documents, total_time, consumed_energy_Wh, user_id))
         else:
             responses_list.append(await _build_query_simple_response(request, answer, total_time, consumed_energy_Wh, usage_info, user_id))
-    print(f"[{datetime.now().isoformat()}] Réponses générées pour tous les modÃ¨les")
+    logger.info(f"[{datetime.now().isoformat()}] Réponses générées pour tous les modÃ¨les")
     return QueryCompareResponse(
         responses=responses_list,
         timestamp=str(datetime.now().isoformat()),
@@ -629,21 +631,21 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
     resolved_api_key = await async_require_mistral_api_key(mistral_api_key or x_mistral_api_key, m3c_api_key, authorization)
     # Récupérer l'historique de la session si session_id est fourni
     session_messages = []
-    print("session_id:", request.session_id)
+    logger.info("session_id: %s", request.session_id)
     if request.session_id:
         session = sessions_router.rag_session_manager.get_session(request.session_id)
         #print(session.to_messages())
         # list of {"role": "user"|"assistant", "content": "..."}
         session_messages.extend(session.to_messages())
     try:
-        print(f"\n[{datetime.now().isoformat()}] Nouvelle requête single-doc RAG: {request.question}")
+        logger.info(f"\n[{datetime.now().isoformat()}] Nouvelle requête single-doc RAG: {request.question}")
         # Ajouter l'historique au prompt si disponible
         prompt_with_history = request.question
         if session_messages:
             history_text = "\n\n".join([message["content"] for message in session_messages])
             #print(history_text)
             prompt_with_history = f"Historique de la session:\n{history_text}\n\nNouvelle question: {request.question}"
-            print(f"{len(session_messages)} messages dans la session")
+            logger.info(f"{len(session_messages)} messages dans la session")
         answer, retrieval_results, total_time, consumed_energy_Wh, usage_info = await rag_pipeline.query_rag(
             prompt=prompt_with_history,
             model=request.models[0],
@@ -655,7 +657,7 @@ async def query_single_doc_rag(request: QueryRequest, rag_pipeline: RagPipelineD
             api_key=resolved_api_key
         )
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
+        logger.error(f"[{datetime.now().isoformat()}] ERREUR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors du traitement de la requête: {str(e)}"
@@ -691,7 +693,7 @@ async def get_pdf_by_id(resource_id: int):
     Requête la base MySQL avec le resource_id (table resource) présent dans text_chunks pour obtenir
     le nom du PDF et le retourner
     """
-    print("get_pdf_by_id")
+    logger.debug("get_pdf_by_id")
     async with await get_db_connection() as conn:
         pdf_name = await get_pdf_name_from_resource_id(conn, resource_id)
     if not pdf_name:
@@ -705,7 +707,7 @@ async def _get_pdf_by_filename(filename: str):
     """
     url = M3C_BASE_URL+filename
     try:
-        print("_get_pdf_by_filename")
+        logger.debug("_get_pdf_by_filename")
         pdf_bytes = await download_pdf(url)
         return Response(
             content=pdf_bytes,
@@ -715,13 +717,13 @@ async def _get_pdf_by_filename(filename: str):
             }
         )
     except Exception as e:
-        print(f"Erreur lors du téléchargement de {filename}: {str(e)}")
+        logger.error(f"Erreur lors du téléchargement de {filename}: {str(e)}")
         return HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur - le PDF n'a pas pu être récupéré:")
 
 async def _rag_preprocess(request: QueryRequest)-> tuple[str, List[RAGSource]]:
-    print("_rag_preprocess")
+    logger.debug("_rag_preprocess")
     final_prompt, best_documents = request.question, None, None
     if request.use_rag:
         final_prompt, best_documents = await rag_pipeline.rag_preprocess(request.question,
@@ -819,7 +821,7 @@ async def _build_query_simple_response(request: QueryRequest,
         },
         timestamp=datetime.now().isoformat()
     )
-    print(f"[{datetime.now().isoformat()}] Réponse générée")
+    logger.info(f"[{datetime.now().isoformat()}] Réponse générée")
     return response
 async def _build_query_rag_response(request: QueryRequest,
                               answer: BaseMessage,
@@ -841,7 +843,7 @@ async def _build_query_rag_response(request: QueryRequest,
     #                 'output_tokens': 686,
     #                 'total_tokens': 1630}
     # Convertir les résultats en format API
-    print("_build_query_rag_response")
+    logger.debug("_build_query_rag_response")
     # Persister la réponse et ses chunks en BDD avant de la renvoyer (non bloquant)
     message_id = await _persist_chatbot_message_async(
         request, answer, total_time, consumed_energy_Wh, user_id, retrieval_results=retrieval_results
@@ -864,7 +866,7 @@ async def _build_query_rag_response(request: QueryRequest,
         },
         timestamp=datetime.now().isoformat()
     )
-    print(f"[{datetime.now().isoformat()}] Réponse générée avec {len(response.sources)} sources")
+    logger.info(f"[{datetime.now().isoformat()}] Réponse générée avec {len(response.sources)} sources")
     return response
 
 def split_text_into_chunks(text: str, chunk_size: int, overlap: int) -> List[str]:
@@ -919,6 +921,7 @@ if __name__ == "__main__":
     print("exists =", os.path.exists("rag_sessions_csv"))
     print("absolute =", os.path.abspath("rag_sessions_csv"))
     print("=" * 60 + "\n")
+    import torch
     print(torch.cuda.is_available())
     uvicorn.run(
         "api_server:app",

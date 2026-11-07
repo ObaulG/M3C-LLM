@@ -2,7 +2,6 @@ import os
 import time
 from typing import Dict, Optional, List, Literal
 
-import torch
 from langchain_ollama import ChatOllama
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
@@ -11,7 +10,6 @@ from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
 from pydantic import BaseModel, Field
 import rank_bm25
 import database
-import pynvml
 
 from app.embedders.BaseEmbedder import BaseEmbedder
 from database import ensure_qdrant_collection, get_resource_basic_metadata, get_db_connection, \
@@ -421,6 +419,8 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         consumed_energy = 0
         start = time.time()
         if model in OLLAMA_MODELS:
+            import torch
+            import pynvml
             pynvml.nvmlInit()
             handle = pynvml.nvmlDeviceGetHandleByIndex(0)
             power = pynvml.nvmlDeviceGetPowerUsage(handle)
