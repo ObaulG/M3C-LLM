@@ -88,6 +88,8 @@ async def get_current_user_with_roles(request: Request):
     Récupère l'utilisateur courant (connecté ou anonyme).
     """
     user_id = auth.user_id_from_authorization(request.headers.get("authorization"))
+    if user_id is None:
+        user_id = auth.user_id_from_token(request.cookies.get("m3c_api_key"))
     user = await auth.get_user_by_id(user_id) if user_id is not None else None
     if not user or not user.get("is_active"):
         raise HTTPException(
