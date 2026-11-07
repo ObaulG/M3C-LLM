@@ -1,12 +1,11 @@
 import os
 import time
+import logging
 from typing import Dict, Optional, List, Literal
 
-from langchain_ollama import ChatOllama
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
-from langchain_google_genai import ChatGoogleGenerativeAI  # Exemple pour Gemini (à installer si nécessaire)
-from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
+from langchain_mistralai import ChatMistralAI
 from pydantic import BaseModel, Field
 import rank_bm25
 import database
@@ -20,6 +19,8 @@ try:
     from app.pricing import compute_cost_eur, usage_from_langchain_message
 except ImportError:
     from pricing import compute_cost_eur, usage_from_langchain_message
+
+logger = logging.getLogger(__name__)
 
 # Listes des modèles (déjà définies)
 # 5 modèles Mistral principaux, identifiants versionnés officiels
@@ -82,11 +83,11 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             load_local: Si True, charge les modèles locaux Ollama
             embedder_name: le nom de l'embedder à utiliser. Si non fourni, charge l'embedder par défaut
         """
-        print("\n" + "=" * 60)
-        print("INITIALISATION RAG v1 (BASIQUE)")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("INITIALISATION RAG v1 (BASIQUE)")
+        logger.info("=" * 60)
         self.dict_llm: dict[str, BaseChatModel] = {}
-        self._init_llm_instances(load_local=True)
+        self._init_llm_instances(load_local=load_local)
         
         self.embedder = get_embedder_instance(embedder_name)
 
@@ -94,9 +95,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         # on multiplie le nombre de documents à collecter
         # avant de les reclasser
         self.rag_rerank_ndocs_coeff = 8.0
-        print("\n" + "=" * 60)
-        print("Système RAG basique initialisé...")
-        print("=" * 60 + "\n")
+        logger.info("\n" + "=" * 60)
+        logger.info("Système RAG basique initialisé...")
+        logger.info("=" * 60 + "\n")
 
 
     async def query_simple(self,
@@ -151,13 +152,13 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         If specified_document_id exists, then the RAG will operate only on chunks from this
         document.
         """
-        print("query_rag")
+        logger.debug("query_rag")
         if not (final_prompt or sources):
-            print("before rag_preprocess")
+            logger.debug("before rag_preprocess")
             final_prompt, sources = await self.rag_preprocess(prompt, reranking, k, specified_document_id, api_key=api_key)
-            print("preprocess done")
+            logger.debug("preprocess done")
         answer, total_time, consumed_energy_Wh, usage_info = await self.query_simple(final_prompt, model, api_key=api_key, **kwargs)
-        print(answer)
+        logger.debug(answer)
         return answer, sources, total_time, consumed_energy_Wh, usage_info
 
 
@@ -172,23 +173,25 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                     temperature=0.7
                 )
                 self.dict_llm[model_name] = llm
-                print(f"Modèle Mistral '{model_name}' initialisé avec succès.")
+                logger.info(f"Modèle Mistral '{model_name}' initialisé avec succès.")
             except Exception as e:
-                print(f"Erreur lors de l'initialisation du modèle Mistral '{model_name}': {e}")
+                logger.error(f"Erreur lors de l'initialisation du modèle Mistral '{model_name}': {e}")
 
         for model_name in GEMINI_MODELS:
             try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
                 llm = ChatGoogleGenerativeAI(
                     model=model_name,
                     api_key=GEMINI_API_KEY,
                 )
                 self.dict_llm[model_name] = llm
-                print(f"Modèle Gemini '{model_name}' initialisé avec succès.")
+                logger.info(f"Modèle Gemini '{model_name}' initialisé avec succès.")
             except Exception as e:
-                print(f"Erreur lors de l'initialisation du modèle Gemini '{model_name}': {e}")
+                logger.error(f"Erreur lors de l'initialisation du modèle Gemini '{model_name}': {e}")
 
         if not load_local:
             return
+        from langchain_ollama import ChatOllama
         for model_name in OLLAMA_MODELS:
             try:
                 llm = ChatOllama(
@@ -197,9 +200,9 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                     base_url="http://localhost:11434"  # URL par défaut de l'API Ollama
                 )
                 self.dict_llm[model_name] = llm
-                print(f"Modèle Ollama '{model_name}' initialisé avec succès.")
+                logger.info(f"Modèle Ollama '{model_name}' initialisé avec succès.")
             except Exception as e:
-                print(f"Erreur lors de l'initialisation du modèle Ollama '{model_name}': {e}")
+                logger.error(f"Erreur lors de l'initialisation du modèle Ollama '{model_name}': {e}")
 
     def _get_prompt_embeddings(self, prompt: str, api_key: Optional[str] = None) -> list[float]:
         """
@@ -246,13 +249,13 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             List[RAGSource]: Liste de tuples (chunk, score) triés par pertinence.
         """
-        print(f"retrieve_top_k_chunks_from_db" + f"on document {specified_document_id}" if specified_document_id else "")
+        logger.debug(f"retrieve_top_k_chunks_from_db" + f"on document {specified_document_id}" if specified_document_id else "")
 
         # voir app/indexing/services.py, fonction process_pdf_indexing_job etape 5
         # TODO: est-ce qu'on va utiliser plusieurs collections, ou une seule ?
         # pour l'instant on garde ce modèle de nom
         collection_name = f"LD-{self.embedder.name}-{self.embedder.dimension}"
-        print(collection_name)
+        logger.debug(collection_name)
         results = await database.get_top_k_similar_chunks_qdrant(embedding=prompt_embeddings,
                                                                  collection_name=collection_name,
                                                                  k=k,
@@ -350,7 +353,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         elif method == "bm25+":
             model = rank_bm25.BM25Plus(tokenized_corpus, k1=k1, b=b, delta=delta)
         else:
-            print(f"Méthode de reranking non supportée : {method}. Utilise 'bm25' ou 'bm25+'.")
+            logger.error(f"Méthode de reranking non supportée : {method}. Utilise 'bm25' ou 'bm25+'.")
             return
 
         # Calculer les scores
@@ -385,7 +388,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         Returns:
             list: Liste des k chunks les plus pertinents (avec leurs scores et métadonnées).
         """
-        print("rag_preprocess")
+        logger.debug("rag_preprocess")
 
         try:
             # 1. Transforme le prompt en embeddings
@@ -395,10 +398,10 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                                                                      self.rag_rerank_ndocs_coeff*k,
                                                                      specified_document_id)
             # 3. Reranking pour garder k chunks
-            print("reranking: {}".format(reranking))
+            logger.debug("reranking: {}".format(reranking))
             if reranking:
                 self.rerank(top_k_chunks, prompt, k, method=reranking)
-            print("reranking done")
+            logger.debug("reranking done")
             augmented_prompt = self._build_augmented_prompt(prompt, top_k_chunks[:k])
             return augmented_prompt, top_k_chunks[:k]
         except Exception as e:
@@ -415,7 +418,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         fournie par le fournisseur, et calcule le coût estimé de la requête en euros
         à partir de la grille tarifaire de config/models/models.csv.
         """
-        print("calling", model)
+        logger.debug("calling %s", model)
         consumed_energy = 0
         start = time.time()
         if model in OLLAMA_MODELS:
@@ -438,16 +441,16 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 answer = await llm.ainvoke(prompt)
             else:
                 answer = await llm.ainvoke(prompt)
-            print(answer)
+            logger.debug(answer)
         except Exception as e:
-            print("Exception:", e)
+            logger.error("Exception: %s", e)
         
         elapsed_time = time.time() - start
-        print("finished in ", elapsed_time)
+        logger.debug("finished in %s", elapsed_time)
         if model in OLLAMA_MODELS:
             torch.cuda.synchronize()
             consumed_energy = (pynvml.nvmlDeviceGetTotalEnergyConsumption(handle) - start_energy)/(1000*3600)
-            print(consumed_energy, "Wh")
+            logger.debug(consumed_energy, "Wh")
 
         usage_info = self._extract_usage_and_cost(model, answer)
         return answer, elapsed_time, consumed_energy, usage_info
@@ -479,5 +482,5 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
                 usage_info["cost_detail"] = cost_detail
             return usage_info
         except Exception as e:
-            print("Extraction usage/coût impossible:", e)
+            logger.error("Extraction usage/coût impossible: %s", e)
             return None
