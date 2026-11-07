@@ -628,6 +628,7 @@ function generateQuestionCardHtml(question, totalCount) {
             
             <!-- Boutons d'édition -->
             <div class="edit-actions">
+                ${currentEditingSession ? `<span class="session-add-btn-container">${buildSessionButtonHtml(question)}</span>` : ''}
                 <button class="btn btn-edit-question" onclick="enableQuestionEditing(${question.question_id})">
                     ⚙️ Modifier
                 </button>
@@ -2341,23 +2342,28 @@ async function bulkGenerateAnswers() {
 // Variables globales pour la gestion des sessions
 let currentEditingSession = null;
 let currentDocumentSessions = [];
-let availableQuestions = [];
-let selectedQuestionsForAddition = new Set();
 
-// Ouvre la modal de gestion des sessions
-function openSessionsModal() {
-    if (!currentDocumentId) {
-        alert("Veuillez d'abord sélectionner un document.");
-        return;
+// Affiche ou masque le panneau intégré de gestion des sessions
+function toggleSessionsPanel() {
+    const panel = document.getElementById('sessionsPanel');
+    if (!panel) return;
+    if (panel.classList.contains('active')) {
+        closeSessionsPanel();
+    } else {
+        if (!currentDocumentId) {
+            alert("Veuillez d'abord sélectionner un document.");
+            return;
+        }
+        panel.classList.add('active');
+        loadSessionsForDocument(currentDocumentId);
     }
-    loadSessionsForDocument(currentDocumentId);
-    document.getElementById('sessionsModal').classList.add('active');
 }
 
-// Ferme la modal de gestion des sessions
-function closeSessionsModal() {
-    document.getElementById('sessionsModal').classList.remove('active');
-    document.getElementById('sessionEditor').style.display = 'none';
+// Ferme le panneau intégré de gestion des sessions
+function closeSessionsPanel() {
+    const panel = document.getElementById('sessionsPanel');
+    if (panel) panel.classList.remove('active');
+    cancelSessionEditing();
 }
 
 // Charge les sessions pour un document
@@ -2425,22 +2431,38 @@ function createNewSession() {
         document_id: currentDocumentId,
         questions: []
     };
-    openEditSessionModal();
+    showSessionEditor();
 }
 
-// Ouvre la modal d'édition de session
-function openEditSessionModal() {
-    document.getElementById('editSessionModal').classList.add('active');
+// Affiche l'éditeur de session intégré dans la page
+function showSessionEditor() {
+    const editor = document.getElementById('sessionEditor');
+    if (editor) editor.style.display = 'block';
+    const titleElement = document.getElementById('sessionEditorTitle');
+    if (titleElement) {
+        titleElement.textContent = currentEditingSession.session_id
+            ? 'Éditer la session'
+            : 'Nouvelle session';
+    }
     document.getElementById('sessionTitle').value = currentEditingSession.title;
     document.getElementById('sessionDescription').value = currentEditingSession.description || "";
     renderSessionQuestions();
     setupDragAndDrop();
+    // Recharger la liste principale des questions pour afficher les boutons « + Session »
+    if (currentDocumentId) {
+        loadQuestions(currentDocumentId);
+    }
 }
 
-// Ferme la modal d'édition de session
-function closeEditSessionModal() {
-    document.getElementById('editSessionModal').classList.remove('active');
+// Ferme l'éditeur de session et restaure l'affichage normal des questions
+function cancelSessionEditing() {
+    const editor = document.getElementById('sessionEditor');
+    if (editor) editor.style.display = 'none';
+    const wasEditing = currentEditingSession !== null;
     currentEditingSession = null;
+    if (wasEditing && currentDocumentId) {
+        loadQuestions(currentDocumentId);
+    }
 }
 
 // Affiche les questions de la session en cours d'édition
@@ -2480,7 +2502,7 @@ async function editSession(sessionId) {
         const response = await fetch(`/api/question-sessions/${sessionId}`);
         if (response.ok) {
             currentEditingSession = await response.json();
-            openEditSessionModal();
+            showSessionEditor();
         } else {
             console.error("Erreur lors du chargement de la session:", response.status);
         }
@@ -2521,6 +2543,7 @@ function removeQuestionFromSession(questionId, event) {
         q => q.question_id !== questionId
     );
     renderSessionQuestions();
+    updateSessionButtonOnCard(questionId);
 }
 
 // Sauvegarde la session
@@ -2572,7 +2595,7 @@ async function saveSession() {
 
         if (response.ok) {
             const savedSession = await response.json();
-            closeEditSessionModal();
+            cancelSessionEditing();
             loadSessionsForDocument(currentDocumentId);
         } else {
             alert("Erreur lors de la sauvegarde de la session.");
@@ -2583,91 +2606,28 @@ async function saveSession() {
     }
 }
 
-// Ouvre la modal pour ajouter des questions
-function showAddQuestionsModal() {
+// Génère le HTML du bouton d'ajout à la session pour une carte de question
+function buildSessionButtonHtml(question) {
+    if (!currentEditingSession) return '';
+    const inSession = currentEditingSession.questions.some(q => q.question_id == question.question_id);
+    if (inSession) {
+        return `<button class="btn btn-in-session" disabled>✓ Dans la session</button>`;
+    }
+    return `<button class="btn btn-add-to-session" onclick="addQuestionToSessionFromList(${question.question_id})">+ Session</button>`;
+}
+
+// Met à jour le bouton « + Session » d'une carte de question existante
+function updateSessionButtonOnCard(questionId) {
     if (!currentEditingSession) return;
-    loadAvailableQuestions();
-    document.getElementById('addQuestionsModal').classList.add('active');
-}
-
-// Ferme la modal pour ajouter des questions
-function closeAddQuestionsModal() {
-    document.getElementById('addQuestionsModal').classList.remove('active');
-    selectedQuestionsForAddition.clear();
-}
-
-// Charge les questions disponibles (filtrées)
-async function loadAvailableQuestions() {
-    try {
-        // Récupérer toutes les questions du document
-        const response = await fetch(`/api/questions?document_id=${currentDocumentId}`);
-        if (response.ok) {
-            const data = await response.json();
-            availableQuestions = data.questions || [];
-
-            // Exclure les questions déjà dans la session
-            const sessionQuestionIds = new Set(
-                currentEditingSession.questions.map(q => q.question_id)
-            );
-            availableQuestions = availableQuestions.filter(
-                q => !sessionQuestionIds.has(q.question_id)
-            );
-
-            renderAvailableQuestions();
-        }
-    } catch (error) {
-        console.error("Erreur:", error);
+    const card = document.querySelector(`.question-card[data-question-id="${questionId}"] .session-add-btn-container`);
+    if (card) {
+        const question = currentQuestions.find(q => q.question_id == questionId);
+        if (question) card.innerHTML = buildSessionButtonHtml(question);
     }
 }
 
-// Affiche les questions disponibles
-function renderAvailableQuestions() {
-    const container = document.getElementById('availableQuestionsContainer');
-    if (!container) return;
-
-    if (availableQuestions.length === 0) {
-        container.innerHTML = '<p style="color: #666; text-align: center;">Aucune question disponible à ajouter.</p>';
-        return;
-    }
-
-    let html = '';
-    availableQuestions.forEach(q => {
-        const isSelected = selectedQuestionsForAddition.has(q.question_id);
-        const displayContent = q.content.length > 150
-            ? escapeHtml(q.content.substring(0, 150)) + '...'
-            : escapeHtml(q.content);
-        const page = q.page || q.metadata?.page || "N/A";
-
-        html += `
-            <div class="available-question-item ${isSelected ? 'selected' : ''} no-edit-buttons"
-                 data-question-id="${q.question_id}"
-                 onclick="toggleSelectQuestion(${q.question_id})">
-                <div class="question-header">
-                    <div>
-                        <span class="question-id">[ID: ${q.question_id}]</span>
-                        <span class="question-page">[Page: ${page}]</span>
-                    </div>
-                    <button class="add-question-btn" onclick="event.stopPropagation(); addQuestionToSessionDirectly(${q.question_id})">+ Ajouter</button>
-                </div>
-                <div class="question-content">${displayContent}</div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
-
-// Sélectionne/désélectionne une question
-function toggleSelectQuestion(questionId) {
-    if (selectedQuestionsForAddition.has(questionId)) {
-        selectedQuestionsForAddition.delete(questionId);
-    } else {
-        selectedQuestionsForAddition.add(questionId);
-    }
-    renderAvailableQuestions();
-}
-
-// Ajoute une question à la session directement (par clic)
-function addQuestionToSessionDirectly(questionId) {
+// Ajoute une question de la liste principale à la session en cours d'édition
+function addQuestionToSessionFromList(questionId) {
     if (!currentEditingSession) return;
 
     // Vérifier que la question n'est pas déjà dans la session
@@ -2676,8 +2636,8 @@ function addQuestionToSessionDirectly(questionId) {
         return;
     }
 
-    // Trouver la question dans availableQuestions
-    const question = availableQuestions.find(q => q.question_id == questionId);
+    // Trouver la question dans la liste principale
+    const question = currentQuestions.find(q => q.question_id == questionId);
     if (!question) {
         alert("Question non trouvée.");
         return;
@@ -2687,55 +2647,22 @@ function addQuestionToSessionDirectly(questionId) {
     currentEditingSession.questions.push({
         question_id: question.question_id,
         content: question.content,
-        page: question.page || question.metadata?.page,
+        page: question.page || question.page_number || question.num_page || question.metadata?.page,
         order_index: currentEditingSession.questions.length
     });
 
     // Rafraîchir l'affichage
     renderSessionQuestions();
-    renderAvailableQuestions();
+    updateSessionButtonOnCard(questionId);
 }
 
-// Applique les filtres sur les questions disponibles
-async function applyQuestionsFilters() {
-    const keyword = document.getElementById('searchQuestionKeyword').value.trim();
-    const page = document.getElementById('searchQuestionPage').value.trim();
-
-    try {
-        let url = `/api/questions?document_id=${currentDocumentId}`;
-        if (keyword) {
-            url += `&keyword=${encodeURIComponent(keyword)}`;
-        }
-        if (page) {
-            url += `&page=${encodeURIComponent(page)}`;
-        }
-
-        const response = await fetch(url);
-        if (response.ok) {
-            const data = await response.json();
-            availableQuestions = data.questions || [];
-
-            // Exclure les questions déjà dans la session
-            const sessionQuestionIds = new Set(
-                currentEditingSession.questions.map(q => q.question_id)
-            );
-            availableQuestions = availableQuestions.filter(
-                q => !sessionQuestionIds.has(q.question_id)
-            );
-
-            renderAvailableQuestions();
-        }
-    } catch (error) {
-        console.error("Erreur:", error);
+// Réinitialise la recherche naturelle et recharge la liste filtrée des questions
+function clearNaturalSearch() {
+    const input = document.getElementById('searchQuestionNatural');
+    if (input) input.value = '';
+    if (currentDocumentId) {
+        loadQuestions(currentDocumentId);
     }
-}
-
-// Réinitialise les filtres des questions
-function resetQuestionsFilters() {
-    document.getElementById('searchQuestionKeyword').value = '';
-    document.getElementById('searchQuestionPage').value = '';
-    document.getElementById('searchQuestionNatural').value = '';
-    loadAvailableQuestions();
 }
 
 // Recherche des questions par langage naturel (RAG)
@@ -2767,8 +2694,16 @@ async function searchQuestionsByNaturalLanguage() {
 
         if (response.ok) {
             const results = await response.json();
-            availableQuestions = results;
-            renderAvailableQuestions();
+            const questions = (Array.isArray(results) ? results : []).map(item => ({
+                question_id: item.question_id,
+                content: item.content,
+                status: item.status || 'generated',
+                difficulty_level: item.difficulty_level || null,
+                answers: item.answers || [],
+                chunk_id: item.chunk_id || '',
+                page: item.page || item.metadata?.page || null
+            }));
+            displayQuestions(questions, questions.length);
         } else {
             alert("Erreur lors de la recherche.");
         }
@@ -2812,13 +2747,13 @@ function setupDragAndDrop() {
         if (questionId) {
             // Vérifier que la question n'est pas déjà dans la session
             if (!currentEditingSession.questions.some(q => q.question_id == questionId)) {
-                // Ajouter la question à la session
-                const question = availableQuestions.find(q => q.question_id == questionId);
+                // Ajouter la question à la session depuis la liste principale
+                const question = currentQuestions.find(q => q.question_id == questionId);
                 if (question) {
                     currentEditingSession.questions.push({
                         question_id: question.question_id,
                         content: question.content,
-                        page: question.page || question.metadata?.page,
+                        page: question.page || question.page_number || question.num_page || question.metadata?.page,
                         order_index: currentEditingSession.questions.length
                     });
                     renderSessionQuestions();
@@ -2851,4 +2786,22 @@ window.selectDocument = async function(documentId) {
         await originalSelectDocument(documentId);
     }
     showManageSessionsButton();
+    closeSessionsPanel();
 };
+
+// Applique les filtres en direct sur la liste des questions (debounce sur les champs texte)
+function setupLiveFilters() {
+    const filterIds = ['statusFilter', 'difficultyFilter', 'limitFilter', 'chunkFilter'];
+    filterIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const handler = () => {
+            clearTimeout(el._filterTimeout);
+            el._filterTimeout = setTimeout(() => applyFilters(), 300);
+        };
+        el.addEventListener('change', handler);
+        el.addEventListener('input', handler);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', setupLiveFilters);

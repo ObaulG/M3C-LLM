@@ -224,61 +224,56 @@
         color: #888;
     }
 
-    /* Styles pour les modals de gestion des sessions */
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
+    /* Styles pour le panneau intégré de gestion des sessions */
+    .sessions-panel {
         display: none;
-        justify-content: center;
-        align-items: center;
-        overflow-y: auto;
-    }
-
-    .modal.active {
-        display: flex;
-    }
-
-    .modal-content {
         background: white;
+        border: 1px solid #e0e0e0;
         border-radius: 8px;
-        max-width: 800px;
-        width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
+        padding: 20px;
+        margin-bottom: 20px;
     }
 
-    .large-modal {
-        max-width: 1200px;
-        width: 95%;
+    .sessions-panel.active {
+        display: block;
     }
 
-    .modal-header {
-        padding: 15px 20px;
-        border-bottom: 1px solid #e0e0e0;
+    .sessions-panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 15px;
     }
 
-    .modal-body {
-        padding: 20px;
+    .session-editor {
+        border-top: 2px solid #e0e0e0;
+        margin-top: 20px;
+        padding-top: 20px;
     }
 
-    .close-btn {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
+    .session-editor-hint {
+        margin-top: 15px;
+        font-size: 13px;
         color: #666;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 10px;
     }
 
-    .close-btn:hover {
-        color: #000;
+    .btn-add-to-session {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-add-to-session:hover {
+        background: #218838;
+    }
+
+    .btn-in-session {
+        background: #e9ecef;
+        color: #666;
+        cursor: default;
     }
 
     /* Styles pour la liste des sessions */
@@ -509,32 +504,6 @@
         background: #5a6268;
     }
 
-    /* Styles pour les filtres de questions dans la modal d'ajout */
-    .questions-filters {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-    }
-
-    .questions-filters .filter-group {
-        margin-bottom: 10px;
-    }
-
-    .questions-filters .filter-group label {
-        font-weight: bold;
-        margin-bottom: 5px;
-        display: block;
-    }
-
-    .questions-filters .filter-group input,
-    .questions-filters .filter-group select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-    }
-
     .natural-search-container {
         display: flex;
         gap: 8px;
@@ -621,9 +590,59 @@
         ) }}
 
         <div class="header-actions">
-            <button id="manageSessionsBtn" class="btn btn-manage-sessions" style="display: none;" onclick="openSessionsModal()">
+            <button id="manageSessionsBtn" class="btn btn-manage-sessions" style="display: none;" onclick="toggleSessionsPanel()">
                 ⚙️ Gestion des Sessions
             </button>
+        </div>
+
+        <!-- Panneau intégré de gestion des sessions -->
+        <div id="sessionsPanel" class="sessions-panel">
+            <div class="sessions-panel-header">
+                <h2>Gestion des Sessions</h2>
+                <button class="btn btn-secondary" onclick="closeSessionsPanel()">Fermer</button>
+            </div>
+            <div class="sessions-list" id="sessionsList">
+                <!-- Liste des sessions sera chargée ici -->
+            </div>
+            <div class="session-editor" id="sessionEditor" style="display: none;">
+                <h3 id="sessionEditorTitle">Éditer la session</h3>
+                <div class="session-form">
+                    <div class="form-group">
+                        <label for="sessionTitle">Titre de la session</label>
+                        <input type="text" id="sessionTitle" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionDescription">Description</label>
+                        <textarea id="sessionDescription" class="form-input" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Recherche naturelle de questions (RAG)</label>
+                        <div class="natural-search-container">
+                            <input type="text" id="searchQuestionNatural" placeholder="Ex: Quelles sont les étapes de la médiation?">
+                            <button class="btn" onclick="searchQuestionsByNaturalLanguage()">🔍 Rechercher</button>
+                            <button class="btn btn-secondary" onclick="clearNaturalSearch()">Réinitialiser</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Questions dans la session (drag'n drop pour réorganiser)</label>
+                        <div class="questions-dropzone" id="sessionQuestionsContainer">
+                            <!-- Les questions seront affichées ici -->
+                        </div>
+                        <div class="session-actions">
+                            <button class="btn btn-primary" onclick="saveSession()">
+                                ✅ Confirmer
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelSessionEditing()">
+                                × Annuler
+                            </button>
+                        </div>
+                    </div>
+                    <p class="session-editor-hint">
+                        Les questions du document sont listées ci-dessous : filtrez-les en direct avec la barre latérale,
+                        puis cliquez sur « + Session » sur une question pour l'ajouter à la session.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="questions-container">
@@ -643,90 +662,6 @@
     </div>
 </div>
 
-<!-- Modal pour la gestion des sessions -->
-<div id="sessionsModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Gestion des Sessions</h2>
-            <button class="close-btn" onclick="closeSessionsModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="sessions-list" id="sessionsList">
-                <!-- Liste des sessions sera chargée ici -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal pour l'édition d'une session -->
-<div id="editSessionModal" class="modal">
-    <div class="modal-content large-modal">
-        <div class="modal-header">
-            <h2 id="editSessionTitle">Éditer la Session</h2>
-            <button class="close-btn" onclick="closeEditSessionModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="session-form">
-                <div class="form-group">
-                    <label for="sessionTitle">Titre de la session</label>
-                    <input type="text" id="sessionTitle" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="sessionDescription">Description</label>
-                    <textarea id="sessionDescription" class="form-input" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Questions dans la session (drag'n drop pour réorganiser)</label>
-                    <div class="questions-dropzone" id="sessionQuestionsContainer">
-                        <!-- Les questions seront affichées ici -->
-                    </div>
-                    <div class="session-actions">
-                        <button class="btn btn-secondary" onclick="showAddQuestionsModal()">
-                            + Ajouter des questions
-                        </button>
-                        <button class="btn btn-primary" onclick="saveSession()">
-                            ✅ Confirmer
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal pour ajouter des questions à une session -->
-<div id="addQuestionsModal" class="modal">
-    <div class="modal-content large-modal">
-        <div class="modal-header">
-            <h2>Ajouter des questions à la session</h2>
-            <button class="close-btn" onclick="closeAddQuestionsModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="questions-filters">
-                <div class="filter-group">
-                    <label for="searchQuestionKeyword">Rechercher par mot-clé</label>
-                    <input type="text" id="searchQuestionKeyword" placeholder="Ex: droit, médiation...">
-                </div>
-                <div class="filter-group">
-                    <label for="searchQuestionPage">Filtrer par page</label>
-                    <input type="number" id="searchQuestionPage" placeholder="Numéro de page">
-                </div>
-                <div class="filter-group">
-                    <label>Recherche naturelle (RAG)</label>
-                    <div class="natural-search-container">
-                        <input type="text" id="searchQuestionNatural" placeholder="Ex: Quelles sont les étapes de la médiation?">
-                        <button class="btn" onclick="searchQuestionsByNaturalLanguage()">🔍 Rechercher</button>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="applyQuestionsFilters()">Appliquer les filtres</button>
-                <button class="btn btn-secondary" onclick="resetQuestionsFilters()">Réinitialiser</button>
-            </div>
-            <div class="available-questions" id="availableQuestionsContainer">
-                <!-- Les questions disponibles seront affichées ici -->
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
