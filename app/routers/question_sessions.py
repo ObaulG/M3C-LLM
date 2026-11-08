@@ -9,6 +9,7 @@ Ce router permet de:
 
 Les sessions sont distinctes des sessions utilisateur (stockées dans la table `sessions`).
 """
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Depends, status
 from typing import List, Optional
@@ -65,8 +66,8 @@ class QuestionSessionResponse(BaseModel):
     description: str
     document_id: int
     created_by: Optional[int]
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     questions: List[dict]  # Liste de {question_id, content, order_index}
 
 
@@ -129,7 +130,7 @@ async def create_question_session_endpoint(
     Crée une nouvelle session de questions.
     Réservé aux utilisateurs avec rôle global_admin, admin ou expert.
     """
-    created_by = user.user_id
+    created_by = user["user_id"]
 
     async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
