@@ -264,6 +264,12 @@ GOOGLE_API_KEY=votre_clé_api_google
 > est alors prioritaire, la clé personnelle servant de repli si la clé serveur
 > n'est pas configurée.
 
+> **Variable `WITH_LOCAL_LLM`** : quand elle vaut `false`, les modèles locaux
+> (Ollama) ne sont plus proposés dans les listes déroulantes du site (route
+> `/api/models`) et les librairies GPU (`torch`, `pynvml`) ne sont pas importées
+> pour les mesures de consommation de la carte graphique. Utile pour un
+> déploiement sans GPU. Défaut : `true`.
+
 > **🔒 Bonne pratique** : Utilisez des mots de passe de 20 caractères minimum avec des caractères spéciaux.
 
 #### 2. Désactiver l'exposition des ports (recommandé)

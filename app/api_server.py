@@ -921,8 +921,9 @@ if __name__ == "__main__":
     print("exists =", os.path.exists("rag_sessions_csv"))
     print("absolute =", os.path.abspath("rag_sessions_csv"))
     print("=" * 60 + "\n")
-    import torch
-    print(torch.cuda.is_available())
+    if os.getenv("WITH_LOCAL_LLM", "1").strip().lower() not in ("0", "false", "no", "off"):
+        import torch
+        print(torch.cuda.is_available())
     uvicorn.run(
         "api_server:app",
         host=host,
