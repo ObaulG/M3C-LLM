@@ -129,7 +129,7 @@ async def create_question_session_endpoint(
     Crée une nouvelle session de questions.
     Réservé aux utilisateurs avec rôle global_admin, admin ou expert.
     """
-    created_by = user.user_id
+    created_by = user["user_id"]
 
     async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
