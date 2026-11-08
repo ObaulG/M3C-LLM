@@ -1,6 +1,6 @@
 # Configuration Docker pour LLMAgents
 
-Ce dossier contient la configuration Docker pour conteneuriser l'application LLMAgents avec MySQL et Qdrant.
+Ce dossier contient la configuration Docker pour conteneuriser l'application LLMAgents avec Qdrant. La base de données MySQL est **externe** (déjà présente sur les serveurs M3C) : seuls Qdrant, un service d'initialisation Qdrant et l'application FastAPI tournent en conteneur.
 
 ## 📖 Sommaire
 
@@ -22,7 +22,10 @@ Ce dossier contient la configuration Docker pour conteneuriser l'application LLM
 ```
 docker/
 ├── mysql/
-│   └── init.sql          # Script d'initialisation de la base de données MySQL
+│   ├── init.sql                  # Script d'initialisation de la base de données MySQL (référence)
+│   └── migrate_missing_tables.sql # Création manuelle des tables manquantes (base externe)
+├── qdrant/
+│   └── init.sh           # Création des collections Qdrant au démarrage (service qdrant-init)
 ├── app/
 │   └── entrypoint.sh     # Script d'entrée pour l'application
 └── README.md             # Ce fichier
@@ -87,7 +90,9 @@ nano .env  # ou utilisez votre éditeur préféré
 
 | Variable | Valeur par défaut | Description |
 |----------|------------------|-------------|
-| `DB_HOST` | mysql | Nom du service MySQL dans Docker |
+| `DB_HOST` | (à définir) | Hôte de la base MySQL **externe** (serveurs M3C) |
+| `SOLR_ENABLED` | 0 | Active Solr (désactivé par défaut, non déployé en conteneur) |
+| `REQUIRE_USER_MISTRAL_API_KEY` | true | Oblige les utilisateurs `user`/`guest` à fournir leur propre clé Mistral |
 | `DB_PORT` | 3306 | Port MySQL |
 | `DB_NAME` | m3c_database | Nom de la base de données |
 | `DB_USER` | OBL | Utilisateur MySQL |
@@ -97,7 +102,7 @@ nano .env  # ou utilisez votre éditeur préféré
 | `API_HOST` | 0.0.0.0 | Hôte de l'API |
 | `API_PORT` | 8000 | Port de l'application |
 
-> **⚠️ Pour la production** : Changez au moins `DB_PASSWORD` et ajoutez `MYSQL_ROOT_PASSWORD` dans le fichier `.env`.
+> **⚠️ Pour la production** : Vérifiez que `DB_HOST`, `DB_USER` et `DB_PASSWORD` pointent vers la base MySQL externe et ne sont pas les valeurs d'exemple.
 
 ---
 
@@ -115,11 +120,13 @@ docker-compose up -d --build
 - `--build` : Reconstruit les images si nécessaire
 
 **Que se passe-t-il ?**
-1. Docker télécharge les images de base (Python, MySQL, Qdrant)
+1. Docker télécharge les images de base (Python, Qdrant)
 2. Construit l'image de votre application
 3. Crée les volumes pour les données persistantes
-4. Démarre les 3 services dans l'ordre : MySQL → Qdrant → Application
-5. MySQL exécute le script d'initialisation (création de la base et des tables)
+4. Démarre les services dans l'ordre : Qdrant → qdrant-init (création des collections) → Application
+5. L'application attend que la base MySQL **externe** (`DB_HOST`) et Qdrant soient joignables avant de démarrer
+
+> **⚠️ Base MySQL externe** : la base n'est ni créée ni initialisée par Docker. Si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` manuellement sur le serveur MySQL.
 
 **Premier démarrage** : Peut prendre 2-5 minutes selon votre connexion Internet et les performances de votre machine.
 
@@ -144,9 +151,9 @@ Vous devriez voir quelque chose comme :
 ```
           Name                        Command               State           Ports
 ----------------------------------------------------------------------------------------------
-llmagents-app    /entrypoint.sh                        Up (healthy)   0.0.0.0:8000->8000/tcp
-llmagents-mysql  docker-entrypoint.sh                 Up (healthy)   0.0.0.0:3306->3306/tcp
-llmagents-qdrant /usr/local/bin/qdrant                Up (healthy)   0.0.0.0:6333->6333/tcp, 0.0.0.0:6334->6334/tcp
+llmagents-app         /entrypoint.sh      Up (healthy)   0.0.0.0:8000->8000/tcp
+llmagents-qdrant      /usr/local/bin/qdrant Up (healthy)  0.0.0.0:6333->6333/tcp, 0.0.0.0:6334->6334/tcp
+llmagents-qdrant-init /bin/sh /init.sh    Exit 0
 ```
 
 > **⚠️ Si un service n'est pas `Up (healthy)`** : Attendez 1-2 minutes et réessayez. Si le problème persiste, consultez la section [Dépannage](#dépannage).
@@ -166,9 +173,10 @@ Ouvrez votre navigateur et allez sur :
 Vous verrez la documentation interactive Swagger de votre API avec tous les endpoints disponibles.
 
 #### 4. Vérifier la base de données
+La base MySQL est **externe** (aucun conteneur MySQL n'est démarré). Connectez-vous depuis votre machine avec un client MySQL, par exemple :
+
 ```bash
-# Se connecter à MySQL
-docker exec -it llmagents-mysql mysql -uroot -prootpassword m3c_database
+mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p $DB_NAME
 
 # Dans MySQL, lister les tables
 SHOW TABLES;
@@ -179,6 +187,8 @@ DESCRIBE documents;
 # Quitter MySQL
 EXIT;
 ```
+
+Si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` sur le serveur.
 
 #### 5. Vérifier Qdrant
 ```bash
@@ -217,7 +227,6 @@ docker-compose logs -f
 
 # Voir les logs d'un service spécifique
 docker-compose logs app
-docker-compose logs mysql
 docker-compose logs qdrant
 
 # Voir les 100 dernières lignes
@@ -233,7 +242,7 @@ docker-compose up -d
 
 #### Gérer les données
 Vos données sont persistées dans :
-- **MySQL** : `/var/lib/mysql` (dans le volume Docker `mysql_data`)
+- **MySQL** : base externe (hors Docker, sur les serveurs M3C) — sauvegarde à prévoir côté serveur
 - **Qdrant** : `/qdrant/storage` (dans le volume Docker `qdrant_data`)
 - **Fichiers locaux** : `./rag_sessions`, `./rag_sessions_csv`, `./exports`, etc.
 
@@ -250,10 +259,9 @@ Vos données sont persistées dans :
 
 # Exemple de .env sécurisé
 DB_PASSWORD=votre_mot_de_passe_complexe_et_long
-MYSQL_ROOT_PASSWORD=autre_mot_de_passe_complexe_et_long
 MISTRAL_API_KEY=votre_clé_api_secrète
 REQUIRE_USER_MISTRAL_API_KEY=true
-GOOGLE_API_KEY=votre_clé_api_google
+GEMINI_API_KEY=votre_clé_api_google
 ```
 
 > **Variable `REQUIRE_USER_MISTRAL_API_KEY`** : quand elle vaut `true`
@@ -267,13 +275,9 @@ GOOGLE_API_KEY=votre_clé_api_google
 > **🔒 Bonne pratique** : Utilisez des mots de passe de 20 caractères minimum avec des caractères spéciaux.
 
 #### 2. Désactiver l'exposition des ports (recommandé)
-Dans `docker-compose.yml`, commentez les ports pour MySQL et Qdrant :
+Dans `docker-compose.yml`, commentez les ports de Qdrant :
 ```yaml
 services:
-  mysql:
-    # ports:
-    #   - "3306:3306"  # Désactivé pour la production
-    
   qdrant:
     # ports:
     #   - "6333:6333"  # Désactivé pour la production
@@ -283,6 +287,8 @@ services:
 > **⚠️ Important** : En production, les services communiquent via le réseau Docker interne (`llmagents-network`).
 
 #### 3. Configurer les sauvegardes
+La base MySQL est externe : utilisez `mysqldump` depuis une machine ayant accès au serveur MySQL (les variables viennent du `.env`) :
+
 ```bash
 # Exemple de script de sauvegarde (Linux/Mac/WSL)
 #!/bin/bash
@@ -292,12 +298,13 @@ BACKUP_DIR="./backups"
 # Créer le répertoire de sauvegarde
 mkdir -p "$BACKUP_DIR"
 
-# Sauvegarder MySQL
-docker exec llmagents-mysql mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" m3c_database > "$BACKUP_DIR/backup_${DATE}.sql"
+# Sauvegarder MySQL (base externe)
+source .env
+mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" > "$BACKUP_DIR/backup_${DATE}.sql"
 gzip "$BACKUP_DIR/backup_${DATE}.sql"
 
 # Restaurer depuis une sauvegarde
-docker exec -i llmagents-mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" m3c_database < backup.sql
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < backup.sql
 ```
 
 #### 4. Optimiser les performances
@@ -311,12 +318,6 @@ services:
         limits:
           cpus: '2'
           memory: 4G
-  mysql:
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2G
   qdrant:
     deploy:
       resources:
@@ -332,17 +333,6 @@ Créez un fichier `docker-compose.prod.yml` pour la production :
 # docker-compose.prod.yml
 version: '3.8'
 services:
-  mysql:
-    ports: []  # Aucun port exposé
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2G
-    
   qdrant:
     ports: []  # Aucun port exposé
     deploy:
@@ -350,7 +340,7 @@ services:
         limits:
           cpus: '1'
           memory: 2G
-    
+  
   app:
     ports:
       - "8000:8000"
@@ -387,16 +377,17 @@ Un fichier `.env.docker` est fourni avec les valeurs par défaut. Vous pouvez :
 
 ### Configuration de la base de données
 
-Le conteneur MySQL est configuré pour :
-- Créer automatiquement la base de données `m3c_database`
-- Créer l'utilisateur `OBL` avec le mot de passe configuré dans `.env`
-- Exécuter le script SQL d'initialisation depuis `docker/mysql/init.sql`
+La base MySQL est **externe** (serveurs M3C) : Docker ne la crée ni ne l'initialise.
+- L'hôte, le port, le nom, l'utilisateur et le mot de passe sont lus depuis le fichier `.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`).
+- Le script `docker/app/entrypoint.sh` attend que MySQL et Qdrant soient joignables avant de démarrer l'application.
+- Les tables manquantes doivent être créées manuellement via `docker/mysql/migrate_missing_tables.sql`.
+- `docker/mysql/init.sql` est conservé comme script de référence (utile si vous déployez une base MySQL vous-même).
 
 ### Healthchecks
 
 Les services incluent des healthchecks pour s'assurer que :
-- MySQL est accessible avant que l'application ne démarre
 - Qdrant est accessible avant que l'application ne démarre
+- Les collections Qdrant sont créées par le service `qdrant-init` avant que l'application ne démarre
 
 ---
 
@@ -430,8 +421,8 @@ docker-compose logs -f
 # Voir les logs d'un service spécifique
 docker-compose logs app
 
-# Accéder à la base de données MySQL
-docker exec -it llmagents-mysql mysql -uroot -prootpassword m3c_database
+# Accéder à la base de données MySQL (externe)
+mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p $DB_NAME
 
 # Exécuter une commande dans le conteneur de l'app
 docker exec -it llmagents-app bash
@@ -456,9 +447,10 @@ docker-compose up -d --build
 |---------|------|-------------|-----|
 | **app** | 8000 | Application FastAPI | [http://localhost:8000](http://localhost:8000) |
 | **app** | 8000 | Documentation Swagger | [http://localhost:8000/docs](http://localhost:8000/docs) |
-| **mysql** | 3306 | Base de données MySQL | `docker exec -it llmagents-mysql mysql` |
 | **qdrant** | 6333 | API HTTP Qdrant | `http://localhost:6333` |
 | **qdrant** | 6334 | API gRPC Qdrant | - |
+| **qdrant-init** | - | Création des collections Qdrant (one-shot) | - |
+| **MySQL** | - | Base de données **externe** (serveurs M3C) | via `DB_HOST` |
 
 ---
 
@@ -546,15 +538,7 @@ services:
         reservations:
           cpus: '1.0'
           memory: 2G
-    
-  mysql:
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 2G
-    
+  
   qdrant:
     restart: always
     deploy:
@@ -605,31 +589,19 @@ docker inspect llmagents-app
 
 ### ❌ Problèmes courants et solutions
 
-#### 1. MySQL ne démarre pas
-**Symptômes** : `llmagents-mysql` reste en `Starting` ou `Unhealthy`
+#### 1. L'application reste bloquée sur l'attente de MySQL
+**Symptômes** : les logs de l'app affichent « MySQL n'est pas encore prêt - attente... » en boucle
 
-**Diagnostic** :
+**Diagnostic** : la base MySQL est **externe** ; vérifiez qu'elle est joignable depuis votre machine :
+
 ```bash
-docker logs llmagents-mysql
+nc -zv $DB_HOST $DB_PORT
 ```
 
 **Solutions** :
-- **Port 3306 occupé** :
-  ```bash
-  # Linux/Mac
-  lsof -i :3306
-  kill -9 <PID>
-  
-  # Windows
-  netstat -ano | findstr 3306
-  taskkill /PID <PID> /F
-  ```
-- **Mémoire insuffisante** : Allouez au moins 4Go à Docker
-- **Problème de volume** : Supprimez le volume et relancez
-  ```bash
-  docker-compose down -v
-  docker-compose up -d
-  ```
+- Vérifiez `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` dans le fichier `.env`
+- Vérifiez que le serveur MySQL autorise les connexions depuis votre machine (pare-feu, règles MySQL)
+- Vérifiez les identifiants auprès de l'administrateur de la base M3C
 
 #### 2. Qdrant ne démarre pas
 **Symptômes** : `llmagents-qdrant` reste en `Starting` ou `Unhealthy`
@@ -657,14 +629,15 @@ docker logs llmagents-qdrant
 docker-compose ps
 
 # Tester la connexion manuellement
-docker exec -it llmagents-app curl -v http://mysql:3306
 docker exec -it llmagents-app curl -v http://qdrant:6333
+nc -zv $DB_HOST $DB_PORT   # MySQL externe
 ```
 
 **Solutions** :
 - Attendez que les healthchecks passent (`Up (healthy)`)
 - Vérifiez les variables d'environnement dans `.env`
 - Vérifiez que tous les services sont sur `llmagents-network`
+- Pour MySQL (externe), vérifiez que `DB_HOST` est joignable depuis le conteneur
 
 #### 4. Erreur "WindowsSelectorEventLoopPolicy"
 **Symptômes** : L'application plante au démarrage avec cette erreur
@@ -718,12 +691,10 @@ docker exec -it llmagents-app curl -v http://localhost:8000/api/health
 ```bash
 # Générer des mots de passe forts (20+ caractères)
 DB_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+' | head -c 24)
-MYSQL_ROOT_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+' | head -c 24)
 MISTRAL_API_KEY=votre_clé_secrète
 
 # Écrire dans .env
 echo "DB_PASSWORD=$DB_PASSWORD" > .env
-echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
 echo "MISTRAL_API_KEY=$MISTRAL_API_KEY" >> .env
 
 # Protéger le fichier
@@ -733,19 +704,11 @@ chmod 600 .env
 **Configuration `docker-compose.yml` sécurisée** :
 ```yaml
 services:
-  mysql:
-    ports: []  # Pas de port exposé
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    networks:
-      - llmagents-network
-    
   qdrant:
     ports: []  # Pas de port exposé
     networks:
       - llmagents-network
-    
+  
   app:
     ports:
       - "8000:8000"  # Seul le port API est exposé
@@ -770,13 +733,14 @@ RETENTION=30  # Nombre de jours à conserver
 # Créer le répertoire
 mkdir -p "$BACKUP_DIR"
 
-# Sauvegarder MySQL
+# Sauvegarder MySQL (base externe)
 echo "Sauvegarde MySQL..."
-docker exec llmagents-mysql mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" m3c_database | gzip > "$BACKUP_DIR/mysql_${DATE}.sql.gz"
+source .env
+mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" | gzip > "$BACKUP_DIR/mysql_${DATE}.sql.gz"
 
-# Sauvegarder les volumes Docker (optionnel)
+# Sauvegarder le volume Qdrant (optionnel)
 echo "Sauvegarde volumes..."
-docker run --rm --volumes-from llmagents-mysql -v "$BACKUP_DIR":/backup alpine tar cvzf /backup/mysql_data_${DATE}.tar.gz /var/lib/mysql
+docker run --rm -v llmagents_qdrant_data:/qdrant/storage -v "$BACKUP_DIR":/backup alpine tar cvzf /backup/qdrant_data_${DATE}.tar.gz /qdrant/storage
 
 # Nettoyer les anciennes sauvegardes
 echo "Nettoyage..."
@@ -795,10 +759,9 @@ Les données sont persistées dans des **volumes Docker** :
 
 | Volume | Chemin | Description | Taille estimée |
 |--------|--------|-------------|----------------|
-| `mysql_data` | `/var/lib/mysql` | Toutes les bases de données MySQL | Variable |
 | `qdrant_data` | `/qdrant/storage` | Collections et embeddings Qdrant | Variable |
 
-> **💡 Astuce** : Ces volumes conservent vos données même après un `docker-compose down`.
+> **💡 Astuce** : Ces volumes conservent vos données même après un `docker-compose down`. La base MySQL est externe et doit être sauvegardée côté serveur.
 
 ### Répertoires montés depuis l'hôte
 
@@ -825,8 +788,9 @@ Votre machine
 │   ├── temp_pdfs/             → /app/temp_pdfs/
 │   └── exports/                → /app/exports/
 └── Volumes Docker
-    ├── mysql_data/             → /var/lib/mysql (MySQL)
     └── qdrant_data/            → /qdrant/storage (Qdrant)
+
+La base MySQL est externe (hors Docker) : elle n'apparaît pas ici.
 ```
 
 ### Sauvegarde recommandée
