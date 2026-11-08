@@ -8,11 +8,14 @@
 
 {% block body %}
 <div class="container">
-    <header>
-        <h1>RAG Embeddings Visualization</h1>
-        <p>Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE ou UMAP</p>
-        {{ profile_widget(page_dir='root') }}
-    </header>
+    {{ header(
+        title='RAG Embeddings Visualization',
+        subtitle='Visualisez les embeddings des chunks et des requêtes en 2D avec t-SNE ou UMAP',
+        title_icon='📊',
+        page='rag_visualization.html',
+        page_dir='root',
+        show_admin=true
+    ) }}
 
     <main>
         <section class="controls">
