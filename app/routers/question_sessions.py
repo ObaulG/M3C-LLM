@@ -11,6 +11,7 @@ Les sessions sont distinctes des sessions utilisateur (stockées dans la table `
 """
 
 from fastapi import APIRouter, HTTPException, Request, Depends, status
+from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -65,8 +66,8 @@ class QuestionSessionResponse(BaseModel):
     description: str
     document_id: int
     created_by: Optional[int]
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     questions: List[dict]  # Liste de {question_id, content, order_index}
 
 
