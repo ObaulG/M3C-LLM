@@ -36,6 +36,10 @@ MISTRAL_MODELS = [
 GEMINI_MODELS = []
 OLLAMA_MODELS = ["ministral-3:3b","llama3.2:1b", "llama3.2:3b", "qwen3.5:0.8b", "qwen3.5:2b", "qwen3.5:4b"]
 
+# Les modèles locaux (Ollama) et les mesures GPU (torch, pynvml) ne sont
+# utilisés que si WITH_LOCAL_LLM est activé
+WITH_LOCAL_LLM = os.getenv("WITH_LOCAL_LLM", "1").strip().lower() not in ("0", "false", "no", "off")
+
 class RetrievalResult(BaseModel):
     """Modèle Pydantic pour décrire le résultat d'une requête RAG."""
     response: str
@@ -189,7 +193,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
             except Exception as e:
                 logger.error(f"Erreur lors de l'initialisation du modèle Gemini '{model_name}': {e}")
 
-        if not load_local:
+        if not load_local or not WITH_LOCAL_LLM:
             return
         from langchain_ollama import ChatOllama
         for model_name in OLLAMA_MODELS:
@@ -421,7 +425,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         logger.debug("calling %s", model)
         consumed_energy = 0
         start = time.time()
-        if model in OLLAMA_MODELS:
+        if model in OLLAMA_MODELS and WITH_LOCAL_LLM:
             import torch
             import pynvml
             pynvml.nvmlInit()
@@ -447,7 +451,7 @@ Votre tâche est de répondre aux questions de manière précise, claire et dét
         
         elapsed_time = time.time() - start
         logger.debug("finished in %s", elapsed_time)
-        if model in OLLAMA_MODELS:
+        if model in OLLAMA_MODELS and WITH_LOCAL_LLM:
             torch.cuda.synchronize()
             consumed_energy = (pynvml.nvmlDeviceGetTotalEnergyConsumption(handle) - start_energy)/(1000*3600)
             logger.debug(consumed_energy, "Wh")

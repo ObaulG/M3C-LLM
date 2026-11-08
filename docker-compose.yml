@@ -73,6 +73,8 @@ services:
       PYTHONASYNCIODEBUG: 0
       # Solr désactivé par défaut (non déployé en conteneur)
       SOLR_ENABLED: ${SOLR_ENABLED:-0}
+      # Modèles locaux (Ollama) et mesures GPU (torch/pynvml)
+      WITH_LOCAL_LLM: ${WITH_LOCAL_LLM:-true}
       # clefs API
       MISTRAL_API_KEY: ${MISTRAL_API_KEY}
       # Obliger les utilisateurs normaux à fournir leur propre clé Mistral

@@ -7,6 +7,7 @@ alimenter toutes les pages HTML proposant la sélection d'un modèle.
 """
 
 import csv
+import os
 from pathlib import Path
 from typing import Dict, List
 
@@ -14,6 +15,9 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/models", tags=["Models"])
+
+# Les modèles locaux (Ollama) ne sont proposés que si WITH_LOCAL_LLM est activé
+WITH_LOCAL_LLM = os.getenv("WITH_LOCAL_LLM", "1").strip().lower() not in ("0", "false", "no", "off")
 
 MODELS_CSV_PATH = Path(__file__).parent.parent.parent / "config" / "models" / "models.csv"
 
@@ -64,6 +68,8 @@ def load_models_from_csv() -> List[Dict[str, str]]:
                 provider = (row.get("provider") or "").strip()
                 label = (row.get("label") or "").strip() or model
                 if model and provider:
+                    if provider == "ollama" and not WITH_LOCAL_LLM:
+                        continue
                     models.append({
                         "model": model,
                         "provider": provider,
