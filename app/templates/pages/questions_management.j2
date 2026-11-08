@@ -41,6 +41,36 @@
         margin-bottom: 20px;
     }
 
+    .sidebar-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-section-header h3 {
+        margin: 0;
+    }
+
+    .btn-sidebar-toggle {
+        padding: 2px 10px;
+        font-size: 13px;
+        line-height: 1.4;
+        flex: 0 0 auto;
+    }
+
+    .document-selector .document-list {
+        max-height: 260px;
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+    }
+
+    .document-selector.collapsed #loadingDocuments,
+    .document-selector.collapsed .document-list {
+        display: none;
+    }
+
     /* Styles pour l'édition des questions */
     .editable-question-text,
     .editable-answer-text {
@@ -317,8 +347,8 @@
 
     .content-area.sessions-open .sessions-panel.active {
         order: 2;
-        flex: 0 0 400px;
-        max-width: 400px;
+        flex: 0 0 480px;
+        max-width: 480px;
         margin-left: 20px;
         margin-bottom: 20px;
         position: sticky;
@@ -393,33 +423,35 @@
         border-radius: 5px;
         margin-bottom: 10px;
         cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
 
     .session-item:hover {
         background: #f8f9fa;
     }
 
-    .session-item .session-info {
-        flex: 1;
-    }
-
     .session-item .session-title {
         font-weight: bold;
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
 
     .session-item .session-description {
         font-size: 13px;
         color: #666;
+        margin-bottom: 6px;
+    }
+
+    .session-item .session-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .session-item .session-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
         font-size: 12px;
         color: #888;
-        margin-top: 5px;
     }
 
     .session-item .session-actions {
@@ -681,8 +713,11 @@
 {% block body %}
 <div class="main_container">
     <div class="sidebar">
-        <h3>Documents</h3>
-        <div class="document-selector">
+        <div class="sidebar-section-header">
+            <h3>Sélectionner un document</h3>
+            <button id="documentsToggleBtn" class="btn btn-secondary btn-sidebar-toggle" onclick="toggleDocumentsList()" title="Réduire / afficher la liste des documents">▾</button>
+        </div>
+        <div class="document-selector" id="documentSelector">
             <div class="loading" id="loadingDocuments">
                 <div class="spinner"></div>
                 <p>Chargement des documents...</p>
@@ -772,9 +807,10 @@
     </div>
 
     <div class="content-area">
-        {{ header_centered(
-            title='📝 Gestion des Questions/Réponses',
+        {{ header(
+            title='Gestion des Questions/Réponses',
             subtitle='Sélectionnez un document pour visualiser ses questions générées',
+            title_icon='📝',
             page='questions_management.html',
             page_dir='root',
             show_admin=true
@@ -884,6 +920,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadReferenceAnswers();
     });
+
+    // Réduit / réaffiche la liste des documents dans la barre latérale
+    function toggleDocumentsList() {
+        const selector = document.getElementById('documentSelector');
+        const btn = document.getElementById('documentsToggleBtn');
+        if (!selector || !btn) return;
+        selector.classList.toggle('collapsed');
+        btn.textContent = selector.classList.contains('collapsed') ? '▸' : '▾';
+    }
 </script>
 <script src="{{ static_prefix }}questions_management.js"></script>
 <script>
