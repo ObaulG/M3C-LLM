@@ -2666,20 +2666,18 @@ function renderSessionsList() {
 
     currentDocumentSessions.forEach(session => {
         const questionsCount = session.questions ? session.questions.length : 0;
-        const createdAt = new Date(session.created_at).toLocaleDateString('fr-FR');
         html += `
             <div class="session-item" onclick="editSession(${session.session_id})">
-                <div class="session-info">
-                    <div class="session-title">${escapeHtml(session.title)}</div>
-                    <div class="session-description">${escapeHtml(session.description || 'Aucune description')}</div>
+                <div class="session-title">${escapeHtml(session.title)}</div>
+                <div class="session-description">${escapeHtml(session.description || 'Aucune description')}</div>
+                <div class="session-footer">
                     <div class="session-meta">
-                        <span>${questionsCount} questions</span>
-                        <span>Créée le ${createdAt}</span>
+                        <span>${questionsCount} question${questionsCount > 1 ? 's' : ''}</span>
                     </div>
-                </div>
-                <div class="session-actions">
-                    <button class="btn btn-edit-session" onclick="event.stopPropagation(); editSession(${session.session_id})">Éditer</button>
-                    <button class="btn btn-delete-session" onclick="event.stopPropagation(); deleteSession(${session.session_id})">Supprimer</button>
+                    <div class="session-actions">
+                        <button class="btn btn-edit-session" onclick="event.stopPropagation(); editSession(${session.session_id})">Éditer</button>
+                        <button class="btn btn-delete-session" onclick="event.stopPropagation(); deleteSession(${session.session_id})">Supprimer</button>
+                    </div>
                 </div>
             </div>
         `;
