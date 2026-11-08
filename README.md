@@ -8,6 +8,23 @@ Deux prototypes sont disponibles :
 
 # Mise en place
 
+## Variables d'environnement
+
+La configuration se fait via des variables d'environnement (voir `.env.example`
+pour le développement local et `.env.docker` pour le déploiement en conteneur).
+Les principales sont :
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | — | Connexion à la base de données MySQL |
+| `QDRANT_HOST` / `QDRANT_PORT` | — | Connexion à la base vectorielle Qdrant |
+| `API_HOST` / `API_PORT` | `0.0.0.0` / `8000` | Hôte et port du serveur API FastAPI |
+| `MISTRAL_API_KEY` | — | Clé API Mistral du serveur |
+| `GROQ_API_KEY` / `GEMINI_API_KEY` | — | Clés API optionnelles (Groq, Google) |
+| `REQUIRE_USER_MISTRAL_API_KEY` | `true` | Oblige les utilisateurs normaux à fournir leur propre clé Mistral |
+| `SOLR_ENABLED` | `0` | Active Solr (`1`) ou non (`0`) |
+| `WITH_LOCAL_LLM` | `true` | Active les modèles locaux (Ollama) et les mesures GPU (`torch`, `pynvml`). Quand elle vaut `false`, les modèles locaux ne sont pas proposés sur les pages du site (route `/api/models`) et les librairies GPU ne sont pas importées — utile pour un déploiement sans carte graphique |
+| `LOG_LEVEL` | `INFO` | Niveau de log du serveur |
 
 ## Structure de la base de données
 
