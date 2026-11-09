@@ -65,6 +65,111 @@ On suivra les étapes suivantes :
    * Appeler un embedder;
    * Stocker les métadonnées dans la BDD SQL, et les embeddings avec l'id dans la base de données Qdrant.
 
+# Indexation RAG des métadonnées
+
+## Principe
+
+Le job d'indexation des métadonnées crée, pour chaque document de la BDD, un embedding à partir de ses métadonnées. Contrairement à l'indexation PDF, ce job ne nécessite pas le fichier : il s'applique à **tous les items présents en base**, qu'ils aient un PDF ou non.
+
+## Schéma des données (M3C / Omeka S)
+
+- `item` : un document. Ne contient qu'un `id`.
+- `property` : la liste des métadonnées disponibles (`id`, `local_name`, `label`, `comment`).
+- `value` : **toutes les données**. Une ligne = une valeur d'une métadonnée pour un document :
+  - `resource_id` : l'id de l'`item` décrit ;
+  - `property_id` : la métadonnée (FK vers `property.id`) ;
+  - `type` : `literal` (texte dans `value`), `resource` (référence vers un autre item via `value_resource_id`) ou `uri` ;
+  - `value` : le texte de la valeur (pour les types `literal`) ;
+  - `lang` : langue de la valeur (une même propriété peut exister en plusieurs langues) ;
+  - `is_public` : 1 si la valeur est publique.
+
+Les métadonnées d'un document s'obtiennent donc par : `SELECT property_id, value FROM value WHERE resource_id = <id>`.
+
+## Propriétés retenues
+
+La sélection est définie dans la constante `METADATA_PROPERTIES` de `database/database.py` (clé : `property_id`, valeur : `(local_name, label français)`). Les valeurs de type `literal` sont prises en compte ; les types `resource` et `uri` sont ignorés pour l'instant. Seules les valeurs `is_public = 1` sont indexées.
+
+| property_id | local_name | Label dans la chaîne | Remarque |
+|---|---|---|---|
+| 1 | title | Titre | |
+| 117 | shortTitle | Titre court | |
+| 17 | alternative | Titre alternatif | |
+| 2 | creator | Auteur | fusionné dans la ligne `Auteurs` |
+| 6 | contributor | Contributeur | fusionné dans la ligne `Auteurs` |
+| 66 | editor | Éditeur scientifique | fusionné dans la ligne `Auteurs` |
+| 85 | translator | Traducteur | |
+| 94 | edition | Édition | |
+| 7 | date | Date | |
+| 8 | type | Type | |
+| 12 | language | Langue | |
+| 5 | publisher | Éditeur | |
+| 16 | audience | Audience | |
+| 46 | educationLevel | Niveau éducatif | |
+| 40 | spatial | Couverture spatiale | |
+| 41 | temporal | Couverture temporelle | |
+| 260 | location | Lieu | |
+| 3 | subject | Mots-clés | multi-valué, séparateur `, ` |
+| 19 | abstract | Résumé | prioritaire sur `description` |
+| 4 | description | Résumé | utilisé seulement si `abstract` absent |
+
+Sont volontairement exclues : `extracted_text` (214) et `text` (185) (contenu, pas métadonnées), `format`/`extent`/`numPages`/`identifier`/`isbn`/`doi`/`uri` (techniques), `rights`/`license`/`accessRights` (juridiques), `relation` et dérivées (références vers d'autres resources), `tag`/`theme`/`category` (219-221, redondantes avec `subject`).
+
+## Format de la chaîne de métadonnées
+
+Pour chaque document, `build_metadata_string` (dans `indexing/services.py`) construit une chaîne, **une métadonnée par ligne** au format `Label: valeur` :
+
+- les lignes dont la valeur est absente ou vide sont omises ;
+- `creator`, `contributor` et `editor` sont fusionnés sur une seule ligne `Auteurs` (séparateur `; `) ;
+- les propriétés multi-valuées sont séparées par `, ` ;
+- la ligne `Résumé` utilise `abstract` si présent, sinon `description` ;
+- chaque valeur est nettoyée : trim + espaces/retours à la ligne multiples réduits à un seul espace.
+
+Exemple :
+
+```
+Titre: Le Corse dans tous ses états
+Auteurs: Marie-Ange Geronimi; Jean-Marc Comiti
+Date: 2019
+Type: Text
+Langue: corse
+Éditeur: Università di Corsica
+Niveau éducatif: Licence
+Mots-clés: langue corse, sociolinguistique, enseignement
+Résumé: Étude sociolinguistique de la place de la langue corse dans l'enseignement supérieur.
+```
+
+Un document dont la chaîne finale est vide (aucune métadonnée publique) est marqué `failed` avec l'erreur « La chaîne de métadonnées est vide ».
+
+## Stockage Qdrant
+
+- Collection : `MD-<embedder>-<dimension>` (une collection par modèle d'embedding).
+- Un document = exactement un point par collection. L'ID du point est déterministe : `uuid5(NAMESPACE_URL, "metadata-<resource_id>")`, donc **ré-indexer un document écrase son embedding précédent** (upsert idempotent, jamais de doublon).
+- Payload du point : `document_id` (`metadata-<resource_id>`), `model_name`, `source` (`metadata`), `resource_id`, `content` (la chaîne de métadonnées complète).
+
+## Lancer le job
+
+Depuis la page d'admin « Indexation des Documents », option « Tous les items de la BDD - Métadonnées », ou via l'API :
+
+```bash
+curl -X POST "http://localhost:8000/api/admin/documents/index" \
+  -H "Content-Type: application/json" \
+  -d '{"indexation_type": "all-items-metadata", "embedder_name": "mistral-embed"}'
+```
+
+Types d'indexation disponibles pour les métadonnées :
+
+- `all-items-metadata` : **tous les items de la BDD** (tout `resource_id` ayant au moins une valeur publique dans `value`) ;
+- `metadata-only` / `all-metadata` : les `VALID_TEXT_RESOURCE_ID` (PDFs vérifiés) ;
+- `selected-metadata` : une liste explicite de `resource_ids`.
+
+Le job est asynchrone, résumable (progression par `resource_id` ; les documents déjà `completed` sont sautés à la reprise) et traite les documents par lots de 32 (un appel `embed_batch` et un upsert Qdrant par lot). Suivi : `GET /api/admin/documents/index/job/{job_id}/status`.
+
+## Note pour les développeurs et les agents IA
+
+- La liste des documents à indexer en mode « tous les items » vient de `get_all_document_ids` (`SELECT DISTINCT resource_id FROM value WHERE is_public = 1`) : un item sans aucune valeur publique n'est pas indexé et ne peut pas l'être (chaîne vide).
+- Invariant : un document a au plus un embedding de métadonnées par collection `MD-*` ; ré-exécuter le job est toujours sûr (upsert déterministe).
+- Pour ajouter une métadonnée à la chaîne : ajouter l'entrée dans `METADATA_PROPERTIES` (`database/database.py`) puis la ligne correspondante dans `build_metadata_string` (`indexing/services.py`) ; les deux doivent rester synchrones, et ce README doit être mis à jour.
+
 # La gestion des documents et des questions 
 
 

@@ -9,8 +9,8 @@ class IndexDocumentsRequest(BaseModel):
     """Requête pour l'indexation des documents existants"""
     indexation_type: str = Field(
         ...,
-        description="Type d'indexation: 'metadata-only' pour TOUS les docs par métadonnées, 'selected-metadata' pour une sélection de docs par métadonnées, 'all-with-text' pour docs avec extracted_text, 'pdf-from-m3c' pour télécharger depuis M3C",
-        pattern="^(metadata-only|selected-metadata|all-metadata|all-with-text|pdf-from-m3c)$"
+        description="Type d'indexation: 'all-items-metadata' pour TOUS les items de la BDD par métadonnées, 'metadata-only' pour TOUS les docs par métadonnées, 'selected-metadata' pour une sélection de docs par métadonnées, 'all-with-text' pour docs avec extracted_text, 'pdf-from-m3c' pour télécharger depuis M3C",
+        pattern="^(all-items-metadata|metadata-only|selected-metadata|all-metadata|all-with-text|pdf-from-m3c)$"
     )
     resource_ids: Optional[List[int]] = Field(
         None,
@@ -56,8 +56,8 @@ class IndexJobRequest(BaseModel):
     """Requête pour créer un job d'indexation de PDFs depuis M3C"""
     indexation_type: str = Field(
         "pdf-from-m3c",
-        description="Type d'indexation: 'pdf-from-m3c' pour télécharger depuis M3C, 'metadata-only' pour les métadonnées, 'selected-metadata' pour les métadonnées d'une sélection",
-        pattern="^(pdf-from-m3c|metadata-only|selected-metadata)$"
+        description="Type d'indexation: 'pdf-from-m3c' pour télécharger depuis M3C, 'metadata-only' pour les métadonnées, 'selected-metadata' pour les métadonnées d'une sélection, 'all-items-metadata' pour les métadonnées de TOUS les items de la BDD",
+        pattern="^(pdf-from-m3c|metadata-only|selected-metadata|all-items-metadata)$"
     )
     resource_ids: Optional[List[int]] = Field(
         None,

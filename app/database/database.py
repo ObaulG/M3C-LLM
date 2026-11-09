@@ -32,6 +32,39 @@ VALID_TEXT_RESOURCE_ID = [317, 116723, 116789, 116805, 116729, 116806, 116781, 1
                           116725, 116735, 116734, 116782, 76715, 116727, 116787, 116738, 116795]
 #VALID_TEXT_RESOURCE_ID = [116738, 116782]
 
+# Propriétés (table `property`) retenues pour l'indexation RAG des métadonnées d'un document.
+# Clé : property_id ; valeur : (local_name, label français utilisé dans la chaîne de métadonnées).
+# L'ordre définit l'ordre d'affichage des lignes dans la chaîne construite par
+# app/indexing/services.py::build_metadata_string.
+# Sont volontairement exclues : extracted_text (214) et text (185) (contenu, pas métadonnées),
+# format/extent/numPages/identifier/isbn/doi/uri (techniques), rights/license/accessRights (juridiques),
+# relation et dérivées (références vers d'autres resources), tag/theme/category (219-221, redondantes avec subject).
+METADATA_PROPERTIES = {
+    1: ("title", "Titre"),
+    117: ("shortTitle", "Titre court"),
+    17: ("alternative", "Titre alternatif"),
+    2: ("creator", "Auteur"),
+    6: ("contributor", "Contributeur"),
+    66: ("editor", "Éditeur scientifique"),
+    85: ("translator", "Traducteur"),
+    94: ("edition", "Édition"),
+    7: ("date", "Date"),
+    8: ("type", "Type"),
+    12: ("language", "Langue"),
+    5: ("publisher", "Éditeur"),
+    16: ("audience", "Audience"),
+    46: ("educationLevel", "Niveau éducatif"),
+    40: ("spatial", "Couverture spatiale"),
+    41: ("temporal", "Couverture temporelle"),
+    260: ("location", "Lieu"),
+    3: ("subject", "Mot-clé"),
+    19: ("abstract", "Résumé"),
+    4: ("description", "Description"),
+}
+
+# Local_name des propriétés fusionnées sur une même ligne "Auteurs" de la chaîne de métadonnées.
+METADATA_AUTHORS_FIELDS = ("creator", "contributor", "editor")
+
 # Pool de connexions à la base de données MySQL
 _DB_POOL = None
 _DB_POOL_LOOP = None
@@ -224,6 +257,59 @@ async def insert_metadata_embedding_qdrant(
                 payload=payload
             )
         ]
+    )
+
+
+def metadata_point_id(resource_id: int) -> str:
+    """
+    ID de point Qdrant déterministe pour l'embedding des métadonnées d'un document.
+    Un même resource_id produit toujours le même UUID (uuid5), ce qui rend les
+    ré-indexations idempotentes (upsert sans doublon).
+    """
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"metadata-{resource_id}"))
+
+
+async def insert_metadata_embeddings_batch_qdrant(
+    resource_ids: list,
+    model_name: str,
+    embeddings: list,
+    contents: list,
+    collection_name: str = None,
+):
+    """
+    Insère en une seule requête les embeddings des métadonnées de plusieurs documents.
+
+    Args:
+        resource_ids: Liste des resource_id (même ordre que embeddings/contents)
+        model_name: Nom du modèle d'embedding
+        embeddings: Liste des vecteurs
+        contents: Liste des chaînes de métadonnées correspondantes
+        collection_name: Nom de la collection Qdrant (défaut: model_name)
+
+    Returns:
+        Le résultat de l'upsert (UpsertResult du client Qdrant)
+    """
+    final_collection_name = collection_name or model_name
+
+    points = []
+    for resource_id, embedding, content in zip(resource_ids, embeddings, contents):
+        points.append(
+            models.PointStruct(
+                id=metadata_point_id(resource_id),
+                vector=embedding,
+                payload={
+                    "document_id": f"metadata-{resource_id}",
+                    "model_name": model_name,
+                    "source": "metadata",
+                    "resource_id": resource_id,
+                    "content": content,
+                },
+            )
+        )
+
+    return qdrant_client.upsert(
+        collection_name=final_collection_name,
+        points=points,
     )
 
 
@@ -655,65 +741,67 @@ async def get_resource_basic_metadata(conn, resource_id):
         }
 
 
+async def get_all_document_ids(conn):
+    """
+    Retourne les resource_id de TOUS les documents présents en BDD, c'est-à-dire
+    tous les items possédant au moins une valeur publique dans la table `value`.
+
+    Returns:
+        Liste triée des resource_id
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(
+            "SELECT DISTINCT resource_id FROM value WHERE is_public = 1 ORDER BY resource_id"
+        )
+        rows = await cur.fetchall()
+        return [row[0] for row in rows]
+
+
 async def get_resource_full_metadata(conn, resource_id):
     """
-    Récupère toutes les métadonnées pertinentes pour un resource.
-    Property IDs: 1=title, 2=creator, 3=subject, 4=description, 5=publisher,
-                  6=contributor, 7=date, 8=type, 12=language, 19=abstract
-    
+    Récupère les métadonnées d'un resource utilisées pour l'indexation RAG.
+
+    Sélectionne, dans la table `value`, toutes les lignes publiques (is_public = 1)
+    dont le property_id appartient à METADATA_PROPERTIES. Chaque propriété est
+    potentiellement multi-valuée : le dict retourné associe donc à chaque
+    local_name la LISTE des valeurs trouvées (triées par id croissant).
+
+    Pour l'instant, seules les valeurs de type `literal` (texte dans la colonne
+    `value`) sont prises en compte. Les valeurs de type `resource`
+    (value_resource_id pointant vers un autre item) et `uri` sont ignorées.
+
     Args:
         conn: Connexion à la base de données
         resource_id: L'ID de la ressource
-        
+
     Returns:
-        Dict avec toutes les métadonnées et une liste pour les subjects (multi-valued)
+        Dict {local_name: [valeurs]} ; les propriétés absentes sont omises.
     """
+    property_ids = list(METADATA_PROPERTIES.keys())
+    placeholders = ", ".join(["%s"] * len(property_ids))
+
     async with conn.cursor() as cur:
-        # Récupérer les valeurs simples (une seule valeur attendue)
-        await cur.execute("""
-                          SELECT 
-                              MAX(CASE WHEN v.property_id = 1 THEN v.value END) as title,
-                              MAX(CASE WHEN v.property_id = 2 THEN v.value END) as creator,
-                              MAX(CASE WHEN v.property_id = 4 THEN v.value END) as description,
-                              MAX(CASE WHEN v.property_id = 5 THEN v.value END) as publisher,
-                              MAX(CASE WHEN v.property_id = 6 THEN v.value END) as contributor,
-                              MAX(CASE WHEN v.property_id = 7 THEN v.value END) as date,
-                              MAX(CASE WHEN v.property_id = 8 THEN v.value END) as type,
-                              MAX(CASE WHEN v.property_id = 12 THEN v.value END) as language,
-                              MAX(CASE WHEN v.property_id = 19 THEN v.value END) as abstract
-                          FROM value v
-                          WHERE v.resource_id = %s""", (resource_id,))
+        await cur.execute(
+            f"""
+            SELECT v.property_id, v.value
+            FROM value v
+            WHERE v.resource_id = %s
+              AND v.is_public = 1
+              AND v.property_id IN ({placeholders})
+            ORDER BY v.id
+            """,
+            (resource_id, *property_ids),
+        )
+        rows = await cur.fetchall()
 
-        result = await cur.fetchone()
+    metadata = {}
+    for property_id, value in rows:
+        if value is None:
+            continue
+        local_name = METADATA_PROPERTIES[property_id][0]
+        metadata.setdefault(local_name, []).append(value)
 
-        # Récupérer les subjects (multi-valued)
-        await cur.execute("""
-                          SELECT v.value 
-                          FROM value v 
-                          WHERE v.resource_id = %s AND v.property_id = 3""", (resource_id,))
-        subjects_result = await cur.fetchall()
-        subjects = [row[0] for row in subjects_result if row[0]]
-
-        if not result:
-            return {
-                "title": None, "creator": None, "description": None,
-                "publisher": None, "contributor": None, "date": None,
-                "type": None, "language": None, "abstract": None,
-                "subjects": []
-            }
-
-        return {
-            "title": result[0],
-            "creator": result[1],
-            "description": result[2],
-            "publisher": result[3],
-            "contributor": result[4],
-            "date": result[5],
-            "type": result[6],
-            "language": result[7],
-            "abstract": result[8],
-            "subjects": subjects
-        }
+    return metadata
 
 
 from typing import Dict, List, Optional

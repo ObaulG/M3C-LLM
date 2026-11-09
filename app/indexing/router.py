@@ -106,6 +106,12 @@ async def index_existing_documents(request: IndexDocumentsRequest):
                 request.chunk_overlap,
                 request.embedder_name,
             ))
+        elif request.indexation_type == "all-items-metadata":
+            asyncio_mod.create_task(process_metadata_indexing_job(
+                current_job_id,
+                request.embedder_name,
+                all_items=True,
+            ))
         elif request.indexation_type in ("metadata-only", "selected-metadata", "all-metadata"):
             asyncio_mod.create_task(process_metadata_indexing_job(
                 current_job_id,
@@ -237,7 +243,8 @@ async def start_metadata_indexing_job(request: IndexJobRequest):
         get_indexing_job
     )
     
-    job_type = request.indexation_type if request.indexation_type in ("metadata-only", "selected-metadata") else "metadata-only"
+    job_type = request.indexation_type if request.indexation_type in ("metadata-only", "selected-metadata", "all-items-metadata") else "metadata-only"
+    all_items = job_type == "all-items-metadata"
     selected_resource_ids = request.resource_ids if job_type == "selected-metadata" else None
 
     if job_type == "selected-metadata" and not selected_resource_ids:
@@ -273,13 +280,15 @@ async def start_metadata_indexing_job(request: IndexJobRequest):
             parameters["resource_ids"] = selected_resource_ids
         job_id = create_indexing_job(
             job_type=job_type,
-            parameters=parameters
+            parameters=parameters,
+            total_items=0 if all_items else None
         )
         print("metadata job_id: ", job_id)
         asyncio.create_task(process_metadata_indexing_job(
             job_id,
             request.embedder_name,
-            resource_ids=selected_resource_ids
+            resource_ids=selected_resource_ids,
+            all_items=all_items
         ))
         
         # Récupérer le job pour construire le job_status
@@ -288,7 +297,7 @@ async def start_metadata_indexing_job(request: IndexJobRequest):
             job_id=job_id,
             job_type=job_type,
             status="pending",
-            total_items=len(selected_resource_ids) if selected_resource_ids else len(VALID_TEXT_RESOURCE_ID),
+            total_items=len(selected_resource_ids) if selected_resource_ids else (0 if all_items else len(VALID_TEXT_RESOURCE_ID)),
             processed_items=0,
             progress={},
             parameters=parameters,

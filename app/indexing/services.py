@@ -18,6 +18,7 @@ from database.database import (
     insert_chunks,
     insert_chunk_embedding_qdrant,
     insert_metadata_embedding_qdrant,
+    insert_metadata_embeddings_batch_qdrant,
     insert_chunk_embeddings_batch_qdrant,
     get_pdf_url_for_resource,
     insert_text_document,
@@ -198,13 +199,14 @@ async def process_pdf_from_m3c(resource_id: int, chunk_size: int, overlap: int) 
 # ============================================================================
 
 
-def create_indexing_job(job_type: str = "pdf-from-m3c", parameters: dict = None) -> str:
+def create_indexing_job(job_type: str = "pdf-from-m3c", parameters: dict = None, total_items: int = None) -> str:
     """
     Crée un nouveau job d'indexation.
     
     Args:
         job_type: Catégorie de documents (ex: "pdf-from-m3c", "all-metadata", "all-with-text")
         parameters: Paramètres du job (chunk_size, chunk_overlap, embedder_name)
+        total_items: Nombre total d'éléments à traiter (défaut: len(VALID_TEXT_RESOURCE_ID))
     
     Returns:
         job_id: L'ID unique du job créé
@@ -213,7 +215,7 @@ def create_indexing_job(job_type: str = "pdf-from-m3c", parameters: dict = None)
         job_type="indexing",
         document_categories=[job_type],
         parameters=parameters or {},
-        total_items=len(VALID_TEXT_RESOURCE_ID)
+        total_items=len(VALID_TEXT_RESOURCE_ID) if total_items is None else total_items
     )
 
 
@@ -236,7 +238,8 @@ def update_indexing_job(
     progress: dict = None,
     processed_items: int = None,
     id_embeddings_missing: list = None,
-    error_message: str = None
+    error_message: str = None,
+    total_items: int = None
 ) -> bool:
     """
     Met à jour un job existant.
@@ -248,6 +251,7 @@ def update_indexing_job(
         processed_items: Nombre d'éléments traités (optionnel)
         id_embeddings_missing: Liste des embeddings manquants (optionnel)
         error_message: Message d'erreur (optionnel)
+        total_items: Nombre total d'éléments (optionnel, utile quand le total n'est connu qu'au démarrage du job)
     
     Returns:
         True si la mise à jour a réussi, False sinon
@@ -257,7 +261,8 @@ def update_indexing_job(
         "progress": progress,
         "processed_items": processed_items,
         "id_embeddings_missing": id_embeddings_missing,
-        "error_message": error_message
+        "error_message": error_message,
+        "total_items": total_items
     }
     return _update_job(job_id, **update_kwargs)
 
@@ -339,89 +344,132 @@ def clean_metadata_value(value):
 
 def build_metadata_string(metadata: dict) -> str:
     """
-    Construit une chaîne de caractères formatée à partir des métadonnées.
-    
+    Construit la chaîne de métadonnées d'un document pour l'embedding RAG.
+
+    Format (voir app/README.md, section "Indexation des métadonnées") :
+    - une métadonnée par ligne, sous la forme "Label: valeur" ;
+    - les lignes dont la valeur est absente ou vide sont omises ;
+    - creator, contributor et editor sont fusionnés sur une seule ligne "Auteurs"
+      (séparateur "; ") ;
+    - les autres propriétés multi-valuées sont séparées par ", ", sauf les
+      mots-clés (subject) séparés par ", " sur la ligne "Mots-clés" ;
+    - la ligne "Résumé" utilise abstract si présent, sinon description (fallback) ;
+    - les valeurs sont nettoyées via clean_metadata_value (trim, espaces normalisés).
+
     Args:
-        metadata: Dict contenant les métadonnées avec clés :
-            title, creator, description, publisher, contributor, date,
-            type, language, abstract, subjects (liste)
-            
+        metadata: Dict {local_name: [valeurs]} retourné par get_resource_full_metadata
+
     Returns:
-        Chaîne de caractères formatée pour les embeddings
+        Chaîne de caractères formatée pour l'embedding, ou "" si aucune métadonnée
     """
+    from database.database import (
+        METADATA_PROPERTIES,
+        METADATA_AUTHORS_FIELDS,
+    )
+
+    def values_of(local_name):
+        return [
+            clean_metadata_value(v)
+            for v in metadata.get(local_name, [])
+            if clean_metadata_value(v)
+        ]
+
     lines = []
-    
-    # Titre
-    title = clean_metadata_value(metadata.get("title"))
+
+    title = values_of("title")
     if title:
-        lines.append(f"Titre: {title}")
-    
-    # Auteurs (creator et contributor)
+        lines.append(f"Titre: {", ".join(title)}")
+
+    short_title = values_of("shortTitle")
+    if short_title:
+        lines.append(f"Titre court: {", ".join(short_title)}")
+
+    alternative = values_of("alternative")
+    if alternative:
+        lines.append(f"Titre alternatif: {", ".join(alternative)}")
+
     authors = []
-    creator = clean_metadata_value(metadata.get("creator"))
-    if creator:
-        authors.append(creator)
-    contributor = clean_metadata_value(metadata.get("contributor"))
-    if contributor:
-        authors.append(contributor)
+    for local_name in METADATA_AUTHORS_FIELDS:
+        authors.extend(values_of(local_name))
     if authors:
-        lines.append(f"Auteurs: {", ".join(authors)}")
-    
-    # Résumé (privilégier abstract si disponible, sinon description)
-    abstract = clean_metadata_value(metadata.get("abstract"))
-    description = clean_metadata_value(metadata.get("description"))
+        lines.append(f"Auteurs: {"; ".join(authors)}")
+
+    translator = values_of("translator")
+    if translator:
+        lines.append(f"Traducteur: {", ".join(translator)}")
+
+    edition = values_of("edition")
+    if edition:
+        lines.append(f"Édition: {", ".join(edition)}")
+
+    date = values_of("date")
+    if date:
+        lines.append(f"Date: {", ".join(date)}")
+
+    type_ = values_of("type")
+    if type_:
+        lines.append(f"Type: {", ".join(type_)}")
+
+    language = values_of("language")
+    if language:
+        lines.append(f"Langue: {", ".join(language)}")
+
+    publisher = values_of("publisher")
+    if publisher:
+        lines.append(f"Éditeur: {", ".join(publisher)}")
+
+    audience = values_of("audience")
+    if audience:
+        lines.append(f"Audience: {", ".join(audience)}")
+
+    education_level = values_of("educationLevel")
+    if education_level:
+        lines.append(f"Niveau éducatif: {", ".join(education_level)}")
+
+    spatial = values_of("spatial")
+    if spatial:
+        lines.append(f"Couverture spatiale: {", ".join(spatial)}")
+
+    temporal = values_of("temporal")
+    if temporal:
+        lines.append(f"Couverture temporelle: {", ".join(temporal)}")
+
+    location = values_of("location")
+    if location:
+        lines.append(f"Lieu: {", ".join(location)}")
+
+    subjects = values_of("subject")
+    if subjects:
+        lines.append(f"Mots-clés: {", ".join(subjects)}")
+
+    abstract = values_of("abstract")
+    description = values_of("description")
     summary = abstract or description
     if summary:
-        lines.append(f"Résumé: {summary}")
-    
-    # Éditeur
-    publisher = clean_metadata_value(metadata.get("publisher"))
-    if publisher:
-        lines.append(f"Éditeur: {publisher}")
-    
-    # Date
-    date = clean_metadata_value(metadata.get("date"))
-    if date:
-        lines.append(f"Date: {date}")
-    
-    # Type
-    type_ = clean_metadata_value(metadata.get("type"))
-    if type_:
-        lines.append(f"Type: {type_}")
-    
-    # Langue
-    language = clean_metadata_value(metadata.get("language"))
-    if language:
-        lines.append(f"Langue: {language}")
-    
-    # Mots-clés (un par ligne)
-    subjects = metadata.get("subjects", [])
-    if subjects:
-        lines.append("Mots-clés:")
-        for subject in subjects:
-            cleaned_subject = clean_metadata_value(subject)
-            if cleaned_subject:
-                lines.append(cleaned_subject)
-    
+        lines.append(f"Résumé: {"; ".join(summary)}")
+
     return "\n".join(lines)
 
 
-async def process_metadata_indexing_job(job_id: str, embedder_name: str, resource_ids: Optional[List[int]] = None):
+async def process_metadata_indexing_job(job_id: str, embedder_name: str, resource_ids: Optional[List[int]] = None, all_items: bool = False):
     """
     Traite un job d'indexation (création d'embeddings) des métadonnées de chaque item.
     
     Pour chaque resource_id, récupère les métadonnées, construit une chaîne formatée,
-    génère l'embedding et le sauvegarde dans Qdrant.
+    génère l'embedding et le sauvegarde dans Qdrant (par lots).
     
     Args:
         job_id: L'ID du job à traiter
         embedder_name: Le nom de l'embedding model à utiliser
         resource_ids: Liste optionnelle de resource_ids à traiter. Si None, traite tous les VALID_TEXT_RESOURCE_ID.
+        all_items: Si True, traite TOUS les documents présents en BDD
+            (tous les resource_id avec au moins une valeur publique dans `value`),
+            en ignorant resource_ids et VALID_TEXT_RESOURCE_ID.
         
     Returns:
         Dict avec le résultat du traitement
     """
-    from database.database import get_db_connection
+    from database.database import get_db_connection, get_all_document_ids
     
     job = get_indexing_job(job_id)
     if not job:
@@ -444,8 +492,12 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
     errors = []
     all_missing_embeddings = []
 
-    # Liste des resource_ids à traiter : sélection explicite ou tous les VALID_TEXT_RESOURCE_ID
-    if resource_ids is None:
+    # Liste des resource_ids à traiter : tous les items de la BDD, sélection explicite,
+    # ou tous les VALID_TEXT_RESOURCE_ID
+    if all_items:
+        async with await get_db_connection() as conn:
+            selected_resource_ids = await get_all_document_ids(conn)
+    elif resource_ids is None:
         selected_resource_ids = list(VALID_TEXT_RESOURCE_ID)
     else:
         valid_set = set(VALID_TEXT_RESOURCE_ID)
@@ -454,6 +506,10 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
         selected_resource_ids = known + unknown
 
     total_resources = len(selected_resource_ids)
+
+    # En mode all_items, le total n'est connu qu'après l'énumération des documents
+    if all_items:
+        update_indexing_job(job_id, "running", total_items=total_resources)
 
     # récupérer l'embedder
     try:
@@ -464,82 +520,105 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
 
     model_name = embedder.name
 
-    for i, resource_id in enumerate(selected_resource_ids):
-        resource_id_str = str(resource_id)
-        print(f"Métadonnées {i+1}/{total_resources} - resource_id {resource_id_str}")
+    # Créer la collection Qdrant
+    vector_size = embedder.dimension
+    collection_name = f"MD-{model_name}-{vector_size}"
+    await ensure_qdrant_collection(collection_name, vector_size)
 
-        # Vérifier si déjà complété
-        doc_progress = progress.get(resource_id_str, {})
-        if doc_progress.get("status") == "completed":
-            processed_count += 1
-            print("already completed")
-            continue
+    # Traitement par lots : METADATA_BATCH_SIZE documents par appel d'embedder et d'upsert Qdrant
+    METADATA_BATCH_SIZE = 32
 
-        # Mettre à jour status en processing sur ce document
-        progress[resource_id_str] = {
-            "status": "processing",
-            "started_at": datetime.now().isoformat()
-        }
-        update_indexing_job(job_id, "running", progress=progress)
+    for batch_start in range(0, len(selected_resource_ids), METADATA_BATCH_SIZE):
+        batch = selected_resource_ids[batch_start:batch_start + METADATA_BATCH_SIZE]
+        batch_docs = []
 
-        try:
-            # Récupérer les métadonnées
-            async with await get_db_connection() as conn:
-                metadata = await get_resource_full_metadata(conn, resource_id)
-                doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
-            if not metadata or all(v is None or v == [] for k, v in metadata.items()):
-                raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
+        for i, resource_id in enumerate(batch):
+            resource_id_str = str(resource_id)
+            print(f"Métadonnées {batch_start + i + 1}/{total_resources} - resource_id {resource_id_str}")
 
-            # Construire la chaîne de métadonnées
-            metadata_string = build_metadata_string(metadata)
-            
-            if not metadata_string:
-                raise ValueError("La chaîne de métadonnées est vide")
+            # Vérifier si déjà complété
+            doc_progress = progress.get(resource_id_str, {})
+            if doc_progress.get("status") == "completed":
+                processed_count += 1
+                print("already completed")
+                continue
 
-            # Générer l'embedding pour les métadonnées
-            print(f"Génération embedding pour métadonnées de {resource_id_str}")
-            embedding = embedder.embed(metadata_string)
-
-            # Créer la collection Qdrant
-            vector_size = embedder.dimension
-            collection_name = f"MD-{model_name}-{vector_size}"
-            
-            await ensure_qdrant_collection(collection_name, vector_size)
-
-            # Insérer dans Qdrant
-            result = await insert_metadata_embedding_qdrant(
-                resource_id=resource_id,
-                model_name=model_name,
-                embedding=embedding,
-                content=metadata_string,
-                collection_name=collection_name
-            )
-            print(f"Embedding sauvegardé - operation_id: {result.operation_id}")
-
+            # Mettre à jour status en processing sur ce document
             progress[resource_id_str] = {
-                "status": "completed",
-                "chunks_count": 1,
-                "embeddings_count": 1,
-                "document_id": doc_id,
-                "processed_at": datetime.now().isoformat()
+                "status": "processing",
+                "started_at": datetime.now().isoformat()
             }
-            processed_count += 1
 
-        except Exception as e:
-            errors.append(f"Resource {resource_id}: {str(e)}")
-            progress[resource_id_str] = {
-                "status": "failed",
-                "error": str(e),
-                "processed_at": datetime.now().isoformat()
-            }
-            print(f"Erreur pour {resource_id_str}: {str(e)}")
+            try:
+                # Récupérer les métadonnées
+                async with await get_db_connection() as conn:
+                    metadata = await get_resource_full_metadata(conn, resource_id)
+                    doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
+                if not metadata:
+                    raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
 
-        if processed_count % 3 == 0 or errors:
-            update_indexing_job(
-                job_id, "running",
-                progress=progress,
-                processed_items=processed_count
-            )
+                # Construire la chaîne de métadonnées
+                metadata_string = build_metadata_string(metadata)
+
+                if not metadata_string:
+                    raise ValueError("La chaîne de métadonnées est vide")
+
+                batch_docs.append({
+                    "resource_id": resource_id,
+                    "resource_id_str": resource_id_str,
+                    "content": metadata_string,
+                    "document_id": doc_id,
+                })
+
+            except Exception as e:
+                errors.append(f"Resource {resource_id}: {str(e)}")
+                progress[resource_id_str] = {
+                    "status": "failed",
+                    "error": str(e),
+                    "processed_at": datetime.now().isoformat()
+                }
+                print(f"Erreur pour {resource_id_str}: {str(e)}")
+
+        if batch_docs:
+            try:
+                # Générer les embeddings du lot en une seule requête
+                embeddings = embedder.embed_batch([doc["content"] for doc in batch_docs])
+
+                # Insérer le lot dans Qdrant
+                result = await insert_metadata_embeddings_batch_qdrant(
+                    resource_ids=[doc["resource_id"] for doc in batch_docs],
+                    model_name=model_name,
+                    embeddings=embeddings,
+                    contents=[doc["content"] for doc in batch_docs],
+                    collection_name=collection_name,
+                )
+                print(f"Lot sauvegardé ({len(batch_docs)} embeddings) - operation_id: {result.operation_id}")
+
+                for doc in batch_docs:
+                    progress[doc["resource_id_str"]] = {
+                        "status": "completed",
+                        "chunks_count": 1,
+                        "embeddings_count": 1,
+                        "document_id": doc["document_id"],
+                        "processed_at": datetime.now().isoformat()
+                    }
+                    processed_count += 1
+
+            except Exception as e:
+                errors.append(f"Lot {batch_docs[0]['resource_id']}-{batch_docs[-1]['resource_id']}: {str(e)}")
+                for doc in batch_docs:
+                    progress[doc["resource_id_str"]] = {
+                        "status": "failed",
+                        "error": str(e),
+                        "processed_at": datetime.now().isoformat()
+                    }
+                print(f"Erreur pour le lot: {str(e)}")
+
+        update_indexing_job(
+            job_id, "running",
+            progress=progress,
+            processed_items=processed_count
+        )
 
     total_resources = len(selected_resource_ids)
     status = "completed" if processed_count == total_resources and not errors else "failed"
