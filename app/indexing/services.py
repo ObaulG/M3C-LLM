@@ -1060,6 +1060,8 @@ async def get_indexed_documents_overview() -> dict:
                 payload = p.payload or {}
                 if name.startswith("LD-"):
                     doc_id = payload.get("document_id")
+                    if isinstance(doc_id, (list, tuple)):
+                        doc_id = doc_id[0] if doc_id else None
                     resource_id = resource_id_by_doc_id.get(doc_id)
                     if resource_id is None:
                         continue
