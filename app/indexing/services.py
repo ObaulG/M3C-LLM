@@ -677,6 +677,18 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
         error_message=error_msg
     )
 
+    await sse_manager.send_event(
+        job_id,
+        "job_completed",
+        {
+            "job_id": job_id,
+            "status": status,
+            "processed_items": processed_count,
+            "total_items": total_resources,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
     return {
         "success": status == "completed",
         "message": f"Job {status}",
