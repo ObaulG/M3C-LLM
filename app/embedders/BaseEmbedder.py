@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 class BaseEmbedder(ABC):
+    supports_batch_api = False
+
     @abstractmethod
     def embed(self, text: str) -> List[float]:
         """Embed un seul texte."""
@@ -31,3 +33,8 @@ class BaseEmbedder(ABC):
     def embed_query(self, text: str) -> List[float]:
         """Embed un texte (alias pour compatibilité avec l'ancien code)."""
         return self.embed(text)
+
+    @property
+    def model_id(self) -> str:
+        """Identifiant technique du modèle (clé dans la grille tarifaire)."""
+        return self.name
