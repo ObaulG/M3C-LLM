@@ -417,20 +417,49 @@ Le script `docker/mysql/import_m3c_dump.sh` :
 - applique ensuite `docker/mysql/migrate_missing_tables.sql` pour créer les tables/vues spécifiques au projet (idempotent) ;
 - affiche la liste des tables à la fin.
 
-> **🐘 Gros dumps (plusieurs Go)** : le service `mysql` est préconfiguré pour l'import massif (`--disable-log-bin`, `--innodb-flush-log-at-trx-commit=2`, buffer pool 1 Go — à adapter à votre RAM dans `docker-compose.yml`), et le script désactive les checks FK/unique pendant l'import. Conseils :
-> - ne copiez pas le dump dans le conteneur (`docker cp`) : le script pipe le fichier directement dans `mysql`, le dump n'occupe donc pas d'espace disque supplémentaire ;
-> - augmentez `--innodb-buffer-pool-size` si votre machine a beaucoup de RAM (ex. 4G ou 8G) ;
-> - suivez la progression avec `watch docker exec llmagents-mysql mysql -u root -p -e "SHOW PROCESSLIST"` ou la taille du volume `docker system df -v` ;
-> - comptez de l'ordre de 30 min à quelques heures selon le disque ;
-> - pour voir la progression du fichier lui-même : `apt install pv` puis remplacez `cat` par `pv` dans le script (ou `pv dump.sql.gz | gunzip | ...`).
+#### Importer un gros dump (10 Go et plus)
 
-> **⚠️ Réimport sur base non vide** : pour repartir d'une base vide avant un nouvel import :
+Le service `mysql` est préconfiguré pour l'import massif (`--disable-log-bin`, `--innodb-flush-log-at-trx-commit=2`, buffer pool 1 Go — à adapter à votre RAM dans `docker-compose.yml`), et le script désactive les checks FK/unique pendant l'import. Comptez de l'ordre de 30 min à quelques heures selon le disque.
+
+```bash
+# 0. (Optionnel, recommandé) Adapter le buffer pool à votre RAM dans docker-compose.yml :
+#    --innodb-buffer-pool-size=4G   # ou 8G selon la machine
+
+# 1. Démarrer MySQL avec ces options (recrée le conteneur si déjà lancé avec l'ancienne config)
+docker compose up -d mysql --force-recreate
+
+# 2. Vérifier que MySQL est sain avant de lancer l'import
+docker inspect -f '{{.State.Health.Status}}' llmagents-mysql   # doit afficher : healthy
+
+# 3. Lancer l'import — le dump n'est PAS copié dans le conteneur (pas de docker cp) :
+#    il est envoyé par pipe directement au client mysql, donc pas de double
+#    occupation disque.
+./docker/mysql/import_m3c_dump.sh /chemin/vers/m3c_dump.sql      # ou m3c_dump.sql.gz
+
+# 4. Suivre la progression depuis un autre terminal :
+
+#    a) ce que MySQL est en train de faire (table en cours d'insertion, etc.)
+watch docker exec llmagents-mysql mysql -u root -p -e "SHOW PROCESSLIST"
+
+#    b) la taille des données croître dans le volume
+watch docker exec llmagents-mysql du -sh /var/lib/mysql
+
+#    c) (Optionnel) barre de progression sur le fichier lui-même : installer pv,
+sudo apt install pv
+#       puis remplacer `cat "$DUMP_FILE"` par `pv "$DUMP_FILE"` dans docker/mysql/import_m3c_dump.sh
+
+# 5. Une fois l'import terminé (le script affiche la liste des tables) :
+docker compose up -d app
+```
+
+> **⚠️ Réimport sur base non vide** : les scripts d'init ne s'exécutent que sur un volume vide. Pour repartir d'une base vide avant un nouvel import :
 > ```bash
 > docker compose down mysql
-> docker volume rm m3c-llm_mysql_data   # adapter au nom du projet
+> docker volume rm m3c-llm_mysql_data   # adapter au nom du projet (docker volume ls pour vérifier)
 > docker compose up -d mysql
 > ```
-> Les scripts d'init ne s'exécutent que sur un volume vide.
+>
+> ⚠️ Cela supprime définitivement toutes les données MySQL du conteneur.
 
 ### Healthchecks
 
