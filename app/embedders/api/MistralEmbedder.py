@@ -96,13 +96,13 @@ class MistralEmbedder(BaseEmbedder):
                 raise Exception(f"Job Batch API {job.id} terminé avec le statut {job.status}")
 
             output = mistral.files.download(file_id=job.output_file)
-            content = getattr(output, "content", None)
-            if content is None:
-                chunks = []
-                stream = getattr(output, "stream", None) or output
-                for chunk in stream:
-                    chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))
-                content = b"".join(chunks)
+            if isinstance(output, (bytes, bytearray)):
+                content = bytes(output)
+            else:
+                read = getattr(output, "read", None)
+                if callable(read):
+                    read()
+                content = output.content
 
         embeddings_by_id = {}
         for line in content.splitlines():
