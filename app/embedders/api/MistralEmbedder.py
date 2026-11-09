@@ -113,9 +113,14 @@ class MistralEmbedder(BaseEmbedder):
             response = result.get("response") or {}
             status_code = response.get("status_code")
             if result.get("error") is not None or (status_code is not None and status_code >= 400):
+                detail = result.get("error") or response.get("body")
+                try:
+                    text_len = len(texts[int(custom_id)])
+                except (ValueError, TypeError, IndexError):
+                    text_len = None
                 raise Exception(
-                    f"Requête batch en échec pour custom_id {custom_id}: "
-                    f"{result.get('error') or response.get('body')}"
+                    f"Requête batch en échec pour custom_id {custom_id} "
+                    f"(texte de {text_len} caractères): {detail}"
                 )
             body = response.get("body") or {}
             data = (body.get("data") or [{}])[0]
