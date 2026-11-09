@@ -344,6 +344,25 @@ def clean_metadata_value(value):
     return cleaned if cleaned else None
 
 
+# Limites de taille de la chaîne de métadonnées : garantit que le texte envoyé
+# à l'embedder reste sous la limite d'entrée du modèle (mistral-embed : 8192
+# tokens), même si une valeur en base contient un texte anormalement long
+# (ex. un résumé ou un titre court contenant un livre entier).
+MAX_METADATA_LINE_CHARS = 1000
+MAX_METADATA_STRING_CHARS = 12000
+
+
+def _truncate_text(text: str, max_chars: int, context: str) -> str:
+    """Tronque un texte à max_chars caractères avec avertissement si dépassement."""
+    if len(text) <= max_chars:
+        return text
+    print(
+        f"Avertissement: métadonnée tronquée ({context}): "
+        f"{len(text)} -> {max_chars} caractères"
+    )
+    return text[:max_chars - 1] + "…"
+
+
 def build_metadata_string(metadata: dict) -> str:
     """
     Construit la chaîne de métadonnées d'un document pour l'embedding RAG.
@@ -450,7 +469,12 @@ def build_metadata_string(metadata: dict) -> str:
     if summary:
         lines.append(f"Résumé: {"; ".join(summary)}")
 
-    return "\n".join(lines)
+    lines = [
+        _truncate_text(line, MAX_METADATA_LINE_CHARS, line.split(":", 1)[0])
+        for line in lines
+    ]
+
+    return _truncate_text("\n".join(lines), MAX_METADATA_STRING_CHARS, "chaîne complète")
 
 
 async def process_metadata_indexing_job(job_id: str, embedder_name: str, resource_ids: Optional[List[int]] = None, all_items: bool = False):
