@@ -78,7 +78,14 @@
                 </div>
                 
                 <div class="indexation-type">
-                    <div class="indexation-option selected" data-type="all-metadata">
+                    <div class="indexation-option selected" data-type="all-items-metadata">
+                        <input type="radio" name="indexType" value="all-items-metadata" checked id="optAllItemsMetadata">
+                        <label for="optAllItemsMetadata">
+                            <span class="title">🗂️ Tous les items de la BDD - Métadonnées</span>
+                            <span class="desc">Indexer les métadonnées de TOUS les items présents en base de données (y compris sans PDF)</span>
+                        </label>
+                    </div>
+                    <div class="indexation-option" data-type="all-metadata">
                         <input type="radio" name="indexType" value="all-metadata" checked id="optAllMetadata">
                         <label for="optAllMetadata">
                             <span class="title">📋 Tous les documents - Métadonnées</span>
