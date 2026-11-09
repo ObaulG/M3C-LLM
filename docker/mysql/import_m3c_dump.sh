@@ -88,10 +88,16 @@ strip_dump() {
         -e 's/DEFINER=[^ ]+ ?//g'
 }
 
+# Desactiver les checks FK/unique pendant l'import (gros gains sur les gros dumps)
+MYSQL_INIT_CMD="SET SESSION foreign_key_checks=0; SET SESSION unique_checks=0;"
+
 echo "Import de \"$DUMP_FILE\" dans la base \"$DB_NAME\" (conteneur $CONTAINER)..."
+echo "(dump volumineux : l'operation peut durer longtemps ; suivez la progression"
+echo " depuis un autre terminal avec :"
+echo "  watch docker exec $CONTAINER mysql -u root -p\"\$MYSQL_ROOT_PASSWORD\" -e \"SHOW PROCESSLIST\" )"
 read_dump "$DUMP_FILE" | strip_dump \
     | docker exec -i -e MYSQL_PWD="$DB_PASSWORD" "$CONTAINER" \
-        mysql --binary-mode -u "$DB_USER" "$DB_NAME"
+        mysql --binary-mode --init-command="$MYSQL_INIT_CMD" -u "$DB_USER" "$DB_NAME"
 
 echo "Création des tables/vues spécifiques au projet (migrate_missing_tables.sql)..."
 docker exec -i -e MYSQL_PWD="$DB_PASSWORD" "$CONTAINER" \

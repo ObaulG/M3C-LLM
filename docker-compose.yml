@@ -50,7 +50,15 @@ services:
     image: mysql:8.0
     container_name: llmagents-mysql
     restart: unless-stopped
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # Optimisations pour l'import de gros dumps (10 Go+) : pas de binary log,
+    # flush moins strict, buffer pool InnoDB 1G (adapter selon la RAM dispo).
+    command: >-
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --disable-log-bin
+      --innodb-flush-log-at-trx-commit=2
+      --innodb-io-capacity=1000
+      --innodb-buffer-pool-size=1G
     environment:
       MYSQL_DATABASE: ${DB_NAME:-m3c_database}
       MYSQL_USER: ${DB_USER:-OBL}
