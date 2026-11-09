@@ -5,7 +5,13 @@
 La M3C est composée de 5 `sites`, chacun représentant la traduction dans une langue : 1 : fr; 12 : co; 13: it; 14: en; 15: es.
 
 Au sein de la M3C, on peut accéder à des `item`. Exemple : https://m3c.universita.corsica/s/fr/item/116738 (sur le site en production) ouvre une page offrant l'accès aux métadonnées et au PDF de l' `item_id` 116738.
-Ils sont contenus dans la table `item`.
+Ils sont contenus dans la table `item` :
+
++-------+------+------+-----+---------+-------+
+| Field | Type | Null | Key | Default | Extra |
++-------+------+------+-----+---------+-------+
+| id    | int  | NO   | PRI | NULL    |       |
++-------+------+------+-----+---------+-------+
 
 La liste des métadonnées est contenue dans la table `property`. Elle liste les noms `local_name` et leur `id` correspondant :
 
