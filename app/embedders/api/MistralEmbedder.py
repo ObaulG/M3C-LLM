@@ -109,12 +109,21 @@ class MistralEmbedder(BaseEmbedder):
             if not line.strip():
                 continue
             result = json.loads(line)
+            custom_id = result.get("custom_id")
             response = result.get("response") or {}
-            data = (response.get("data") or [{}])[0]
+            status_code = response.get("status_code")
+            if result.get("error") is not None or (status_code is not None and status_code >= 400):
+                raise Exception(
+                    f"Requête batch en échec pour custom_id {custom_id}: "
+                    f"{result.get('error') or response.get('body')}"
+                )
+            body = response.get("body") or {}
+            data = (body.get("data") or [{}])[0]
             embedding = data.get("embedding")
             if embedding is None:
-                raise Exception(f"Résultat batch invalide pour custom_id {result.get('custom_id')}")
-            embeddings_by_id[result["custom_id"]] = embedding
+                raw = line.decode("utf-8", "replace") if isinstance(line, bytes) else line
+                raise Exception(f"Résultat batch invalide pour custom_id {custom_id}: {raw}")
+            embeddings_by_id[custom_id] = embedding
 
         missing = [i for i in range(len(texts)) if str(i) not in embeddings_by_id]
         if missing:
