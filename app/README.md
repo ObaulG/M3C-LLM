@@ -162,7 +162,7 @@ Types d'indexation disponibles pour les métadonnées :
 - `metadata-only` / `all-metadata` : les `VALID_TEXT_RESOURCE_ID` (PDFs vérifiés) ;
 - `selected-metadata` : une liste explicite de `resource_ids`.
 
-Le job est asynchrone, résumable (progression par `resource_id` ; les documents déjà `completed` sont sautés à la reprise) et traite les documents par lots de 32 (un appel `embed_batch` et un upsert Qdrant par lot). Suivi : `GET /api/admin/documents/index/job/{job_id}/status`.
+Le job est asynchrone, résumable (progression par `resource_id` ; les documents déjà `completed` sont sautés à la reprise). Les métadonnées sont d'abord collectées pour tous les documents, puis les embeddings sont générés en un seul job via la Batch API Mistral (endpoint `/v1/embeddings`, -50 % sur le coût) ; les upserts Qdrant restent par lots de 32. Si l'embedder ne supporte pas la Batch API (embedder local), on retombe sur des appels `embed_batch` synchrones par lots de 32. Le coût total des embeddings du job (tokens d'entrée, discount batch appliqué) est calculé via la grille `config/models/models.csv` et exposé dans `progress.cost` ainsi que dans la réponse du job (`cost`). Suivi : `GET /api/admin/documents/index/job/{job_id}/status`.
 
 ## Note pour les développeurs et les agents IA
 

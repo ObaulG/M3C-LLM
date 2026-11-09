@@ -96,6 +96,41 @@ def compute_cost_eur(model: str,
     }
 
 
+MISTRAL_BATCH_API_DISCOUNT = 0.5
+
+
+def compute_embedding_cost_eur(model: str,
+                                input_tokens: int,
+                                batch_api: bool = False) -> Optional[Dict[str, float]]:
+    """Calcule le coût d'un appel d'embeddings en euros.
+
+    Les embeddings sont facturés sur les tokens d'entrée uniquement. Via la
+    Batch API Mistral, un discount de 50 % est appliqué.
+
+    Args:
+        model: Identifiant technique du modèle (ex. "mistral-embed").
+        input_tokens: Nombre total de tokens d'entrée.
+        batch_api: True si les embeddings sont générés via la Batch API.
+
+    Returns:
+        Dictionnaire {"input_tokens", "input_eur", "discount", "total_eur"},
+        ou None si le modèle n'est pas présent dans la grille tarifaire.
+    """
+    prices = load_prices().get(model)
+    if not prices or prices["input"] is None:
+        return None
+
+    discount = MISTRAL_BATCH_API_DISCOUNT if batch_api else 1.0
+    input_eur = int(input_tokens or 0) * prices["input"] / 1_000_000 * discount
+
+    return {
+        "input_tokens": int(input_tokens or 0),
+        "input_eur": round(input_eur, 8),
+        "discount": discount,
+        "total_eur": round(input_eur, 8),
+    }
+
+
 def usage_from_langchain_message(message) -> Optional[Dict[str, int]]:
     """Extrait la consommation réelle d'un message LangChain (AIMessage).
 

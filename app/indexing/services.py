@@ -2,6 +2,7 @@
 Services pour l'indexation des PDFs depuis M3C.
 """
 
+import asyncio
 import json
 import uuid
 from pathlib import Path
@@ -13,6 +14,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 import database
+from pricing import compute_embedding_cost_eur
 from database.database import (
     VALID_TEXT_RESOURCE_ID,
     insert_chunks,
@@ -525,70 +527,114 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
     collection_name = f"MD-{model_name}-{vector_size}"
     await ensure_qdrant_collection(collection_name, vector_size)
 
-    # Traitement par lots : METADATA_BATCH_SIZE documents par appel d'embedder et d'upsert Qdrant
+    # Taille des lots pour l'upsert Qdrant (l'API batch traite tous les textes en un seul job)
     METADATA_BATCH_SIZE = 32
+    all_docs = []
 
-    for batch_start in range(0, len(selected_resource_ids), METADATA_BATCH_SIZE):
-        batch = selected_resource_ids[batch_start:batch_start + METADATA_BATCH_SIZE]
-        batch_docs = []
+    for i, resource_id in enumerate(selected_resource_ids):
+        resource_id_str = str(resource_id)
+        print(f"Métadonnées {i + 1}/{total_resources} - resource_id {resource_id_str}")
 
-        for i, resource_id in enumerate(batch):
-            resource_id_str = str(resource_id)
-            print(f"Métadonnées {batch_start + i + 1}/{total_resources} - resource_id {resource_id_str}")
+        # Vérifier si déjà complété
+        doc_progress = progress.get(resource_id_str, {})
+        if doc_progress.get("status") == "completed":
+            processed_count += 1
+            print("already completed")
+            continue
 
-            # Vérifier si déjà complété
-            doc_progress = progress.get(resource_id_str, {})
-            if doc_progress.get("status") == "completed":
-                processed_count += 1
-                print("already completed")
-                continue
+        # Mettre à jour status en processing sur ce document
+        progress[resource_id_str] = {
+            "status": "processing",
+            "started_at": datetime.now().isoformat()
+        }
 
-            # Mettre à jour status en processing sur ce document
+        try:
+            # Récupérer les métadonnées
+            async with await get_db_connection() as conn:
+                metadata = await get_resource_full_metadata(conn, resource_id)
+                doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
+            if not metadata:
+                raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
+
+            # Construire la chaîne de métadonnées
+            metadata_string = build_metadata_string(metadata)
+
+            if not metadata_string:
+                raise ValueError("La chaîne de métadonnées est vide")
+
+            all_docs.append({
+                "resource_id": resource_id,
+                "resource_id_str": resource_id_str,
+                "content": metadata_string,
+                "document_id": doc_id,
+            })
+
+        except Exception as e:
+            errors.append(f"Resource {resource_id}: {str(e)}")
             progress[resource_id_str] = {
-                "status": "processing",
-                "started_at": datetime.now().isoformat()
+                "status": "failed",
+                "error": str(e),
+                "processed_at": datetime.now().isoformat()
             }
+            print(f"Erreur pour {resource_id_str}: {str(e)}")
 
-            try:
-                # Récupérer les métadonnées
-                async with await get_db_connection() as conn:
-                    metadata = await get_resource_full_metadata(conn, resource_id)
-                    doc_id = await database.get_document_id_from_resource_id(conn, resource_id_str)
-                if not metadata:
-                    raise ValueError("Aucune métadonnée trouvée pour ce resource_id")
+        if (i + 1) % METADATA_BATCH_SIZE == 0:
+            update_indexing_job(
+                job_id, "running",
+                progress=progress,
+                processed_items=processed_count
+            )
 
-                # Construire la chaîne de métadonnées
-                metadata_string = build_metadata_string(metadata)
+    # Génération des embeddings : Batch API Mistral (-50 % sur le coût) si
+    # l'embedder la supporte, sinon appels synchrones par lots
+    batch_api_used = bool(getattr(embedder, "supports_batch_api", False))
+    embeddings = [None] * len(all_docs)
 
-                if not metadata_string:
-                    raise ValueError("La chaîne de métadonnées est vide")
+    if all_docs:
+        try:
+            if batch_api_used:
+                print(f"Batch API : job d'embeddings pour {len(all_docs)} documents")
+                embeddings = await asyncio.to_thread(
+                    embedder.embed_batch_api,
+                    [doc["content"] for doc in all_docs]
+                )
+            else:
+                for batch_start in range(0, len(all_docs), METADATA_BATCH_SIZE):
+                    batch_docs = all_docs[batch_start:batch_start + METADATA_BATCH_SIZE]
+                    embeddings[batch_start:batch_start + len(batch_docs)] = embedder.embed_batch(
+                        [doc["content"] for doc in batch_docs]
+                    )
 
-                batch_docs.append({
-                    "resource_id": resource_id,
-                    "resource_id_str": resource_id_str,
-                    "content": metadata_string,
-                    "document_id": doc_id,
-                })
+            # Coût total des embeddings générés pendant ce job
+            total_input_tokens = sum(count_tokens(doc["content"]) for doc in all_docs)
+            cost = compute_embedding_cost_eur(embedder.model_id, total_input_tokens, batch_api=batch_api_used)
+            if cost is not None:
+                cost["model"] = embedder.model_id
+                cost["batch_api"] = batch_api_used
+                progress["cost"] = cost
+                print(f"Coût des embeddings: {cost['total_eur']} EUR ({total_input_tokens} tokens, batch_api={batch_api_used})")
 
-            except Exception as e:
-                errors.append(f"Resource {resource_id}: {str(e)}")
-                progress[resource_id_str] = {
+        except Exception as e:
+            errors.append(f"Génération des embeddings: {str(e)}")
+            for doc in all_docs:
+                progress[doc["resource_id_str"]] = {
                     "status": "failed",
                     "error": str(e),
                     "processed_at": datetime.now().isoformat()
                 }
-                print(f"Erreur pour {resource_id_str}: {str(e)}")
+            print(f"Erreur pour les embeddings: {str(e)}")
 
-        if batch_docs:
+        # Insertion dans Qdrant par lots
+        for batch_start in range(0, len(all_docs), METADATA_BATCH_SIZE):
+            batch_docs = all_docs[batch_start:batch_start + METADATA_BATCH_SIZE]
+            batch_embeddings = embeddings[batch_start:batch_start + len(batch_docs)]
+            if batch_embeddings[0] is None:
+                continue
             try:
-                # Générer les embeddings du lot en une seule requête
-                embeddings = embedder.embed_batch([doc["content"] for doc in batch_docs])
-
-                # Insérer le lot dans Qdrant
                 result = await insert_metadata_embeddings_batch_qdrant(
                     resource_ids=[doc["resource_id"] for doc in batch_docs],
                     model_name=model_name,
-                    embeddings=embeddings,
+                    embeddings=batch_embeddings,
                     contents=[doc["content"] for doc in batch_docs],
                     collection_name=collection_name,
                 )
@@ -637,7 +683,8 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
         "job_id": job_id,
         "processed_items": processed_count,
         "total_items": total_resources,
-        "errors": errors
+        "errors": errors,
+        "cost": progress.get("cost")
     }
 
 
