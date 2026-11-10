@@ -76,6 +76,8 @@ def _download_file_content(client: Mistral, file_id: str) -> str:
         return downloaded
     if isinstance(downloaded, bytes):
         return downloaded.decode("utf-8")
+    if hasattr(downloaded, "read"):
+        downloaded.read()
     content = getattr(downloaded, "content", None)
     if isinstance(content, bytes):
         return content.decode("utf-8")
