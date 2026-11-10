@@ -25,6 +25,7 @@ DB_CONFIG = {
     "user": os.getenv("DB_USER", "OBL"),
     "password": os.getenv("DB_PASSWORD", "azerty"),
     "autocommit": True,
+    "charset": "utf8mb4",
 }
 
 SCRIPT_DIR = Path(__file__).resolve().parent
