@@ -186,7 +186,14 @@ async def run_mistral_batch(
         input_path = tmp.name
 
     with open(input_path, "rb") as input_file:
-        uploaded = client.files.upload(file=input_file, purpose="batch")
+        uploaded = client.files.upload(
+            file={
+                "file_name": os.path.basename(input_path),
+                "content": input_file,
+                "content_type": "application/jsonl",
+            },
+            purpose="batch",
+        )
 
     batch = client.batches.create(
         input_file_id=uploaded.id,
