@@ -1382,6 +1382,47 @@ async def get_facts_by_question_ids(
     return facts_by_question
 
 
+async def get_answers_without_facts(
+    conn,
+    document_id=None,
+) -> List[Dict]:
+    """
+    Récupère toutes les réponses de référence qui n'ont pas encore de faits
+    extraits dans text_answer_facts, avec les métadonnées de leur chunk.
+
+    Args:
+        conn: Connexion à la base de données.
+        document_id: Filtre sur un document spécifique (optionnel).
+
+    Returns:
+        Liste de dicts {answer_id, content, question_id, chunk_id,
+        document_id, num_page}.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute("""
+            SELECT a.answer_id, a.content, q.question_id, qc.chunk_id,
+                   c.document_id, c.num_page
+            FROM text_question_answers a
+            JOIN text_questions q ON q.question_id = a.question_id
+            JOIN text_question_chunks qc ON qc.question_id = q.question_id
+            JOIN text_chunks c ON c.id = qc.chunk_id
+            LEFT JOIN text_answer_facts f ON f.answer_id = a.answer_id
+            WHERE f.fact_id IS NULL
+              AND (a.is_correct IS NULL OR a.is_correct = 1)
+              AND (%s IS NULL OR c.document_id = %s)
+            GROUP BY a.answer_id
+        """, (document_id, document_id))
+        rows = await cur.fetchall()
+    return [{
+        "answer_id": row[0],
+        "content": row[1],
+        "question_id": row[2],
+        "chunk_id": row[3],
+        "document_id": row[4],
+        "num_page": row[5],
+    } for row in rows]
+
+
 async def get_answer_ids_with_facts(
     conn,
 ) -> set:

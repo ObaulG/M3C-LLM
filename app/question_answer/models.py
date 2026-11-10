@@ -55,6 +55,32 @@ class QuestionGenerationRequest(BaseModel):
         description="Extraire et enregistrer les affirmations (faits) constituant chaque réponse de référence générée."
     )
 
+class FactGenerationRequest(BaseModel):
+    """Requête pour lancer la génération des faits des réponses d'un document."""
+    document_id: Optional[int] = Field(
+        default=None,
+        description="ID du document à traiter. Si None, traite tous les documents."
+    )
+    model_name: str = Field(
+        default="mistral/mistral-medium",
+        description="Modèle d'extraction des faits au format <provider>/<model_name>"
+    )
+    use_batch: bool = Field(
+        default=False,
+        description="Utiliser l'API Batch de Mistral (environ 50% moins cher). Traitement asynchrone pouvant prendre jusqu'à 24h."
+    )
+    start_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Première page (num_page) à traiter (optionnel)."
+    )
+    end_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Dernière page (num_page) à traiter (optionnel)."
+    )
+
+
 class CompareGenerationRequest(BaseModel):
     """Requête pour la génération comparative multi-modèles (admins/experts)."""
     chunk_ids: List[str] = Field(
@@ -172,6 +198,19 @@ class QuestionGenerationJob(BaseModel):
                 "error_message": None
             }
         }
+
+
+class FactGenerationResponse(BaseModel):
+    """Réponse pour la création d'un job de génération des faits."""
+    job_id: str = Field(..., description="ID du job créé")
+    message: str = Field(
+        default="Job de génération des faits créé avec succès",
+        description="Message de confirmation"
+    )
+    job: QuestionGenerationJob = Field(
+        ...,
+        description="Détails du job créé (type facts-generation)"
+    )
 
 
 class QuestionGenerationJobListResponse(BaseModel):
