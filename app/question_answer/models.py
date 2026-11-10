@@ -36,6 +36,50 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
     )
+    start_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Première page (num_page) à traiter. Permet d'exclure les pages de sommaire. Si None, pas de borne inférieure. Ignoré si chunk_id est fourni."
+    )
+    end_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Dernière page (num_page) à traiter. Permet d'exclure les pages de fin de livre. Si None, pas de borne supérieure. Ignoré si chunk_id est fourni."
+    )
+    use_batch: bool = Field(
+        default=False,
+        description="Utiliser l'API Batch de Mistral (environ 50% moins cher) pour la génération en masse, chunk par chunk. Traitement asynchrone pouvant prendre jusqu'à 24h. Ignoré si chunk_id est fourni."
+    )
+    generate_facts: bool = Field(
+        default=False,
+        description="Extraire et enregistrer les affirmations (faits) constituant chaque réponse de référence générée."
+    )
+
+class FactGenerationRequest(BaseModel):
+    """Requête pour lancer la génération des faits des réponses d'un document."""
+    document_id: Optional[int] = Field(
+        default=None,
+        description="ID du document à traiter. Si None, traite tous les documents."
+    )
+    model_name: str = Field(
+        default="mistral/mistral-medium",
+        description="Modèle d'extraction des faits au format <provider>/<model_name>"
+    )
+    use_batch: bool = Field(
+        default=False,
+        description="Utiliser l'API Batch de Mistral (environ 50% moins cher). Traitement asynchrone pouvant prendre jusqu'à 24h."
+    )
+    start_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Première page (num_page) à traiter (optionnel)."
+    )
+    end_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Dernière page (num_page) à traiter (optionnel)."
+    )
+
 
 class CompareGenerationRequest(BaseModel):
     """Requête pour la génération comparative multi-modèles (admins/experts)."""
@@ -116,6 +160,12 @@ class QuestionGenerationJob(BaseModel):
         default=None,
         description="Message d'erreur global si le job a échoué"
     )
+    token_usage: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Consommation cumulée des appels LLM du job : "
+                    "appels, tokens (entrée/sortie/cache) et coût estimé en euros "
+                    "(cost_eur, null si le modèle n'est pas dans la grille tarifaire)."
+    )
 
     class Config:
         json_schema_extra = {
@@ -148,6 +198,19 @@ class QuestionGenerationJob(BaseModel):
                 "error_message": None
             }
         }
+
+
+class FactGenerationResponse(BaseModel):
+    """Réponse pour la création d'un job de génération des faits."""
+    job_id: str = Field(..., description="ID du job créé")
+    message: str = Field(
+        default="Job de génération des faits créé avec succès",
+        description="Message de confirmation"
+    )
+    job: QuestionGenerationJob = Field(
+        ...,
+        description="Détails du job créé (type facts-generation)"
+    )
 
 
 class QuestionGenerationJobListResponse(BaseModel):

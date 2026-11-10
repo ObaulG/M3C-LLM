@@ -16,6 +16,14 @@ from .models import (
     QuestionGenerationJob,
     QuestionGenerationJobListResponse,
     CompareGenerationRequest,
+    FactGenerationRequest,
+    FactGenerationResponse,
+)
+from .fact_generation_services import (
+    create_fact_generation_job,
+    get_fact_generation_job,
+    get_all_fact_generation_jobs,
+    process_fact_generation_job,
 )
 from .generation_services import (
     create_question_generation_job,
@@ -59,13 +67,24 @@ async def generate_questions(request: QuestionGenerationRequest):
         QuestionGenerationResponse avec job_id et détails du job créé
     """
     # Créer le job
+    if request.start_page is not None and request.end_page is not None \
+            and request.end_page < request.start_page:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="end_page doit être supérieur ou égal à start_page."
+        )
+
     job_id = create_question_generation_job(
         num_questions_per_doc=request.num_questions_per_doc,
         num_answers_per_question=request.num_answers_per_question,
         model_name=request.model_name,
         document_id=request.document_id,
         chunk_id=request.chunk_id,
-        user_prompt=request.user_prompt
+        user_prompt=request.user_prompt,
+        start_page=request.start_page,
+        end_page=request.end_page,
+        use_batch=request.use_batch,
+        generate_facts=request.generate_facts
     )
     
     job = get_question_generation_job(job_id)
@@ -83,6 +102,86 @@ async def generate_questions(request: QuestionGenerationRequest):
         message="Job de génération de questions créé avec succès",
         job=QuestionGenerationJob(**job)
     )
+
+
+@router.post(
+    "/facts/generate",
+    response_model=FactGenerationResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Lance la génération des faits des réponses d'un document",
+    description="Crée un job qui extrait les affirmations (faits) de toutes les réponses de référence "
+                "d'un document (ou de tous les documents) qui n'en ont pas encore dans text_answer_facts. "
+                "Le job est exécuté en arrière-plan et peut être suivi via /facts/jobs."
+)
+async def generate_answer_facts(request: FactGenerationRequest):
+    """
+    Lance la génération des faits pour toutes les réponses de référence sans faits.
+
+    Args:
+        request: FactGenerationRequest avec document_id (optionnel), model_name,
+                 use_batch (optionnel) et la plage de pages (optionnelle)
+
+    Returns:
+        FactGenerationResponse avec job_id et détails du job créé
+    """
+    if request.start_page is not None and request.end_page is not None \
+            and request.end_page < request.start_page:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="end_page doit être supérieur ou égal à start_page."
+        )
+
+    job_id = create_fact_generation_job(
+        document_id=request.document_id,
+        model_name=request.model_name,
+        use_batch=request.use_batch,
+        start_page=request.start_page,
+        end_page=request.end_page
+    )
+
+    job = get_fact_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la création du job"
+        )
+
+    asyncio.create_task(process_fact_generation_job(job_id))
+
+    return FactGenerationResponse(
+        job_id=job_id,
+        message="Job de génération des faits créé avec succès",
+        job=QuestionGenerationJob(**job)
+    )
+
+
+@router.get(
+    "/facts/jobs",
+    response_model=QuestionGenerationJobListResponse,
+    summary="Liste les jobs de génération des faits",
+    description="Retourne la liste de tous les jobs d'extraction des faits (type facts-generation)."
+)
+async def list_fact_generation_jobs():
+    jobs = get_all_fact_generation_jobs()
+    job_list = [QuestionGenerationJob(**job) for job in jobs.values()]
+    return QuestionGenerationJobListResponse(jobs=job_list, count=len(job_list))
+
+
+@router.get(
+    "/facts/jobs/{job_id}",
+    response_model=QuestionGenerationJob,
+    summary="Récupère un job de génération des faits",
+    description="Retourne un job d'extraction des faits par son ID, avec sa progression, "
+                "ses erreurs et la consommation (tokens et coût) de ses appels LLM."
+)
+async def get_fact_generation_job_endpoint(job_id: str):
+    job = get_fact_generation_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job {job_id} introuvable"
+        )
+    return QuestionGenerationJob(**job)
 
 
 @router.get(

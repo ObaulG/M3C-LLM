@@ -55,7 +55,8 @@ def _parse_price(value) -> Optional[float]:
 def compute_cost_eur(model: str,
                      input_tokens: int,
                      cached_tokens: int = 0,
-                     output_tokens: int = 0) -> Optional[Dict[str, float]]:
+                     output_tokens: int = 0,
+                     batch_api: bool = False) -> Optional[Dict[str, float]]:
     """Calcule le coût détaillé d'une requête en euros.
 
     Les tokens d'entrée servis depuis le cache de prompt sont facturés au
@@ -68,6 +69,8 @@ def compute_cost_eur(model: str,
         input_tokens: Nombre total de tokens d'entrée (cache inclus).
         cached_tokens: Nombre de tokens d'entrée servis depuis le cache.
         output_tokens: Nombre de tokens de sortie.
+        batch_api: True si la requête est traitée via la Batch API Mistral
+            (remise de 50 % appliquée sur toutes les composantes).
 
     Returns:
         Dictionnaire {"input_eur", "cached_input_eur", "output_eur", "total_eur"},
@@ -84,9 +87,10 @@ def compute_cost_eur(model: str,
     if cached_price is None:
         cached_price = prices["input"]
 
-    input_eur = fresh_tokens * prices["input"] / 1_000_000
-    cached_eur = cached_tokens * cached_price / 1_000_000
-    output_eur = int(output_tokens or 0) * prices["output"] / 1_000_000
+    discount = MISTRAL_BATCH_API_DISCOUNT if batch_api else 1.0
+    input_eur = fresh_tokens * prices["input"] / 1_000_000 * discount
+    cached_eur = cached_tokens * cached_price / 1_000_000 * discount
+    output_eur = int(output_tokens or 0) * prices["output"] / 1_000_000 * discount
 
     return {
         "input_eur": round(input_eur, 8),

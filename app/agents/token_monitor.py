@@ -367,3 +367,37 @@ def print_token_info(input_tokens: TokenCountResult, output_tokens: int,
         print(f"Tokens de sortie: {output_tokens}")
         print(f"Total (entrée + sortie): {input_tokens.total + output_tokens}")
     print(f"{'='*60}\n")
+
+def aggregate_token_usage(usage_records) -> Dict[str, Any]:
+    """Agrège une liste de métadonnées de consommation en un total consolidé.
+
+    Chaque enregistrement est une métadonnée telle que produite par
+    TokenUsageInfo.to_metadata() (input_tokens, output_tokens, cached_tokens,
+    cost_eur, cost_detail) ou un dictionnaire équivalent.
+
+    Returns:
+        Dictionnaire {calls, input_tokens, output_tokens, cached_tokens,
+        total_tokens, cost_eur, cost_available}.
+    """
+    totals: Dict[str, Any] = {
+        "calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cached_tokens": 0,
+        "total_tokens": 0,
+        "cost_eur": 0.0,
+        "cost_available": False,
+    }
+    for record in usage_records or []:
+        totals["calls"] += 1
+        totals["input_tokens"] += record.get("input_tokens", 0) or 0
+        totals["output_tokens"] += record.get("output_tokens", 0) or 0
+        totals["cached_tokens"] += record.get("cached_tokens", 0) or 0
+        if record.get("cost_eur") is not None:
+            totals["cost_eur"] += record["cost_eur"]
+            totals["cost_available"] = True
+    totals["total_tokens"] = totals["input_tokens"] + totals["output_tokens"]
+    totals["cost_eur"] = round(totals["cost_eur"], 6)
+    if not totals["cost_available"]:
+        totals["cost_eur"] = None
+    return totals
