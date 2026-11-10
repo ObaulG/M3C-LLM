@@ -14,7 +14,10 @@ DB_CONFIG = {
     "db": os.getenv("DB_NAME", "m3c_database"),
     "user": os.getenv("DB_USER", "OBL"),
     "password": os.getenv("DB_PASSWORD", "azerty"),
-    "autocommit": True
+    "autocommit": True,
+    # Forcer l'encodage de la connexion : sans charset explicite, aiomysql
+    # utilise latin1 par defaut et les caracteres accentues sont corrompus.
+    "charset": "utf8mb4"
 }
 
 # Configuration Qdrant (via variables d'environnement)

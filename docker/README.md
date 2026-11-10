@@ -8,6 +8,7 @@ Ce dossier contient la configuration Docker pour conteneuriser l'application LLM
 - [🚀 Tutoriel : Mise en place complète avec Docker](#-tutoriel--mise-en-place-complète-avec-docker)
 - [📚 Configuration de référence](#-configuration-de-référence)
 - [📥 Importer un dump de la base M3C](#-importer-un-dump-de-la-base-m3c)
+- [🔤 Encodage des caractères accentués](#-encodage-des-caractères-accents)
 - [🎯 Commandes de référence rapide](#-commandes-de-référence-rapide)
 - [📊 Services disponibles](#-services-disponibles)
 - [👨‍💻 Développement](#-développement)
@@ -460,6 +461,35 @@ docker compose up -d app
 > ```
 >
 > ⚠️ Cela supprime définitivement toutes les données MySQL du conteneur.
+
+### 🔤 Encodage des caractères accentués
+
+Les tables du projet sont créées en `utf8mb4` (`docker/mysql/init.sql`, `migrate_missing_tables.sql`) et le conteneur `mysql` démarre avec `--character-set-server=utf8mb4`. L'application force également `charset=utf8mb4` sur ses connexions MySQL (`app/database/database.py`) : **sans charset explicite, le driver utilise latin1 et les accents sont corrompus à l'écriture**.
+
+Vérifier l'encodage effectif :
+
+```bash
+# Charset de connexion et collation du serveur
+docker exec llmagents-mysql mysql -u OBL -pazerty -e "SHOW VARIABLES LIKE 'character_set%'; SHOW VARIABLES LIKE 'collation%';"
+
+# Charset et collation d'une table
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "SHOW CREATE TABLE knowledge_items\G"
+```
+
+Si des accents sont déjà corrompus dans des données écrites par l'application (avant le fix du charset de connexion) :
+
+```sql
+-- 1) Inspecter : si le texte affiche « Ã© » au lieu de « é » (double encodage utf8->latin1->utf8),
+--    les données sont récupérables. S'il affiche « ? », les caractères ont été perdus à l'écriture.
+SELECT content FROM answers WHERE content LIKE '%Ã©%' LIMIT 5;
+
+-- 2) Réparer le double encodage, colonne par colonne (adapter table/colonne) :
+UPDATE answers
+SET content = CONVERT(CAST(CONVERT(content USING latin1) AS BINARY) USING utf8mb4)
+WHERE content LIKE '%Ã©%';
+```
+
+> ⚠️ Testez d'abord sur une copie ou une transaction (`START TRANSACTION; ... SELECT ... ROLLBACK;`). Les données corrompues ne peuvent pas être réparées à postériori si elles ont été écrites en `?`.
 
 ### Healthchecks
 
