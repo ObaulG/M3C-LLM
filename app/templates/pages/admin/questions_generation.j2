@@ -743,7 +743,8 @@
                 const errors = (job.errors || []).length;
                 details.innerHTML =
                     `<div>📊 ${done}/${total} chunks traités — ${questions} question(s) générée(s)` +
-                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
+                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>` +
+                    renderUsageHtml(job.token_usage);
                 setTimeout(() => loading.classList.remove('active'), 4000);
                 stopAutoRefresh();
             } else if (!job) {
@@ -831,6 +832,19 @@
         return classMap[status] || 'status-pending';
     }
     
+    function renderUsageHtml(usage) {
+        if (!usage || !usage.calls) return '';
+        const cost = usage.cost_eur;
+        const costText = cost !== null && cost !== undefined
+            ? `${Number(cost).toFixed(4).replace('.', ',')} €`
+            : 'estimation indisponible (modèle hors grille tarifaire)';
+        const tokens = `${(usage.input_tokens || 0).toLocaleString('fr-FR')} entrée / ` +
+            `${(usage.output_tokens || 0).toLocaleString('fr-FR')} sortie`;
+        return `<div class="job-usage" style="margin-top: 8px; font-size: 12px; color: #2a6e3f;">` +
+            `💰 <strong>Coût des appels LLM :</strong> ${costText} — ` +
+            `${usage.calls} appel(s), ${tokens} tokens</div>`;
+    }
+
     function renderJobCard(job) {
         const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
         const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
@@ -877,6 +891,7 @@
                     ${job.processed_documents || 0}/${job.total_documents || 0} documents
                 </div>
                 ${parametersHtml}
+                ${renderUsageHtml(job.token_usage)}
                 ${progressHtml}
                 ${job.status === 'running' ? 
                     '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitement en cours...</div>' : ''}

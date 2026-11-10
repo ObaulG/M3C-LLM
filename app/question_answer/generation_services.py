@@ -20,6 +20,7 @@ from database.database import (
 import agents.qa_agent as qa_agent
 import agents.qa_single_agent as qa_single_agent
 from agents.mistral_client import check_api_limits
+from agents.token_monitor import aggregate_token_usage
 from embedders import get_embedder_instance
 from app.jobs.manager import (
     create_job as _create_job,
@@ -157,7 +158,8 @@ def update_question_generation_job(
     progress: dict = None,
     processed_documents: int = None,
     errors: list = None,
-    error_message: str = None
+    error_message: str = None,
+    token_usage: dict = None
 ) -> bool:
     """
     Met à jour un job existant.
@@ -169,6 +171,7 @@ def update_question_generation_job(
         processed_documents: Nombre de documents traités (optionnel)
         errors: Liste d'erreurs (optionnel)
         error_message: Message d'erreur global (optionnel)
+        token_usage: Consommation cumulée (tokens et coût en euros) (optionnel)
         
     Returns:
         True si la mise à jour a réussi, False sinon
@@ -178,7 +181,8 @@ def update_question_generation_job(
         "progress": progress,
         "processed_documents": processed_documents,
         "errors": errors,
-        "error_message": error_message
+        "error_message": error_message,
+        "token_usage": token_usage
     }
     return _update_job(job_id, **update_kwargs)
 
@@ -376,6 +380,7 @@ async def save_qa_list_for_chunk(
     model_name: str,
     generate_facts: bool = False,
     facts_model_name: str = "mistral/mistral-medium",
+    usage_sink: Optional[list] = None,
 ) -> Tuple[int, int, Optional[str]]:
     """
     Sauvegarde une liste de questions/réponses pour un chunk, avec extraction
@@ -387,12 +392,15 @@ async def save_qa_list_for_chunk(
         model_name: Modèle ayant généré les questions/réponses
         generate_facts: Si True, extrait et enregistre les faits de chaque réponse
         facts_model_name: Modèle pour l'extraction des faits (format <provider>/<model>)
+        usage_sink: Liste optionnelle où accumuler les métadonnées de consommation
+            (tokens et coût) de chaque appel d'extraction de faits
 
     Returns:
         Tuple (questions_sauvegardées, faits_sauvegardés, erreur)
     """
     from database.database import insert_answer_facts
     from agents import fact_extractor
+    from agents.token_monitor import monitor_agent_call
 
     questions_saved = 0
     facts_saved = 0
@@ -434,9 +442,12 @@ async def save_qa_list_for_chunk(
                     model=facts_model_name.split("/")[-1]
                 )
                 for answer_id, answer_content in rows:
-                    facts_output = facts_agent.run(
+                    facts_output, usage_info = monitor_agent_call(
+                        facts_agent,
                         fact_extractor.FactExtractionInput(paragraph=answer_content)
                     )
+                    if usage_sink is not None:
+                        usage_sink.append(usage_info.to_metadata())
                     facts = [
                         {
                             "content": f.content,
@@ -485,6 +496,7 @@ async def process_question_generation_job_batch(
         parse_qa_response,
         build_answer_facts_batch_requests,
         parse_answer_facts_response,
+        usage_records_from_batch_results,
     )
     from database.database import insert_answer_facts
 
@@ -495,6 +507,8 @@ async def process_question_generation_job_batch(
     processed_chunks = 0
 
     _update_job(job_id, total_documents=total_chunks)
+
+    usage_records: list = []
 
     def on_batch_poll(phase: str, info: dict):
         print(f"Batch Mistral {info.get('batch_id')}: statut {info.get('status')}")
@@ -516,6 +530,7 @@ async def process_question_generation_job_batch(
     try:
         qa_requests = build_qa_batch_requests(all_chunks, num_questions, user_prompt)
         qa_results = await run_mistral_batch(qa_requests, model, on_progress=on_batch_poll)
+        usage_records.extend(usage_records_from_batch_results(qa_results, model))
     except Exception as e:
         error_msg = f"Erreur API Batch: {e}"
         update_question_generation_job(
@@ -586,7 +601,8 @@ async def process_question_generation_job_batch(
             status="running",
             progress=progress,
             processed_documents=processed_chunks,
-            errors=errors
+            errors=errors,
+            token_usage=aggregate_token_usage(usage_records)
         )
 
     # Extraction des faits via un second batch (facturation également réduite)
@@ -594,6 +610,7 @@ async def process_question_generation_job_batch(
         try:
             facts_requests = build_answer_facts_batch_requests(facts_to_generate)
             facts_results = await run_mistral_batch(facts_requests, model, on_progress=on_batch_poll)
+            usage_records.extend(usage_records_from_batch_results(facts_results, model))
             async with await get_db_connection() as conn:
                 for answer in facts_to_generate:
                     result = facts_results.get(f"facts::{answer['answer_id']}")
@@ -615,7 +632,8 @@ async def process_question_generation_job_batch(
                     status="running",
                     progress=progress,
                     processed_documents=processed_chunks,
-                    errors=errors
+                    errors=errors,
+                    token_usage=aggregate_token_usage(usage_records)
                 )
         except Exception as e:
             errors.append(f"Extraction des faits (batch): {e}")
@@ -626,7 +644,8 @@ async def process_question_generation_job_batch(
         status=final_status,
         progress=progress,
         processed_documents=processed_chunks,
-        errors=errors
+        errors=errors,
+        token_usage=aggregate_token_usage(usage_records)
     )
     print(f"Job batch {job_id} terminé: {final_status} ({processed_chunks}/{total_chunks})")
 
@@ -719,6 +738,7 @@ async def process_question_generation_job(job_id: str):
     )
     
     # Traiter chaque chunk
+    usage_records: list = []
     for chunk in all_chunks:
         chunk_id = str(chunk.get("id", "unknown"))
         document_id = str(chunk.get("document_id", "unknown"))
@@ -751,7 +771,8 @@ async def process_question_generation_job(job_id: str):
                     status="running",
                     progress=progress,
                     processed_documents=processed_chunks,
-                    errors=errors
+                    errors=errors,
+                    token_usage=aggregate_token_usage(usage_records)
                 )
                 continue
         
@@ -766,7 +787,8 @@ async def process_question_generation_job(job_id: str):
                 document_id=document_id,
                 num_questions=num_questions,
                 model_name=model_name,
-                user_prompt=user_prompt
+                user_prompt=user_prompt,
+                usage_sink=usage_records
             )
 
             questions_generated = 0
@@ -776,7 +798,8 @@ async def process_question_generation_job(job_id: str):
                     qa_items=qa_list.QA_list,
                     chunk_id=chunk_id,
                     model_name=model_name,
-                    generate_facts=generate_facts
+                    generate_facts=generate_facts,
+                    usage_sink=usage_records
                 )
                 if facts_error:
                     error = facts_error
@@ -800,7 +823,8 @@ async def process_question_generation_job(job_id: str):
                 status="running",
                 progress=progress,
                 processed_documents=processed_chunks,
-                errors=errors
+                errors=errors,
+                token_usage=aggregate_token_usage(usage_records)
             )
             
         except Exception as e:
@@ -819,7 +843,8 @@ async def process_question_generation_job(job_id: str):
                 status="running",
                 progress=progress,
                 processed_documents=processed_chunks,
-                errors=errors
+                errors=errors,
+                token_usage=aggregate_token_usage(usage_records)
             )
     
     # Job terminé
@@ -829,7 +854,8 @@ async def process_question_generation_job(job_id: str):
         status=final_status,
         progress=progress,
         processed_documents=processed_chunks,
-        errors=errors
+        errors=errors,
+        token_usage=aggregate_token_usage(usage_records)
     )
     
     print(f"Job {job_id} terminé: {final_status} ({processed_chunks}/{total_chunks})")

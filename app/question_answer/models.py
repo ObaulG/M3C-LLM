@@ -134,6 +134,12 @@ class QuestionGenerationJob(BaseModel):
         default=None,
         description="Message d'erreur global si le job a échoué"
     )
+    token_usage: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Consommation cumulée des appels LLM du job : "
+                    "appels, tokens (entrée/sortie/cache) et coût estimé en euros "
+                    "(cost_eur, null si le modèle n'est pas dans la grille tarifaire)."
+    )
 
     class Config:
         json_schema_extra = {

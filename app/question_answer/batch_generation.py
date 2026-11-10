@@ -228,10 +228,16 @@ async def run_mistral_batch(
                 message_content = ""
                 if choices:
                     message_content = (choices[0].get("message") or {}).get("content") or ""
+                usage = body.get("usage") or {}
                 results[custom_id] = {
                     "status": entry.get("status", "success"),
                     "content": message_content,
                     "error": None,
+                    "usage": {
+                        "input_tokens": usage.get("prompt_tokens", 0) or 0,
+                        "cached_tokens": (usage.get("prompt_tokens_details") or {}).get("cached_tokens", 0) or 0,
+                        "output_tokens": usage.get("completion_tokens", 0) or 0,
+                    },
                 }
         if error_file_id:
             error_content = client.files.download(file_id=error_file_id)
@@ -251,3 +257,37 @@ async def run_mistral_batch(
         raise RuntimeError(f"Le batch Mistral {batch.id} s'est terminé avec le statut {status}.")
 
     return results
+
+
+def usage_records_from_batch_results(results: Dict[str, Dict], model: str) -> List[Dict]:
+    """Convertit les résultats d'un batch en métadonnées de consommation
+    (une par requête réussie), avec le coût calculé au tarif Batch API
+    (remise de 50 %), pour agrégation via aggregate_token_usage."""
+    try:
+        from pricing import compute_cost_eur
+    except ImportError:
+        from app.pricing import compute_cost_eur
+
+    records = []
+    for result in results.values():
+        usage = result.get("usage") or {}
+        input_tokens = usage.get("input_tokens", 0) or 0
+        cached_tokens = usage.get("cached_tokens", 0) or 0
+        output_tokens = usage.get("output_tokens", 0) or 0
+        record = {
+            "input_tokens": input_tokens,
+            "cached_tokens": cached_tokens,
+            "output_tokens": output_tokens,
+        }
+        cost_detail = compute_cost_eur(
+            model,
+            input_tokens=input_tokens,
+            cached_tokens=cached_tokens,
+            output_tokens=output_tokens,
+            batch_api=True,
+        )
+        if cost_detail is not None:
+            record["cost_eur"] = cost_detail["total_eur"]
+            record["cost_detail"] = cost_detail
+        records.append(record)
+    return records
