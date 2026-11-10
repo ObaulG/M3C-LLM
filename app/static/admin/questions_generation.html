@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="../style.css" />
 <style>
     .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
-    .form-group.inline { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .form-group.inline { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; }
     .form-group.inline > label { margin-bottom: 0; flex: 0 0 auto; }
     .form-group.inline > input, .form-group.inline > select { width: auto; }
-    .form-group.inline > .page-range-inputs { flex: 1; min-width: 200px; }
+    .form-group.inline > .page-range-inputs { flex: 0 0 auto; }
+    .form-group.inline > .page-range-inputs input { width: 110px; }
     .form-group.inline > .description { flex-basis: 100%; margin-top: 2px; }
     #documentSelect { min-width: 300px; max-width: 500px; }
     .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
@@ -249,13 +250,13 @@
                     <div class="description">Nombre de réponses à générer pour chaque question</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="modelSelect">Modèle LLM</label>
                     <select id="modelSelect"><option value="">Modèle par défaut (mistral-small)</option></select>
                     <div class="description">Modèle à utiliser pour la génération des questions</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="documentSelect">Document spécifique (optionnel)</label>
                     <select id="documentSelect">
                         <option value="">Tous les documents validés</option>
@@ -263,7 +264,7 @@
                     <div class="description">Sélectionnez un document spécifique ou laissez vide pour traiter tous les documents validés</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="chunkSelect">Chunk spécifique (optionnel)</label>
                     <select id="chunkSelect" disabled>
                         <option value="">Sélectionnez un document d'abord</option>
@@ -274,8 +275,8 @@
                 <div class="form-group inline">
                     <label>Plage de pages (optionnel)</label>
                     <div class="page-range-inputs" style="display: flex; gap: 10px;">
-                        <input type="number" id="startPage" min="1" placeholder="Page de début" style="flex: 1;">
-                        <input type="number" id="endPage" min="1" placeholder="Page de fin" style="flex: 1;">
+                        <input type="number" id="startPage" min="1" placeholder="Page de début">
+                        <input type="number" id="endPage" min="1" placeholder="Page de fin">
                     </div>
                     <div class="description">Permet d'exclure les pages de sommaire (page de début) et de fin de livre (page de fin) de la liste des chunks traités. Ignoré si un chunk spécifique est sélectionné.</div>
                 </div>
