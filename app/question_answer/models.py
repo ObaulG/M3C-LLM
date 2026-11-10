@@ -36,6 +36,24 @@ class QuestionGenerationRequest(BaseModel):
         default=None,
         description="Instructions personnalisées de l'utilisateur pour adapter la génération de questions/réponses au contenu du document (intégrées au prompt de l'agent)."
     )
+    start_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Première page (num_page) à traiter. Permet d'exclure les pages de sommaire. Si None, pas de borne inférieure. Ignoré si chunk_id est fourni."
+    )
+    end_page: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Dernière page (num_page) à traiter. Permet d'exclure les pages de fin de livre. Si None, pas de borne supérieure. Ignoré si chunk_id est fourni."
+    )
+    use_batch: bool = Field(
+        default=False,
+        description="Utiliser l'API Batch de Mistral (environ 50% moins cher) pour la génération en masse, chunk par chunk. Traitement asynchrone pouvant prendre jusqu'à 24h. Ignoré si chunk_id est fourni."
+    )
+    generate_facts: bool = Field(
+        default=False,
+        description="Extraire et enregistrer les affirmations (faits) constituant chaque réponse de référence générée."
+    )
 
 class CompareGenerationRequest(BaseModel):
     """Requête pour la génération comparative multi-modèles (admins/experts)."""

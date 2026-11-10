@@ -1126,8 +1126,12 @@ async def save_question_to_db(
     conn,
     difficulty_level: int = 3,
     model: str = '',
-) -> None:
-    """Enregistre une question, ses réponses et son lien au chunk dans la base de données."""
+) -> int:
+    """Enregistre une question, ses réponses et son lien au chunk dans la base de données.
+
+    Returns:
+        int: L'identifiant de la question insérée (question_id).
+    """
     async with conn.cursor() as cur:
         # 1. Insérer la question
         await cur.execute("""
@@ -1158,6 +1162,7 @@ async def save_question_to_db(
             )
 
         await conn.commit()
+        return question_id
 
 
 async def insert_answer_facts(
