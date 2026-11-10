@@ -6,8 +6,7 @@
 -- de "’", "Ã®" au lieu de "î").
 --
 -- Principe : pour chaque colonne texte (CHAR/VARCHAR/TEXT) des tables du
--- projet (celles definies dans docker/mysql/init.sql et
--- docker/mysql/migrate_missing_tables.sql, liste reprise ci-dessous), on
+-- projet (tous les fichiers .sql du depot, liste reprise ci-dessous), on
 -- inverse l'erreur :
 --   CONVERT(BINARY(CONVERT(col USING latin1)) USING utf8mb4)
 -- La correction n'est appliquee que si :
@@ -33,7 +32,8 @@ SET SQL_MODE = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';
 -- ETAPE 0 : TABLES CIBLES
 -- =============================================================================
 -- Seules les tables definies dans les fichiers SQL du projet sont ciblees.
--- Source : docker/mysql/init.sql + docker/mysql/migrate_missing_tables.sql.
+-- Source : tous les fichiers .sql du projet (docker/mysql/, app/database/sql_tables_scripts/,
+-- app/question_answer/tables.sql).
 -- Si une nouvelle table est ajoutee a ces fichiers, l'ajouter aussi ici.
 DROP TABLE IF EXISTS encoding_target_tables;
 CREATE TABLE encoding_target_tables (
@@ -62,13 +62,21 @@ INSERT INTO encoding_target_tables (table_name) VALUES
     ('observations'),
     ('observation_targets'),
     ('questions'),
+    ('question_session_questions'),
+    ('question_sessions'),
+    ('session_answers'),
     ('session_messages'),
     ('sessions'),
+    ('text_answer_facts'),
     ('text_chunking_strategies'),
     ('text_chunks'),
     ('text_document_chunking_validation'),
     ('text_documents'),
+    ('text_question_answers'),
+    ('text_question_chunks'),
+    ('text_questions'),
     ('themes'),
+    ('user'),
     ('user_interests_entities'),
     ('user_interests_themes'),
     ('user_knowledge_states'),
