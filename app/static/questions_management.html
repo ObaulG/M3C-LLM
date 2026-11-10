@@ -944,8 +944,8 @@
 <script src="questions_management.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
-    loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true });
+    loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true, selected: 'mistral/ministral-14b-2512' });
+    loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true, selected: 'mistral/ministral-14b-2512' });
   });
 </script>
 
