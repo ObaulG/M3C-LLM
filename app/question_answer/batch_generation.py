@@ -65,6 +65,28 @@ def _batch_request_counts(batch) -> Optional[dict]:
     }
 
 
+def _download_file_content(client: Mistral, file_id: str) -> str:
+    """Télécharge un fichier de résultat et renvoie son contenu texte.
+
+    Gère les différents types de retour du SDK mistralai : bytes (SDK >= 2.0)
+    ou objet httpx.Response (SDK <= 1.12.4, où il faut lire .content/.text).
+    """
+    downloaded = client.files.download(file_id=file_id)
+    if isinstance(downloaded, str):
+        return downloaded
+    if isinstance(downloaded, bytes):
+        return downloaded.decode("utf-8")
+    content = getattr(downloaded, "content", None)
+    if isinstance(content, bytes):
+        return content.decode("utf-8")
+    if isinstance(content, str):
+        return content
+    text = getattr(downloaded, "text", None)
+    if isinstance(text, str):
+        return text
+    raise RuntimeError(f"Type de contenu inattendu au téléchargement du fichier {file_id}: {type(downloaded)}")
+
+
 def _get_raw_mistral_client() -> Mistral:
     api_key = os.getenv("MISTRAL_API_KEY")
     if not api_key:
@@ -262,15 +284,19 @@ async def run_mistral_batch(
         if not isinstance(error_file_id, str):
             error_file_id = None
         if output_file_id:
-            content = client.files.download(file_id=output_file_id)
-            if isinstance(content, bytes):
-                content = content.decode("utf-8")
+            content = _download_file_content(client, output_file_id)
             for line in content.splitlines():
                 if not line.strip():
                     continue
                 entry = json.loads(line)
                 custom_id = entry.get("custom_id") or entry.get("request_id")
-                body = entry.get("body") or {}
+                body = (
+                    entry.get("body")
+                    or (entry.get("response") or {}).get("body")
+                    or entry
+                )
+                if not isinstance(body, dict):
+                    body = {}
                 choices = body.get("choices") or []
                 message_content = ""
                 if choices:
@@ -287,9 +313,7 @@ async def run_mistral_batch(
                     },
                 }
         if error_file_id:
-            error_content = client.files.download(file_id=error_file_id)
-            if isinstance(error_content, bytes):
-                error_content = error_content.decode("utf-8")
+            error_content = _download_file_content(client, error_file_id)
             for line in error_content.splitlines():
                 if not line.strip():
                     continue
