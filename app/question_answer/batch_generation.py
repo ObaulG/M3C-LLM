@@ -22,7 +22,47 @@ from mistralai import Mistral
 
 POLL_INTERVAL_SECONDS = 60
 
-_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "PARTIALLY_SUCCEEDED", "TIME_EXCEEDED", "EXPIRED"}
+_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "PARTIALLY_SUCCEEDED", "TIME_EXCEEDED", "TIMEOUT_EXCEEDED", "EXPIRED", "CANCELLED"}
+
+
+def _create_mistral_batch(client: Mistral, file_id: str, model: str):
+    """Crée un batch, en gérant les deux générations du SDK mistralai :
+    >= 1.12 expose client.batches.create(input_file_id=..., completion_window=...),
+    les versions antérieures exposent client.batch.jobs.create(input_files=..., endpoint=...).
+    """
+    batches_api = getattr(client, "batches", None)
+    if batches_api is not None and hasattr(batches_api, "create"):
+        return batches_api.create(
+            input_file_id=file_id,
+            model=model,
+            completion_window="24h",
+        )
+    return client.batch.jobs.create(
+        input_files=[file_id],
+        endpoint="/v1/chat/completions",
+        model=model,
+    )
+
+
+def _retrieve_mistral_batch(client: Mistral, batch_id: str):
+    """Récupère un batch par son ID, selon la génération du SDK mistralai."""
+    batches_api = getattr(client, "batches", None)
+    if batches_api is not None and hasattr(batches_api, "retrieve"):
+        return batches_api.retrieve(batch_id)
+    return client.batch.jobs.get(job_id=batch_id)
+
+
+def _batch_request_counts(batch) -> Optional[dict]:
+    """Extrait un résumé de l'avancement du batch, quel que soit le SDK."""
+    counts = getattr(batch, "request_counts", None)
+    if counts is not None:
+        return counts
+    return {
+        "total": getattr(batch, "total_requests", 0),
+        "completed": getattr(batch, "completed_requests", 0),
+        "succeeded": getattr(batch, "succeeded_requests", 0),
+        "failed": getattr(batch, "failed_requests", 0),
+    }
 
 
 def _get_raw_mistral_client() -> Mistral:
@@ -195,21 +235,17 @@ async def run_mistral_batch(
             purpose="batch",
         )
 
-    batch = client.batches.create(
-        input_file_id=uploaded.id,
-        model=model,
-        completion_window="24h",
-    )
+    batch = _create_mistral_batch(client, uploaded.id, model)
 
     print(f"Batch Mistral créé: {batch.id} ({len(requests)} requêtes, modèle {model})")
 
     while True:
-        batch = client.batches.retrieve(batch.id)
+        batch = _retrieve_mistral_batch(client, batch.id)
         if on_progress:
             on_progress("polling", {
                 "batch_id": batch.id,
                 "status": str(getattr(batch, "status", "")),
-                "counts": getattr(batch, "request_counts", None),
+                "counts": _batch_request_counts(batch),
             })
         if str(getattr(batch, "status", "")) in _TERMINAL_STATUSES:
             break
@@ -219,8 +255,12 @@ async def run_mistral_batch(
     status = str(getattr(batch, "status", ""))
 
     if status in ("SUCCESS", "PARTIALLY_SUCCEEDED"):
-        output_file_id = getattr(batch, "output_file_id", None)
-        error_file_id = getattr(batch, "error_file_id", None)
+        output_file_id = getattr(batch, "output_file_id", getattr(batch, "output_file", None))
+        error_file_id = getattr(batch, "error_file_id", getattr(batch, "error_file", None))
+        if not isinstance(output_file_id, str):
+            output_file_id = None
+        if not isinstance(error_file_id, str):
+            error_file_id = None
         if output_file_id:
             content = client.files.download(file_id=output_file_id)
             if isinstance(content, bytes):
