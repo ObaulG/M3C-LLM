@@ -8,6 +8,11 @@
 {% block styles %}
 <style>
     .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    .form-group.inline { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .form-group.inline > label { margin-bottom: 0; flex: 0 0 auto; }
+    .form-group.inline > input, .form-group.inline > select { width: auto; }
+    .form-group.inline > .page-range-inputs { flex: 1; min-width: 200px; }
+    .form-group.inline > .description { flex-basis: 100%; margin-top: 2px; }
     #documentSelect { min-width: 300px; max-width: 500px; }
     .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
     .job-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -219,13 +224,13 @@
             <div class="form-section">
                 <h3>Paramètres de Génération</h3>
                 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="numQuestions">Nombre de questions par document</label>
                     <input type="number" id="numQuestions" value="3" min="1" max="10" placeholder="Nombre de questions">
                     <div class="description">Nombre de questions Q/R à générer pour chaque document validé</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
                     <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
                     <div class="description">Nombre de réponses à générer pour chaque question</div>
@@ -253,9 +258,9 @@
                     <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label>Plage de pages (optionnel)</label>
-                    <div style="display: flex; gap: 10px;">
+                    <div class="page-range-inputs" style="display: flex; gap: 10px;">
                         <input type="number" id="startPage" min="1" placeholder="Page de début" style="flex: 1;">
                         <input type="number" id="endPage" min="1" placeholder="Page de fin" style="flex: 1;">
                     </div>
