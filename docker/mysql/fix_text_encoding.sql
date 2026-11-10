@@ -149,8 +149,10 @@ BEGIN
             'WHERE `', v_column, '` IS NOT NULL ',
             "  AND `", v_column, "` REGEXP 'Ã|Â|â€' ",
             -- (a) tous les caracteres representables en latin1
-            '  AND `', v_column, '` = CONVERT(CONVERT(`', v_column,
-            '` USING latin1) USING utf8mb4) ',
+            --     (comparaison BINARY : insensible a la collation de la table,
+            --     utf8mb4_unicode_ci sur les tables M3C vs utf8mb4_0900_ai_ci ailleurs)
+            '  AND BINARY(`', v_column, '`) = BINARY(CONVERT(CONVERT(`', v_column,
+            '` USING latin1) USING utf8mb4)) ',
             -- (b) les octets latin1 forment de l'UTF-8 valide
             '  AND BINARY(CONVERT(`', v_column, '` USING latin1)) = ',
             'BINARY(CONVERT(BINARY(CONVERT(`', v_column,
