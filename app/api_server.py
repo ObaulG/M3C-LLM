@@ -182,7 +182,7 @@ async def lifespan(app: FastAPI):
 # === APPLICATION FASTAPI ===
 app = FastAPI(
     title="API Chatbot RAG M3C v0.1",
-    description="API REST pour interroger le systÃ¨me RAG sur un corpus de documents extraits de la M3C",
+    description="API REST pour interroger le système RAG sur un corpus de documents extraits de la M3C",
     version="0.0.1",
     docs_url="/docs",
     redoc_url="/redoc",

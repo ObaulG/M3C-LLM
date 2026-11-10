@@ -1635,7 +1635,9 @@ async def get_resource_id_from_document_id(conn, document_id: int):
     async with await conn.cursor() as cur:
         await cur.execute("SELECT source_id FROM text_documents WHERE id = %s", (document_id,))
         result = await cur.fetchone()
-        return result[0]
+        if result:
+            return result[0]
+        return None
 
 
 
