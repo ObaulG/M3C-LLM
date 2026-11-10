@@ -5,8 +5,10 @@
 -- latin1 puis re-encode en utf8mb4 (ex: "Ã©" au lieu de "é", "â€™" au lieu
 -- de "’", "Ã®" au lieu de "î").
 --
--- Principe : pour chaque colonne texte (CHAR/VARCHAR/TEXT) de chaque table de
--- la base courante, on inverse l'erreur :
+-- Principe : pour chaque colonne texte (CHAR/VARCHAR/TEXT) des tables du
+-- projet (celles definies dans docker/mysql/init.sql et
+-- docker/mysql/migrate_missing_tables.sql, liste reprise ci-dessous), on
+-- inverse l'erreur :
 --   CONVERT(BINARY(CONVERT(col USING latin1)) USING utf8mb4)
 -- La correction n'est appliquee que si :
 --   1. la valeur contient des caracteres typiques du mojibake, ET
@@ -26,26 +28,75 @@ SET NAMES utf8mb4;
 SET SQL_MODE = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';
 
 -- =============================================================================
--- ETAPE 0 : DIAGNOSTIC — lignes suspectes par table/colonne (lecture seule)
+-- ETAPE 0 : TABLES CIBLES
+-- =============================================================================
+-- Seules les tables definies dans les fichiers SQL du projet sont ciblees.
+-- Source : docker/mysql/init.sql + docker/mysql/migrate_missing_tables.sql.
+-- Si une nouvelle table est ajoutee a ces fichiers, l'ajouter aussi ici.
+DROP TABLE IF EXISTS encoding_target_tables;
+CREATE TABLE encoding_target_tables (
+    table_name VARCHAR(64) PRIMARY KEY
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO encoding_target_tables (table_name) VALUES
+    ('answers'),
+    ('chatbot_feedbacks'),
+    ('chatbot_message_chunks'),
+    ('chatbot_messages'),
+    ('chunk_embeddings'),
+    ('document_reading_sessions'),
+    ('documents'),
+    ('entities'),
+    ('evaluations'),
+    ('indexing_jobs'),
+    ('knowledge_item_entities'),
+    ('knowledge_item_questions'),
+    ('knowledge_items'),
+    ('knowledge_item_themes'),
+    ('knowledge_sources'),
+    ('llm_interpretations'),
+    ('model_evidences'),
+    ('observation_payloads'),
+    ('observations'),
+    ('observation_targets'),
+    ('questions'),
+    ('session_messages'),
+    ('sessions'),
+    ('text_chunking_strategies'),
+    ('text_chunks'),
+    ('text_document_chunking_validation'),
+    ('text_documents'),
+    ('themes'),
+    ('user_interests_entities'),
+    ('user_interests_themes'),
+    ('user_knowledge_states'),
+    ('user_mistral_api_keys'),
+    ('user_model_history'),
+    ('user_profiles'),
+    ('user_sessions');
+
+-- =============================================================================
+-- ETAPE 1 : DIAGNOSTIC — colonnes texte des tables cibles (lecture seule)
 -- =============================================================================
 -- A executer d'abord pour visualiser ce qui sera corrige. Cette vue liste
--- les colonnes contenant des caracteres typiques du mojibake.
+-- les colonnes texte des tables cibles.
 DROP VIEW IF EXISTS encoding_suspect_columns;
 CREATE VIEW encoding_suspect_columns AS
 SELECT
-    TABLE_SCHEMA,
-    TABLE_NAME,
-    COLUMN_NAME,
-    DATA_TYPE,
-    CHARACTER_SET_NAME
-FROM information_schema.COLUMNS
-WHERE TABLE_SCHEMA = DATABASE()
-  AND CHARACTER_SET_NAME IS NOT NULL
-  AND DATA_TYPE IN ('char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext')
-ORDER BY TABLE_NAME, ORDINAL_POSITION;
+    c.TABLE_SCHEMA,
+    c.TABLE_NAME,
+    c.COLUMN_NAME,
+    c.DATA_TYPE,
+    c.CHARACTER_SET_NAME
+FROM information_schema.COLUMNS c
+JOIN encoding_target_tables t ON t.table_name = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = DATABASE()
+  AND c.CHARACTER_SET_NAME IS NOT NULL
+  AND c.DATA_TYPE IN ('char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext')
+ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION;
 
 -- =============================================================================
--- ETAPE 1 : PROCEDURE DE CORRECTION
+-- ETAPE 2 : PROCEDURE DE CORRECTION
 -- =============================================================================
 DROP PROCEDURE IF EXISTS fix_text_encoding;
 
@@ -59,12 +110,13 @@ BEGIN
     DECLARE v_affected INT DEFAULT 0;
     DECLARE v_total INT DEFAULT 0;
     DECLARE cur CURSOR FOR
-        SELECT TABLE_NAME, COLUMN_NAME
-        FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = DATABASE()
-          AND CHARACTER_SET_NAME IS NOT NULL
-          AND DATA_TYPE IN ('char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext')
-        ORDER BY TABLE_NAME, ORDINAL_POSITION;
+        SELECT c.TABLE_NAME, c.COLUMN_NAME
+        FROM information_schema.COLUMNS c
+        JOIN encoding_target_tables t ON t.table_name = c.TABLE_NAME
+        WHERE c.TABLE_SCHEMA = DATABASE()
+          AND c.CHARACTER_SET_NAME IS NOT NULL
+          AND c.DATA_TYPE IN ('char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext')
+        ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
     DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -108,12 +160,13 @@ END$$
 DELIMITER ;
 
 -- =============================================================================
--- ETAPE 2 : EXECUTION
+-- ETAPE 3 : EXECUTION
 -- =============================================================================
 CALL fix_text_encoding();
 
 -- =============================================================================
--- ETAPE 3 : NETTOYAGE
+-- ETAPE 4 : NETTOYAGE
 -- =============================================================================
 DROP PROCEDURE IF EXISTS fix_text_encoding;
 DROP VIEW IF EXISTS encoding_suspect_columns;
+DROP TABLE IF EXISTS encoding_target_tables;
