@@ -12,8 +12,10 @@
 --   CONVERT(BINARY(CONVERT(col USING latin1)) USING utf8mb4)
 -- La correction n'est appliquee que si :
 --   1. la valeur contient des caracteres typiques du mojibake, ET
---   2. la conversion aller-retour est sans perte (round-trip latin1 -> binaire
---      -> utf8mb4 -> latin1 reproduit exactement la valeur d'origine).
+--   2. tous les caracteres de la valeur sont representables en latin1
+--      (conversion latin1 -> utf8mb4 sans perte), ET
+--   3. les octets latin1 resultant forment de l'UTF-8 valide (la correction
+--      produira donc du texte reellement lisible).
 -- Le script est donc idempotent et sans risque pour les donnees saines.
 -- Limite connue : une ligne melant mojibake et caracteres non latin1
 -- (ex: apostrophe typographique “’”) n'est pas modifiee, par securite.
@@ -138,8 +140,13 @@ BEGIN
             'CONVERT(BINARY(CONVERT(`', v_column, '` USING latin1)) USING utf8mb4) ',
             'WHERE `', v_column, '` IS NOT NULL ',
             "  AND `", v_column, "` REGEXP 'Ã|Â|â€' ",
-            '  AND `', v_column, '` = CONVERT(CONVERT(BINARY(CONVERT(`', v_column,
-            '` USING latin1)) USING utf8mb4) USING latin1)'
+            -- (a) tous les caracteres representables en latin1
+            '  AND `', v_column, '` = CONVERT(CONVERT(`', v_column,
+            '` USING latin1) USING utf8mb4) ',
+            -- (b) les octets latin1 forment de l'UTF-8 valide
+            '  AND BINARY(CONVERT(`', v_column, '` USING latin1)) = ',
+            'BINARY(CONVERT(BINARY(CONVERT(`', v_column,
+            '` USING latin1)) USING utf8mb4))'
         );
         PREPARE stmt FROM @sql;
         EXECUTE stmt;
