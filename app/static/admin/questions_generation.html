@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="../style.css" />
 <style>
     .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    .form-group.inline { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .form-group.inline > label { margin-bottom: 0; flex: 0 0 auto; }
+    .form-group.inline > input, .form-group.inline > select { width: auto; }
+    .form-group.inline > .page-range-inputs { flex: 1; min-width: 200px; }
+    .form-group.inline > .description { flex-basis: 100%; margin-top: 2px; }
     #documentSelect { min-width: 300px; max-width: 500px; }
     .input-group input:focus, .input-group select:focus { outline: none; border-color: #b74420; }
     .job-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -232,13 +237,13 @@
             <div class="form-section">
                 <h3>Paramètres de Génération</h3>
                 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="numQuestions">Nombre de questions par document</label>
                     <input type="number" id="numQuestions" value="3" min="1" max="10" placeholder="Nombre de questions">
                     <div class="description">Nombre de questions Q/R à générer pour chaque document validé</div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group inline">
                     <label for="numAnswersPerQuestion">Nombre de réponses par question</label>
                     <input type="number" id="numAnswersPerQuestion" value="1" min="1" max="10" placeholder="Nombre de réponses">
                     <div class="description">Nombre de réponses à générer pour chaque question</div>
@@ -264,6 +269,31 @@
                         <option value="">Sélectionnez un document d'abord</option>
                     </select>
                     <div class="description">Sélectionnez un chunk spécifique ou laissez vide pour traiter tous les chunks du document</div>
+                </div>
+
+                <div class="form-group inline">
+                    <label>Plage de pages (optionnel)</label>
+                    <div class="page-range-inputs" style="display: flex; gap: 10px;">
+                        <input type="number" id="startPage" min="1" placeholder="Page de début" style="flex: 1;">
+                        <input type="number" id="endPage" min="1" placeholder="Page de fin" style="flex: 1;">
+                    </div>
+                    <div class="description">Permet d'exclure les pages de sommaire (page de début) et de fin de livre (page de fin) de la liste des chunks traités. Ignoré si un chunk spécifique est sélectionné.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="useBatch" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="useBatch" style="width: auto; margin: 0;">
+                        Utiliser l'API Batch de Mistral (≈ 50% moins cher)
+                    </label>
+                    <div class="description">Proposé uniquement pour la génération en masse, chunk par chunk. Les requêtes sont soumises en batch : le traitement est asynchrone et peut prendre jusqu'à 24h, mais facturé environ moitié prix.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="generateFacts" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="generateFacts" style="width: auto; margin: 0;">
+                        Générer aussi les faits des réponses
+                    </label>
+                    <div class="description">Décompose chaque réponse de référence générée en affirmations (faits essentiels et facultatifs), stockées dans text_answer_facts.</div>
                 </div>
 
                 <div class="form-group">
@@ -307,6 +337,17 @@
                 <button class="btn" onclick="exportActionsLogToCSV()" id="exportLogBtn" style="margin-top: 10px; display: none;">
                     📥 Exporter le Journal CSV
                 </button>
+            </div>
+
+            <div class="form-section">
+                <h3>Génération des faits (rattrapage)</h3>
+                <div class="form-group">
+                    <div class="description">Extrait les affirmations (faits essentiels et facultatifs) de toutes les réponses de référence du document sélectionné (ou de tous les documents) qui n'en ont pas encore dans <code>text_answer_facts</code>. Réutilise le modèle, la plage de pages et l'option Batch ci-dessus.</div>
+                </div>
+                <button class="btn" onclick="startFactsGeneration()" id="generateFactsBtn">
+                    🧩 Générer les faits des réponses
+                </button>
+                <div id="factsJobContainer" style="margin-top: 15px;"></div>
             </div>
 
             <div class="loading" id="loadingIndicator">
@@ -526,6 +567,9 @@
                     const selectedOption = this.options[this.selectedIndex];
                     const content = selectedOption.dataset.content;
                     const chunkId = this.value;
+                    const useBatchCheckbox = document.getElementById('useBatch');
+                    useBatchCheckbox.disabled = !!chunkId;
+                    if (chunkId) useBatchCheckbox.checked = false;
                     
                     if (content) {
                         chunkContentDisplay.textContent = decodeURIComponent(content);
@@ -563,6 +607,8 @@
         chunkContentDisplay.textContent = 'Sélectionnez un document puis un chunk...';
         
         chunkSelect.onchange = null;
+        const useBatchCheckbox = document.getElementById('useBatch');
+        useBatchCheckbox.disabled = false;
     }
     
     async function startQuestionGeneration() {
@@ -572,6 +618,16 @@
         const documentId = document.getElementById('documentSelect').value;
         const chunkId = document.getElementById('chunkSelect').value;
         const userPrompt = document.getElementById('userPrompt').value.trim();
+        const useBatch = !chunkId && document.getElementById('useBatch').checked;
+        const generateFacts = document.getElementById('generateFacts').checked;
+        let startPage = parseInt(document.getElementById('startPage').value);
+        let endPage = parseInt(document.getElementById('endPage').value);
+        if (!startPage || startPage < 1) startPage = null;
+        if (!endPage || endPage < 1) endPage = null;
+        if (startPage && endPage && endPage < startPage) {
+            alert('❌ La page de fin doit être supérieure ou égale à la page de début.');
+            return;
+        }
 
         if (!documentId && !chunkId) {
             alert('❌ Veuillez sélectionner un document (ou un chunk spécifique) pour lancer la génération.');
@@ -580,9 +636,11 @@
 
         const cible = chunkId
             ? `le chunk ${chunkId}`
-            : `tous les chunks du document ${documentId}`;
+            : `tous les chunks du document ${documentId}${(startPage || endPage) ? ` (pages ${startPage || 'début'} à ${endPage || 'fin'})` : ''}`;
+        const batchInfo = useBatch ? '\n\nMode : API Batch de Mistral (≈ 50% moins cher, traitement asynchrone jusqu\u2019à 24h).' : '';
+        const factsInfo = generateFacts ? '\nLes faits (affirmations) de chaque réponse seront également extraits.' : '';
         const promptInfo = userPrompt ? `\n\nInstructions personnalisées : « ${userPrompt.substring(0, 120)}${userPrompt.length > 120 ? '...' : ''} »` : '';
-        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.${promptInfo}\n\nVoulez-vous continuer ?`)) {
+        if (!confirm(`Vous allez générer ${numQuestions} question(s) pour ${cible}.${batchInfo}${factsInfo}${promptInfo}\n\nVoulez-vous continuer ?`)) {
             return;
         }
 
@@ -602,7 +660,11 @@
                     model_name: modelName,
                     document_id: documentId ? parseInt(documentId) : null,
                     chunk_id: chunkId ? parseInt(chunkId) : null,
-                    user_prompt: userPrompt || null
+                    user_prompt: userPrompt || null,
+                    start_page: startPage,
+                    end_page: endPage,
+                    use_batch: useBatch,
+                    generate_facts: generateFacts
                 })
             });
 
@@ -708,7 +770,8 @@
                 const errors = (job.errors || []).length;
                 details.innerHTML =
                     `<div>📊 ${done}/${total} chunks traités — ${questions} question(s) générée(s)` +
-                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>`;
+                    (errors > 0 ? ` — ⚠️ ${errors} erreur(s)` : '') + `</div>` +
+                    renderUsageHtml(job.token_usage);
                 setTimeout(() => loading.classList.remove('active'), 4000);
                 stopAutoRefresh();
             } else if (!job) {
@@ -796,6 +859,128 @@
         return classMap[status] || 'status-pending';
     }
     
+    function renderUsageHtml(usage) {
+        if (!usage || !usage.calls) return '';
+        const cost = usage.cost_eur;
+        const costText = cost !== null && cost !== undefined
+            ? `${Number(cost).toFixed(4).replace('.', ',')} €`
+            : 'estimation indisponible (modèle hors grille tarifaire)';
+        const tokens = `${(usage.input_tokens || 0).toLocaleString('fr-FR')} entrée / ` +
+            `${(usage.output_tokens || 0).toLocaleString('fr-FR')} sortie`;
+        return `<div class="job-usage" style="margin-top: 8px; font-size: 12px; color: #2a6e3f;">` +
+            `💰 <strong>Coût des appels LLM :</strong> ${costText} — ` +
+            `${usage.calls} appel(s), ${tokens} tokens</div>`;
+    }
+
+    let currentFactsJobId = null;
+    let factsRefreshInterval = null;
+
+    async function startFactsGeneration() {
+        const documentId = document.getElementById('documentSelect').value;
+        const useBatch = document.getElementById('useBatch').checked;
+        const modelName = document.getElementById('modelSelect').value || 'mistral/mistral-medium';
+        let startPage = parseInt(document.getElementById('startPage').value);
+        let endPage = parseInt(document.getElementById('endPage').value);
+        if (!startPage || startPage < 1) startPage = null;
+        if (!endPage || endPage < 1) endPage = null;
+        if (startPage && endPage && endPage < startPage) {
+            alert('❌ La page de fin doit être supérieure ou égale à la page de début.');
+            return;
+        }
+
+        const cible = documentId ? `le document ${documentId}` : 'tous les documents';
+        const batchInfo = useBatch ? '\n\nMode : API Batch de Mistral (≈ 50% moins cher, traitement asynchrone jusqu\u2019à 24h).' : '';
+        if (!confirm(`Vous allez extraire les faits des réponses sans faits de ${cible}.${batchInfo}\n\nVoulez-vous continuer ?`)) {
+            return;
+        }
+
+        const btn = document.getElementById('generateFactsBtn');
+        btn.disabled = true;
+        btn.textContent = 'Création du job...';
+
+        try {
+            const response = await fetch(QUESTIONS_API + '/facts/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    document_id: documentId ? parseInt(documentId) : null,
+                    model_name: modelName,
+                    use_batch: useBatch,
+                    start_page: startPage,
+                    end_page: endPage
+                })
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `Erreur: ${response.status} - ${response.statusText}`;
+                try { errorMessage = JSON.parse(errorText).detail || errorMessage; } catch (e) {}
+                throw new Error(errorMessage);
+            }
+            const data = await response.json();
+            currentFactsJobId = data.job_id;
+            document.getElementById('factsJobContainer').innerHTML = renderFactsJobCard(data.job);
+            startFactsAutoRefresh();
+        } catch (error) {
+            console.error('Erreur lors du lancement de la génération des faits:', error);
+            alert('❌ Erreur: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🧩 Générer les faits des réponses';
+        }
+    }
+
+    function startFactsAutoRefresh() {
+        if (factsRefreshInterval) clearInterval(factsRefreshInterval);
+        refreshFactsJob();
+        factsRefreshInterval = setInterval(async () => {
+            await refreshFactsJob();
+            if (!currentFactsJobId) clearInterval(factsRefreshInterval);
+        }, 2000);
+    }
+
+    async function refreshFactsJob() {
+        if (!currentFactsJobId) return;
+        try {
+            const response = await fetch(QUESTIONS_API + '/facts/jobs/' + currentFactsJobId);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const job = await response.json();
+            document.getElementById('factsJobContainer').innerHTML = renderFactsJobCard(job);
+            if (!['pending', 'running'].includes(job.status)) {
+                clearInterval(factsRefreshInterval);
+                currentFactsJobId = null;
+            }
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement du job de faits:', error);
+        }
+    }
+
+    function renderFactsJobCard(job) {
+        const statusText = getStatusText(job.status);
+        const statusClass = getStatusClass(job.status);
+        const total = job.total_documents || 0;
+        const done = job.processed_documents || 0;
+        const progressEntries = Object.values(job.progress || {}).filter(p => p.answer_id !== undefined);
+        const factsGenerated = progressEntries.reduce((sum, p) => sum + (p.facts_generated || 0), 0);
+        const failed = progressEntries.filter(p => p.status === 'failed').length;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+        return `
+            <div class="job-card">
+                <div class="job-header">
+                    <span class="job-id">Job faits: ${(job.job_id || '').substring(0, 8)}...</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="job-meta">
+                    🧩 ${done}/${total} réponses traitées — ${factsGenerated} fait(s) extrait(s)
+                    ${failed > 0 ? ` — ⚠️ ${failed} en échec` : ''}
+                    ${job.status === 'running' ? ` — ${percent}%` : ''}
+                </div>
+                ${renderUsageHtml(job.token_usage)}
+                ${(job.errors || []).length > 0
+                    ? `<div class="doc-error" style="margin-top: 6px;">⚠️ ${(job.errors || []).length} erreur(s) — voir les logs du job</div>` : ''}
+            </div>
+        `;
+    }
+
     function renderJobCard(job) {
         const createdDate = new Date(job.created_at).toLocaleString('fr-FR');
         const updatedDate = new Date(job.updated_at).toLocaleString('fr-FR');
@@ -842,6 +1027,7 @@
                     ${job.processed_documents || 0}/${job.total_documents || 0} documents
                 </div>
                 ${parametersHtml}
+                ${renderUsageHtml(job.token_usage)}
                 ${progressHtml}
                 ${job.status === 'running' ? 
                     '<div style="margin-top: 10px; font-size: 12px; color: #b74420;">⏳ Traitement en cours...</div>' : ''}
