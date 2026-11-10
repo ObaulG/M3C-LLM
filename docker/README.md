@@ -1,12 +1,14 @@
 # Configuration Docker pour LLMAgents
 
-Ce dossier contient la configuration Docker pour conteneuriser l'application LLMAgents avec Qdrant. La base de données MySQL est **externe** (déjà présente sur les serveurs M3C) : seuls Qdrant, un service d'initialisation Qdrant et l'application FastAPI tournent en conteneur.
+Ce dossier contient la configuration Docker pour conteneuriser l'application LLMAgents avec Qdrant et, par défaut, une base MySQL locale (service `mysql`). Une base MySQL **externe** (serveurs M3C) reste possible en pointant `DB_HOST` vers le serveur concerné. Un dump SQL de la base M3C initiale peut être importé via `docker/mysql/import_m3c_dump.sh` (voir [Importer un dump de la base M3C](#-importer-un-dump-de-la-base-m3c)).
 
 ## 📖 Sommaire
 
 - [Prérequis](#prérequis)
 - [🚀 Tutoriel : Mise en place complète avec Docker](#-tutoriel--mise-en-place-complète-avec-docker)
 - [📚 Configuration de référence](#-configuration-de-référence)
+- [📥 Importer un dump de la base M3C](#-importer-un-dump-de-la-base-m3c)
+- [🔤 Encodage des caractères accentués](#-encodage-des-caractères-accents)
 - [🎯 Commandes de référence rapide](#-commandes-de-référence-rapide)
 - [📊 Services disponibles](#-services-disponibles)
 - [👨‍💻 Développement](#-développement)
@@ -22,8 +24,9 @@ Ce dossier contient la configuration Docker pour conteneuriser l'application LLM
 ```
 docker/
 ├── mysql/
-│   ├── init.sql                  # Script d'initialisation de la base de données MySQL (référence)
-│   └── migrate_missing_tables.sql # Création manuelle des tables manquantes (base externe)
+│   ├── init.sql                  # Script d'initialisation de la base de données MySQL (exécuté au 1er démarrage du conteneur mysql)
+│   ├── migrate_missing_tables.sql # Création des tables manquantes (base externe ou dump M3C importé)
+│   └── import_m3c_dump.sh        # Import d'un dump SQL de la base M3C initiale dans le MySQL Docker
 ├── qdrant/
 │   └── init.sh           # Création des collections Qdrant au démarrage (service qdrant-init)
 ├── app/
@@ -90,7 +93,9 @@ nano .env  # ou utilisez votre éditeur préféré
 
 | Variable | Valeur par défaut | Description |
 |----------|------------------|-------------|
-| `DB_HOST` | (à définir) | Hôte de la base MySQL **externe** (serveurs M3C) |
+| `DB_HOST` | mysql | Hôte MySQL : `mysql` pour le service Docker local, sinon l'hôte de la base **externe** (serveurs M3C) |
+| `MYSQL_ROOT_PASSWORD` | root | Mot de passe root du conteneur MySQL local (optionnel) |
+| `MYSQL_HOST_PORT` | 3306 | Port publié sur la machine hôte pour le MySQL Docker local |
 | `SOLR_ENABLED` | 0 | Active Solr (désactivé par défaut, non déployé en conteneur) |
 | `REQUIRE_USER_MISTRAL_API_KEY` | true | Oblige les utilisateurs `user`/`guest` à fournir leur propre clé Mistral |
 | `DB_PORT` | 3306 | Port MySQL |
@@ -124,9 +129,13 @@ docker-compose up -d --build
 2. Construit l'image de votre application
 3. Crée les volumes pour les données persistantes
 4. Démarre les services dans l'ordre : Qdrant → qdrant-init (création des collections) → Application
-5. L'application attend que la base MySQL **externe** (`DB_HOST`) et Qdrant soient joignables avant de démarrer
+5. L'application attend que la base MySQL (`DB_HOST`) et Qdrant soient joignables avant de démarrer
 
-> **⚠️ Base MySQL externe** : la base n'est ni créée ni initialisée par Docker. Si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` manuellement sur le serveur MySQL.
+> **💾 Base MySQL locale (défaut)** : avec `DB_HOST=mysql` (`.env.docker`), le service `mysql` du `docker-compose.yml` héberge la base en conteneur. Au **premier démarrage** (volume `mysql_data` vide), `docker/mysql/init.sql` crée la base, l'utilisateur et les tables du projet.
+>
+> **⚠️ Base MySQL externe** : pour pointer vers la base des serveurs M3C, changez `DB_HOST` dans `.env`. La base n'est ni créée ni initialisée par Docker ; si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` manuellement sur le serveur MySQL.
+>
+> **📥 Données M3C initiales** : pour importer un dump SQL de la base M3C initiale dans le MySQL Docker, voir [Importer un dump de la base M3C](#-importer-un-dump-de-la-base-m3c).
 
 **Premier démarrage** : Peut prendre 2-5 minutes selon votre connexion Internet et les performances de votre machine.
 
@@ -173,22 +182,27 @@ Ouvrez votre navigateur et allez sur :
 Vous verrez la documentation interactive Swagger de votre API avec tous les endpoints disponibles.
 
 #### 4. Vérifier la base de données
-La base MySQL est **externe** (aucun conteneur MySQL n'est démarré). Connectez-vous depuis votre machine avec un client MySQL, par exemple :
+Avec `DB_HOST=mysql` (défaut `.env.docker`), la base tourne dans le conteneur `llmagents-mysql` :
 
 ```bash
-mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p $DB_NAME
+# Lister les tables depuis le conteneur
+docker exec -it llmagents-mysql mysql -u $DB_USER -p $DB_NAME
 
-# Dans MySQL, lister les tables
+# Dans MySQL :
 SHOW TABLES;
-
-# Voir la structure d'une table
 DESCRIBE documents;
-
-# Quitter MySQL
 EXIT;
 ```
 
-Si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` sur le serveur.
+Depuis la machine hôte, un client MySQL peut aussi se connecter sur `localhost:3306`.
+
+Si la base est **externe** (`DB_HOST` ≠ `mysql`), connectez-vous depuis votre machine :
+
+```bash
+mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p $DB_NAME
+```
+
+Si des tables manquent, exécutez `docker/mysql/migrate_missing_tables.sql` sur le serveur (fait automatiquement par `import_m3c_dump.sh` en cas d'import).
 
 #### 5. Vérifier Qdrant
 ```bash
@@ -377,11 +391,121 @@ Un fichier `.env.docker` est fourni avec les valeurs par défaut. Vous pouvez :
 
 ### Configuration de la base de données
 
-La base MySQL est **externe** (serveurs M3C) : Docker ne la crée ni ne l'initialise.
+Par défaut (`.env.docker`, `DB_HOST=mysql`), la base tourne dans le service Docker `mysql` (conteneur `llmagents-mysql`, volume `mysql_data`, port `3306` publié sur l'hôte). Une base **externe** (serveurs M3C) reste possible en changeant `DB_HOST`.
 - L'hôte, le port, le nom, l'utilisateur et le mot de passe sont lus depuis le fichier `.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`).
 - Le script `docker/app/entrypoint.sh` attend que MySQL et Qdrant soient joignables avant de démarrer l'application.
-- Les tables manquantes doivent être créées manuellement via `docker/mysql/migrate_missing_tables.sql`.
-- `docker/mysql/init.sql` est conservé comme script de référence (utile si vous déployez une base MySQL vous-même).
+- Au premier démarrage du conteneur `mysql` (volume vide), `docker/mysql/init.sql` crée la base, l'utilisateur et les tables du projet.
+- Sur une base externe ou après import d'un dump M3C, les tables manquantes sont créées via `docker/mysql/migrate_missing_tables.sql` (automatique avec `import_m3c_dump.sh`).
+
+### 📥 Importer un dump de la base M3C
+
+Si vous disposez d'un dump SQL de la base M3C initiale (sans les tables supplémentaires de ce projet), importez-le dans le MySQL Docker :
+
+```bash
+# 1. Démarrer le service MySQL (au premier démarrage, init.sql crée la base et l'utilisateur)
+docker compose up -d mysql
+
+# 2. Importer le dump (fichier .sql ou .sql.gz)
+./docker/mysql/import_m3c_dump.sh chemin/vers/m3c_dump.sql[.gz]
+
+# 3. Redémarrer l'application pour qu'elle exploite les données
+docker compose up -d app
+```
+
+Le script `docker/mysql/import_m3c_dump.sh` :
+- attend que le conteneur `llmagents-mysql` soit sain ;
+- neutralise les instructions `CREATE DATABASE` / `USE` du dump pour importer dans la base `${DB_NAME}` (défaut `m3c_database`) ;
+- applique ensuite `docker/mysql/migrate_missing_tables.sql` pour créer les tables/vues spécifiques au projet (idempotent) ;
+- affiche la liste des tables à la fin.
+
+#### Importer un gros dump (10 Go et plus)
+
+Le service `mysql` est préconfiguré pour l'import massif (`--disable-log-bin`, `--innodb-flush-log-at-trx-commit=2`, buffer pool 1 Go — à adapter à votre RAM dans `docker-compose.yml`), et le script désactive les checks FK/unique pendant l'import. Comptez de l'ordre de 30 min à quelques heures selon le disque.
+
+```bash
+# 0. (Optionnel, recommandé) Adapter le buffer pool à votre RAM dans docker-compose.yml :
+#    --innodb-buffer-pool-size=4G   # ou 8G selon la machine
+
+# 1. Démarrer MySQL avec ces options (recrée le conteneur si déjà lancé avec l'ancienne config)
+docker compose up -d mysql --force-recreate
+
+# 2. Vérifier que MySQL est sain avant de lancer l'import
+docker inspect -f '{{.State.Health.Status}}' llmagents-mysql   # doit afficher : healthy
+
+# 3. Lancer l'import — le dump n'est PAS copié dans le conteneur (pas de docker cp) :
+#    il est envoyé par pipe directement au client mysql, donc pas de double
+#    occupation disque.
+./docker/mysql/import_m3c_dump.sh /chemin/vers/m3c_dump.sql      # ou m3c_dump.sql.gz
+
+# 4. Suivre la progression depuis un autre terminal :
+
+#    a) ce que MySQL est en train de faire (table en cours d'insertion, etc.)
+watch docker exec llmagents-mysql mysql -u root -p -e "SHOW PROCESSLIST"
+
+#    b) la taille des données croître dans le volume
+watch docker exec llmagents-mysql du -sh /var/lib/mysql
+
+#    c) (Optionnel) barre de progression sur le fichier lui-même : installer pv,
+sudo apt install pv
+#       puis remplacer `cat "$DUMP_FILE"` par `pv "$DUMP_FILE"` dans docker/mysql/import_m3c_dump.sh
+
+# 5. Une fois l'import terminé (le script affiche la liste des tables) :
+docker compose up -d app
+```
+
+> **⚠️ Réimport sur base non vide** : les scripts d'init ne s'exécutent que sur un volume vide. Pour repartir d'une base vide avant un nouvel import :
+> ```bash
+> docker compose down mysql
+> docker volume rm m3c-llm_mysql_data   # adapter au nom du projet (docker volume ls pour vérifier)
+> docker compose up -d mysql
+> ```
+>
+> ⚠️ Cela supprime définitivement toutes les données MySQL du conteneur.
+
+### 🔤 Encodage des caractères accentués
+
+Les tables du projet sont créées en `utf8mb4` (`docker/mysql/init.sql`, `migrate_missing_tables.sql`) et le conteneur `mysql` démarre avec `--character-set-server=utf8mb4`. L'application force également `charset=utf8mb4` sur ses connexions MySQL (`app/database/database.py`) : **sans charset explicite, le driver utilise latin1 et les accents sont corrompus à l'écriture**.
+
+Vérifier l'encodage effectif :
+
+```bash
+# Charset de connexion et collation du serveur
+docker exec llmagents-mysql mysql -u OBL -pazerty -e "SHOW VARIABLES LIKE 'character_set%'; SHOW VARIABLES LIKE 'collation%';"
+
+# Charset et collation d'une table
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "SHOW CREATE TABLE knowledge_items\G"
+
+# Charset de chaque table
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "
+  SELECT T.TABLE_NAME, CCSA.CHARACTER_SET_NAME AS charset, T.TABLE_COLLATION AS collation
+  FROM information_schema.TABLES T
+  JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY CCSA
+    ON CCSA.COLLATION_NAME = T.TABLE_COLLATION
+  WHERE T.TABLE_SCHEMA = 'm3c_database' ORDER BY T.TABLE_NAME;"
+
+# Generer les ALTER pour convertir en utf8mb4 les tables qui ne le sont pas
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "
+  SELECT CONCAT('ALTER TABLE \`', T.TABLE_NAME, '\` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;')
+  FROM information_schema.TABLES T
+  JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY CCSA
+    ON CCSA.COLLATION_NAME = T.TABLE_COLLATION
+  WHERE T.TABLE_SCHEMA = 'm3c_database' AND CCSA.CHARACTER_SET_NAME != 'utf8mb4';"
+```
+
+Si des accents sont déjà corrompus dans des données écrites par l'application (avant le fix du charset de connexion) :
+
+```sql
+-- 1) Inspecter : si le texte affiche « Ã© » au lieu de « é » (double encodage utf8->latin1->utf8),
+--    les données sont récupérables. S'il affiche « ? », les caractères ont été perdus à l'écriture.
+SELECT content FROM answers WHERE content LIKE '%Ã©%' LIMIT 5;
+
+-- 2) Réparer le double encodage, colonne par colonne (adapter table/colonne) :
+UPDATE answers
+SET content = CONVERT(CAST(CONVERT(content USING latin1) AS BINARY) USING utf8mb4)
+WHERE content LIKE '%Ã©%';
+```
+
+> ⚠️ Testez d'abord sur une copie ou une transaction (`START TRANSACTION; ... SELECT ... ROLLBACK;`). Les données corrompues ne peuvent pas être réparées à postériori si elles ont été écrites en `?`.
 
 ### Healthchecks
 
@@ -450,7 +574,8 @@ docker-compose up -d --build
 | **qdrant** | 6333 | API HTTP Qdrant | `http://localhost:6333` |
 | **qdrant** | 6334 | API gRPC Qdrant | - |
 | **qdrant-init** | - | Création des collections Qdrant (one-shot) | - |
-| **MySQL** | - | Base de données **externe** (serveurs M3C) | via `DB_HOST` |
+| **mysql** | 3306 | Base de données MySQL locale (défaut avec `DB_HOST=mysql`) | `localhost:3306` |
+| **MySQL externe** | - | Alternative : base des serveurs M3C | via `DB_HOST` |
 
 ---
 

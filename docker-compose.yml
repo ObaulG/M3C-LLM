@@ -40,11 +40,51 @@ services:
     networks:
       - llmagents-network
 
+  # Service MySQL local (optionnel)
+  # Alternative à la base MySQL externe des serveurs M3C : permet d'héberger
+  # la base en conteneur et d'y importer un dump SQL de la base M3C initiale
+  # (voir docker/mysql/import_m3c_dump.sh). Au premier démarrage (volume
+  # mysql_data vide), docker/mysql/init.sql crée la base, l'utilisateur et les
+  # tables du projet.
+  mysql:
+    image: mysql:8.0
+    container_name: llmagents-mysql
+    restart: unless-stopped
+    # Optimisations pour l'import de gros dumps (10 Go+) : pas de binary log,
+    # flush moins strict, buffer pool InnoDB 1G (adapter selon la RAM dispo).
+    command: >-
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --disable-log-bin
+      --innodb-flush-log-at-trx-commit=2
+      --innodb-io-capacity=1000
+      --innodb-buffer-pool-size=1G
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-m3c_database}
+      MYSQL_USER: ${DB_USER:-OBL}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-azerty}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - llmagents-network
+
   # Service Application FastAPI
-  # La base MySQL est externe (déjà présente sur les serveurs M3C).
-  # Les identifiants et l'hôte DB sont lus depuis le fichier .env
-  # (voir .env.docker / .env.example). Les tables manquantes doivent être
-  # créées manuellement via docker/mysql/migrate_missing_tables.sql.
+  # Par défaut (.env.docker), l'application utilise le service MySQL local
+  # ci-dessus (DB_HOST=mysql). Pour une base externe (serveurs M3C), pointez
+  # DB_HOST vers le serveur concerné ; les identifiants DB sont lus depuis le
+  # fichier .env (voir .env.docker / .env.example). Les tables manquantes
+  # doivent être créées manuellement via docker/mysql/migrate_missing_tables.sql
+  # (fait automatiquement par docker/mysql/import_m3c_dump.sh en cas d'import).
   app:
     build:
       context: .
@@ -56,6 +96,8 @@ services:
         condition: service_healthy
       qdrant-init:
         condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
     environment:
       # Configuration MySQL (base externe, valeurs depuis .env)
       DB_HOST: ${DB_HOST}
@@ -103,6 +145,8 @@ services:
 # Volumes pour la persistance des données
 volumes:
   qdrant_data:
+    driver: local
+  mysql_data:
     driver: local
 
 # Réseau dédié pour la communication entre les services
