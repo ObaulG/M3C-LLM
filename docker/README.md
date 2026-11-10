@@ -474,6 +474,22 @@ docker exec llmagents-mysql mysql -u OBL -pazerty -e "SHOW VARIABLES LIKE 'chara
 
 # Charset et collation d'une table
 docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "SHOW CREATE TABLE knowledge_items\G"
+
+# Charset de chaque table
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "
+  SELECT T.TABLE_NAME, CCSA.CHARACTER_SET_NAME AS charset, T.TABLE_COLLATION AS collation
+  FROM information_schema.TABLES T
+  JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY CCSA
+    ON CCSA.COLLATION_NAME = T.TABLE_COLLATION
+  WHERE T.TABLE_SCHEMA = 'm3c_database' ORDER BY T.TABLE_NAME;"
+
+# Generer les ALTER pour convertir en utf8mb4 les tables qui ne le sont pas
+docker exec llmagents-mysql mysql -u OBL -pazerty m3c_database -e "
+  SELECT CONCAT('ALTER TABLE \`', T.TABLE_NAME, '\` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;')
+  FROM information_schema.TABLES T
+  JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY CCSA
+    ON CCSA.COLLATION_NAME = T.TABLE_COLLATION
+  WHERE T.TABLE_SCHEMA = 'm3c_database' AND CCSA.CHARACTER_SET_NAME != 'utf8mb4';"
 ```
 
 Si des accents sont déjà corrompus dans des données écrites par l'application (avant le fix du charset de connexion) :
