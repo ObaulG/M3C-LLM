@@ -173,11 +173,32 @@ async def lifespan(app: FastAPI):
     initialize_evaluators(app)
     await initialize_database(app)
     app.state.message_ev_agent = get_message_type_agent("ministral-3b-2512")
+
+    # Sauvegarde périodique locale (MySQL + Qdrant), optionnelle :
+    # LOCAL_BACKUP_INTERVAL_SECONDS > 0 active une sauvegarde toutes les N secondes
+    backup_task = None
+    backup_interval = int(os.getenv("LOCAL_BACKUP_INTERVAL_SECONDS", "0"))
+    if backup_interval > 0:
+        from database.local_backup import periodic_local_backup
+        backup_task = asyncio.create_task(periodic_local_backup(backup_interval))
+        logger.info("Sauvegarde locale périodique activée (toutes les %ds)", backup_interval)
+
     yield
     # Shutdown (si nécessaire)
+    if backup_task is not None:
+        backup_task.cancel()
     logger.info("Arrêt du serveur : sauvegarde des sessions...")
     sessions_router.persist_sessions_on_shutdown(app)
     logger.info("Sauvegarde terminée.")
+
+    # Sauvegarde locale à la fermeture (tables MySQL du projet + collections Qdrant)
+    if os.getenv("LOCAL_BACKUP_ON_SHUTDOWN", "true").lower() in ("1", "true", "yes"):
+        logger.info("Sauvegarde locale (MySQL + Qdrant)...")
+        try:
+            from database.local_backup import backup_local
+            await backup_local()
+        except Exception:
+            logger.exception("Échec de la sauvegarde locale à l'arrêt")
     pass
 # === APPLICATION FASTAPI ===
 app = FastAPI(

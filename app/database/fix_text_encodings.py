@@ -85,4 +85,6 @@ async def main():
     conn.close()
     print(f"Terminé. Total lignes corrigées : {grand_total}")
 
-asyncio.run(main())
+
+if __name__ == "__main__":
+    asyncio.run(main())

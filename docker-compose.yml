@@ -122,6 +122,12 @@ services:
       REQUIRE_USER_MISTRAL_API_KEY: ${REQUIRE_USER_MISTRAL_API_KEY:-true}
       GROQ_API_KEY: ${GROQ_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # Sauvegarde locale (tables MySQL du projet + collections Qdrant)
+      # exécutée à l'arrêt du serveur et/ou périodiquement (app/database/local_backup.py)
+      LOCAL_BACKUP_ON_SHUTDOWN: ${LOCAL_BACKUP_ON_SHUTDOWN:-true}
+      LOCAL_BACKUP_INTERVAL_SECONDS: ${LOCAL_BACKUP_INTERVAL_SECONDS:-0}
+      LOCAL_BACKUP_RETENTION_DAYS: ${LOCAL_BACKUP_RETENTION_DAYS:-30}
+      LOCAL_BACKUP_DIR: ${LOCAL_BACKUP_DIR:-/app/backups}
     ports:
       - "8000:8000"
     volumes:
@@ -131,6 +137,7 @@ services:
       - ./session_evaluations:/app/session_evaluations
       - ./temp_pdfs:/app/temp_pdfs
       - ./exports:/app/exports
+      - ./backups:/app/backups
     networks:
       - llmagents-network
     # Configuration pour le développement (optionnel)
