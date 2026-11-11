@@ -1456,7 +1456,7 @@
         renderGeneratedQuestions();
         updateExportButtonVisibility();
         renderPromptCommands();
-        loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true });
+        loadModelsIntoSelect(document.getElementById("modelSelect"), { prefixProvider: true, keepFirst: true, selected: 'mistral/ministral-14b-2512' });
         initCompareSection();
     });
 
