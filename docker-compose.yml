@@ -142,6 +142,41 @@ services:
     # environment:
     #   - PYTHONPATH=/app
 
+  # Service de sauvegarde locale (one-shot, manuel)
+  # Sauvegarde les tables MySQL décrites dans docker/mysql/init.sql et les
+  # collections Qdrant (snapshots) dans ./backups. Exécuter avec :
+  #   docker compose --profile backup run --rm backup
+  # Restauration :
+  #   docker compose --profile backup run --rm backup restore.sh backups/backup_<DATE>
+  backup:
+    build:
+      context: ./docker/backup
+      dockerfile: Dockerfile
+    container_name: llmagents-backup
+    profiles: ["backup"]
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-m3c_database}
+      DB_USER: ${DB_USER:-OBL}
+      DB_PASSWORD: ${DB_PASSWORD:-azerty}
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      BACKUP_DIR: /backups
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    volumes:
+      - ./backups:/backups
+      - ./docker/mysql/init.sql:/init.sql:ro
+      - ./docker/backup/backup.sh:/usr/local/bin/backup.sh:ro
+      - ./docker/backup/restore.sh:/usr/local/bin/restore.sh:ro
+    networks:
+      - llmagents-network
+
 # Volumes pour la persistance des données
 volumes:
   qdrant_data:
