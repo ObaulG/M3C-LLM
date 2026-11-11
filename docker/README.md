@@ -15,7 +15,6 @@ Ce dossier contient la configuration Docker pour conteneuriser l'application LLM
 - [🏭 Production](#-production)
 - [🛠️ Dépannage](#-dépannage)
 - [🔒 Sécurité](#-sécurité)
-- [💾 Sauvegarde locale des données (MySQL + Qdrant)](#-sauvegarde-locale-des-données-mysql--qdrant)
 - [💾 Structure des données](#-structure-des-données)
 
 ---
@@ -30,10 +29,6 @@ docker/
 │   └── import_m3c_dump.sh        # Import d'un dump SQL de la base M3C initiale dans le MySQL Docker
 ├── qdrant/
 │   └── init.sh           # Création des collections Qdrant au démarrage (service qdrant-init)
-├── backup/
-│   ├── backup.sh         # Sauvegarde locale des tables MySQL (celles de init.sql) et des collections Qdrant
-│   ├── restore.sh        # Restauration d'une sauvegarde créée par backup.sh
-│   └── Dockerfile        # Image du service `backup` (mysqldump + curl)
 ├── app/
 │   └── entrypoint.sh     # Script d'entrée pour l'application
 └── README.md             # Ce fichier
@@ -851,8 +846,6 @@ services:
 
 ### 🔥 Sauvegardes automatiques
 
-> **💾 Système de sauvegarde local intégré** : le projet fournit un système de sauvegarde local clé en main (service `backup` du `docker-compose.yml`, profil `backup`). Il sauvegarde **uniquement les tables MySQL décrites dans `docker/mysql/init.sql`** (la liste est extraite automatiquement du fichier SQL) et **toutes les collections Qdrant** (snapshots via l'API Qdrant). Voir [Sauvegarde locale des données](#-sauvegarde-locale-des-données-mysql--qdrant).
-
 **Script de sauvegarde quotidien** (Linux/Mac) :
 ```bash
 #!/bin/bash
@@ -881,57 +874,6 @@ find "$BACKUP_DIR" -name "*.gz" -mtime +$RETENTION -delete
 # Ajouter au cron pour exécuter quotidiennement
 # crontab -e
 # 0 2 * * * /path/vers/backup.sh
-```
-
-## 💾 Sauvegarde locale des données (MySQL + Qdrant)
-
-Le projet inclut un système de sauvegarde local clé en main : le service `backup` (profil `backup`) du `docker-compose.yml`, basé sur les scripts `docker/backup/backup.sh` et `docker/backup/restore.sh`.
-
-**Ce qui est sauvegardé :**
-
-- **MySQL** : uniquement les tables décrites dans `docker/mysql/init.sql` (la liste des tables est extraite automatiquement du fichier SQL à chaque sauvegarde). Le dump est compressé (`mysqldump` + gzip).
-- **Qdrant** : toutes les collections existantes. Un snapshot est créé via l'API Qdrant (`POST /collections/<name>/snapshots`), téléchargé dans le répertoire de sauvegarde, puis supprimé côté serveur.
-
-Les sauvegardes sont écrites dans `./backups/backup_<AAAAMMJJ_HHMMSS>/` (ignoré par git), avec un manifeste (`manifest.txt`) et la liste des tables (`tables.txt`). Les sauvegardes de plus de `BACKUP_RETENTION_DAYS` jours (défaut : 30) sont supprimées automatiquement.
-
-### Sauvegarder
-
-```bash
-# Depuis la racine du projet (les services mysql et qdrant doivent être démarrés)
-docker compose --profile backup run --rm backup
-```
-
-Chaque exécution crée un répertoire `backups/backup_<date>/` contenant :
-
-- `mysql_<base>_<date>.sql.gz` : dump des tables du projet
-- `qdrant_<collection>_<date>.snapshot` : un snapshot par collection Qdrant
-- `manifest.txt`, `tables.txt`, `qdrant_collections.txt` : métadonnées de la sauvegarde
-
-### Restaurer
-
-```bash
-# Lister les sauvegardes disponibles
-ls backups/
-
-# Restaurer une sauvegarde donnée
-docker compose --profile backup run --rm backup restore.sh backups/backup_<date>
-```
-
-La restauration rejoue le dump MySQL dans la base (les tables existantes sont écrasées par le dump) et restaure chaque collection Qdrant depuis son snapshot (la collection est créée si elle n'existe pas, sinon ses données sont remplacées).
-
-### Automatiser (cron)
-
-```bash
-# Sauvegarde quotidienne à 2h du matin
-crontab -e
-0 2 * * * cd /chemin/vers/M3C-LLM && docker compose --profile backup run --rm backup
-```
-
-### Sans Docker (machine hôte avec `mysqldump` et `curl`)
-
-```bash
-DB_HOST=localhost QDRANT_HOST=localhost INIT_SQL=docker/mysql/init.sql BACKUP_DIR=./backups ./docker/backup/backup.sh
-BACKUP_DIR=./backups DB_HOST=localhost QDRANT_HOST=localhost ./docker/backup/restore.sh backup_<date>
 ```
 
 ## 💾 Structure des données
