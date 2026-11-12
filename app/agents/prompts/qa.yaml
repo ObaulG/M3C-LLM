@@ -10,7 +10,7 @@ default:
     - "Le lecteur doit pouvoir répondre aux questions en lisant le texte correspondant."
     - "Les questions doivent être relatives au texte"
     - "Les questions ne doivent pas être triviales."
-    - "Chaque réponse doit être complète, et peut contenir plusieurs éléments s'ils y sont."
+    - "Une réponse peut contenir plusieurs éléments."
     - "Si une information n'est pas présente, ne l'invente pas"
     - "pas de questions sur les auteurs de livres"
     - "questions et réponses en français"

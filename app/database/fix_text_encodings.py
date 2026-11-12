@@ -13,9 +13,7 @@ TABLES = [
     'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
     'user', 'user_interests_entities', 'user_interests_themes',
     'user_knowledge_states', 'user_mistral_api_keys', 'user_model_history',
-    'user_profiles', 'user_sessions',
-    'value',   # table M3C (hors fichiers SQL du projet)
-]
+    'user_profiles', 'user_sessions']
 
 BATCH = 10_000  # lignes par lot — à réduire si besoin
 

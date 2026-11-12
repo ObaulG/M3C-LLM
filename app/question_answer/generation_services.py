@@ -756,13 +756,13 @@ async def process_question_generation_job(job_id: str):
                 result = await cur.fetchone()
                 existing_questions_count = result[0] if result else 0
                 
-            if existing_questions_count >= 3:
+            if existing_questions_count >= 2:
                 print(f"Chunk {chunk_id} a déjà {existing_questions_count} questions, on saute la génération")
                 progress[chunk_id] = {
                     "chunk_id": chunk_id,
                     "document_id": document_id,
                     "questions_generated": 0,
-                    "error": "Déjà 3+ questions existantes",
+                    "error": "Déjà 2+ questions existantes",
                     "status": "skipped"
                 }
                 processed_chunks += 1

@@ -39,11 +39,9 @@ from pathlib import Path
 from typing import List, Optional
 
 try:
-    from database.fix_text_encodings import TABLES
     from database.backup_to_sql import backup as backup_mysql
     from jobs.export_data import export_qdrant
 except ImportError:
-    from app.database.fix_text_encodings import TABLES
     from app.database.backup_to_sql import backup as backup_mysql
     from app.jobs.export_data import export_qdrant
 
@@ -52,6 +50,20 @@ logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = Path(os.getenv("LOCAL_BACKUP_DIR", "backups"))
 RETENTION_DAYS = int(os.getenv("LOCAL_BACKUP_RETENTION_DAYS", "30"))
 
+TABLES = [
+    'answers', 'chatbot_feedbacks', 'chatbot_message_chunks', 'chatbot_messages',
+    'chunk_embeddings', 'document_reading_sessions', 'documents', 'entities',
+    'evaluations', 'indexing_jobs', 'knowledge_item_entities', 'knowledge_item_questions',
+    'knowledge_items', 'knowledge_item_themes', 'knowledge_sources', 'llm_interpretations',
+    'model_evidences', 'observation_payloads', 'observations', 'observation_targets',
+    'question_session_questions', 'question_sessions', 'questions',
+    'session_answers', 'session_messages', 'sessions',
+    'text_answer_facts', 'text_chunking_strategies', 'text_chunks',
+    'text_document_chunking_validation', 'text_documents',
+    'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
+    'user', 'user_interests_entities', 'user_interests_themes',
+    'user_knowledge_states', 'user_mistral_api_keys', 'user_model_history',
+    'user_profiles', 'user_sessions']
 
 def _cleanup_old_backups(output_dir: Path, retention_days: int = RETENTION_DAYS) -> None:
     """Supprime les sauvegardes MySQL et Qdrant plus vieilles que retention_days."""
