@@ -726,7 +726,7 @@ function displayQuestions(questions, count) {
     // Charger les modèles dans le sélecteur du menu d'actions groupées
     const bulkModelSelect = document.getElementById('bulkModel');
     if (bulkModelSelect && typeof loadModelsIntoSelect === 'function') {
-        loadModelsIntoSelect(bulkModelSelect, { prefixProvider: true, keepFirst: true });
+        loadModelsIntoSelect(bulkModelSelect, { prefixProvider: true, keepFirst: true, selected: 'mistral/ministral-14b-2512' });
     }
 
     // Afficher les chips de commandes personnalisées prédéfinies
