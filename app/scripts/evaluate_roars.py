@@ -60,7 +60,7 @@ EVALUATION_MODELS = {
     "ministral-8b": "ministral-8b-2512",
     "ministral-14b": "ministral-14b-2512",
 }
-FACTS_MODEL_DEFAULT = "mistral-large-4"
+FACTS_MODEL_DEFAULT = "ministral-3b-2512"
 MAX_RETRIES = 2
 
 
@@ -74,11 +74,22 @@ def load_texts():
 
 
 def build_question_passage_map():
-    """Déduit le passage de chaque question depuis ROARS_data.csv."""
+    """Texte du passage de chaque question.
+
+    Utilise la colonne "relevant_passage" de ROARS_data.csv si elle est
+    présente, sinon le passage identifié par passage_id dans ROARS_texts.csv.
+    """
+    texts = load_texts()
     mapping = {}
     with open(DATA_FILE, encoding="utf-8-sig", newline="") as f:
         for row in csv.DictReader(f):
-            mapping.setdefault(row["question_id"], row["passage_id"])
+            qid = row["question_id"]
+            if qid in mapping:
+                continue
+            if row.get("relevant_passage", "").strip():
+                mapping[qid] = row["relevant_passage"].strip()
+            else:
+                mapping[qid] = texts.get(row["passage_id"], "")
     return mapping
 
 
@@ -105,7 +116,7 @@ def build_reference_answers(facts_model: str) -> dict:
     questions = {}
     for qid in question_ids:
         question = texts[qid]
-        passage = texts.get(passage_map[qid], "")
+        passage = passage_map[qid]
 
         reference_answer = None
         try:
