@@ -3,6 +3,5 @@ app/config.py
 rag_sessions_backup.json
 /exports
 /backups
-/test-ROARs
 /app/database/backups
 app/jobs/jobs.json

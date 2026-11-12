@@ -1,0 +1,126 @@
+text_id,text_type,text
+S1,story,"Lucy was different from all the other sheep right from the start. When all the other lambs just stood shyly by their mothers, Lucy was leaping around, ready for adventure.Lucy lived with all the other sheep on a hillside far from the farm. They had a shepherd to look after them and he had an old dog named Jack. Jack tried to keep Lucy under control, but she wasn’t scared of him.
+ ""One time, Lucy jumped over the side of a riverbank and went for a swim in the fast-running stream. “Tut, tut,” said the older sheep, shaking their heads. What would they say if they knew that at night Lucy secretly roamed through the countryside?
+  
+ When all the other sheep were sleeping, she would slip away to her special place and gaze at the moon. Even Jack didn’t notice. But he didn’t have very good ears these days.
+  
+ One day something terrible happened. The shepherd fell over and broke his leg. Jack barked and circled around him, but that didn’t help one bit. The shepherd lay in the grass, not knowing what to do. 
+ 
+ “Oh dear, oh dear,” said the older sheep. “Somebody must go to the farmer’s house in the valley and get help.” 
+ 
+ “Jack should go. He is the only one who knows the way.”
+ 
+ “But it is too far. He hardly manages with the herd these days.”
+ 
+ “Yes, that’s true,” said the others, shaking their heads in despair.""
+ ""One time, Lucy jumped over the side of a riverbank and went for a swim in the fast-running stream. “Tut, tut,” said the older sheep, shaking their heads. What would they say if they knew that at night Lucy secretly roamed through the countryside?
+  
+ When all the other sheep were sleeping, she would slip away to her special place and gaze at the moon. Even Jack didn’t notice. But he didn’t have very good ears these days.
+  
+ One day something terrible happened. The shepherd fell over and broke his leg. Jack barked and circled around him, but that didn’t help one bit. The shepherd lay in the grass, not knowing what to do. 
+ 
+ “Oh dear, oh dear,” said the older sheep. “Somebody must go to the farmer’s house in the valley and get help.” 
+ 
+ “Jack should go. He is the only one who knows the way.”
+ 
+ “But it is too far. He hardly manages with the herd these days.”
+ 
+ “Yes, that’s true,” said the others, shaking their heads in despair.""
+ ""Then Lucy said, “I’ll do it. I’ll go.” “Lucy?” muttered the older sheep. “Out of the question! A sheep has never gone to the valley alone.” 
+ 
+ The older sheep were beside themselves with worry. But Lucy couldn’t hear them. She had already left to find the right way to the valley. She bounded over fields, through the stream, and over the mountain.
+ 
+ When Lucy reached the busy road, it was the middle of the night. She stood and watched the traffic. A truck driver noticed Lucy and stopped in the road. “Going to the valley?” he asked. Lucy nodded.""
+ ""Then Lucy said, “I’ll do it. I’ll go.” “Lucy?” muttered the older sheep. “Out of the question! A sheep has never gone to the valley alone.” 
+ 
+ The older sheep were beside themselves with worry. But Lucy couldn’t hear them. She had already left to find the right way to the valley. She bounded over fields, through the stream, and over the mountain.
+ 
+ When Lucy reached the busy road, it was the middle of the night. She stood and watched the traffic. A truck driver noticed Lucy and stopped in the road. “Going to the valley?” he asked. Lucy nodded.""
+ ""It was so nice to speed along in the truck that Lucy was almost sorry when they reached the farmer’s house. The farmer was asleep when Lucy tapped on his window with her nose.
+  
+ “It’s Lucy,” said the farmer, “and she is all alone. Something must be wrong.”""
+ ""It was so nice to speed along in the truck that Lucy was almost sorry when they reached the farmer’s house. The farmer was asleep when Lucy tapped on his window with her nose.
+  
+ “It’s Lucy,” said the farmer, “and she is all alone. Something must be wrong.”""
+ ""
+ Lucy and the farmer drove on the tractor to find the other sheep. When they arrived, the poor shepherd was still lying in the grass. The farmer took him to the hospital right away.
+ The shepherd had his leg in a cast for six weeks before he could go back to the sheep. When he returned, he gave Lucy a big smile. From then on, Lucy was free to roam as she pleased.""
+ ""
+ Lucy and the farmer drove on the tractor to find the other sheep. When they arrived, the poor shepherd was still lying in the grass. The farmer took him to the hospital right away.
+ The shepherd had his leg in a cast for six weeks before he could go back to the sheep. When he returned, he gave Lucy a big smile. From then on, Lucy was free to roam as she pleased."""
+P01,passage,"Lucy was different from all the other sheep right from the start. When all the other lambs just stood shyly by their mothers, Lucy was leaping around, ready for adventure.Lucy lived with all the other sheep on a hillside far from the farm. They had a shepherd to look after them and he had an old dog named Jack. Jack tried to keep Lucy under control, but she wasn’t scared of him."
+S1_Q1,question,What did Jack try to do with Lucy?
+P02,passage,"One time, Lucy jumped over the side of a riverbank and went for a swim in the fast-running stream. “Tut, tut,” said the older sheep, shaking their heads. What would they say if they knew that at night Lucy secretly roamed through the countryside?
+  
+ When all the other sheep were sleeping, she would slip away to her special place and gaze at the moon. Even Jack didn’t notice. But he didn’t have very good ears these days.
+  
+ One day something terrible happened. The shepherd fell over and broke his leg. Jack barked and circled around him, but that didn’t help one bit. The shepherd lay in the grass, not knowing what to do. 
+ 
+ “Oh dear, oh dear,” said the older sheep. “Somebody must go to the farmer’s house in the valley and get help.” 
+ 
+ “Jack should go. He is the only one who knows the way.”
+ 
+ “But it is too far. He hardly manages with the herd these days.”
+ 
+ “Yes, that’s true,” said the others, shaking their heads in despair."
+S1_Q3,question,Where did the animals need to go to get help?
+P03,passage,"Then Lucy said, “I’ll do it. I’ll go.” “Lucy?” muttered the older sheep. “Out of the question! A sheep has never gone to the valley alone.” 
+ 
+ The older sheep were beside themselves with worry. But Lucy couldn’t hear them. She had already left to find the right way to the valley. She bounded over fields, through the stream, and over the mountain.
+ 
+ When Lucy reached the busy road, it was the middle of the night. She stood and watched the traffic. A truck driver noticed Lucy and stopped in the road. “Going to the valley?” he asked. Lucy nodded."
+S1_Q4,question,Why couldn’t Lucy hear the older sheep?
+S1_Q5,question,When did Lucy reach the road?
+P04,passage,"Lucy and the farmer drove on the tractor to find the other sheep. When they arrived, the poor shepherd was still lying in the grass. The farmer took him to the hospital right away.
+ The shepherd had his leg in a cast for six weeks before he could go back to the sheep. When he returned, he gave Lucy a big smile. From then on, Lucy was free to roam as she pleased."
+S1_Q8,question,How long did the shepherd have a cast on his leg?
+S1_Q9,question,Why did the shepherd give Lucy a big smile?
+S2,story,"The Lonely Giraffe
+ The jungle animals were a friendly bunch. All the animals met every morning to talk about the jungle news. Everyone took their turn to speak, but no one listened to the giraffe.
+ The giraffe was just too tall. By the time he lowered his head to the ground to speak the other animals had lost interest.
+ 
+ So the giraffe would lift his long neck and wander off. He spent all day with his head in the trees eating the sweetest leaves. He didn’t know that the birds were frightened of his large head suddenly appearing in the treetops. Or that the small animals on the ground ran away because they were scared of being stepped on. After a while, the lonely giraffe stopped trying to speak to anyone. This went on for the rest of the long dry summer.
+ 
+ Then the rainy season came. The rain poured down for days. The animals huddled together beneath the bushes. Then the leopard heard a distant roar. But nobody could think what it was. The giraffe looked over the heads of the animals on the ground. His big eyes widened like saucers and he slowly bent down until the worried animals could hear him.
+  
+ “The river is flooding,” said the giraffe. “A wall of water is racing down the valley and will soon be here.”
+  
+ “What can we do?” asked the gazelle. “It’s too late to run away.”
+ 
+ 
+ “Climb up here,” called the monkey from the treetops. “The river won’t reach the high branches.”
+  
+ The animals raced to the trees. But some of them could not climb up the slippery tree trunks. Their hooves and tails were not made for climbing.
+ 
+ Then the giraffe had an idea. He bent his knees and spoke to the animals. “Climb on to my back. The water is almost here.” The flooded river was splashing around the animals. The monkey jumped onto the giraffe’s neck and called to the others. The hairy wart hog was next to carefully climb on. One by one the animals helped each other to safety.
+ 
+ 
+ The giraffe straightened his knees as the water flooded the jungle. He stretched up his long neck and the last few animals hurried into the branches. The water washed around the giraffe’s strong legs and sprayed the animals in the trees.
+  
+ Then the flood rushed on. The water slowly sank back to the ground and the sun came out from behind the clouds. The giraffe poked his head up into the high branches and the animals slid down his back to the ground.
+  
+ From that day on the giraffe was never lonely again."
+P05,passage,"The jungle animals were a friendly bunch. All the animals met every morning to talk about the jungle news. Everyone took their turn to speak, but no one listened to the giraffe.
+ The giraffe was just too tall. By the time he lowered his head to the ground to speak the other animals had lost interest."
+S2_Q1,question,Why didn’t anyone listen to the giraffe?
+P06,passage,"So the giraffe would lift his long neck and wander off. He spent all day with his head in the trees eating the sweetest leaves. He didn’t know that the birds were frightened of his large head suddenly appearing in the treetops. Or that the small animals on the ground ran away because they were scared of being stepped on. After a while, the lonely giraffe stopped trying to speak to anyone. This went on for the rest of the long dry summer."
+S2_Q3,question,What did the giraffe stop doing over the summer?
+P07,passage,"Then the rainy season came. The rain poured down for days. The animals huddled together beneath the bushes. Then the leopard heard a distant roar. But nobody could think what it was. The giraffe looked over the heads of the animals on the ground. His big eyes widened like saucers and he slowly bent down until the worried animals could hear him.
+  
+ “The river is flooding,” said the giraffe. “A wall of water is racing down the valley and will soon be here.”
+  
+ “What can we do?” asked the gazelle. “It’s too late to run away.”"
+S2_Q4,question,Why did the animals huddle together beneath the bushes?
+P08,passage,"“Climb up here,” called the monkey from the treetops. “The river won’t reach the high branches.”
+  
+ The animals raced to the trees. But some of them could not climb up the slippery tree trunks. Their hooves and tails were not made for climbing.
+ 
+ Then the giraffe had an idea. He bent his knees and spoke to the animals. “Climb on to my back. The water is almost here.” The flooded river was splashing around the animals. The monkey jumped onto the giraffe’s neck and called to the others. The hairy wart hog was next to carefully climb on. One by one the animals helped each other to safety."
+S2_Q6,question,Why were the animals trying to climb to the treetops?
+P09,passage,"The giraffe straightened his knees as the water flooded the jungle. He stretched up his long neck and the last few animals hurried into the branches. The water washed around the giraffe’s strong legs and sprayed the animals in the trees.
+  
+ Then the flood rushed on. The water slowly sank back to the ground and the sun came out from behind the clouds. The giraffe poked his head up into the high branches and the animals slid down his back to the ground.
+  
+ From that day on the giraffe was never lonely again."
+S2_Q8,question,What did the animals do when the sun came out again?
+S2_Q9,question,How was the giraffe’s life different after the flood?

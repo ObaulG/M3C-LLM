@@ -1,0 +1,1069 @@
+student,gender,age,english,modality,story_id,passage_id,question_id,question_num,student_answer,2class_human_groundtruth,2class_best_model,3class_human_groundtruth,3class_best_model
+AT002879,Male,13,0,written,S1,P01,S1_Q1,Q1,He want them to go muttered the older sheep.,0,0,0,0
+RI1000100,Female,13,0,spoken,S1,P01,S1_Q1,Q1,I think he wanted to __ thing,0,0,0,0
+RI1000052,Female,12,0,spoken,S1,P01,S1_Q1,Q1,lucky's uncle.. to maybe.. she's helping the uncle,0,0,0,0
+AT002799,Female,17,0,written,S1,P01,S1_Q1,Q1,the one did not listen to the giraffe because any time the lowered his head to the ground to speent the other animals had lost interest,0,0,0,0
+AT001863,Female,14,0,spoken,S1,P01,S1_Q1,Q1,tried to do it around jack,0,0,0,0
+AT002713,Female,11,0,spoken,S1,P02,S1_Q3,Q3,because,0,0,0,0
+AT002879,Male,13,0,written,S1,P02,S1_Q3,Q3,because the shepherd don't now What to do.,0,0,0,0
+AT003056,Female,12,0,written,S1,P02,S1_Q3,Q3,because the shepherd fell down,0,0,0,0
+AT002266,Female,14,0,written,S1,P02,S1_Q3,Q3,because the shepherd fell over and broke his leg.,0,0,0,0
+AT002907,Female,14,0,written,S1,P02,S1_Q3,Q3,Because The Shepherd fell over and broke his leg.,0,0,0,0
+RI1000052,Female,12,0,spoken,S1,P02,S1_Q3,Q3,cause the animals need help,0,0,0,0
+AT002799,Female,17,0,written,S1,P02,S1_Q3,Q3,He stopped telling to all the animals. This went on for the long dry summer.,0,0,0,0
+RI1000120,Male,11,0,written,S1,P02,S1_Q3,Q3,Lucy,0,0,0,0
+RI1000100,Female,13,0,spoken,S1,P02,S1_Q3,Q3,Lucy jump over the riverbank,0,0,0,0
+AT001073,Female,14,0,spoken,S1,P02,S1_Q3,Q3,no idea,0,0,0,0
+AT002996,Female,15,0,written,S1,P02,S1_Q3,Q3,"She bounded over fields, through the stream.",0,0,0,0
+AT002295,Female,19,0,written,S1,P02,S1_Q3,Q3,The animals need to go to get help because to the sheppherd fell over and broke his leg.,0,0,0,0
+AT002770,Female,18,0,written,S1,P02,S1_Q3,Q3,"The animals need to go to get help because, the shepherd who look after them was hurt with his leg.",0,0,0,0
+RI1000027,Male,9,0,spoken,S1,P02,S1_Q3,Q3,the shepherd,0,0,0,0
+AT002999,Male,16,0,written,S1,P02,S1_Q3,Q3,They need,0,0,0,0
+AT002899,Male,15,0,written,S1,P02,S1_Q3,Q3,They need to get help from the Giraffe,0,0,0,0
+RI1000093,Male,13,0,spoken,S1,P02,S1_Q3,Q3,they need to go to the shepherd,0,0,0,0
+RI1000045,Female,11,0,written,S1,P02,S1_Q3,Q3,They told Jack to go,0,0,0,0
+AT003059,Male,14,0,spoken,S1,P02,S1_Q3,Q3,to the grass,0,0,0,0
+AT002614,Male,15,0,written,S1,P02,S1_Q3,Q3,When the shepherd Fell Over and broke his leg,0,0,0,0
+AT002867,Male,21,0,written,S1,P02,S1_Q3,Q3,When the Shepherd fell over and broke his leg.,0,0,0,0
+AT002899,Male,15,0,written,S1,P03,S1_Q4,Q4,Because,0,0,0,0
+AT002867,Male,21,0,written,S1,P03,S1_Q4,Q4,Because he didn't have very good ears these days.,0,0,0,0
+RI1000045,Female,11,0,written,S1,P03,S1_Q4,Q4,Because he muttered.,0,0,0,0
+RI1000105,Female,9,0,spoken,S1,P03,S1_Q4,Q4,because lucy could not hear,0,0,0,0
+AT002739,Male,14,0,spoken,S1,P03,S1_Q4,Q4,because lucy needed the older sheep,0,0,0,0
+AT003056,Female,12,0,written,S1,P03,S1_Q4,Q4,because lucy want to swim,0,0,0,0
+RI1000158,Female,11,1,spoken,S1,P03,S1_Q4,Q4,because she might share the older sheep,0,0,0,0
+AT001019,Female,13,0,written,S1,P03,S1_Q4,Q4,Because the older sheep were beside the themselves.,0,0,0,0
+AT002431,Female,15,0,written,S1,P03,S1_Q4,Q4,because the older sheep were beside themselves with worry.,0,0,0,0
+AT003055,Female,15,0,written,S1,P03,S1_Q4,Q4,because the older sheep were beside themselves with worry.,0,0,0,0
+AT002955,Male,14,0,written,S1,P03,S1_Q4,Q4,Because the older sheep were beside themselves.,0,0,0,0
+AT002907,Female,14,0,written,S1,P03,S1_Q4,Q4,Because The older sheep were inside,0,0,0,0
+AT002148,Female,15,1,spoken,S1,P03,S1_Q4,Q4,because the other sheeps were beside themselves,0,0,0,0
+AT000214,Female,15,0,written,S1,P03,S1_Q4,Q4,Because the sheep was old.,0,0,0,0
+AT001021,Female,12,0,written,S1,P03,S1_Q4,Q4,because the sheep was shaking their heads in despair.,0,0,0,0
+AT002066,Female,18,0,written,S1,P03,S1_Q4,Q4,because the sheep was worry,0,0,0,0
+AT002879,Male,13,0,written,S1,P03,S1_Q4,Q4,"because they stream ""Tutituti""",0,0,0,0
+RI1000120,Male,11,0,written,S1,P03,S1_Q4,Q4,Bewos He was different from all the Other Sheep right from the start.,0,0,0,0
+AT001863,Female,14,0,spoken,S1,P03,S1_Q4,Q4,cause the sheep was too old,0,0,0,0
+AT000097,Female,12,1,written,S1,P03,S1_Q4,Q4,I think that was the fist sheep he hard,0,0,0,0
+AT002996,Female,15,0,written,S1,P03,S1_Q4,Q4,It was so nice to speed along in the truck.,0,0,0,0
+RI1000100,Female,13,0,spoken,S1,P03,S1_Q4,Q4,jack and the ..,0,0,0,0
+AT002295,Female,19,0,written,S1,P03,S1_Q4,Q4,lucy couldn't hear the older sheep because he was gazing at the moon.,0,0,0,0
+AT000113,Female,13,0,written,S1,P03,S1_Q4,Q4,Lucy couldn't hear the older sheep. Because the older sheep shaking their heaads,0,0,0,0
+AT002763,Female,13,0,written,S1,P03,S1_Q4,Q4,Lucy was leaping around ready for adventure,0,0,0,0
+RI1000053,Male,12,0,written,S1,P03,S1_Q4,Q4,muttered the older sheep,0,0,0,0
+RI1000038,Female,9,0,written,S1,P03,S1_Q4,Q4,She could not hear them because the older sheeps were beside themselves with worry.,0,0,0,0
+AT002973,Female,17,0,written,S1,P03,S1_Q4,Q4,She did muttered the older sheep,0,0,0,0
+AT002947,Female,14,0,written,S1,P03,S1_Q4,Q4,The older sheep were beride themselves with worry.,0,0,0,0
+AT001504,Female,11,0,written,S1,P03,S1_Q4,Q4,The older sheep were beside them selves with worry,0,0,0,0
+RI1000030,Male,14,0,spoken,S1,P03,S1_Q4,Q4,the older sheep were beside themselves,0,0,0,0
+AT002266,Female,14,0,written,S1,P03,S1_Q4,Q4,The older sheep were beside themselves with worry.,0,0,0,0
+AT002799,Female,17,0,written,S1,P03,S1_Q4,Q4,The older sheep were beside themselves with worry.,0,0,0,0
+AT002865,Female,12,0,written,S1,P03,S1_Q4,Q4,The older sheep were beside themselves with worry.,0,0,0,0
+AT002713,Female,11,0,spoken,S1,P03,S1_Q4,Q4,"the other sheep were beside there, the seven _.",0,0,0,0
+AT003059,Male,14,0,spoken,S1,P03,S1_Q4,Q4,the sheep were beside them,0,0,0,0
+AT002177,Female,17,0,spoken,S1,P03,S1_Q4,Q4,they were beside themselves with worry,0,0,0,0
+AT001992,Male,15,0,written,S1,P03,S1_Q4,Q4,This is because lucy jumped over the side of a river bank and went for a swim in the fast running stream.,0,0,0,0
+AT002715,Female,14,0,written,S1,P03,S1_Q4,Q4,,0,0,0,0
+AT002999,Male,16,0,written,S1,P03,S1_Q4,Q4,,0,0,0,0
+AT002996,Female,15,0,written,S1,P03,S1_Q5,Q5,A truck driver noticed Lucy and stopped in the road.,0,0,0,0
+AT000809,Female,13,0,written,S1,P03,S1_Q5,Q5,Because Lucy do not no the road,0,0,0,0
+AT000126,Male,15,0,written,S1,P03,S1_Q5,Q5,"Because she bounded over fields, through the stream, and over the mountain.",0,0,0,0
+AT000097,Female,12,1,written,S1,P03,S1_Q5,Q5,I think Jack is the one who on the road,0,0,0,0
+AT002947,Female,14,0,written,S1,P03,S1_Q5,Q5,Lucy reach the busy road,0,0,0,0
+AT002799,Female,17,0,written,S1,P03,S1_Q5,Q5,Lucy was free to roam as she pleased.,0,0,0,0
+RI1000105,Female,9,0,spoken,S1,P03,S1_Q5,Q5,Lucy. A truck driver noticed Lucy and stopped in the road,0,0,0,0
+AT002607,Male,17,0,written,S1,P03,S1_Q5,Q5,"She bounded over field through the stream, and over the mountain",0,0,0,0
+AT001021,Female,12,0,written,S1,P03,S1_Q5,Q5,"She bounded over fields, through the stream, and over the mountain",0,0,0,0
+AT002963,Female,17,0,written,S1,P03,S1_Q5,Q5,"She bounded over fields, through the stream, and over the mountain",0,0,0,0
+AT002763,Female,13,0,written,S1,P03,S1_Q5,Q5,"She bounded over fields, through the stream, and over the mountain.",0,0,0,0
+RI1000120,Male,11,0,written,S1,P03,S1_Q5,Q5,they Love Lucy,0,0,0,0
+AT002818,Female,13,0,written,S1,P03,S1_Q5,Q5,What would they say if they knew that at night lucy secretly roamed through the countryside,0,0,0,0
+AT002990,Female,14,0,written,S1,P03,S1_Q5,Q5,What would they say if they knew that at night Luy secretly roamed through the countryside.,0,0,0,0
+AT002899,Male,15,0,written,S1,P03,S1_Q5,Q5,,0,0,0,0
+AT002907,Female,14,0,written,S1,P03,S1_Q5,Q5,,0,0,0,0
+AT002999,Male,16,0,written,S1,P03,S1_Q5,Q5,,0,0,0,0
+AT001073,Female,14,0,spoken,S1,P04,S1_Q8,Q8,,0,0,0,0
+RI1000052,Female,12,0,spoken,S1,P04,S1_Q8,Q8,because the farmer took him to the hospital right away,0,0,0,0
+AT002799,Female,17,0,written,S1,P04,S1_Q8,Q8,But Lucy couldn't hear them.,0,0,0,0
+AT002431,Female,15,0,written,S1,P04,S1_Q8,Q8,He fell down and broke his leg,0,0,0,0
+RI1000120,Male,11,0,written,S1,P04,S1_Q8,Q8,shepherd Back,0,0,0,0
+AT002818,Female,13,0,written,S1,P04,S1_Q8,Q8,the shepherd Fell over and broke his leg Jack barked and circled around him but that didn't help one bit.,0,0,0,0
+AT002990,Female,14,0,written,S1,P04,S1_Q8,Q8,"The shepherd fell over and broke his leg. Jack barked and circuled around him, but that didn't help one bit.",0,0,0,0
+AT000142,Female,15,1,written,S1,P04,S1_Q8,Q8,The shepherd is raised up in a bandage for one moot two weeks,0,0,0,0
+AT000097,Female,12,1,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT000214,Female,15,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT000809,Female,13,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT002442,Female,17,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT002953,Female,12,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT002999,Male,16,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT003067,Male,11,0,written,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT002899,Male,15,0,written,S1,P04,S1_Q9,Q9,Because he didn't hear,0,0,0,0
+AT002713,Female,11,0,spoken,S1,P04,S1_Q9,Q9,because he turned...from..,0,0,0,0
+AT002206,Female,14,0,written,S1,P04,S1_Q9,Q9,Because it was so nice to speed along in the huck that Luck was almost sorry when they reached to farmer's house,0,0,0,0
+AT001019,Female,13,0,written,S1,P04,S1_Q9,Q9,Because lucy was free to roam as she pleased.,0,0,0,0
+AT001863,Female,14,0,spoken,S1,P04,S1_Q9,Q9,because lucy went back to the sheep,0,0,0,0
+AT002990,Female,14,0,written,S1,P04,S1_Q9,Q9,"Because the shepherd had his leg in a cast for six weeks before he could go back to the sheep when he returned, he gave lucy a big smile.",0,0,0,0
+AT002763,Female,13,0,written,S1,P04,S1_Q9,Q9,"Because the shepherd has his leg in a cast for six weeks before he could go back to the sheep. When he returned, he gave lucy a big smile.",0,0,0,0
+AT000097,Female,12,1,written,S1,P04,S1_Q9,Q9,but Lucy as a shepherd,0,0,0,0
+RI1000100,Female,13,0,spoken,S1,P04,S1_Q9,Q9,for then on lucy was free to roam as she please,0,0,0,0
+RI1000105,Female,9,0,spoken,S1,P04,S1_Q9,Q9,from then on Lucy was free to roam and she pleased,0,0,0,0
+RI1000052,Female,12,0,spoken,S1,P04,S1_Q9,Q9,he had his leg in the cast,0,0,0,0
+RI1000023,Female,12,0,written,S1,P04,S1_Q9,Q9,"The shepherd had his leg in a cast for six weeks before he could go back to his sheep. When he returned, he gave lucy a big smile.",0,0,0,0
+AT002799,Female,17,0,written,S1,P04,S1_Q9,Q9,The shepherd lay in the grass.,0,0,0,0
+RI1000120,Male,11,0,written,S1,P04,S1_Q9,Q9,they had a shepherd to look after them and he had an old dog named Jack.,0,0,0,0
+AT002867,Male,21,0,written,S1,P04,S1_Q9,Q9,Whe he returned from the hospital,0,0,0,0
+AT002810,Female,13,0,spoken,S1,P04,S1_Q9,Q9,when he returned,0,0,0,0
+AT002607,Male,17,0,written,S1,P04,S1_Q9,Q9,When he returned,0,0,0,0
+AT002865,Female,12,0,written,S1,P04,S1_Q9,Q9,When he returned,0,0,0,0
+AT000809,Female,13,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT001181,Male,13,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT002442,Female,17,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT002818,Female,13,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT002953,Female,12,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT002999,Male,16,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT003067,Male,11,0,written,S1,P04,S1_Q9,Q9,,0,0,0,0
+AT002773,Female,16,0,written,S2,P05,S2_Q1,Q1,"After a while, the lonely giraffe stopped tring to speak to anyone. This went on for the rest of the long dry summer.",0,0,0,0
+AT002611,Male,12,0,written,S2,P05,S2_Q1,Q1,all the animals met every morning to talk about the jungle news.,0,0,0,0
+RI1000052,Female,12,0,written,S2,P05,S2_Q1,Q1,Because all of the are stop born. that why they did not listen to the giraffe or maybe the giraffe is not proper.,0,0,0,0
+AT001021,Female,12,0,spoken,S2,P05,S2_Q1,Q1,because everyone then they are about to speak,0,0,0,0
+AT002954,Male,14,0,written,S2,P05,S2_Q1,Q1,"Because everyone took their turn to speak, but no one listened to the giraffe.",0,1,0,0
+AT002735,Female,14,0,written,S2,P05,S2_Q1,Q1,because they wanted to do their own thing they didn't listened to the giraffe.,0,0,0,0
+AT001976,Female,13,0,written,S2,P05,S2_Q1,Q1,Because they was fear of giraffe,0,0,0,0
+AT003059,Male,14,0,written,S2,P05,S2_Q1,Q1,Because they were scared of been stepped.,0,0,0,0
+AT002932,Female,15,0,written,S2,P05,S2_Q1,Q1,because they were scared of being stepped on.,0,0,0,0
+AT003078,Male,16,0,written,S2,P05,S2_Q1,Q1,because they where of the giraffe.,0,0,0,0
+AT002654,Female,13,0,written,S2,P05,S2_Q1,Q1,but no one listened to the giraffe.,0,0,0,0
+AT002730,Female,12,1,written,S2,P05,S2_Q1,Q1,Every one took their turn to speek,0,0,0,0
+AT002972,Female,13,0,written,S2,P05,S2_Q1,Q1,No one listened to the giraffe. Because they were scared of being stepped on.,0,0,0,0
+AT002562,Female,18,0,written,S2,P05,S2_Q1,Q1,So the giraffe would lift his long neck and wonder off,0,0,0,0
+AT002245,Male,17,0,written,S2,P05,S2_Q1,Q1,the didn't know that the words were frightened up his large head suddenyl appearing in the treetops.,0,0,0,0
+AT001565,Female,11,0,spoken,S2,P05,S2_Q1,Q1,the question was too hard,0,0,0,0
+AT000182,Male,17,0,written,S2,P05,S2_Q1,Q1,They had a shepherd to look after thm and he had an old dog named Jack,0,0,0,0
+AT002928,Male,12,0,written,S2,P05,S2_Q1,Q1,they listened to the giraffe because the sun come out Again,0,0,0,0
+AT001258,Male,16,0,written,S2,P05,S2_Q1,Q1,,0,0,0,0
+AT002537,Female,12,0,written,S2,P05,S2_Q1,Q1,,0,0,0,0
+AT002974,Female,14,0,written,S2,P05,S2_Q1,Q1,,0,0,0,0
+AT000182,Male,17,0,written,S2,P06,S2_Q3,Q3,A truck driver noticed Lucy and stopped in the road.,0,0,0,0
+AT003081,Male,15,0,written,S2,P06,S2_Q3,Q3,because all of the animals afried of him and they also run away,0,0,0,1
+RI1000120,Male,11,0,spoken,S2,P06,S2_Q3,Q3,because he was afraid and...hungry,0,0,0,0
+AT002607,Male,17,0,spoken,S2,P06,S2_Q3,Q3,because they didn't listen to him,0,0,0,0
+AT001021,Female,12,0,spoken,S2,P06,S2_Q3,Q3,because they were scared of being stepped on,0,0,0,0
+AT002537,Female,12,0,written,S2,P06,S2_Q3,Q3,By the time he lowered his head to the ground to speak the other animals had lost interest,0,0,0,0
+AT002921,Male,13,0,written,S2,P06,S2_Q3,Q3,he slowly bent down until the worried animals ould hear him.,0,0,0,0
+AT002739,Male,14,0,written,S2,P06,S2_Q3,Q3,He stoped eating from the tall tress during summer.,0,0,0,0
+AT001565,Female,11,0,spoken,S2,P06,S2_Q3,Q3,he stopped eating the sweet leaves,0,0,0,0
+AT003056,Female,12,0,spoken,S2,P06,S2_Q3,Q3,he went for rest,0,0,0,0
+RI1000003,Female,9,0,written,S2,P06,S2_Q3,Q3,Is because all the animals were frightened,0,0,0,0
+AT003059,Male,14,0,written,S2,P06,S2_Q3,Q3,It's was too late to run away.,0,0,0,0
+AT002245,Male,17,0,written,S2,P06,S2_Q3,Q3,the animals huddled together beneath the bushes,0,0,0,0
+AT000190,Male,15,0,spoken,S2,P06,S2_Q3,Q3,the giraffe is talking to everyone,0,1,0,2
+AT002611,Male,12,0,written,S2,P06,S2_Q3,Q3,the giraffe looked over the heads of the animals on the ground.,0,0,0,0
+AT002928,Male,12,0,written,S2,P06,S2_Q3,Q3,the giraffe stoped hidden under their legs.,0,0,0,0
+RI1000052,Female,12,0,written,S2,P06,S2_Q3,Q3,The want on for the rest of the long dry summer.,0,0,0,0
+AT002773,Female,16,0,written,S2,P06,S2_Q3,Q3,Then the leopard heard a distant road. But nobody could think what it was.,0,0,0,0
+RI1000100,Female,13,0,written,S2,P06,S2_Q3,Q3,This want on for the rest of The long dry summer.,0,0,0,0
+AT002562,Female,18,0,written,S2,P06,S2_Q3,Q3,This went on for,0,0,0,0
+AT000113,Female,13,0,spoken,S2,P06,S2_Q3,Q3,this went on for the rest of the long dry summer,0,0,0,0
+AT002177,Female,17,0,written,S2,P06,S2_Q3,Q3,this went on for the rest of the long dry summer,0,0,0,0
+AT002798,Male,14,0,written,S2,P06,S2_Q3,Q3,This went on for the rest of the long dry summer,0,0,0,0
+RI1000027,Male,9,0,written,S2,P06,S2_Q3,Q3,This went on for the rest of the long dry summer,0,0,0,0
+AT002734,Male,16,0,written,S2,P06,S2_Q3,Q3,this went on for the rest of the long dry summer.,0,0,0,0
+AT002972,Female,13,0,written,S2,P06,S2_Q3,Q3,This went on for the rest of the long dry summer.,0,0,0,0
+RI1000105,Female,9,0,written,S2,P06,S2_Q3,Q3,This went on for the rest of the long dry summer.,0,0,0,0
+RI1000053,Male,12,0,spoken,S2,P06,S2_Q3,Q3,this went on for the rest of the long summer,0,0,0,0
+AT001258,Male,16,0,written,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT002067,Female,14,0,written,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT002954,Male,14,0,written,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT002974,Female,14,0,written,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT003078,Male,16,0,written,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT002773,Female,16,0,written,S2,P07,S2_Q4,Q4,"The river is flooding"" said the giraffe. ""A wall of water is racing down the valley and will soon be here.""",0,0,0,0
+RI1000075,Male,11,0,spoken,S2,P07,S2_Q4,Q4,a leopard,0,0,0,0
+RI1000015,Female,10,1,written,S2,P07,S2_Q4,Q4,Because the river is flooding.,0,0,0,0
+RI1000035,Male,11,1,written,S2,P07,S2_Q4,Q4,Because the river was flood,0,0,0,0
+AT002537,Female,12,0,written,S2,P07,S2_Q4,Q4,Because they don't want to giraffe to them,0,0,0,0
+RI1000027,Male,9,0,written,S2,P07,S2_Q4,Q4,because they dont want the giraffe to know,0,0,0,0
+AT000685,Male,15,1,written,S2,P07,S2_Q4,Q4,Because they heard a distant roar,0,1,0,0
+RI1000074,Female,11,0,spoken,S2,P07,S2_Q4,Q4,because they think nobody was there,0,0,0,0
+AT002924,Female,14,0,written,S2,P07,S2_Q4,Q4,But nobody could think what it was,0,0,0,0
+RI1000013,Male,12,1,spoken,S2,P07,S2_Q4,Q4,he had to get up in the bushes to keep warm,0,0,0,0
+AT003078,Male,16,0,written,S2,P07,S2_Q4,Q4,on the giraffe's neck,0,0,0,0
+AT000182,Male,17,0,written,S2,P07,S2_Q4,Q4,The farmer was asleep Lucy tapped on his window with her nose.,0,0,0,0
+RI1000120,Male,11,0,spoken,S2,P07,S2_Q4,Q4,The giraffe wants help,0,0,0,0
+AT002972,Female,13,0,written,S2,P07,S2_Q4,Q4,The the leopard heard a distant roar.,0,0,0,0
+RI1000052,Female,12,0,written,S2,P07,S2_Q4,Q4,Then the leopard heard a distant roar.,0,0,0,0
+RI1000100,Female,13,0,written,S2,P07,S2_Q4,Q4,Then the leopard heard a distant roar.,0,0,0,0
+AT002956,Female,16,0,written,S2,P07,S2_Q4,Q4,They huddle bushes because the Foold was Coming.,0,0,0,1
+AT002928,Male,12,0,written,S2,P07,S2_Q4,Q4,they huddle the bushes because of the sun.,0,0,0,0
+AT002654,Female,13,0,written,S2,P07,S2_Q4,Q4,This went on for the rest of the long dry summer,0,0,0,0
+AT002739,Male,14,0,written,S2,P07,S2_Q4,Q4,To keep the bush safe.,0,0,0,0
+RI1000053,Male,12,0,spoken,S2,P07,S2_Q4,Q4,well.. but nobody could drink that ... it was ..,0,0,0,0
+AT002611,Male,12,0,written,S2,P07,S2_Q4,Q4,What can we do asked the gazelle.,0,0,0,0
+AT000209,Male,15,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT001258,Male,16,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT002245,Male,17,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT002562,Female,18,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT002932,Female,15,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT002974,Female,14,0,written,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT001976,Female,13,0,written,S2,P08,S2_Q6,Q6,Because the animals racing to the tree,0,0,0,0
+AT001166,Female,18,0,written,S2,P08,S2_Q6,Q6,Because the animals was racing to the trees,0,0,0,0
+AT002954,Male,14,0,written,S2,P08,S2_Q6,Q6,Because the bird were frightened of his long head.,0,0,0,0
+RI1000100,Female,13,0,written,S2,P08,S2_Q6,Q6,because the giraffe was eat all the leaves.,0,0,0,0
+AT002932,Female,15,0,written,S2,P08,S2_Q6,Q6,because they wanted to eat the sweetest leaves.,0,0,0,0
+AT002735,Female,14,0,written,S2,P08,S2_Q6,Q6,He bent his keens and spoke to the animals. and sad climd on to my back,0,0,0,0
+AT002245,Male,17,0,written,S2,P08,S2_Q6,Q6,He bent his knees and spoke to the animals.,0,0,0,0
+AT002928,Male,12,0,written,S2,P08,S2_Q6,Q6,He didn't know that the birds were frightend of his large hard suddenly appearing in the treetops.,0,0,0,0
+AT002924,Female,14,0,written,S2,P08,S2_Q6,Q6,He was not know hat the birds were frighened of his large head suddenly apperaring in the treetops.,0,0,0,0
+AT002654,Female,13,0,written,S2,P08,S2_Q6,Q6,the animals huddled together beneath the bushes,0,0,0,0
+AT002067,Female,14,0,written,S2,P08,S2_Q6,Q6,the did not know that the birds were frightened,0,0,0,0
+AT002773,Female,16,0,written,S2,P08,S2_Q6,Q6,The hairy wart hog was next to carefully climb on. One by one the animals helped each other to safety,0,0,0,0
+AT002129,Female,12,1,written,S2,P08,S2_Q6,Q6,They were trying to climb onto the back of the giraffe,0,0,0,0
+AT003056,Female,12,0,spoken,S2,P08,S2_Q6,Q6,to reach the tree branches,0,0,0,0
+AT000182,Male,17,0,written,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT002537,Female,12,0,written,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT002611,Male,12,0,written,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT002730,Female,12,1,written,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT002921,Male,13,0,written,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT003110,Female,15,0,spoken,S2,P09,S2_Q8,Q8,cause the water could not reach that high,0,0,0,0
+AT002177,Female,17,0,written,S2,P09,S2_Q8,Q8,eating the sweetest leaves.,0,0,0,0
+AT001258,Male,16,0,written,S2,P09,S2_Q8,Q8,The animals will meet and speak about the jungle news.,0,0,0,0
+AT002245,Male,17,0,written,S2,P09,S2_Q8,Q8,The flooded river was splashing around the animals,0,0,0,0
+AT002607,Male,17,0,spoken,S2,P09,S2_Q8,Q8,the giraffe poked his head onto the high branch and the animals climbed on it,0,0,0,0
+AT002865,Female,12,0,spoken,S2,P09,S2_Q8,Q8,the giraffe straightened his neck to the water so the animals would fit on it,0,0,0,0
+AT002654,Female,13,0,written,S2,P09,S2_Q8,Q8,the river won't reach the high branches,0,0,0,0
+AT002972,Female,13,0,written,S2,P09,S2_Q8,Q8,The water washed around the giraffe's strong legs and sprayed the animals in the trees.,0,0,0,0
+AT002928,Male,12,0,written,S2,P09,S2_Q8,Q8,They hide their selfs at te giraffe legs.,0,0,0,0
+AT000190,Male,15,0,spoken,S2,P09,S2_Q8,Q8,they hurried to the tree branches,0,0,0,0
+AT002148,Female,15,1,written,S2,P09,S2_Q8,Q8,They were all free with the Giraffe,0,0,0,0
+RI1000003,Female,9,0,written,S2,P09,S2_Q8,Q8,They were talking to each other,0,0,0,0
+AT000182,Male,17,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT001976,Female,13,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002067,Female,14,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002537,Female,12,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002562,Female,18,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002611,Male,12,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002730,Female,12,1,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002734,Male,16,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002773,Female,16,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002791,Female,11,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002798,Male,14,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002921,Male,13,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002924,Female,14,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002932,Female,15,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002954,Male,14,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+RI1000105,Female,9,0,written,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002245,Male,17,0,written,S2,P09,S2_Q9,Q9,But some of them could not climb up the slippery trunks,0,0,0,0
+AT002739,Male,14,0,written,S2,P09,S2_Q9,Q9,He Flood washed No around the giraffes strongs legs.,0,0,0,0
+AT002177,Female,17,0,written,S2,P09,S2_Q9,Q9,He stretched up his long neck and the last few animal hurried into the branches,0,0,0,0
+RI1000052,Female,12,0,written,S2,P09,S2_Q9,Q9,or that the small animals on the ground ran away because they were scared of being stepped on.,0,0,0,0
+AT001258,Male,16,0,written,S2,P09,S2_Q9,Q9,The,0,0,0,0
+RI1000027,Male,9,0,written,S2,P09,S2_Q9,Q9,the animals climb onto his back,0,0,0,0
+RI1000100,Female,13,0,written,S2,P09,S2_Q9,Q9,The giraffe poked his head up into the high branches ind the animals,0,0,0,0
+AT000738,Female,11,0,spoken,S2,P09,S2_Q9,Q9,the giraffe straightened his knees as the water flooded the jungle,0,0,0,0
+AT002810,Female,13,0,written,S2,P09,S2_Q9,Q9,The giraffe straightened his knees as the water flooded the jungle.,0,0,0,0
+AT002972,Female,13,0,written,S2,P09,S2_Q9,Q9,The giraffe straightened his knees as the water flooded the jungle.,0,0,0,0
+RI1000053,Male,12,0,spoken,S2,P09,S2_Q9,Q9,the giraffe... the animals in the trees,0,0,0,0
+AT002735,Female,14,0,written,S2,P09,S2_Q9,Q9,the giraffe's life was differnt because the flood rushed on then the water slowly back to th ground and the sun come out from behind the clouds.,0,0,0,0
+AT002936,Female,17,0,written,S2,P09,S2_Q9,Q9,The girrafe's life wa different after the Flood because the flood has stopped.,0,0,0,0
+AT002654,Female,13,0,written,S2,P09,S2_Q9,Q9,the river is flooding,0,0,0,0
+AT001021,Female,12,0,spoken,S2,P09,S2_Q9,Q9,the water washed around the giraffe's strong legs and sprayed the animals in the trees,0,0,0,0
+AT001565,Female,11,0,spoken,S2,P09,S2_Q9,Q9,was lonely again,0,0,0,0
+AT000182,Male,17,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT001976,Female,13,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002067,Female,14,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002537,Female,12,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002562,Female,18,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002611,Male,12,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002730,Female,12,1,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002734,Male,16,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002773,Female,16,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002791,Female,11,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002798,Male,14,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002921,Male,13,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002924,Female,14,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002932,Female,15,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT002954,Male,14,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+RI1000105,Female,9,0,written,S2,P09,S2_Q9,Q9,,0,0,0,0
+RI1000105,Female,9,0,spoken,S1,P02,S1_Q3,Q3,,0,0,0,0
+RI1000027,Male,9,0,spoken,S1,P03,S1_Q5,Q5,,0,0,0,0
+RI1000100,Female,13,0,spoken,S1,P03,S1_Q5,Q5,,0,0,0,0
+RI1000003,Female,9,0,spoken,S1,P04,S1_Q8,Q8,,0,0,0,0
+AT002947,Female,14,0,spoken,S2,P06,S2_Q3,Q3,,0,0,0,0
+AT001504,Female,11,0,spoken,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT001565,Female,11,0,spoken,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT002947,Female,14,0,spoken,S2,P07,S2_Q4,Q4,,0,0,0,0
+AT003110,Female,15,0,spoken,S2,P08,S2_Q6,Q6,,0,0,0,0
+RI1000120,Male,11,0,spoken,S2,P08,S2_Q6,Q6,,0,0,0,0
+AT002947,Female,14,0,spoken,S2,P09,S2_Q8,Q8,,0,0,0,0
+RI1000075,Male,11,0,spoken,S2,P09,S2_Q8,Q8,,0,0,0,0
+RI1000120,Male,11,0,spoken,S2,P09,S2_Q8,Q8,,0,0,0,0
+AT002865,Female,12,0,spoken,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT003110,Female,15,0,spoken,S2,P09,S2_Q9,Q9,,0,0,0,0
+RI1000120,Male,11,0,spoken,S2,P09,S2_Q9,Q9,,0,0,0,0
+AT000809,Female,13,0,written,S1,P03,S1_Q4,Q4,Because Lucy secretly roamed through the country side,0,0,0,0
+AT002961,Female,17,0,written,S1,P03,S1_Q4,Q4,He is the only one who know the way.,0,0,0,0
+AT002818,Female,13,0,written,S1,P03,S1_Q4,Q4,Lucy secretly roamed through the countryside.,0,0,0,0
+AT002990,Female,14,0,written,S1,P03,S1_Q4,Q4,Lucy was leaping around ready for adventure.,0,0,0,0
+AT002899,Male,15,0,written,S1,P04,S1_Q8,Q8,The Shepherd have a cast on his leg for six hours,0,0,0,0
+AT002066,Female,18,0,written,S1,P04,S1_Q9,Q9,becaus Lucy was free to roam as she pleased,0,0,0,0
+AT002973,Female,17,0,written,S1,P04,S1_Q9,Q9,because he came his returned back.,0,0,0,0
+AT000126,Male,15,0,written,S1,P04,S1_Q9,Q9,Because he could go back to the sheeps.,0,0,0,0
+AT002963,Female,17,0,written,S1,P04,S1_Q9,Q9,Because he will go back to the sheep,0,0,0,0
+AT000738,Female,11,0,written,S1,P04,S1_Q9,Q9,"Because she from then on, Lucy was free to roan as she pleased",0,0,0,0
+AT002996,Female,15,0,written,S1,P04,S1_Q9,Q9,Because shepherd was free to roam as she pleased.,0,0,0,0
+RI1000038,Female,9,0,written,S1,P04,S1_Q9,Q9,Because the shepherd has return,0,0,0,0
+AT001021,Female,12,0,written,S1,P04,S1_Q9,Q9,because we can go back to the sheep.,0,0,0,0
+AT001504,Female,11,0,written,S1,P04,S1_Q9,Q9,"from then on, lucy was free to roam as she pleased.",0,0,0,0
+AT002614,Male,15,0,written,S1,P04,S1_Q9,Q9,Lucy was Free to roam as she Pleased,0,0,0,0
+AT002961,Female,17,0,written,S1,P04,S1_Q9,Q9,Lucy was free to roam as she pleased,0,0,0,0
+AT002907,Female,14,0,written,S1,P04,S1_Q9,Q9,When he returned,0,0,0,0
+RI1000045,Female,11,0,written,S1,P04,S1_Q9,Q9,When he returned,0,0,0,0
+RI1000053,Male,12,0,written,S1,P04,S1_Q9,Q9,when he returned,0,0,0,0
+AT002645,Female,17,0,written,S2,P09,S2_Q9,Q9,Because he helped them when they were in troble,0,1,0,0
+AT002916,Female,16,0,written,S1,P04,S1_Q9,Q9,The Shepherd gave Lucy a big smile because he had returned to a sheep again.,0,0,0,0
+AT002066,Female,18,0,written,S1,P03,S1_Q5,Q5,It was the middle f,0,1,0,1
+RI1000023,Female,12,0,spoken,S2,P07,S2_Q4,Q4,poured down for days; the animals herded together beneath the bushes,1,1,1,1
+AT000097,Female,12,1,written,S1,P02,S1_Q3,Q3,I think someone went the house to stelio the animals that is why the are make nois,0,0,0,0
+AT002148,Female,15,1,spoken,S1,P02,S1_Q3,Q3,to the shepherd's house,0,0,0,0
+AT001036,Female,16,0,written,S1,P03,S1_Q5,Q5,It was almost late. when she got to the road,0,0,0,1
+AT003059,Male,14,0,spoken,S1,P04,S1_Q9,Q9,because he was returned,0,0,0,0
+AT003056,Female,12,0,written,S1,P04,S1_Q9,Q9,because lucy gave's it life,0,0,0,0
+AT003110,Female,15,0,spoken,S2,P05,S2_Q1,Q1,because they lose their interest in the news,0,0,0,0
+RI1000045,Female,11,0,spoken,S2,P07,S2_Q4,Q4,a lot of water is racing down the valley and will soon be there,0,0,0,0
+RI1000029,Female,11,1,spoken,S2,P07,S2_Q4,Q4,because the river was flooded,0,0,0,0
+AT001281,Male,14,0,spoken,S2,P07,S2_Q4,Q4,they heard a roar,0,0,0,0
+AT002797,Female,16,0,written,S2,P08,S2_Q6,Q6,Climb up here called the monkey from the treetops.,0,0,0,0
+AT002791,Female,11,0,written,S2,P08,S2_Q6,Q6,"Because it was too late to runaway, so they climbed up to call the monkey from the treetops.",0,0,0,0
+RI1000045,Female,11,0,spoken,S2,P08,S2_Q6,Q6,because the river was ..because the river,0,0,0,0
+AT002998,Male,NA,0,written,S2,P09,S2_Q8,Q8,The animals were now friends with giraffe and also made him loneliless.,0,0,0,0
+AT002739,Male,14,0,written,S2,P09,S2_Q8,Q8,The were so happy that the sun came back.,0,0,0,0
+AT002735,Female,14,0,written,S2,P09,S2_Q8,Q8,When the sun came out again the animals was very happy.,0,0,0,0
+AT002766,Male,15,0,written,S2,P09,S2_Q9,Q9,Because he helped the other animals to be able to climb the trees.,0,0,0,0
+AT002928,Male,12,0,written,S2,P09,S2_Q9,Q9,the giraffe's life went different from the Animals.,0,0,0,0
+AT000209,Male,15,0,written,S2,P05,S2_Q1,Q1,Because it has a long neck,0,0,0,0
+AT002348,Male,17,1,written,S2,P08,S2_Q6,Q6,The flooded dives was splashing around the animals,0,0,0,0
+AT003067,Male,11,0,written,S1,P03,S1_Q4,Q4,Because it is too far.,1,0,1,2
+AT000209,Male,15,0,written,S2,P08,S2_Q6,Q6,Because the flooded river was splashing around the animals.,1,1,2,2
+RI1000027,Male,9,0,written,S2,P08,S2_Q6,Q6,The river will want to reach the treetop,1,0,1,0
+AT000142,Female,15,1,written,S1,P01,S1_Q1,Q1,Jack decided to frighten Lucy,0,0,1,0
+RI1000035,Male,11,1,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy on the farm,0,0,1,0
+AT000908,Female,18,0,written,S1,P02,S1_Q3,Q3,The animals need to go to the Farm.,0,1,1,1
+RI1000071,Female,9,1,spoken,S1,P02,S1_Q3,Q3,they had to go to shepherds house to go and find help,0,0,1,0
+AT000142,Female,15,1,written,S1,P02,S1_Q3,Q3,They need to go the helper's house for help,0,0,1,0
+AT001019,Female,13,0,written,S1,P02,S1_Q3,Q3,to the shepherd's house,0,0,1,0
+AT001556,Male,15,0,written,S1,P03,S1_Q4,Q4,Because she Wanted the time the right way to the valley,0,0,1,0
+AT002177,Female,17,0,spoken,S1,P03,S1_Q5,Q5,in the evening,0,0,1,0
+AT002177,Female,17,0,spoken,S1,P04,S1_Q9,Q9,the shepherd gave Lucy a big smile because he has returned,0,0,1,0
+AT001863,Female,14,0,written,S2,P08,S2_Q6,Q6,Because the animals were frightened,0,0,1,0
+AT002739,Male,14,0,spoken,S1,P02,S1_Q3,Q3,they will go to the valley together,0,0,1,1
+RI1000027,Male,9,0,spoken,S1,P04,S1_Q9,Q9,"she went, lucy went to the shepherds in the house",0,0,1,0
+AT002865,Female,12,0,spoken,S2,P06,S2_Q3,Q3,he stopped trying and leave,0,0,1,0
+AT002031,Female,14,1,spoken,S2,P08,S2_Q6,Q6,too late to run away,0,0,1,0
+RI1000003,Female,9,0,written,S2,P09,S2_Q9,Q9,it was great,0,0,1,0
+AT002933,Female,15,0,written,S1,P03,S1_Q4,Q4,because She wanted to get help from the farmer,0,0,1,0
+RI1000035,Male,11,1,spoken,S1,P04,S1_Q9,Q9,because he knew that lucy um he could trust lucy going back to the farmer and getting the farmer,0,1,1,1
+RI1000120,Male,11,0,spoken,S2,P05,S2_Q1,Q1,he is long,0,0,1,0
+RI1000038,Female,9,0,spoken,S2,P05,S2_Q1,Q1,no one listened to the giraffe because anytime the giraffe tries to bring the head down to speak all the other animals have lost interest,1,1,1,2
+AT001504,Female,11,0,spoken,S2,P09,S2_Q8,Q8,the animals came out of the tree,1,0,1,1
+RI1000052,Female,12,0,spoken,S1,P03,S1_Q4,Q4,because he had life to feel the right way,1,0,1,0
+AT002856,Female,13,0,written,S1,P03,S1_Q4,Q4,Lucy couldn't hear the oldest sheep because it was too far away from the other sheeps.,1,0,1,2
+AT003110,Female,15,0,written,S1,P04,S1_Q9,Q9,Because she was brave.,1,1,1,0
+AT000908,Female,18,0,written,S1,P04,S1_Q9,Q9,The shepherd gave Lucy a big smile because she took him to the hospital right away.,1,0,1,0
+AT001181,Male,13,0,spoken,S2,P05,S2_Q1,Q1,because it was taller than them,1,0,1,1
+AT002781,Female,14,0,written,S2,P05,S2_Q1,Q1,Giraffe was too tall so they couldn't hear from him.,1,1,1,0
+AT003055,Female,15,0,spoken,S2,P07,S2_Q4,Q4,because the rain had poured for days so there were fresh leaves,1,0,1,0
+AT002734,Male,16,0,written,S2,P07,S2_Q4,Q4,The animals huddled together beneath the bushes. Then the rainy season came.,1,0,1,0
+AT002972,Female,13,0,written,S2,P08,S2_Q6,Q6,Because giraffe was flooding. Because the river flooding.,1,1,1,1
+AT001258,Male,16,0,written,S2,P08,S2_Q6,Q6,Because of the rive flooding,1,1,1,2
+AT003078,Male,16,0,written,S2,P08,S2_Q6,Q6,because the wall of the water is racing down.,1,1,1,2
+AT001073,Female,14,0,written,S2,P08,S2_Q6,Q6,Because the water flooded the jungle,1,1,1,2
+RI1000093,Male,13,0,written,S2,P08,S2_Q6,Q6,"Because, the place was flooded",1,1,1,2
+RI1000003,Female,9,0,written,S2,P08,S2_Q6,Q6,Is because the flood rivers,1,0,1,1
+AT001991,Female,18,0,written,S2,P08,S2_Q6,Q6,The animals try to climb to the treetops because the river or water has reach them on the ground,1,1,1,2
+RI1000035,Male,11,1,written,S2,P08,S2_Q6,Q6,They were trying because the place has flooded,1,1,1,2
+RI1000027,Male,9,0,written,S2,P09,S2_Q8,Q8,They get down to the grass,1,1,1,1
+AT001250,Female,14,0,written,S2,P09,S2_Q9,Q9,the giraffe was very happy after the flood,1,0,1,1
+RI1000105,Female,9,0,spoken,S1,P01,S1_Q1,Q1,Lucky tried to take under control but she was scared of him.,0,0,1,0
+AT002645,Female,17,0,spoken,S1,P03,S1_Q4,Q4,because she wanted to find her own way to go to the farm,0,0,0,0
+RI1000003,Female,9,0,spoken,S1,P01,S1_Q1,Q1,jack tried to control lucky and he always tried to control lucky to move out,1,1,1,1
+RI1000015,Female,10,1,spoken,S1,P03,S1_Q4,Q4,because she was looking for the right way to the valley,1,1,1,2
+AT002062,Female,12,0,written,S1,P04,S1_Q8,Q8,The farmer had a cast on his leg for six weeks.,1,0,1,0
+RI1000053,Male,12,0,spoken,S2,P08,S2_Q6,Q6,flood river was splash to the animals,0,1,1,1
+AT002810,Female,13,0,spoken,S1,P01,S1_Q1,Q1,Jack tried to take under control,1,1,1,2
+AT003110,Female,15,0,written,S1,P01,S1_Q1,Q1,to put her under control.,1,1,2,2
+AT003067,Male,11,0,written,S1,P02,S1_Q3,Q3,The farmer's.,1,1,2,2
+AT002947,Female,14,0,written,S1,P02,S1_Q3,Q3,They need to go to the farmers,1,1,2,1
+AT002810,Female,13,0,spoken,S1,P02,S1_Q3,Q3,they want to go to the farmers,1,1,2,1
+RI1000038,Female,9,0,written,S1,P02,S1_Q3,Q3,They went to get help from the farmer.,1,1,2,1
+AT002066,Female,18,0,written,S1,P02,S1_Q3,Q3,to the farmer,1,0,2,1
+RI1000052,Female,12,0,spoken,S1,P03,S1_Q5,Q5,because it was the middle of the night,1,0,1,0
+RI1000035,Male,11,1,spoken,S1,P03,S1_Q5,Q5,she went in the middle of the night,1,1,1,2
+AT002525,Female,20,0,written,S2,P05,S2_Q1,Q1,Anyone didn't listen to the giraffe because it was just too tall.,1,1,1,2
+AT002645,Female,17,0,written,S2,P05,S2_Q1,Q1,Be the giraffe as just too tall,1,1,1,1
+AT002177,Female,17,0,written,S2,P05,S2_Q1,Q1,Becaus the giraffe was just too tall,1,1,1,1
+AT002625,Female,14,0,written,S2,P05,S2_Q1,Q1,Because giraffe was just too tall,1,1,1,1
+RI1000030,Male,14,0,written,S2,P05,S2_Q1,Q1,Because giraffe was too tall.,1,1,1,1
+AT003081,Male,15,0,written,S2,P05,S2_Q1,Q1,"Because the giraffe are too tall, when speak they cant here him",1,1,2,1
+AT002794,Male,14,1,written,S2,P05,S2_Q1,Q1,Because the giraffe is too tall,1,1,1,1
+AT002797,Female,16,0,written,S2,P05,S2_Q1,Q1,Because the giraffe is too tall,1,1,1,1
+AT002067,Female,14,0,written,S2,P05,S2_Q1,Q1,because the giraffe was just too tall,1,1,1,1
+AT002129,Female,12,1,written,S2,P05,S2_Q1,Q1,Because the giraffe was just too tall,1,1,1,1
+AT001166,Female,18,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was just too tall.,1,1,1,2
+AT002791,Female,11,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was just too tall.,1,1,1,1
+RI1000105,Female,9,0,written,S2,P05,S2_Q1,Q1,because the giraffe was to tall,1,1,1,1
+AT003099,Male,12,1,written,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,1,1
+AT002664,Male,13,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was too tall.,1,1,1,1
+AT002810,Female,13,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was too tall.,1,1,1,1
+AT002921,Male,13,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was too tall.,1,1,1,1
+RI1000093,Male,13,0,written,S2,P05,S2_Q1,Q1,"Because, he was just too tall.",1,1,1,1
+RI1000003,Female,9,0,written,S2,P05,S2_Q1,Q1,Is because the giraffe was too tall.,1,1,1,1
+RI1000100,Female,13,0,written,S2,P05,S2_Q1,Q1,No one do not listen to the giraffe because He was too tail.,1,0,1,1
+RI1000158,Female,11,1,written,S2,P05,S2_Q1,Q1,No one listen to the giraffe because he was too tall,1,1,1,2
+AT001991,Female,18,0,written,S2,P05,S2_Q1,Q1,No one listen to the giraffe because the giraffe was just too tall,1,1,1,2
+RI1000035,Male,11,1,written,S2,P05,S2_Q1,Q1,No one listened to giraffe because he was too tall,1,1,1,2
+RI1000027,Male,9,0,written,S2,P05,S2_Q1,Q1,The giraffe was just too tall,1,1,1,1
+AT002816,Male,17,0,written,S2,P05,S2_Q1,Q1,The giraffe was just too tall.,1,1,1,1
+RI1000015,Female,10,1,written,S2,P05,S2_Q1,Q1,The giraffe was just too tall.,1,1,1,1
+AT002924,Female,14,0,written,S2,P05,S2_Q1,Q1,The giraffe was tall.,1,0,1,1
+AT002348,Male,17,1,written,S2,P05,S2_Q1,Q1,The giraffe was too tall,1,1,1,1
+AT002766,Male,15,0,written,S2,P05,S2_Q1,Q1,They giraffe was just too tall.,1,1,1,1
+AT002798,Male,14,0,written,S2,P05,S2_Q1,Q1,They were not listen the giraffe because the giraffe was just too tall.,1,1,1,2
+AT002734,Male,16,0,written,S2,P05,S2_Q1,Q1,"They were not listen to he because, the giraffe was just too tall.",1,1,1,2
+AT000738,Female,11,0,spoken,S2,P07,S2_Q4,Q4,because the rainy season came,1,1,1,2
+AT001281,Male,14,0,spoken,S2,P08,S2_Q6,Q6,because the flood was coming to here..the place,1,1,1,2
+AT001021,Female,12,0,spoken,S2,P08,S2_Q6,Q6,because the flooded river was splashing around the animals,1,1,2,2
+RI1000029,Female,11,1,spoken,S2,P08,S2_Q6,Q6,"because the rain was, the river was flooded so they needed to find a place to hide so the river won't take them away",1,1,2,2
+AT001565,Female,11,0,spoken,S2,P08,S2_Q6,Q6,the river was almost there,1,1,1,1
+AT000738,Female,11,0,spoken,S2,P09,S2_Q8,Q8,his head up into the high branches and the animals slide down his back to the ground,1,1,1,2
+AT003078,Male,16,0,written,S2,P09,S2_Q8,Q8,they got down from the giraffe's back,1,1,2,2
+AT001992,Male,15,0,spoken,S2,P09,S2_Q8,Q8,they slip off the giraffe when the sun came,1,1,1,2
+RI1000074,Female,11,0,spoken,S2,P09,S2_Q9,Q9,he spoke with the other animals,1,0,2,0
+AT001863,Female,14,0,written,S2,P09,S2_Q9,Q9,He was never left alone.,1,1,2,2
+AT002607,Male,17,0,spoken,S2,P09,S2_Q9,Q9,the giraffe was never alone again,1,1,2,2
+AT002763,Female,13,0,written,S1,P04,S1_Q8,Q8,The shepherd fell over and broke his legs,0,0,0,0
+AT003055,Female,15,0,written,S1,P04,S1_Q9,Q9,"Because Lucy is the one who went to the farmer's house and ask for help, when the shepherd was lying in the grass",1,1,1,2
+RI1000029,Female,11,1,spoken,S2,P09,S2_Q8,Q8,"they came down, they came to the ground",1,1,2,2
+AT003055,Female,15,0,spoken,S2,P09,S2_Q8,Q8,they jumped down from the giraffe's neckq,1,0,2,1
+AT002148,Female,15,1,spoken,S1,P04,S1_Q9,Q9,because Lucy was able to locate where the house was,0,0,1,0
+AT003056,Female,12,0,spoken,S2,P09,S2_Q8,Q8,they slide on his back and fall on the ground,1,0,2,1
+AT002442,Female,17,0,written,S1,P02,S1_Q3,Q3,They need to go for help because one of the animals had broken his leg so she need to go the famrer's house in the valley.,1,1,2,2
+AT000142,Female,15,1,written,S1,P03,S1_Q4,Q4,Because Lucy was far away from the older sheep,1,1,2,2
+AT002607,Male,17,0,written,S1,P03,S1_Q4,Q4,Because she find the right way to the valley,1,0,1,0
+AT001036,Female,16,0,written,S1,P03,S1_Q4,Q4,"Lucy was almost gone, whan the sheep called him. that is why lucy did not hear the older sheep.",1,1,1,2
+AT002781,Female,14,0,spoken,S1,P03,S1_Q5,Q5,around midnight,1,1,2,2
+AT002129,Female,12,1,spoken,S1,P03,S1_Q5,Q5,midnight,1,1,1,2
+AT003055,Female,15,0,spoken,S2,P05,S2_Q1,Q1,"because by the time he brings down his long head, by that time, the other animals had lost interest what he had to say",1,1,2,2
+RI1000013,Male,12,1,spoken,S2,P06,S2_Q3,Q3,he stopped trying to get anyone to speak to him,1,1,2,2
+AT001181,Male,13,0,spoken,S2,P06,S2_Q3,Q3,they didn't try to speak to anyone,1,1,2,2
+AT002924,Female,14,0,written,S2,P06,S2_Q3,Q3,"They were scared being stepped. Afte a wile, the lonely giraffe stopped trying for speak to anyone.",1,1,1,2
+AT000113,Female,13,0,spoken,S2,P07,S2_Q4,Q4,the rain poured down for days,1,1,1,2
+AT003059,Male,14,0,written,S2,P07,S2_Q4,Q4,the rainy season,1,1,1,1
+AT002974,Female,14,0,written,S2,P08,S2_Q6,Q6,"Because ""The river was flooding""",1,1,1,2
+RI1000030,Male,14,0,written,S2,P08,S2_Q6,Q6,Because a wall of water is racing down to them.,1,1,2,2
+AT002766,Male,15,0,written,S2,P08,S2_Q6,Q6,Because of the flood that was racing down the valley and will soon be there.,1,1,2,2
+RI1000052,Female,12,0,written,S2,P08,S2_Q6,Q6,Because the flooder river was splashing around the animals.,1,1,2,2
+AT002645,Female,17,0,written,S2,P08,S2_Q6,Q6,because the river is flooding,1,1,1,2
+RI1000015,Female,10,1,written,S2,P08,S2_Q6,Q6,Because the river was flooding.,1,1,1,2
+AT002956,Female,16,0,written,S2,P08,S2_Q6,Q6,The animals were trying to climb the treetops so that they can be saved.,1,1,2,1
+AT001565,Female,11,0,spoken,S2,P09,S2_Q8,Q8,they all came down,1,1,2,2
+RI1000053,Male,12,0,spoken,S2,P09,S2_Q8,Q8,the giraffe poked his head onto the high branch and the animals slid down his back to the ground,1,1,2,2
+RI1000045,Female,11,0,written,S1,P03,S1_Q5,Q5,In the middle of the road.,0,0,2,0
+AT003078,Male,16,0,written,S2,P09,S2_Q9,Q9,they took giraffe as their friend.,1,1,2,1
+AT002129,Female,12,1,spoken,S1,P01,S1_Q1,Q1,he tried to keep her under control,1,1,2,2
+AT003059,Male,14,0,spoken,S1,P01,S1_Q1,Q1,he tried to keep lucy under control,1,1,2,2
+AT000957,Female,14,0,written,S1,P01,S1_Q1,Q1,He tried to keep lucy under control.,1,1,2,2
+AT002781,Female,14,0,spoken,S1,P01,S1_Q1,Q1,he tried to put lucy under control,1,1,2,2
+AT002867,Male,21,0,written,S1,P01,S1_Q1,Q1,He was tried to keep luck under Control.,1,1,2,2
+AT002899,Male,15,0,written,S1,P01,S1_Q1,Q1,He was trying to keep luck under control,1,1,2,2
+AT003111,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack tried his best to keep Lucy under control.,1,1,2,2
+AT002713,Female,11,0,spoken,S1,P01,S1_Q1,Q1,jack tried to control lucy,1,1,2,2
+AT002206,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Luck under control,1,1,2,2
+RI1000120,Male,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Luck under control but She Wasn't scared of him.,1,1,2,2
+AT000738,Female,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under contorl,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+AT002645,Female,17,0,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+RI1000015,Female,10,1,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+RI1000030,Male,14,0,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+RI1000093,Male,13,0,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+RI1000158,Female,11,1,spoken,S1,P01,S1_Q1,Q1,jack tried to keep lucy under control,1,1,2,2
+AT000809,Female,13,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT001181,Male,13,0,written,S1,P01,S1_Q1,Q1,Jack tried to Keep Lucy under control,1,1,2,2
+AT001504,Female,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control,1,1,2,2
+AT001556,Male,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control,1,1,2,2
+AT002295,Female,19,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control,1,1,2,2
+AT002607,Male,17,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT002614,Male,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy Under Control,1,1,2,2
+AT002715,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT002916,Female,16,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT002947,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT002953,Female,12,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control,1,1,2,2
+AT002999,Male,16,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT003056,Female,12,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+RI1000013,Male,12,1,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control,1,1,2,2
+AT000908,Female,18,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control but she wasn't scared of him,1,1,2,2
+AT002818,Female,13,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control but she wasn't scared of him.,1,1,2,2
+AT002961,Female,17,0,written,S1,P01,S1_Q1,Q1,Jack tried to Keep Lucy under control but she wasn't scared of him.,1,1,2,2
+AT002933,Female,15,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him",1,1,2,2
+AT000126,Male,15,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT001021,Female,12,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep lucy under control, but she wasn't scared of him.",1,1,2,2
+AT001992,Male,15,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002062,Female,12,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002066,Female,18,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002442,Female,17,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002763,Female,13,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002963,Female,17,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002990,Female,14,0,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+RI1000029,Female,11,1,written,S1,P01,S1_Q1,Q1,"Jack tried to keep Lucy under control, but she wasn't scared of him.",1,1,2,2
+AT000190,Male,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT001281,Male,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under Control.,1,1,2,2
+AT001565,Female,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002196,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002266,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002856,Female,13,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002907,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002938,Female,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT002955,Male,14,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control.,1,1,2,2
+AT002996,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT003055,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT003067,Male,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+RI1000023,Female,12,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control.,1,1,2,2
+RI1000038,Female,9,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep lucy under control.,1,1,2,2
+RI1000045,Female,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+RI1000053,Male,12,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control.,1,1,2,2
+AT000113,Female,13,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under control. But she wasn't scared of him,1,1,2,2
+RI1000074,Female,11,0,written,S1,P01,S1_Q1,Q1,Jack tried to keep Lucy under controls,1,1,2,2
+AT000097,Female,12,1,written,S1,P01,S1_Q1,Q1,Jack try to keep Lucy under control,1,1,2,2
+AT000214,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack try to keep Lucy under control,1,1,2,2
+AT001019,Female,13,0,written,S1,P01,S1_Q1,Q1,Jack try to keep Lucy under control,1,1,2,2
+AT002431,Female,15,0,written,S1,P01,S1_Q1,Q1,Jack try to keep Lucy under control,1,1,2,2
+AT002865,Female,12,0,written,S1,P01,S1_Q1,Q1,Jack try to keep Lucy under control,1,1,2,2
+AT001036,Female,16,0,written,S1,P01,S1_Q1,Q1,Jack want to Control Lucy.,1,1,2,2
+AT002770,Female,18,0,written,S1,P01,S1_Q1,Q1,"Jack was a dog who try to bring lucy under control, but she wasn't scared of him.",1,1,2,2
+AT002973,Female,17,0,written,S1,P01,S1_Q1,Q1,Jake tried to keep Lucy under control but he wasn't scared of him,1,1,2,2
+RI1000071,Female,9,1,spoken,S1,P01,S1_Q1,Q1,so jack tried to keep lucy under control,1,1,2,2
+AT001073,Female,14,0,spoken,S1,P01,S1_Q1,Q1,the dog tried to keep Lucy under control,1,1,2,2
+RI1000027,Male,9,0,spoken,S1,P01,S1_Q1,Q1,the dog tried to put Lucy under control,1,1,2,2
+AT002177,Female,17,0,spoken,S1,P01,S1_Q1,Q1,they tried to keep lucy under control,1,1,2,2
+AT002739,Male,14,0,spoken,S1,P01,S1_Q1,Q1,to keep Lucy under control,1,1,2,2
+AT002148,Female,15,1,spoken,S1,P01,S1_Q1,Q1,tried to keep lucy under control,1,1,2,2
+AT002196,Female,15,0,written,S1,P02,S1_Q3,Q3,At The farmer's house in the valley,1,1,2,2
+RI1000035,Male,11,1,spoken,S1,P02,S1_Q3,Q3,he needed to go to the farmers house,1,1,2,2
+RI1000158,Female,11,1,spoken,S1,P02,S1_Q3,Q3,in the farmer's house in the valley,1,1,2,2
+AT000957,Female,14,0,written,S1,P02,S1_Q3,Q3,It known that somebody must go to the farmer's house and get help.,1,1,2,2
+AT002990,Female,14,0,written,S1,P02,S1_Q3,Q3,Somebody must go to farmer's house in the valley and get help.,1,1,2,2
+AT002206,Female,14,0,written,S1,P02,S1_Q3,Q3,Somebody must go to the farmer's house in the valley and get help,1,1,2,2
+AT002818,Female,13,0,written,S1,P02,S1_Q3,Q3,Somebody must go to the farmer's house in the valley and get help,1,1,2,2
+AT002763,Female,13,0,written,S1,P02,S1_Q3,Q3,Somebody must go to the farmers house in the valley and get help,1,1,2,2
+AT002961,Female,17,0,written,S1,P02,S1_Q3,Q3,Somebody must go to the farmers house in the valley and get help,1,1,2,2
+RI1000023,Female,12,0,written,S1,P02,S1_Q3,Q3,The animals go to the Farmer's in the valley and get help.,1,1,2,2
+RI1000013,Male,12,1,written,S1,P02,S1_Q3,Q3,the animals had to go to the farmer's house in the valley to get help,1,1,2,2
+AT002431,Female,15,0,written,S1,P02,S1_Q3,Q3,The animals must get to the farmer's house in the valley and get help.,1,1,2,2
+AT002856,Female,13,0,written,S1,P02,S1_Q3,Q3,The animals need to go and find help from the Farmer's house.,1,1,2,2
+AT000126,Male,15,0,written,S1,P02,S1_Q3,Q3,The animals need to go and get help in the farmer's house.,1,1,2,2
+AT002916,Female,16,0,written,S1,P02,S1_Q3,Q3,The animals need to go the farmers house in the valley to get help,1,1,2,2
+AT001992,Male,15,0,written,S1,P02,S1_Q3,Q3,The animals need to go to the farmer's house in the valley and get help.,1,1,2,2
+RI1000029,Female,11,1,written,S1,P02,S1_Q3,Q3,The animals need to go to the farmer's house in the valley and get help.,1,1,2,2
+AT000809,Female,13,0,written,S1,P02,S1_Q3,Q3,"The animals need to go to the farmers, house",1,1,2,2
+AT002938,Female,14,0,written,S1,P02,S1_Q3,Q3,The animals needed to go to the farmer's house in the valley.,1,1,2,2
+AT002062,Female,12,0,written,S1,P02,S1_Q3,Q3,The animals needed to go to the farmers to get help for the sheperd.,1,1,2,2
+AT000190,Male,15,0,written,S1,P02,S1_Q3,Q3,The animals needs to go to the farmers house for help.,1,1,2,2
+RI1000015,Female,10,1,spoken,S1,P02,S1_Q3,Q3,the farmer,1,0,2,0
+RI1000030,Male,14,0,spoken,S1,P02,S1_Q3,Q3,the farmer's house,1,1,2,2
+AT002955,Male,14,0,written,S1,P02,S1_Q3,Q3,the farmer's house in the valley to get help.,1,1,2,2
+AT001021,Female,12,0,written,S1,P02,S1_Q3,Q3,The farmer's house in the valley.,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P02,S1_Q3,Q3,the farmers house,1,1,2,2
+AT002781,Female,14,0,spoken,S1,P02,S1_Q3,Q3,the farmers house,1,1,2,2
+RI1000003,Female,9,0,spoken,S1,P02,S1_Q3,Q3,the farmers house,1,1,2,2
+AT001181,Male,13,0,written,S1,P02,S1_Q3,Q3,the Farmers house in the valley,1,1,2,2
+AT001281,Male,14,0,written,S1,P02,S1_Q3,Q3,the farmers house in the Valley,1,1,2,2
+AT002973,Female,17,0,written,S1,P02,S1_Q3,Q3,The need to get help for the Farmer house.,1,1,2,2
+AT001504,Female,11,0,written,S1,P02,S1_Q3,Q3,The need to go to the farmer's house in the valley,1,1,2,2
+AT000214,Female,15,0,written,S1,P02,S1_Q3,Q3,They must go to the famer's house in the valley.,1,1,2,2
+AT002865,Female,12,0,written,S1,P02,S1_Q3,Q3,They must go to the farmer's house in the valley and get help.,1,1,2,2
+AT001565,Female,11,0,written,S1,P02,S1_Q3,Q3,They must go to the farmers house in the valley.,1,1,2,2
+AT003055,Female,15,0,written,S1,P02,S1_Q3,Q3,They need to go get help from the farmer's house in the valley.,1,1,2,2
+AT002607,Male,17,0,written,S1,P02,S1_Q3,Q3,They need to go the farmer's house in the valley and get help,1,1,2,2
+AT002177,Female,17,0,spoken,S1,P02,S1_Q3,Q3,they need to go to the farmer's house,1,1,2,2
+AT002715,Female,14,0,written,S1,P02,S1_Q3,Q3,They need to go to the Farmer's house in the valley and get help.,1,1,2,2
+AT001036,Female,16,0,written,S1,P02,S1_Q3,Q3,They need to go to the farmers house.,1,1,2,2
+AT003111,Female,15,0,written,S1,P02,S1_Q3,Q3,They need to go to the farmers valley to get help.,1,1,2,2
+AT000113,Female,13,0,written,S1,P02,S1_Q3,Q3,They needed help from the farmer so one of them need to go to the farmer's house,1,1,2,2
+AT000738,Female,11,0,written,S1,P02,S1_Q3,Q3,They needed to go to the Farmer For help,1,1,2,1
+RI1000074,Female,11,0,written,S1,P02,S1_Q3,Q3,They needed to go to the farmer's in the valley,1,1,2,2
+AT001556,Male,15,0,written,S1,P02,S1_Q3,Q3,They went to the farmer's house to get help,1,1,2,2
+AT002953,Female,12,0,written,S1,P02,S1_Q3,Q3,They were to go to the farmer's house in the valley to get help,1,1,2,2
+AT001863,Female,14,0,spoken,S1,P02,S1_Q3,Q3,to the farmer,1,0,2,1
+AT002129,Female,12,1,spoken,S1,P02,S1_Q3,Q3,to the farmer's house,1,1,2,2
+AT002933,Female,15,0,written,S1,P02,S1_Q3,Q3,To the farmer's house,1,1,2,2
+AT002963,Female,17,0,written,S1,P02,S1_Q3,Q3,To the farmer's house,1,1,2,2
+AT003110,Female,15,0,written,S1,P02,S1_Q3,Q3,to the farmer's house,1,1,2,2
+AT002645,Female,17,0,spoken,S1,P02,S1_Q3,Q3,to the farmer's house in the valley,1,1,2,2
+RI1000053,Male,12,0,written,S1,P02,S1_Q3,Q3,to the farmer's house in the valley,1,1,2,2
+AT001565,Female,11,0,written,S1,P03,S1_Q4,Q4,Because have already left to find the right way to the valley.,1,1,2,2
+AT002781,Female,14,0,spoken,S1,P03,S1_Q4,Q4,because he had already left to find the right way to the farmers house,1,1,2,1
+AT002614,Male,15,0,written,S1,P03,S1_Q4,Q4,Because he had already left to find the right Way to the valley,1,1,2,2
+AT001181,Male,13,0,written,S1,P03,S1_Q4,Q4,Because Lucy had already left to find the Right way to the valley.,1,1,2,2
+AT002938,Female,14,0,written,S1,P03,S1_Q4,Q4,Because lucy had already left to find the right way to the valley.,1,1,2,2
+RI1000003,Female,9,0,spoken,S1,P03,S1_Q4,Q4,because she already left,1,1,2,2
+AT003110,Female,15,0,written,S1,P03,S1_Q4,Q4,Because she had alread left to the valley.,1,1,2,2
+RI1000093,Male,13,0,spoken,S1,P03,S1_Q4,Q4,because she had already gone to look for the farmer,1,1,2,1
+RI1000035,Male,11,1,spoken,S1,P03,S1_Q4,Q4,because she had already left for the valley,1,1,2,2
+AT001281,Male,14,0,written,S1,P03,S1_Q4,Q4,Because she had already left to find the right way of the valley.,1,1,2,2
+AT000126,Male,15,0,written,S1,P03,S1_Q4,Q4,Because she had already left to find the right way to the valley,1,1,2,2
+AT000190,Male,15,0,written,S1,P03,S1_Q4,Q4,Because she had already left to find the right way to the valley,1,1,2,2
+AT002196,Female,15,0,written,S1,P03,S1_Q4,Q4,Because she had already left to find the right way to the valley,1,1,2,2
+AT002953,Female,12,0,written,S1,P03,S1_Q4,Q4,Because she had already left to find the right way to the valley,1,1,2,2
+RI1000074,Female,11,0,written,S1,P03,S1_Q4,Q4,"Because she had already left to find, the right to the valley",1,1,2,2
+RI1000071,Female,9,1,spoken,S1,P03,S1_Q4,Q4,because she had already left to go and find the valley,1,1,2,2
+AT003111,Female,15,0,written,S1,P03,S1_Q4,Q4,Because she had already to find the right way to the valley.,1,1,2,2
+AT000738,Female,11,0,written,S1,P03,S1_Q4,Q4,Because she have already left to find the right way to the Valley.,1,1,2,2
+AT002963,Female,17,0,written,S1,P03,S1_Q4,Q4,Because she he already left to find the right way to the valley.,1,1,2,2
+AT002129,Female,12,1,spoken,S1,P03,S1_Q4,Q4,because she was far away,1,1,2,2
+AT002206,Female,14,0,written,S1,P03,S1_Q4,Q4,Luck couldn't here them because she already left to find the right way to the valley,1,1,2,2
+AT002770,Female,18,0,written,S1,P03,S1_Q4,Q4,Lucy couldn't hear the older sheep because she already left to find the right way to the valley.,1,1,2,2
+AT000908,Female,18,0,written,S1,P03,S1_Q4,Q4,Lucy couldn't hear the older sheep because she had already left to Find the right way to the valley.,1,1,2,2
+AT002916,Female,16,0,written,S1,P03,S1_Q4,Q4,Lucy couldn't hear the older sheep because she had already left to find the right way to the valley.,1,1,2,2
+AT002062,Female,12,0,written,S1,P03,S1_Q4,Q4,"Lucy couldn't hear the older sheep because, she had already left to find the right way to the valley.",1,1,2,2
+AT002810,Female,13,0,spoken,S1,P03,S1_Q4,Q4,Lucy didnt hear them because she had already find he on the way to the valley,1,1,2,2
+RI1000013,Male,12,1,written,S1,P03,S1_Q4,Q4,She couldn't hear the older sheep because she had already left to find the right way to the valley,1,1,2,2
+RI1000027,Male,9,0,spoken,S1,P03,S1_Q4,Q4,she had already left,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P03,S1_Q4,Q4,she had already left to find the right way to the valley,1,1,2,2
+RI1000023,Female,12,0,written,S1,P03,S1_Q4,Q4,She had already left to find the right way to the valley.,1,1,2,2
+RI1000029,Female,11,1,written,S1,P03,S1_Q4,Q4,She had already left to find the right way to the valley.,1,1,2,2
+AT002442,Female,17,0,written,S1,P03,S1_Q4,Q4,the older sheep were beside themselves with worry. But Lucy couldn't hear them because she had already left to find the right way to the valley.,1,1,2,2
+AT000957,Female,14,0,written,S1,P03,S1_Q4,Q4,"The reason why lucy didn't hear the older sheep, she had already left to find the right way to the valley.",1,1,2,2
+AT001073,Female,14,0,spoken,S1,P03,S1_Q4,Q4,this is because she had already left to find the right way to the valley,1,1,2,2
+AT000957,Female,14,0,written,S1,P03,S1_Q5,Q5,At middle night,1,1,2,2
+AT003111,Female,15,0,written,S1,P03,S1_Q5,Q5,At middle of the night.,1,1,2,2
+AT002148,Female,15,1,spoken,S1,P03,S1_Q5,Q5,at the middle of the night,1,1,2,2
+AT001073,Female,14,0,spoken,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT001863,Female,14,0,spoken,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT002713,Female,11,0,spoken,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+RI1000015,Female,10,1,spoken,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT000113,Female,13,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT000190,Male,15,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT000214,Female,15,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT001019,Female,13,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT002933,Female,15,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT003056,Female,12,0,written,S1,P03,S1_Q5,Q5,in the middle of the night,1,1,2,2
+AT003055,Female,15,0,written,S1,P03,S1_Q5,Q5,in the middle of the night.,1,1,2,2
+AT002645,Female,17,0,spoken,S1,P03,S1_Q5,Q5,in the night,1,1,2,2
+RI1000003,Female,9,0,spoken,S1,P03,S1_Q5,Q5,in the night,1,1,2,2
+RI1000093,Male,13,0,spoken,S1,P03,S1_Q5,Q5,in the night,1,1,2,2
+AT002867,Male,21,0,written,S1,P03,S1_Q5,Q5,it was the middle if the night,1,1,2,2
+AT003067,Male,11,0,written,S1,P03,S1_Q5,Q5,It was the middle of night.,1,1,2,2
+AT000738,Female,11,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night,1,1,2,2
+AT001181,Male,13,0,written,S1,P03,S1_Q5,Q5,it was the middle of the night,1,1,2,2
+AT001565,Female,11,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night,1,1,2,2
+AT002206,Female,14,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night,1,1,2,2
+AT002431,Female,15,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night,1,1,2,2
+AT002614,Male,15,0,written,S1,P03,S1_Q5,Q5,It Was the middle of the night,1,1,2,2
+RI1000053,Male,12,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night,1,1,2,2
+AT002770,Female,18,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night when Luy reach the road.,1,1,2,2
+AT002266,Female,14,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+AT002865,Female,12,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+AT002938,Female,14,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+AT002961,Female,17,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+RI1000023,Female,12,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+RI1000074,Female,11,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night.,1,1,2,2
+AT002442,Female,17,0,written,S1,P03,S1_Q5,Q5,It was the middle of the night. So she stood and watched the traffic.,1,1,2,2
+AT002916,Female,16,0,written,S1,P03,S1_Q5,Q5,Lucy reach the road at middle of the night,1,1,2,2
+AT001992,Male,15,0,written,S1,P03,S1_Q5,Q5,Lucy reach the road when it was in the middle of the night.,1,1,2,2
+AT002856,Female,13,0,written,S1,P03,S1_Q5,Q5,"Lucy reach the road, when it was the middle of the night.",1,1,2,2
+AT000908,Female,18,0,written,S1,P03,S1_Q5,Q5,"Lucy reached the bush road, in the middle of the night.",1,1,2,2
+AT000142,Female,15,1,written,S1,P03,S1_Q5,Q5,Lucy reached the road at the mid night,1,1,2,2
+AT002955,Male,14,0,written,S1,P03,S1_Q5,Q5,Lucy reached the road at the middle of the night.,1,1,2,2
+AT002739,Male,14,0,spoken,S1,P03,S1_Q5,Q5,lucy reached the road in the middle of the night,1,1,2,2
+AT002062,Female,12,0,written,S1,P03,S1_Q5,Q5,Lucy reached the road in the middle of the night.,1,1,2,2
+AT002715,Female,14,0,written,S1,P03,S1_Q5,Q5,Lucy reached the road in the middle of the night.,1,1,2,2
+RI1000030,Male,14,0,spoken,S1,P03,S1_Q5,Q5,middle of the night,1,1,2,2
+AT001556,Male,15,0,written,S1,P03,S1_Q5,Q5,middle of the night,1,1,2,2
+AT002196,Female,15,0,written,S1,P03,S1_Q5,Q5,middle of the night,1,1,2,2
+AT002810,Female,13,0,spoken,S1,P03,S1_Q5,Q5,night,1,1,2,2
+AT002295,Female,19,0,written,S1,P03,S1_Q5,Q5,she reach the road at the middle of the night.,1,1,2,2
+RI1000071,Female,9,1,spoken,S1,P03,S1_Q5,Q5,she reached the busy road at night,1,1,2,2
+RI1000013,Male,12,1,written,S1,P03,S1_Q5,Q5,She reached the road in the middle of the night.,1,1,2,2
+RI1000038,Female,9,0,written,S1,P03,S1_Q5,Q5,She reached the road in the middle of the night.,1,1,2,2
+AT003059,Male,14,0,spoken,S1,P03,S1_Q5,Q5,the middle of the night,1,1,2,2
+RI1000158,Female,11,1,spoken,S1,P03,S1_Q5,Q5,the middle of the night,1,1,2,2
+AT003110,Female,15,0,written,S1,P03,S1_Q5,Q5,The middle of the night,1,1,2,2
+AT002879,Male,13,0,written,S1,P03,S1_Q5,Q5,When he reached the road it was in the middle of the night.,1,1,2,2
+AT001281,Male,14,0,written,S1,P03,S1_Q5,Q5,"When Lucy reached the busy road, it was middle of the night.",1,1,2,2
+AT001504,Female,11,0,written,S1,P03,S1_Q5,Q5,"when lucy reached the busy road, it was middle op the night",1,1,2,2
+AT002953,Female,12,0,written,S1,P03,S1_Q5,Q5,"When lucy reached the busy road, It was the middle of the night",1,1,2,2
+RI1000029,Female,11,1,written,S1,P03,S1_Q5,Q5,When Lucy reached the road it was in the middle of the night,1,1,2,2
+AT002973,Female,17,0,written,S1,P03,S1_Q5,Q5,When reach the road it was the middle of the night,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT002129,Female,12,1,spoken,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT002148,Female,15,1,spoken,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT002781,Female,14,0,spoken,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+RI1000105,Female,9,0,spoken,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT000190,Male,15,0,written,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT000957,Female,14,0,written,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT001019,Female,13,0,written,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT001036,Female,16,0,written,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+AT002938,Female,14,0,written,S1,P04,S1_Q8,Q8,for six weeks,1,1,2,2
+RI1000053,Male,12,0,written,S1,P04,S1_Q8,Q8,For six weeks,1,1,2,2
+AT002066,Female,18,0,written,S1,P04,S1_Q8,Q8,For six weeks before,1,1,2,2
+AT003055,Female,15,0,written,S1,P04,S1_Q8,Q8,For six weeks.,1,1,2,2
+AT001863,Female,14,0,spoken,S1,P04,S1_Q8,Q8,he had a cast on his leg for six weeks,1,1,2,2
+AT002739,Male,14,0,spoken,S1,P04,S1_Q8,Q8,he had a cast on his leg for six weeks,1,1,2,2
+RI1000071,Female,9,1,spoken,S1,P04,S1_Q8,Q8,he had a cast on his leg for six weeks,1,1,2,2
+AT003111,Female,15,0,written,S1,P04,S1_Q8,Q8,He had a cast on his leg for six weeks.,1,1,2,2
+RI1000074,Female,11,0,written,S1,P04,S1_Q8,Q8,He had his leg in a cast for six weeks.,1,1,2,2
+RI1000013,Male,12,1,written,S1,P04,S1_Q8,Q8,He had the cast on his leg for six weeks.,1,1,2,2
+AT002973,Female,17,0,written,S1,P04,S1_Q8,Q8,he his leg was in a cast for six weeks before he could go back,1,1,2,2
+AT000738,Female,11,0,written,S1,P04,S1_Q8,Q8,his leg in a cast for six weeks,1,1,2,2
+AT002867,Male,21,0,written,S1,P04,S1_Q8,Q8,his leg in a cast for six weeks before he could go back to the sheep,1,1,2,2
+AT002879,Male,13,0,written,S1,P04,S1_Q8,Q8,It take a long like six week.,1,1,2,2
+RI1000038,Female,9,0,written,S1,P04,S1_Q8,Q8,It was for 6 weeks,1,1,2,2
+AT002177,Female,17,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002645,Female,17,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002713,Female,11,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002810,Female,13,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT003059,Male,14,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000015,Female,10,1,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000027,Male,9,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000030,Male,14,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000035,Male,11,1,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000093,Male,13,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000100,Female,13,0,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+RI1000158,Female,11,1,spoken,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT001181,Male,13,0,written,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002266,Female,14,0,written,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002865,Female,12,0,written,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002907,Female,14,0,written,S1,P04,S1_Q8,Q8,Six weeks,1,1,2,2
+AT003056,Female,12,0,written,S1,P04,S1_Q8,Q8,six weeks,1,1,2,2
+AT002955,Male,14,0,written,S1,P04,S1_Q8,Q8,six weeks.,1,1,2,2
+AT003110,Female,15,0,written,S1,P04,S1_Q8,Q8,six weeks.,1,1,2,2
+AT000113,Female,13,0,written,S1,P04,S1_Q8,Q8,The sheperd had his leg cast for six weeks,1,1,2,2
+AT001281,Male,14,0,written,S1,P04,S1_Q8,Q8,The sheperd had his leg in a cast for six weeks.,1,1,2,2
+RI1000045,Female,11,0,written,S1,P04,S1_Q8,Q8,The sheperd had his leg in a cast for six weeks.,1,1,2,2
+AT002856,Female,13,0,written,S1,P04,S1_Q8,Q8,The shepherd cast six weeks on his leg.,1,1,2,2
+AT001992,Male,15,0,written,S1,P04,S1_Q8,Q8,The shepherd had a cast in his leg for six weeks before he could go back to the sheep.,1,1,2,2
+AT001556,Male,15,0,written,S1,P04,S1_Q8,Q8,the shepherd had a cast on his leg for six weeks,1,1,2,2
+AT000126,Male,15,0,written,S1,P04,S1_Q8,Q8,The shepherd had his cast for six weeks.,1,1,2,2
+AT002614,Male,15,0,written,S1,P04,S1_Q8,Q8,The shePherd had his leg in a cast For 6 weeks before he could go back to the sheep,1,1,2,2
+AT002947,Female,14,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six week,1,1,2,2
+AT002963,Female,17,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks,1,1,2,2
+AT001504,Female,11,0,written,S1,P04,S1_Q8,Q8,the shepherd had his leg in a cast for six weeks before he could go back to the sheep,1,1,2,2
+AT001021,Female,12,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast For six weeks before he could go back to the sheep.,1,1,2,2
+AT002206,Female,14,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast For six weeks before he could go back to the sheep.,1,1,2,2
+AT002996,Female,15,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks before he could go back to the sheep.,1,1,2,2
+AT001565,Female,11,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks.,1,1,2,2
+AT002770,Female,18,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks.,1,1,2,2
+AT002916,Female,16,0,written,S1,P04,S1_Q8,Q8,The Shepherd had his leg in a cast for six weeks.,1,1,2,2
+AT002933,Female,15,0,written,S1,P04,S1_Q8,Q8,The Shepherd had his leg in a cast for six weeks.,1,1,2,2
+AT002961,Female,17,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks.,1,1,2,2
+RI1000023,Female,12,0,written,S1,P04,S1_Q8,Q8,The shepherd had his leg in a cast for six weeks.,1,1,2,2
+RI1000029,Female,11,1,written,S1,P04,S1_Q8,Q8,The shepherd had his leg on a cast for six weeks.,1,1,2,2
+AT002607,Male,17,0,written,S1,P04,S1_Q8,Q8,The shepherd has his leg in a cast for six weeks,1,1,2,2
+AT002295,Female,19,0,written,S1,P04,S1_Q8,Q8,The shepherd have a cast on his leg for six week,1,1,2,2
+AT000908,Female,18,0,written,S1,P04,S1_Q8,Q8,The Shepherd have a cast on his leg for six weeks before he could go back to the sheep.,1,1,2,2
+AT002715,Female,14,0,written,S1,P04,S1_Q8,Q8,The shepherd have a cast on his leg for six weeks.,1,1,2,2
+AT002196,Female,15,0,written,S1,P04,S1_Q8,Q8,The shephered had his leg in a cast for six weeks,1,1,2,2
+AT002129,Female,12,1,spoken,S1,P04,S1_Q9,Q9,because he helped him; she was the one who went to the farmer's house to ask for help,1,1,2,2
+AT001036,Female,16,0,written,S1,P04,S1_Q9,Q9,Because he was free and happy for the way she help him.,1,1,2,2
+AT001565,Female,11,0,written,S1,P04,S1_Q9,Q9,Because Lucy had done a good job to save the life of the shepherd.,1,1,2,2
+RI1000003,Female,9,0,spoken,S1,P04,S1_Q9,Q9,because lucy had gone for help,1,1,2,2
+AT002879,Male,13,0,written,S1,P04,S1_Q9,Q9,because Lucy help him not to die.,1,1,2,1
+AT000190,Male,15,0,written,S1,P04,S1_Q9,Q9,Because Lucy help the farmer to notice what had happened and the shepher was able to survive,1,1,2,2
+AT002196,Female,15,0,written,S1,P04,S1_Q9,Q9,Because Lucy helped him a lot.,1,1,2,2
+AT001281,Male,14,0,written,S1,P04,S1_Q9,Q9,Because lucy helped the sheperd on the leg.,1,1,2,1
+AT002955,Male,14,0,written,S1,P04,S1_Q9,Q9,Because Lucy helped the shepherd,1,1,2,2
+AT000957,Female,14,0,written,S1,P04,S1_Q9,Q9,Because Lucy helped the shepherd.,1,1,2,2
+AT002739,Male,14,0,spoken,S1,P04,S1_Q9,Q9,because lucy helped when he broke his leg,1,1,2,2
+AT000142,Female,15,1,written,S1,P04,S1_Q9,Q9,Because Lucy saved the shepherd's life and brave as well,1,1,2,2
+AT002431,Female,15,0,written,S1,P04,S1_Q9,Q9,because lucy serve his life,1,1,2,1
+AT002947,Female,14,0,written,S1,P04,S1_Q9,Q9,Because lucy was the one that called the farmer for help.,1,1,2,2
+AT002938,Female,14,0,written,S1,P04,S1_Q9,Q9,Because lucy was the one who helped him.,1,1,2,2
+RI1000015,Female,10,1,spoken,S1,P04,S1_Q9,Q9,because Lucy was the one who saved his life,1,1,2,2
+AT000113,Female,13,0,written,S1,P04,S1_Q9,Q9,Because Lucy was the one who went to the farmer's house to look for help,1,1,2,2
+RI1000030,Male,14,0,spoken,S1,P04,S1_Q9,Q9,because lucy went to call the farmer to come and help,1,1,2,2
+AT003111,Female,15,0,written,S1,P04,S1_Q9,Q9,Because she help to save his life.,1,1,2,2
+AT002781,Female,14,0,spoken,S1,P04,S1_Q9,Q9,because she helped him,1,1,2,2
+AT001556,Male,15,0,written,S1,P04,S1_Q9,Q9,Because she helped him,1,1,2,2
+RI1000074,Female,11,0,written,S1,P04,S1_Q9,Q9,Because she helped him.,1,1,2,2
+AT002933,Female,15,0,written,S1,P04,S1_Q9,Q9,because she helped the shepherd,1,1,2,2
+RI1000093,Male,13,0,spoken,S1,P04,S1_Q9,Q9,because she went to call the farmer for help,1,1,2,2
+RI1000071,Female,9,1,spoken,S1,P04,S1_Q9,Q9,cause lucy had helped him,1,1,2,2
+AT001250,Female,14,0,spoken,S1,P04,S1_Q9,Q9,cause lucy helped the shepherd,1,1,2,2
+RI1000013,Male,12,1,written,S1,P04,S1_Q9,Q9,He gave a big smile because she had saved his life.,1,1,2,2
+RI1000029,Female,11,1,written,S1,P04,S1_Q9,Q9,"He gave Lucy a big smile because of the help he was in need with, and Lucy helped him.",1,1,2,2
+AT001073,Female,14,0,spoken,S1,P04,S1_Q9,Q9,lucy brought the farmer to take him to the hospital and not,1,1,2,1
+AT002645,Female,17,0,spoken,S1,P04,S1_Q9,Q9,lucy was able to help him and __.,1,1,2,1
+AT002266,Female,14,0,written,S1,P04,S1_Q9,Q9,shepherd gave lucy a big smile because lucy help him.,1,1,2,2
+AT002062,Female,12,0,written,S1,P04,S1_Q9,Q9,The sheperd gave Lucy a big smile because lucy had helped them and had also returned. safely,1,1,2,2
+AT001992,Male,15,0,written,S1,P04,S1_Q9,Q9,The shepherd gave lucy a big smile because lucy helped him.,1,1,2,2
+AT002295,Female,19,0,written,S1,P04,S1_Q9,Q9,The shepherd gave lucy a big smile because she help save the shepherd.,1,1,2,2
+RI1000158,Female,11,1,spoken,S1,P04,S1_Q9,Q9,the shepherd gave lucy a big smile because she went to look for the farmer and brought,1,1,2,2
+AT002770,Female,18,0,written,S1,P04,S1_Q9,Q9,The shepherd give lucy a big smile because he was pround of her.,1,1,2,1
+AT002856,Female,13,0,written,S1,P04,S1_Q9,Q9,The shepherd give Lucy a big smile because it went to wake up the farmer.,1,1,2,0
+AT000214,Female,15,0,written,S1,P04,S1_Q9,Q9,The shepherd give Lucy a big smile because she helped save the shepherd,1,1,2,2
+AT002715,Female,14,0,written,S1,P04,S1_Q9,Q9,The shephered gave Lucy a big smile because Lucy helped the shepherd.,1,1,2,2
+AT002936,Female,17,0,written,S2,P05,S2_Q1,Q1,"Anyone did not listen to the giraffe because the giraffe was too tall, and it was to lower it head but it spent all the time to talk on lowering it head.",1,1,2,2
+AT002148,Female,15,1,written,S2,P05,S2_Q1,Q1,"Anyone didn't listen to the giraffe because ""he was just to tall and by the time he lowered his head to the ground to speak, the other animals had lost interest"".",1,1,2,2
+AT002998,Male,NA,0,written,S2,P05,S2_Q1,Q1,"Anyone didn't listened to giraffe because, whenever giraffe want to talk he lowered his head to the ground to speak and this is due to the tallness of his neck and also this made the animals loose interest whenever he wants to talk.",1,1,2,2
+AT001523,Male,13,0,written,S2,P05,S2_Q1,Q1,Because Giraffe was too tall and by the time he lowered his head to the ground to speal to the other animals had lost interest.,1,1,2,2
+RI1000075,Male,11,0,spoken,S2,P05,S2_Q1,Q1,because he was tall,1,1,2,1
+AT001281,Male,14,0,spoken,S2,P05,S2_Q1,Q1,because he was too tall,1,1,2,1
+RI1000013,Male,12,1,spoken,S2,P05,S2_Q1,Q1,because he was too tall,1,1,2,1
+AT002938,Female,14,0,spoken,S2,P05,S2_Q1,Q1,"because he was too tall, by the time he lowered his head to hear what they were saying all the animals would lose their interest",1,1,2,2
+RI1000074,Female,11,0,spoken,S2,P05,S2_Q1,Q1,because he was very tall,1,1,2,1
+AT003056,Female,12,0,spoken,S2,P05,S2_Q1,Q1,because it was too tall,1,1,2,2
+AT000190,Male,15,0,spoken,S2,P05,S2_Q1,Q1,"because it was too tall and the time it would lower its head, all the animals had lost interest",1,1,2,2
+RI1000053,Male,12,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe is too tall,1,1,2,1
+AT000738,Female,11,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was just too tall,1,1,2,1
+RI1000071,Female,9,1,written,S2,P05,S2_Q1,Q1,Because the giraffe was just too tall by the Time he lowerd his head they lost intrest,1,1,2,2
+AT000113,Female,13,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+AT002607,Male,17,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+AT002865,Female,12,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+AT002953,Female,12,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+RI1000045,Female,11,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+AT002739,Male,14,0,written,S2,P05,S2_Q1,Q1,Because the giraffe was too tall the time the giraffe will brings his head down it takes a lot of time.,1,1,2,2
+AT000685,Male,15,1,written,S2,P05,S2_Q1,Q1,"Because the giraffe was too tall, by the time he lowered his head to the ground to speak the other animals had lost interest.",1,1,2,2
+AT001863,Female,14,0,written,S2,P05,S2_Q1,Q1,Nobody wanted to listen to giraffe because he was tall. And anytime he lowered his head to the ground to speak the other animals has already lost interest.,1,1,2,2
+AT002956,Female,16,0,written,S2,P05,S2_Q1,Q1,One did not listen to the giraffe because anytime he lowered his head to the ground to speak the other animals had lost interest.,1,1,2,2
+AT001504,Female,11,0,spoken,S2,P05,S2_Q1,Q1,that the giraffe was too tall,1,1,2,1
+AT002031,Female,14,1,spoken,S2,P05,S2_Q1,Q1,the giraffe was too tall,1,1,2,1
+RI1000023,Female,12,0,spoken,S2,P05,S2_Q1,Q1,the giraffe was too tall,1,1,2,1
+RI1000029,Female,11,1,spoken,S2,P05,S2_Q1,Q1,the giraffe was too tall,1,1,2,1
+AT001250,Female,14,0,written,S2,P05,S2_Q1,Q1,The reason why anyone didn't listen to the giraffe was because by the time he lower his head to speak the other animals had lost interest,1,1,2,2
+AT001992,Male,15,0,spoken,S2,P05,S2_Q1,Q1,this is because the giraffe was just too tall,1,1,2,1
+AT001073,Female,14,0,written,S2,P05,S2_Q1,Q1,"This is because, By the time he lowered his head to the ground to speak the other animals has lost interest",1,1,2,2
+AT002947,Female,14,0,spoken,S2,P05,S2_Q1,Q1,because the giraffe was too tall,1,1,2,1
+AT002031,Female,14,1,spoken,S2,P06,S2_Q3,Q3,after a while he stopped trying to speak to anyone,1,1,2,2
+RI1000023,Female,12,0,spoken,S2,P06,S2_Q3,Q3,"after a while the giraffe stopped trying to speak to anyone; this went on for the rest of the long, dry summer",1,1,2,2
+AT002810,Female,13,0,written,S2,P06,S2_Q3,Q3,"After a while, the lonely giraffe stopped trying to speak to anyone this went on for the rest of the long dry summer.",1,1,2,2
+AT002348,Male,17,1,written,S2,P06,S2_Q3,Q3,"After a while, the lonely giraffe stopped trying to speak to anyone.",1,1,2,2
+AT002797,Female,16,0,written,S2,P06,S2_Q3,Q3,"After a while, the lonely giraffe stopped trying to speak to anyone.",1,1,2,2
+AT001976,Female,13,0,written,S2,P06,S2_Q3,Q3,because the giraffe stop trying to speak to anyone,1,1,2,2
+AT001523,Male,13,0,written,S2,P06,S2_Q3,Q3,Giraffe stopped speaking to anyone over the summer.,1,1,2,2
+AT002998,Male,NA,0,written,S2,P06,S2_Q3,Q3,Giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002148,Female,15,1,written,S2,P06,S2_Q3,Q3,Giraffe stopped trying to speak to anyone. This went on for the rest of the long dry summer.,1,1,2,2
+RI1000045,Female,11,0,spoken,S2,P06,S2_Q3,Q3,he said that he would stop talking to the animals,1,1,2,2
+AT002794,Male,14,1,written,S2,P06,S2_Q3,Q3,He step trying to speak to the animals,1,1,2,2
+AT002781,Female,14,0,written,S2,P06,S2_Q3,Q3,He stop trying to talk to anyone over the summer.,1,1,2,2
+AT002956,Female,16,0,written,S2,P06,S2_Q3,Q3,He stoped talking to all the animals. This went on for the long dry summer.,1,1,2,2
+RI1000015,Female,10,1,written,S2,P06,S2_Q3,Q3,He stopped speaking to anyone.,1,1,2,2
+AT003055,Female,15,0,spoken,S2,P06,S2_Q3,Q3,he stopped talking to the other animals,1,1,2,2
+RI1000038,Female,9,0,spoken,S2,P06,S2_Q3,Q3,he stopped talking to the other animals,1,1,2,2
+AT001504,Female,11,0,spoken,S2,P06,S2_Q3,Q3,he stopped talking to them,1,1,2,2
+AT003110,Female,15,0,spoken,S2,P06,S2_Q3,Q3,he stopped trying to speak to anyone,1,1,2,2
+AT002129,Female,12,1,written,S2,P06,S2_Q3,Q3,He stopped trying to speak to anyone and it went on for the rest of the long dry summer.,1,1,2,2
+AT002625,Female,14,0,written,S2,P06,S2_Q3,Q3,He stopped trying to speak to anyone.,1,1,2,2
+AT002953,Female,12,0,spoken,S2,P06,S2_Q3,Q3,he stopped trying to talk to someone,1,1,2,2
+AT002938,Female,14,0,spoken,S2,P06,S2_Q3,Q3,he tried to stop speaking to anyone,1,1,2,2
+RI1000074,Female,11,0,spoken,S2,P06,S2_Q3,Q3,he tried to stop talking to the other animals,1,1,2,2
+AT001281,Male,14,0,spoken,S2,P06,S2_Q3,Q3,not talking to anyone,1,1,2,2
+RI1000075,Male,11,0,spoken,S2,P06,S2_Q3,Q3,stop talking to them,1,1,2,2
+AT000685,Male,15,1,written,S2,P06,S2_Q3,Q3,Stopped trying to speak to anyone,1,1,2,2
+AT002730,Female,12,1,written,S2,P06,S2_Q3,Q3,Stopped trying to speak to anyone,1,1,2,2
+RI1000071,Female,9,1,written,S2,P06,S2_Q3,Q3,The giraff stoped talking over the summer,1,1,2,2
+AT003099,Male,12,1,written,S2,P06,S2_Q3,Q3,The giraffe stop doing over the summer because the Lonely giraffe stoped trying to speak to anyone. This went on for the rest of the long dry summer.,1,1,2,2
+AT001991,Female,18,0,written,S2,P06,S2_Q3,Q3,The giraffe stop talking to everyone or The,1,1,2,2
+AT002525,Female,20,0,written,S2,P06,S2_Q3,Q3,The giraffe stop trying to speak to anyone over the summer.,1,1,2,2
+AT001166,Female,18,0,written,S2,P06,S2_Q3,Q3,The giraffe stop trying to speak to anyone.,1,1,2,2
+RI1000030,Male,14,0,written,S2,P06,S2_Q3,Q3,The giraffe stoped speaking to the animals.,1,1,2,2
+AT002936,Female,17,0,written,S2,P06,S2_Q3,Q3,The giraffe stoped trying to speak and anyone. This went on For the rest of the long dry summer.,1,1,2,2
+RI1000158,Female,11,1,written,S2,P06,S2_Q3,Q3,The giraffe stopped talking to them.,1,1,2,2
+AT000738,Female,11,0,spoken,S2,P06,S2_Q3,Q3,the giraffe stopped trying to speak to anyone,1,1,2,2
+RI1000029,Female,11,1,spoken,S2,P06,S2_Q3,Q3,the giraffe stopped trying to speak to anyone,1,1,2,2
+AT001250,Female,14,0,written,S2,P06,S2_Q3,Q3,the giraffe stopped trying to speak to anyone,1,1,2,2
+AT002664,Male,13,0,written,S2,P06,S2_Q3,Q3,The giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002791,Female,11,0,written,S2,P06,S2_Q3,Q3,The giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002932,Female,15,0,written,S2,P06,S2_Q3,Q3,The giraffe stopped trying to speak to anyone.,1,1,2,2
+RI1000093,Male,13,0,written,S2,P06,S2_Q3,Q3,The giraffe stopped trying to speak to anyone.,1,1,2,2
+AT001863,Female,14,0,written,S2,P06,S2_Q3,Q3,The giraffe would stop speaking to anyone.,1,1,2,2
+RI1000035,Male,11,1,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to anyen,1,1,2,2
+AT002645,Female,17,0,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to anyone,1,1,2,2
+AT000209,Male,15,0,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to anyone.,1,1,2,2
+AT001073,Female,14,0,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002654,Female,13,0,written,S2,P06,S2_Q3,Q3,the lonely giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002735,Female,14,0,written,S2,P06,S2_Q3,Q3,the lonely giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002816,Male,17,0,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to anyone.,1,1,2,2
+AT002766,Male,15,0,written,S2,P06,S2_Q3,Q3,The lonely giraffe stopped trying to speak to enyone.,1,1,2,2
+AT001992,Male,15,0,spoken,S2,P06,S2_Q3,Q3,they didnt talk to anyone - again,1,1,2,2
+AT002177,Female,17,0,written,S2,P07,S2_Q4,Q4,Becaus the rain poured down for days.,1,1,2,2
+AT002797,Female,16,0,written,S2,P07,S2_Q4,Q4,Because is rainy,1,1,2,2
+AT002794,Male,14,1,written,S2,P07,S2_Q4,Q4,Because is was rainy season,1,1,2,1
+RI1000038,Female,9,0,spoken,S2,P07,S2_Q4,Q4,because it was raining,1,1,2,2
+AT002129,Female,12,1,written,S2,P07,S2_Q4,Q4,Because it was rainy season and the rain poured down for days.,1,1,2,2
+AT000190,Male,15,0,spoken,S2,P07,S2_Q4,Q4,because its rained all day long,1,1,2,2
+AT003110,Female,15,0,spoken,S2,P07,S2_Q4,Q4,because of the rain,1,1,2,2
+RI1000071,Female,9,1,written,S2,P07,S2_Q4,Q4,Because of the rain,1,1,2,2
+AT002664,Male,13,0,written,S2,P07,S2_Q4,Q4,Because of the rain poured down for days.,1,1,2,2
+AT002067,Female,14,0,written,S2,P07,S2_Q4,Q4,because rain poured down for days,1,1,2,2
+AT003056,Female,12,0,spoken,S2,P07,S2_Q4,Q4,because the rain fall,1,1,2,2
+AT002865,Female,12,0,spoken,S2,P07,S2_Q4,Q4,because the rain falled down for some days,1,1,2,2
+AT001021,Female,12,0,spoken,S2,P07,S2_Q4,Q4,because the rain poured down for days,1,1,2,2
+AT001976,Female,13,0,written,S2,P07,S2_Q4,Q4,because the rain poured down for days,1,1,2,2
+RI1000105,Female,9,0,written,S2,P07,S2_Q4,Q4,because the rain poured down for days,1,1,2,2
+AT001166,Female,18,0,written,S2,P07,S2_Q4,Q4,Because the rain poured down for days.,1,1,2,2
+AT002781,Female,14,0,written,S2,P07,S2_Q4,Q4,because The rain poured down for days.,1,1,2,2
+AT002791,Female,11,0,written,S2,P07,S2_Q4,Q4,Because the rain poured down for days.,1,1,2,2
+AT002954,Male,14,0,written,S2,P07,S2_Q4,Q4,Because the rain poured down for days.,1,1,2,2
+AT002607,Male,17,0,spoken,S2,P07,S2_Q4,Q4,because the rain poured down for some days,1,1,2,2
+AT001181,Male,13,0,spoken,S2,P07,S2_Q4,Q4,because the rain poured down for three days,1,1,2,2
+AT002938,Female,14,0,spoken,S2,P07,S2_Q4,Q4,because the rain poured for days,1,1,2,2
+AT002953,Female,12,0,spoken,S2,P07,S2_Q4,Q4,because the rain poured for days,1,1,2,2
+AT003099,Male,12,1,written,S2,P07,S2_Q4,Q4,because the rain poured fown for days,1,1,2,2
+AT001250,Female,14,0,written,S2,P07,S2_Q4,Q4,Because the rain power down for days,1,1,2,2
+RI1000030,Male,14,0,written,S2,P07,S2_Q4,Q4,Because the rain was pouring for days.,1,1,2,2
+AT003081,Male,15,0,written,S2,P07,S2_Q4,Q4,because the rainy poured for some days.,1,1,2,2
+RI1000093,Male,13,0,written,S2,P07,S2_Q4,Q4,"Because, the rain poured down for days.",1,1,2,2
+RI1000003,Female,9,0,written,S2,P07,S2_Q4,Q4,Is because the rain poured down for days.,1,1,2,2
+AT002735,Female,14,0,written,S2,P07,S2_Q4,Q4,the animals huddle together because the didn't want the rain to tuch them.,1,1,2,1
+AT002525,Female,20,0,written,S2,P07,S2_Q4,Q4,The animals huddle together beneath because the rain poured down for days.,1,1,2,2
+AT001991,Female,18,0,written,S2,P07,S2_Q4,Q4,The animals huddle together beneath the bushes because it was raining.,1,1,2,2
+AT002148,Female,15,1,written,S2,P07,S2_Q4,Q4,The animals huddle together beneath the bushes because the rain poured down for days.,1,1,2,2
+AT002936,Female,17,0,written,S2,P07,S2_Q4,Q4,The animals huddle together beneath the bushes because the rain poured down for days.,1,1,2,2
+AT001863,Female,14,0,written,S2,P07,S2_Q4,Q4,"The animals huddle together beneath the bushes because, the rainy season came and the rain poured down for days.",1,1,2,2
+AT002998,Male,NA,0,written,S2,P07,S2_Q4,Q4,"The animals huddle together beneath the bushes because, the were in a rainy eaon and the rain water poured down for days.",1,1,2,2
+AT002798,Male,14,0,written,S2,P07,S2_Q4,Q4,The animals huddled together beneath the bushes because. then the rainy season came.,1,1,2,2
+RI1000158,Female,11,1,written,S2,P07,S2_Q4,Q4,The animals uddle together beneath the bushes the rain poured down for days.,1,1,2,0
+AT002031,Female,14,1,spoken,S2,P07,S2_Q4,Q4,the rain poured down for days,1,1,2,2
+AT002625,Female,14,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days,1,1,2,1
+AT001523,Male,13,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002645,Female,17,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002730,Female,12,1,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002766,Male,15,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002810,Female,13,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002921,Male,13,0,written,S2,P07,S2_Q4,Q4,The rain poured down for days.,1,1,2,1
+AT002348,Male,17,1,written,S2,P07,S2_Q4,Q4,The rainy season came The rain poured down for days,1,1,2,1
+AT002816,Male,17,0,written,S2,P07,S2_Q4,Q4,The rainy season came.,1,1,2,1
+AT001992,Male,15,0,spoken,S2,P07,S2_Q4,Q4,this is because the rain poured down for some days,1,1,2,2
+AT001073,Female,14,0,written,S2,P07,S2_Q4,Q4,"This is because, the rainy season came and the rain poured down for days.",1,1,2,2
+RI1000075,Male,11,0,spoken,S2,P08,S2_Q6,Q6,because it is flood,1,1,2,2
+AT002607,Male,17,0,spoken,S2,P08,S2_Q6,Q6,because of the flood,1,1,2,2
+AT002794,Male,14,1,written,S2,P08,S2_Q6,Q6,Because of the Flood so the try to climb the treetop to save their lifes,1,1,2,2
+RI1000013,Male,12,1,spoken,S2,P08,S2_Q6,Q6,because the flood couldn't reach the treetops,1,1,2,2
+AT001504,Female,11,0,spoken,S2,P08,S2_Q6,Q6,because the flood was around,1,1,2,2
+AT002739,Male,14,0,written,S2,P08,S2_Q6,Q6,Because the Flood will not get there.,1,1,2,2
+AT002953,Female,12,0,spoken,S2,P08,S2_Q6,Q6,because the flooded river was ahead,1,1,2,2
+AT002865,Female,12,0,spoken,S2,P08,S2_Q6,Q6,because the river was flooded,1,1,2,2
+AT003081,Male,15,0,written,S2,P08,S2_Q6,Q6,because the river was flooding and it was coming to where they are.,1,1,2,2
+AT003055,Female,15,0,spoken,S2,P08,S2_Q6,Q6,because the river was flooding the jungle so they need some place to hide,1,1,2,2
+AT002781,Female,14,0,written,S2,P08,S2_Q6,Q6,Because the river was flooding.,1,1,2,2
+AT002177,Female,17,0,written,S2,P08,S2_Q6,Q6,Because the river won't reach the high branches,1,1,2,2
+AT003099,Male,12,1,written,S2,P08,S2_Q6,Q6,because The river won't reach the high branches,1,1,2,2
+AT002625,Female,14,0,written,S2,P08,S2_Q6,Q6,Because the river won't reach the high branches.,1,1,2,2
+AT002810,Female,13,0,written,S2,P08,S2_Q6,Q6,because The river won't reach the high branches.,1,1,2,2
+AT000738,Female,11,0,spoken,S2,P08,S2_Q6,Q6,because the river wont reach the highest branches,1,1,2,2
+AT002947,Female,14,0,spoken,S2,P08,S2_Q6,Q6,because the river wont reach the highest branches,1,1,2,2
+AT003059,Male,14,0,written,S2,P08,S2_Q6,Q6,Because the the river won't reach the high branches,1,1,2,2
+RI1000074,Female,11,0,spoken,S2,P08,S2_Q6,Q6,because the water was flooded,1,1,2,2
+AT001523,Male,13,0,written,S2,P08,S2_Q6,Q6,Because the water won't reach the treetops,1,1,2,2
+AT000685,Male,15,1,written,S2,P08,S2_Q6,Q6,Because there was a wall of water racing down the valley and it will soon be were they are,1,1,2,2
+AT002664,Male,13,0,written,S2,P08,S2_Q6,Q6,Because they know that the river won't reach the high branches of the tree.,1,1,2,2
+AT000190,Male,15,0,spoken,S2,P08,S2_Q6,Q6,cause they knew the river wont reach the tree branches,1,1,2,2
+RI1000023,Female,12,0,spoken,S2,P08,S2_Q6,Q6,so that the river won't kill them,1,1,2,2
+AT002525,Female,20,0,written,S2,P08,S2_Q6,Q6,The animals try to climb to the treetops because The river is flooding.,1,1,2,2
+AT002936,Female,17,0,written,S2,P08,S2_Q6,Q6,The animals tryed to climb to the treetop because the river was flooding.,1,1,2,2
+RI1000158,Female,11,1,written,S2,P08,S2_Q6,Q6,The animals were trying to climb to the treetops because the river was flooding,1,1,2,2
+AT002148,Female,15,1,written,S2,P08,S2_Q6,Q6,The animals were trying to climb to the treetops because the river won't reach the hight branches,1,1,2,2
+AT002998,Male,NA,0,written,S2,P08,S2_Q6,Q6,"The animals were trying to climb to the treetops because, the flooding river was drawing near so they had to climb to the treetops so that they can refrain from they been washed away by the water.",1,1,2,2
+AT000113,Female,13,0,spoken,S2,P08,S2_Q6,Q6,the flooded river was splashing around them,1,1,2,1
+AT001250,Female,14,0,written,S2,P08,S2_Q6,Q6,The reason why they were trying to climb to the treetope is because the river won't reach the high branches,1,1,2,2
+AT002562,Female,18,0,written,S2,P08,S2_Q6,Q6,The river won't reach the high branches,1,1,2,1
+AT002798,Male,14,0,written,S2,P08,S2_Q6,Q6,The river won't reach the high branches,1,1,2,1
+RI1000105,Female,9,0,written,S2,P08,S2_Q6,Q6,The river won't reach the high branches,1,1,2,1
+AT002734,Male,16,0,written,S2,P08,S2_Q6,Q6,The river won't reach the high branches.,1,1,2,1
+AT002816,Male,17,0,written,S2,P08,S2_Q6,Q6,The river won't reach the high branches.,1,1,2,2
+AT002938,Female,14,0,spoken,S2,P08,S2_Q6,Q6,the river would not be able to reach where they were,1,1,2,1
+AT001992,Male,15,0,spoken,S2,P08,S2_Q6,Q6,"they are trying to climb the tree top because the river, the flood was splashing around them",1,1,2,2
+RI1000038,Female,9,0,spoken,S2,P08,S2_Q6,Q6,they were trying to climb the treetops because the flood was closer to the jungle,1,1,2,2
+AT001181,Male,13,0,spoken,S2,P08,S2_Q6,Q6,to escape the flood,1,1,2,2
+RI1000071,Female,9,1,written,S2,P08,S2_Q6,Q6,To try and get away from the flood,1,1,2,2
+AT002664,Male,13,0,written,S2,P09,S2_Q8,Q8,All the slid down his back to the ground.,1,1,2,2
+AT002031,Female,14,1,spoken,S2,P09,S2_Q8,Q8,slide down his back to the ground,1,1,2,2
+AT001863,Female,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down back to the ground.,1,1,2,2
+AT002781,Female,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down from the back of girafe back to the ground when the sun came out again.,1,1,2,2
+AT000685,Male,15,1,written,S2,P09,S2_Q8,Q8,The animals slid down giraffe back to the ground,1,1,2,2
+AT001250,Female,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down giraffe back to the ground,1,1,2,2
+RI1000013,Male,12,1,spoken,S2,P09,S2_Q8,Q8,the animals slid down giraffe's back to the ground,1,1,2,2
+RI1000035,Male,11,1,written,S2,P09,S2_Q8,Q8,The animals slid down his back,1,1,2,1
+RI1000045,Female,11,0,spoken,S2,P09,S2_Q8,Q8,the animals slid down his back to the ground,1,1,2,2
+AT002129,Female,12,1,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground,1,1,2,2
+RI1000100,Female,13,0,written,S2,P09,S2_Q8,Q8,the animals slid down his back to the ground,1,1,2,2
+RI1000158,Female,11,1,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground,1,1,2,2
+AT002525,Female,20,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground when sun came out again.,1,1,2,2
+AT001073,Female,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+AT001523,Male,13,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+AT002348,Male,17,1,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+AT002645,Female,17,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+AT002974,Female,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+RI1000093,Male,13,0,written,S2,P09,S2_Q8,Q8,The animals slid down his back to the ground.,1,1,2,2
+AT003059,Male,14,0,written,S2,P09,S2_Q8,Q8,The animals slid down on giraffe back to the ground.,1,1,2,2
+AT000113,Female,13,0,spoken,S2,P09,S2_Q8,Q8,the animals slide down from the giraffe's back to the ground,1,1,2,2
+AT001021,Female,12,0,spoken,S2,P09,S2_Q8,Q8,the animals slide down his back to the ground,1,1,2,2
+AT001181,Male,13,0,spoken,S2,P09,S2_Q8,Q8,the animals slide down his back to the ground,1,1,2,2
+AT001991,Female,18,0,written,S2,P09,S2_Q8,Q8,The animals went back to the ground again when the sun came out.,1,1,2,2
+RI1000052,Female,12,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branch and the animals slid down his back to the ground.,1,1,2,2
+AT002816,Male,17,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animal slid down his back to the ground.,1,1,2,2
+AT001166,Female,18,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down his back to the ground,1,1,2,2
+AT003099,Male,12,1,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down his back to the ground,1,1,2,2
+AT002766,Male,15,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down his back to the ground.,1,1,2,2
+AT002797,Female,16,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down his back to the ground.,1,1,2,2
+AT002956,Female,16,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down his back to the ground.,1,1,2,2
+RI1000015,Female,10,1,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches and the animals slid down to the ground.,1,1,2,2
+AT000209,Male,15,0,written,S2,P09,S2_Q8,Q8,The giraffe poked his head up into the high branches the animals slid down his back to the ground.,1,1,2,2
+AT002810,Female,13,0,written,S2,P09,S2_Q8,Q8,"The giraffe poked his head up, into the high branches and the animals slid down his back to the ground.",1,1,2,2
+AT002936,Female,17,0,written,S2,P09,S2_Q8,Q8,The girirrafe poked his head up into the high branches and the animals slid down his back to the ground.,1,1,2,2
+RI1000071,Female,9,1,written,S2,P09,S2_Q8,Q8,The slid down his back to the ground,1,1,2,2
+AT002625,Female,14,0,written,S2,P09,S2_Q8,Q8,They all slid down on giraffe back,1,1,2,2
+AT003081,Male,15,0,written,S2,P09,S2_Q8,Q8,they come out on top of the tree and they climb down to the back of the giraffe.,1,1,2,2
+RI1000074,Female,11,0,spoken,S2,P09,S2_Q8,Q8,they get down from giraffe's back and the branches,1,1,2,2
+AT002794,Male,14,1,written,S2,P09,S2_Q8,Q8,They slid down on the giraffe back to the ground,1,1,2,2
+AT002953,Female,12,0,spoken,S2,P09,S2_Q8,Q8,they slide down from giraffe's back,1,1,2,2
+RI1000030,Male,14,0,written,S2,P09,S2_Q8,Q8,They slide down from giraffes back to the ground.,1,1,2,2
+AT001281,Male,14,0,spoken,S2,P09,S2_Q8,Q8,they slide down his back to the ground,1,1,2,2
+RI1000038,Female,9,0,spoken,S2,P09,S2_Q8,Q8,they slide down the giraffe's back,1,1,2,2
+RI1000023,Female,12,0,spoken,S2,P09,S2_Q8,Q8,they slide from giraffe's neck and came down,1,1,2,2
+AT002938,Female,14,0,spoken,S2,P09,S2_Q8,Q8,they slipped down from giraffe's back,1,1,2,2
+AT003059,Male,14,0,written,S2,P09,S2_Q9,Q9,Because From that day giraffe was never lonely again,1,1,2,2
+AT000113,Female,13,0,spoken,S2,P09,S2_Q9,Q9,"because from that day the animals was, from that day giraffe was never lonely again",1,1,2,2
+AT000209,Male,15,0,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+AT002348,Male,17,1,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+AT002664,Male,13,0,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+AT002797,Female,16,0,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+AT002816,Male,17,0,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+RI1000015,Female,10,1,written,S2,P09,S2_Q9,Q9,From that day on the giraffe was never lonely again.,1,1,2,2
+AT003056,Female,12,0,spoken,S2,P09,S2_Q9,Q9,from that day on the giraffe was not lonely again,1,1,2,2
+RI1000045,Female,11,0,spoken,S2,P09,S2_Q9,Q9,"from that day on, the giraffe was never lonely again",1,1,2,2
+AT003055,Female,15,0,spoken,S2,P09,S2_Q9,Q9,from that day the giraffe was never lonely,1,1,2,2
+RI1000030,Male,14,0,written,S2,P09,S2_Q9,Q9,Giraff was not lonely again.,1,1,2,2
+AT002974,Female,14,0,written,S2,P09,S2_Q9,Q9,Giraffe was never lonely again,1,1,2,2
+AT002781,Female,14,0,written,S2,P09,S2_Q9,Q9,Giraffe's now became friends with the other animals and was never lonely again.,1,1,2,2
+AT001166,Female,18,0,written,S2,P09,S2_Q9,Q9,giraffe's was never lonely again.,1,1,2,2
+RI1000013,Male,12,1,spoken,S2,P09,S2_Q9,Q9,he was never lonely,1,1,2,2
+RI1000029,Female,11,1,spoken,S2,P09,S2_Q9,Q9,he was never lonely,1,1,2,2
+RI1000035,Male,11,1,written,S2,P09,S2_Q9,Q9,He was never lonely,1,1,2,2
+AT001181,Male,13,0,spoken,S2,P09,S2_Q9,Q9,he was never lonely again,1,1,2,2
+AT002938,Female,14,0,spoken,S2,P09,S2_Q9,Q9,he was never lonely again,1,1,2,2
+AT002129,Female,12,1,written,S2,P09,S2_Q9,Q9,He was never lonely again,1,1,2,2
+AT002998,Male,NA,0,written,S2,P09,S2_Q9,Q9,He was never lonely again from then.,1,1,2,2
+AT002625,Female,14,0,written,S2,P09,S2_Q9,Q9,He was never lonely again.,1,1,2,2
+AT001281,Male,14,0,spoken,S2,P09,S2_Q9,Q9,he was not lonely,1,1,2,2
+AT001504,Female,11,0,spoken,S2,P09,S2_Q9,Q9,he was not lonely again,1,1,2,2
+AT001992,Male,15,0,spoken,S2,P09,S2_Q9,Q9,he was not lonely again,1,1,2,2
+RI1000075,Male,11,0,spoken,S2,P09,S2_Q9,Q9,he was not lonely again,1,1,2,2
+RI1000093,Male,13,0,written,S2,P09,S2_Q9,Q9,He wasn't lonely again.,1,1,2,2
+AT003081,Male,15,0,written,S2,P09,S2_Q9,Q9,in his life will never become the lonely again.,1,1,2,2
+AT000190,Male,15,0,spoken,S2,P09,S2_Q9,Q9,it was not lonely again,1,1,2,2
+AT002031,Female,14,1,spoken,S2,P09,S2_Q9,Q9,never be lonely again,1,1,2,2
+RI1000023,Female,12,0,spoken,S2,P09,S2_Q9,Q9,not lonely again,1,1,2,2
+RI1000158,Female,11,1,written,S2,P09,S2_Q9,Q9,the giraffe was never lonelly again,1,1,2,2
+AT002953,Female,12,0,spoken,S2,P09,S2_Q9,Q9,the giraffe was never lonely,1,1,2,2
+AT002947,Female,14,0,spoken,S2,P09,S2_Q9,Q9,the giraffe was never lonely again,1,1,2,2
+AT000685,Male,15,1,written,S2,P09,S2_Q9,Q9,The giraffe was never lonely again,1,1,2,2
+AT002148,Female,15,1,written,S2,P09,S2_Q9,Q9,the giraffe was never lonely again,1,1,2,2
+RI1000071,Female,9,1,written,S2,P09,S2_Q9,Q9,The giraffe was never lonely again,1,1,2,2
+AT001991,Female,18,0,written,S2,P09,S2_Q9,Q9,The giraffe was never lonely again after the flood.,1,1,2,2
+AT001523,Male,13,0,written,S2,P09,S2_Q9,Q9,The giraffe was never lonely again.,1,1,2,2
+AT002525,Female,20,0,written,S2,P09,S2_Q9,Q9,The giraffe was never lonely again.,1,1,2,2
+AT003099,Male,12,1,written,S2,P09,S2_Q9,Q9,the giraffe was never lonely again. his life was better.,1,1,2,2
+AT002956,Female,16,0,written,S2,P09,S2_Q9,Q9,"The giraffe's life changed, he did not become lonely again.",1,1,2,2
+RI1000038,Female,9,0,spoken,S2,P09,S2_Q9,Q9,"the giraffe's life was different because from that day on he had someone, all the animals talked to him often",1,1,2,2
+AT001073,Female,14,0,written,S2,P09,S2_Q9,Q9,The giraffe's life was never lonely again,1,1,2,2
+AT002794,Male,14,1,written,S2,P09,S2_Q9,Q9,They all becomes giraffe Friends so he never become lonely again,1,1,2,2
