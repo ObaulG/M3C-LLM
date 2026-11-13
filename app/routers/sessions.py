@@ -61,6 +61,7 @@ class QuestionSessionMessage(BaseModel):
     session_id: str
     user_message: str
     anonymous_id: Optional[str] = None
+    reading_time_secs: Optional[float] = None
 
 
 class QuestionSessionResponse(BaseModel):
@@ -240,7 +241,8 @@ async def submit_question_session_message(request: QuestionSessionMessage,
         user_answer=user_message,
         date_sent=datetime.now(),
         evaluation=None,
-        message_type=message_type
+        message_type=message_type,
+        reading_time_secs=request.reading_time_secs
     )
     match message_type:
         case "reponse":
