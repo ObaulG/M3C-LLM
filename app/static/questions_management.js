@@ -3260,6 +3260,13 @@ function setQualityEvalStatus(message, cssClass) {
 }
 
 async function openQualityEvaluationModal(questionId) {
+    const backdrop = document.getElementById('qualityEvalBackdrop');
+    if (!backdrop) {
+        console.error('Fenêtre modale d\'évaluation de qualité absente de la page (questions_management.html non regénéré ?). Lancez : python3 app/build_templates.py questions_management.j2');
+        alert('La fenêtre modale d\'évaluation de qualité n\'est pas disponible. La page doit être recompilée (app/build_templates.py).');
+        return;
+    }
+
     qualityEvalQuestionId = questionId;
     resetQualityEvalForm();
 
@@ -3273,7 +3280,7 @@ async function openQualityEvaluationModal(questionId) {
     chunkText.classList.remove('empty');
     answerText.classList.remove('empty');
 
-    document.getElementById('qualityEvalBackdrop').classList.add('open');
+    backdrop.classList.add('open');
 
     try {
         const response = await fetch(`/api/questions/${questionId}/quality-evaluation-data`);
@@ -3295,7 +3302,8 @@ async function openQualityEvaluationModal(questionId) {
 }
 
 function closeQualityEvaluationModal() {
-    document.getElementById('qualityEvalBackdrop').classList.remove('open');
+    const backdrop = document.getElementById('qualityEvalBackdrop');
+    if (backdrop) backdrop.classList.remove('open');
     qualityEvalQuestionId = null;
 }
 
