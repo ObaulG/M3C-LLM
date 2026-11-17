@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 import database
 from database.database import get_db_connection, get_questions_by_document_id, get_facts_by_answer_ids
 from question_answer.generation_services import generate_questions_single_answer_for_chunk
+from question_quality_logger import log_quality_evaluation_to_xlsx
 
 router = APIRouter(tags=["Questions", "Admin"])
 
@@ -349,6 +350,162 @@ class AdminStatsResponse(BaseModel):
     )
     timestamp: str = Field(..., description="Horodatage de la réponse")
 
+
+
+# ============================================================================
+# ÉVALUATION DE LA QUALITÉ DES QUESTIONS
+# ============================================================================
+
+class QualityEvaluationDataResponse(BaseModel):
+    """Données nécessaires à l'évaluation de qualité d'une question"""
+    question_id: int = Field(..., description="Identifiant de la question")
+    question_text: str = Field(..., description="Texte de la question")
+    chunk_id: Optional[str] = Field(None, description="ID du chunk associé")
+    chunk_text: Optional[str] = Field(None, description="Texte du chunk associé")
+    document_id: Optional[str] = Field(None, description="ID du document")
+    num_page: Optional[int] = Field(None, description="Numéro de page du chunk")
+    generated_answer: Optional[str] = Field(None, description="Réponse générée (réponse de référence ou première réponse)")
+
+
+class QualityEvaluationRequest(BaseModel):
+    """Scores d'évaluation de qualité d'une question (échelle de 1 à 3)"""
+    question_id: int = Field(..., description="Identifiant de la question")
+    fluidite: int = Field(..., ge=1, le=3, description="Fluidité de la question (1-3)")
+    clarte: int = Field(..., ge=1, le=3, description="Clarté de la question (1-3)")
+    concision: int = Field(..., ge=1, le=3, description="Concision de la question (1-3)")
+    pertinence: int = Field(..., ge=1, le=3, description="Pertinence de la réponse générée (1-3)")
+    fidelite_au_passage: int = Field(..., ge=1, le=3, description="Fidélité au passage de la réponse générée (1-3)")
+    adequation_du_corrige: int = Field(..., ge=1, le=3, description="Adéquation du corrigé de la réponse générée (1-3)")
+    commentaire: Optional[str] = Field(None, description="Commentaire optionnel de l'évaluateur")
+
+
+class QualityEvaluationResponse(BaseModel):
+    """Résultat de la sauvegarde d'une évaluation de qualité"""
+    success: bool = Field(..., description="Indique si l'opération a réussi")
+    message: str = Field(..., description="Message de statut")
+    xlsx_path: Optional[str] = Field(None, description="Chemin du fichier Excel mis à jour")
+
+
+@router.get("/api/questions/{question_id}/quality-evaluation-data", response_model=QualityEvaluationDataResponse, tags=["Questions"])
+async def get_quality_evaluation_data(question_id: int):
+    """
+    Récupère le texte de la question, le texte du chunk et la réponse générée
+    afin d'alimenter la fenêtre modale d'évaluation de qualité.
+    """
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT q.question_id, q.content, qc.chunk_id
+                    FROM text_questions q
+                    LEFT JOIN text_question_chunks qc ON qc.question_id = q.question_id
+                    WHERE q.question_id = %s
+                    LIMIT 1
+                """, (question_id,))
+                question_row = await cur.fetchone()
+                if not question_row:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Question avec ID {question_id} non trouvée"
+                    )
+
+                _, question_content, chunk_id = question_row
+
+                chunk = None
+                if chunk_id:
+                    chunk = await database.get_chunk_by_id(conn, str(chunk_id))
+
+                await cur.execute("""
+                    SELECT content FROM text_question_answers
+                    WHERE question_id = %s
+                    ORDER BY is_correct DESC, answer_id ASC
+                """, (question_id,))
+                answer_row = await cur.fetchone()
+
+        return QualityEvaluationDataResponse(
+            question_id=question_id,
+            question_text=question_content,
+            chunk_id=str(chunk_id) if chunk_id else None,
+            chunk_text=chunk.get("content") if chunk else None,
+            document_id=chunk.get("document_id") if chunk else None,
+            num_page=chunk.get("num_page") if chunk else None,
+            generated_answer=answer_row[0] if answer_row else None
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la récupération des données d'évaluation de qualité: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la récupération des données d'évaluation de qualité: {str(e)}"
+        )
+
+
+@router.post("/api/questions/quality-evaluation/save", response_model=QualityEvaluationResponse, tags=["Questions"])
+async def save_quality_evaluation(request: QualityEvaluationRequest):
+    """
+    Enregistre une évaluation de qualité de question (critères notés de 1 à 3)
+    dans le fichier Excel des évaluations de qualité.
+    """
+    try:
+        async with await get_db_connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("""
+                    SELECT q.content, qc.chunk_id
+                    FROM text_questions q
+                    LEFT JOIN text_question_chunks qc ON qc.question_id = q.question_id
+                    WHERE q.question_id = %s
+                    LIMIT 1
+                """, (request.question_id,))
+                question_row = await cur.fetchone()
+                if not question_row:
+                    return QualityEvaluationResponse(
+                        success=False,
+                        message=f"Question avec ID {request.question_id} non trouvée",
+                        xlsx_path=None
+                    )
+
+                question_content, chunk_id = question_row
+
+                chunk = None
+                if chunk_id:
+                    chunk = await database.get_chunk_by_id(conn, str(chunk_id))
+
+                await cur.execute("""
+                    SELECT content FROM text_question_answers
+                    WHERE question_id = %s
+                    ORDER BY is_correct DESC, answer_id ASC
+                """, (request.question_id,))
+                answer_row = await cur.fetchone()
+
+        xlsx_path = log_quality_evaluation_to_xlsx({
+            "question_id": request.question_id,
+            "document_id": chunk.get("document_id") if chunk else None,
+            "chunk_id": str(chunk_id) if chunk_id else None,
+            "num_page": chunk.get("num_page") if chunk else None,
+            "question_text": question_content,
+            "chunk_text": chunk.get("content") if chunk else None,
+            "generated_answer": answer_row[0] if answer_row else None,
+            "fluidite": request.fluidite,
+            "clarte": request.clarte,
+            "concision": request.concision,
+            "pertinence": request.pertinence,
+            "fidelite_au_passage": request.fidelite_au_passage,
+            "adequation_du_corrige": request.adequation_du_corrige,
+            "commentaire": request.commentaire or "",
+        })
+
+        return QualityEvaluationResponse(
+            success=True,
+            message="Évaluation de qualité enregistrée dans le fichier Excel",
+            xlsx_path=xlsx_path
+        )
+    except Exception as e:
+        print(f"[{datetime.now().isoformat()}] ERREUR lors de la sauvegarde de l'évaluation de qualité: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la sauvegarde de l'évaluation de qualité: {str(e)}"
+        )
 
 
 # ============================================================================

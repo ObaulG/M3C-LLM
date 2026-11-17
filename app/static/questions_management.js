@@ -620,6 +620,9 @@ function generateQuestionCardHtml(question, totalCount) {
                 <button class="btn btn-knowledge-items" onclick="getKnowledgeItemsForQuestion(${question.question_id})">
                     🧠 Éléments de connaissance
                 </button>
+                <button class="btn btn-quality-evaluation" onclick="openQualityEvaluationModal(${question.question_id})" title="Évaluer la qualité de la question et de sa réponse générée">
+                    ⭐ Évaluer la qualité
+                </button>
                 <button class="btn btn-delete-question-answers" onclick="deleteAllAnswersForQuestion(${question.question_id}, this)" title="Supprimer toutes les réponses de cette question et leurs faits associés">
                     🗑 Supprimer toutes les réponses
                 </button>
@@ -3204,3 +3207,139 @@ function setupLiveFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', setupLiveFilters);
+
+// ============================================================
+// Évaluation de la qualité des questions (fenêtre modale)
+// ============================================================
+
+const QUALITY_EVAL_CRITERIA = [
+    "fluidite",
+    "clarte",
+    "concision",
+    "pertinence",
+    "fidelite_au_passage",
+    "adequation_du_corrige"
+];
+let qualityEvalScores = {};
+let qualityEvalQuestionId = null;
+
+function buildQualityEvalScales() {
+    document.querySelectorAll('#qualityEvalBackdrop .quality-eval-scale').forEach(scale => {
+        scale.innerHTML = '';
+        for (let value = 1; value <= 3; value++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = value;
+            btn.title = value === 1 ? 'Faible' : (value === 2 ? 'Moyen' : 'Bon');
+            btn.onclick = () => setQualityEvalScore(scale.dataset.criterion, value, btn);
+            scale.appendChild(btn);
+        }
+    });
+}
+
+function setQualityEvalScore(criterion, value, btn) {
+    qualityEvalScores[criterion] = value;
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+}
+
+function resetQualityEvalForm() {
+    qualityEvalScores = {};
+    document.querySelectorAll('#qualityEvalBackdrop .quality-eval-scale button').forEach(b => b.classList.remove('selected'));
+    const comment = document.getElementById('qualityEvalComment');
+    if (comment) comment.value = '';
+    setQualityEvalStatus('', '');
+}
+
+function setQualityEvalStatus(message, cssClass) {
+    const status = document.getElementById('qualityEvalStatus');
+    if (status) {
+        status.textContent = message;
+        status.className = 'quality-eval-status' + (cssClass ? ' ' + cssClass : '');
+    }
+}
+
+async function openQualityEvaluationModal(questionId) {
+    qualityEvalQuestionId = questionId;
+    resetQualityEvalForm();
+
+    const questionText = document.getElementById('qualityEvalQuestionText');
+    const chunkText = document.getElementById('qualityEvalChunkText');
+    const answerText = document.getElementById('qualityEvalAnswerText');
+    questionText.textContent = 'Chargement...';
+    chunkText.textContent = 'Chargement...';
+    answerText.textContent = 'Chargement...';
+    questionText.classList.remove('empty');
+    chunkText.classList.remove('empty');
+    answerText.classList.remove('empty');
+
+    document.getElementById('qualityEvalBackdrop').classList.add('open');
+
+    try {
+        const response = await fetch(`/api/questions/${questionId}/quality-evaluation-data`);
+        if (!response.ok) {
+            throw new Error(`Erreur ${response.status} lors de la récupération des données`);
+        }
+        const data = await response.json();
+
+        questionText.textContent = data.question_text || 'Question non disponible';
+        chunkText.textContent = data.chunk_text || 'Chunk non disponible';
+        answerText.textContent = data.generated_answer || 'Aucune réponse générée';
+        questionText.classList.toggle('empty', !data.question_text);
+        chunkText.classList.toggle('empty', !data.chunk_text);
+        answerText.classList.toggle('empty', !data.generated_answer);
+    } catch (error) {
+        console.error('Erreur lors du chargement des données d\'évaluation de qualité:', error);
+        setQualityEvalStatus('Impossible de charger les données de la question.', 'error');
+    }
+}
+
+function closeQualityEvaluationModal() {
+    document.getElementById('qualityEvalBackdrop').classList.remove('open');
+    qualityEvalQuestionId = null;
+}
+
+async function saveQualityEvaluation() {
+    if (qualityEvalQuestionId === null) return;
+
+    const missing = QUALITY_EVAL_CRITERIA.filter(c => !qualityEvalScores[c]);
+    if (missing.length > 0) {
+        setQualityEvalStatus('Veuillez attribuer une note de 1 à 3 à tous les critères.', 'error');
+        return;
+    }
+
+    const payload = {
+        question_id: qualityEvalQuestionId,
+        ...Object.fromEntries(QUALITY_EVAL_CRITERIA.map(c => [c, qualityEvalScores[c]])),
+        commentaire: (document.getElementById('qualityEvalComment') || {}).value || null
+    };
+
+    setQualityEvalStatus('Enregistrement...', '');
+
+    try {
+        const response = await fetch('/api/questions/quality-evaluation/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.detail || data.message || `Erreur ${response.status}`);
+        }
+        setQualityEvalStatus('✓ Évaluation enregistrée dans le fichier Excel.', 'success');
+        setTimeout(closeQualityEvaluationModal, 1200);
+    } catch (error) {
+        console.error('Erreur lors de l\'enregistrement de l\'évaluation de qualité:', error);
+        setQualityEvalStatus(`Échec de l'enregistrement : ${error.message}`, 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', buildQualityEvalScales);
+document.addEventListener('DOMContentLoaded', () => {
+    const backdrop = document.getElementById('qualityEvalBackdrop');
+    if (backdrop) {
+        backdrop.addEventListener('click', (event) => {
+            if (event.target === backdrop) closeQualityEvaluationModal();
+        });
+    }
+});
