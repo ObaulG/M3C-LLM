@@ -707,6 +707,181 @@
     .sidebar-help li {
         margin-bottom: 4px;
     }
+
+    /* Styles pour la fenêtre modale d'évaluation de qualité */
+    .quality-eval-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 30px 15px;
+    }
+
+    .quality-eval-backdrop.open {
+        display: block;
+    }
+
+    .quality-eval-modal {
+        background: white;
+        max-width: 860px;
+        margin: 0 auto;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+    }
+
+    .quality-eval-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #b74420;
+        color: white;
+    }
+
+    .quality-eval-header h3 {
+        margin: 0;
+        font-size: 17px;
+    }
+
+    .quality-eval-close {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .quality-eval-body {
+        padding: 20px;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+    }
+
+    .quality-eval-section {
+        margin-bottom: 15px;
+    }
+
+    .quality-eval-section h4 {
+        margin: 0 0 6px;
+        font-size: 14px;
+        color: #b74420;
+    }
+
+    .quality-eval-text {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .quality-eval-text.empty {
+        color: #999;
+        font-style: italic;
+    }
+
+    .quality-eval-criteria-group {
+        margin: 20px 0 10px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #fdfdfd;
+    }
+
+    .quality-eval-criteria-group h4 {
+        margin: 0 0 10px;
+        color: #333;
+    }
+
+    .quality-eval-criterion {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .quality-eval-criterion:last-of-type {
+        border-bottom: none;
+    }
+
+    .quality-eval-criterion label {
+        font-weight: 600;
+        font-size: 14px;
+        color: #444;
+    }
+
+    .quality-eval-scale {
+        display: flex;
+        gap: 6px;
+    }
+
+    .quality-eval-scale button {
+        min-width: 38px;
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: white;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .quality-eval-scale button.selected {
+        background: #b74420;
+        border-color: #b74420;
+        color: white;
+        font-weight: bold;
+    }
+
+    .quality-eval-comment {
+        margin-top: 12px;
+    }
+
+    .quality-eval-comment textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 13px;
+        resize: vertical;
+    }
+
+    .quality-eval-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        border-top: 1px solid #e0e0e0;
+        background: #f8f9fa;
+    }
+
+    .quality-eval-status {
+        margin-right: auto;
+        font-size: 13px;
+    }
+
+    .quality-eval-status.error {
+        color: #c92a2a;
+    }
+
+    .quality-eval-status.success {
+        color: #2b8a3e;
+    }
+
+    .btn-quality-evaluation {
+        background: #b74420;
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -785,6 +960,7 @@
                 <li><strong>✏️ Éditer</strong> : modifier le texte de la question ou de ses réponses, puis enregistrer ou annuler.</li>
                 <li><strong>🗑️ Supprimer</strong> : effacer une question ou l'ensemble de ses réponses.</li>
                 <li><strong>+ Session</strong> : ajouter la question à une session d'évaluation en cours d'édition.</li>
+                <li><strong>⭐ Évaluer la qualité</strong> : ouvrir une fenêtre modale affichant la question, le chunk et la réponse générée, puis noter chaque critère (Fluidité, Clarté, Concision ; Pertinence, Fidélité au passage, Adéquation du corrigé) de 1 à 3. L'évaluation est enregistrée dans un fichier Excel.</li>
                 <li><strong>🧠 Items de connaissance</strong> : consulter les éléments de connaissance liés à la question.</li>
             </ul>
             <h4>Actions sur les réponses</h4>
@@ -885,6 +1061,71 @@
                 <div class="empty-state" id="emptyState">
                     <h3>Aucun document sélectionné</h3>
                     <p>Sélectionnez un document dans la barre latérale pour afficher ses questions.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Fenêtre modale d'évaluation de la qualité d'une question -->
+        <div id="qualityEvalBackdrop" class="quality-eval-backdrop">
+            <div class="quality-eval-modal" role="dialog" aria-modal="true" aria-labelledby="qualityEvalTitle">
+                <div class="quality-eval-header">
+                    <h3 id="qualityEvalTitle">⭐ Évaluation de la qualité de la question</h3>
+                    <button class="quality-eval-close" onclick="closeQualityEvaluationModal()" title="Fermer">&times;</button>
+                </div>
+                <div class="quality-eval-body">
+                    <div class="quality-eval-section">
+                        <h4>Question</h4>
+                        <div id="qualityEvalQuestionText" class="quality-eval-text"></div>
+                    </div>
+                    <div class="quality-eval-section">
+                        <h4>Texte du chunk</h4>
+                        <div id="qualityEvalChunkText" class="quality-eval-text"></div>
+                    </div>
+                    <div class="quality-eval-section">
+                        <h4>Réponse générée</h4>
+                        <div id="qualityEvalAnswerText" class="quality-eval-text"></div>
+                    </div>
+
+                    <div class="quality-eval-criteria-group">
+                        <h4>Question</h4>
+                        <div class="quality-eval-criterion">
+                            <label>Fluidité</label>
+                            <div class="quality-eval-scale" data-criterion="fluidite"></div>
+                        </div>
+                        <div class="quality-eval-criterion">
+                            <label>Clarté</label>
+                            <div class="quality-eval-scale" data-criterion="clarte"></div>
+                        </div>
+                        <div class="quality-eval-criterion">
+                            <label>Concision</label>
+                            <div class="quality-eval-scale" data-criterion="concision"></div>
+                        </div>
+                    </div>
+
+                    <div class="quality-eval-criteria-group">
+                        <h4>Réponse générée</h4>
+                        <div class="quality-eval-criterion">
+                            <label>Pertinence</label>
+                            <div class="quality-eval-scale" data-criterion="pertinence"></div>
+                        </div>
+                        <div class="quality-eval-criterion">
+                            <label>Fidélité au passage</label>
+                            <div class="quality-eval-scale" data-criterion="fidelite_au_passage"></div>
+                        </div>
+                        <div class="quality-eval-criterion">
+                            <label>Adéquation du corrigé</label>
+                            <div class="quality-eval-scale" data-criterion="adequation_du_corrige"></div>
+                        </div>
+                    </div>
+
+                    <div class="quality-eval-comment">
+                        <label for="qualityEvalComment" style="font-weight: 600; font-size: 14px;">Commentaire (optionnel)</label>
+                        <textarea id="qualityEvalComment" rows="3" placeholder="Commentaire sur la qualité de la question et de la réponse générée..."></textarea>
+                    </div>
+                </div>
+                <div class="quality-eval-footer">
+                    <span class="quality-eval-status" id="qualityEvalStatus"></span>
+                    <button class="btn btn-secondary" onclick="closeQualityEvaluationModal()">Annuler</button>
+                    <button class="btn btn-save" onclick="saveQualityEvaluation()">Enregistrer l'évaluation</button>
                 </div>
             </div>
         </div>
