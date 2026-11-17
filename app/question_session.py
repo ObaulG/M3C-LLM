@@ -77,6 +77,7 @@ def session_status_to_dict(session_status: SessionStatus) -> Dict[str, Any]:
             "evaluation": serialize_evaluation_result(response.evaluation),
             "individual_evaluations": [serialize_evaluation_result(e) for e in response.individual_evaluations] if response.individual_evaluations else [],
             "message_type": response.message_type,
+            "reading_time_secs": response.reading_time_secs,
         }
 
     return {

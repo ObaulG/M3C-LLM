@@ -7,6 +7,9 @@ const API_URL_MESSAGE = 'http://localhost:8000/api/sessions/questions/message/'
 const API_URL_SESSION_INIT = 'http://localhost:8000/api/sessions/questions/init';
 let currentDocument = null;
 
+// horodatage du dernier affichage d'une question, pour mesurer le temps de lecture
+let questionShownAt = null;
+
 let chatContainer, questionInput, sendButton, loading, pdfIframe, documentList, loadingDocuments;
 let documentSelector, pdfViewer, backToListButton;
 
@@ -92,6 +95,9 @@ function addQuestionToChat(sessionStatus, index) {
 
     // Ajout du message au chat
     addMessageToChat(messageWithPage, 'bot');
+
+    // demarrer le decompte du temps de lecture pour cette question
+    questionShownAt = Date.now();
 }
 
 function formatDate(dateString) {
@@ -214,10 +220,15 @@ async function sendMessage() {
 
     // request
 
+    // temps de lecture : duree entre l'affichage de la question et l'envoi de la reponse
+    const readingTimeSecs = questionShownAt ? Math.round((Date.now() - questionShownAt) / 1000) : null;
+    questionShownAt = null;
+
     let params = {
         session_id: localStorage.getItem('sessionId'),
         user_message: message,
         anonymous_id: (typeof getAnonymousUserId === 'function') ? getAnonymousUserId() : null,
+        reading_time_secs: readingTimeSecs,
     };
     let response;
     try {

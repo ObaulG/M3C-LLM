@@ -72,6 +72,7 @@ class UserEvaluationResponse(BaseModel):
     evaluation: Optional[EvaluationResult]
     individual_evaluations: Optional[List[EvaluationResult]] = None
     message_type: Optional[str] = None  # "réponse", "demande_renseignement", "hors_sujet", "autre"
+    reading_time_secs: Optional[float] = None
     metadata: Optional[Dict] = None
 
 
