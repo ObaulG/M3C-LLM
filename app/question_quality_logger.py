@@ -1,5 +1,5 @@
 """
-Module pour le logging Excel des évaluations de qualité des questions.
+Module pour le logging CSV des évaluations de qualité des questions.
 
 Permet d'enregistrer, pour chaque question évaluée via la fenêtre modale
 d'évaluation de qualité :
@@ -8,19 +8,18 @@ d'évaluation de qualité :
   * Question : Fluidité, Clarté, Concision
   * Réponse générée : Pertinence, Fidélité au passage, Adéquation du corrigé
 
-Les lignes sont ajoutées au fichier question_quality_evaluations.xlsx,
+Les lignes sont ajoutées au fichier question_quality_evaluations.csv,
 créé avec ses en-têtes lors de la première sauvegarde.
 """
 
+import csv
+import os
 from datetime import datetime
-from pathlib import Path
 from threading import Lock
 
-from openpyxl import Workbook, load_workbook
+CSV_PATH = "question_quality_evaluations.csv"
 
-XLSX_PATH = "question_quality_evaluations.xlsx"
-
-XLSX_HEADERS = [
+CSV_HEADERS = [
     "timestamp",
     "question_id",
     "document_id",
@@ -41,20 +40,9 @@ XLSX_HEADERS = [
 _write_lock = Lock()
 
 
-def _ensure_workbook(path: str) -> None:
-    """Crée le fichier Excel avec ses en-têtes s'il n'existe pas."""
-    if Path(path).exists():
-        return
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "evaluations_qualite"
-    sheet.append(XLSX_HEADERS)
-    workbook.save(path)
-
-
-def log_quality_evaluation_to_xlsx(evaluation: dict) -> str:
+def log_quality_evaluation_to_csv(evaluation: dict) -> str:
     """
-    Ajoute une ligne d'évaluation de qualité au fichier Excel.
+    Ajoute une ligne d'évaluation de qualité au fichier CSV.
 
     Args:
         evaluation: Dictionnaire contenant les métadonnées de la question,
@@ -62,7 +50,7 @@ def log_quality_evaluation_to_xlsx(evaluation: dict) -> str:
             six critères (1 à 3) et un commentaire optionnel.
 
     Returns:
-        Le chemin du fichier Excel écrit.
+        Le chemin du fichier CSV écrit.
     """
     row = [
         evaluation.get("timestamp") or datetime.now().isoformat(),
@@ -83,10 +71,11 @@ def log_quality_evaluation_to_xlsx(evaluation: dict) -> str:
     ]
 
     with _write_lock:
-        _ensure_workbook(XLSX_PATH)
-        workbook = load_workbook(XLSX_PATH)
-        sheet = workbook.active
-        sheet.append(row)
-        workbook.save(XLSX_PATH)
+        file_exists = os.path.exists(CSV_PATH)
+        with open(CSV_PATH, "a", newline="", encoding="utf-8-sig") as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(CSV_HEADERS)
+            writer.writerow(row)
 
-    return XLSX_PATH
+    return CSV_PATH

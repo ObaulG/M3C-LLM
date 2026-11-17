@@ -3326,7 +3326,7 @@ async function saveQualityEvaluation() {
         if (!response.ok || !data.success) {
             throw new Error(data.detail || data.message || `Erreur ${response.status}`);
         }
-        setQualityEvalStatus('✓ Évaluation enregistrée dans le fichier Excel.', 'success');
+        setQualityEvalStatus('✓ Évaluation enregistrée dans le fichier CSV.', 'success');
         setTimeout(closeQualityEvaluationModal, 1200);
     } catch (error) {
         console.error('Erreur lors de l\'enregistrement de l\'évaluation de qualité:', error);

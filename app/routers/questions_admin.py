@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 import database
 from database.database import get_db_connection, get_questions_by_document_id, get_facts_by_answer_ids
 from question_answer.generation_services import generate_questions_single_answer_for_chunk
-from question_quality_logger import log_quality_evaluation_to_xlsx
+from question_quality_logger import log_quality_evaluation_to_csv
 
 router = APIRouter(tags=["Questions", "Admin"])
 
@@ -383,7 +383,7 @@ class QualityEvaluationResponse(BaseModel):
     """Résultat de la sauvegarde d'une évaluation de qualité"""
     success: bool = Field(..., description="Indique si l'opération a réussi")
     message: str = Field(..., description="Message de statut")
-    xlsx_path: Optional[str] = Field(None, description="Chemin du fichier Excel mis à jour")
+    csv_path: Optional[str] = Field(None, description="Chemin du fichier CSV mis à jour")
 
 
 @router.get("/api/questions/{question_id}/quality-evaluation-data", response_model=QualityEvaluationDataResponse, tags=["Questions"])
@@ -445,7 +445,7 @@ async def get_quality_evaluation_data(question_id: int):
 async def save_quality_evaluation(request: QualityEvaluationRequest):
     """
     Enregistre une évaluation de qualité de question (critères notés de 1 à 3)
-    dans le fichier Excel des évaluations de qualité.
+    dans le fichier CSV des évaluations de qualité.
     """
     try:
         async with await get_db_connection() as conn:
@@ -462,7 +462,7 @@ async def save_quality_evaluation(request: QualityEvaluationRequest):
                     return QualityEvaluationResponse(
                         success=False,
                         message=f"Question avec ID {request.question_id} non trouvée",
-                        xlsx_path=None
+                        csv_path=None
                     )
 
                 question_content, chunk_id = question_row
@@ -478,7 +478,7 @@ async def save_quality_evaluation(request: QualityEvaluationRequest):
                 """, (request.question_id,))
                 answer_row = await cur.fetchone()
 
-        xlsx_path = log_quality_evaluation_to_xlsx({
+        csv_path = log_quality_evaluation_to_csv({
             "question_id": request.question_id,
             "document_id": chunk.get("document_id") if chunk else None,
             "chunk_id": str(chunk_id) if chunk_id else None,
@@ -497,8 +497,8 @@ async def save_quality_evaluation(request: QualityEvaluationRequest):
 
         return QualityEvaluationResponse(
             success=True,
-            message="Évaluation de qualité enregistrée dans le fichier Excel",
-            xlsx_path=xlsx_path
+            message="Évaluation de qualité enregistrée dans le fichier CSV",
+            csv_path=csv_path
         )
     except Exception as e:
         print(f"[{datetime.now().isoformat()}] ERREUR lors de la sauvegarde de l'évaluation de qualité: {str(e)}")
