@@ -427,7 +427,7 @@ async def get_quality_evaluation_data(question_id: int):
             question_text=question_content,
             chunk_id=str(chunk_id) if chunk_id else None,
             chunk_text=chunk.get("content") if chunk else None,
-            document_id=chunk.get("document_id") if chunk else None,
+            document_id=str(chunk["document_id"]) if chunk and chunk.get("document_id") is not None else None,
             num_page=chunk.get("num_page") if chunk else None,
             generated_answer=answer_row[0] if answer_row else None
         )
