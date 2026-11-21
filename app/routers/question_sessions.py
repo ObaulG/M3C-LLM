@@ -12,6 +12,7 @@ Les sessions sont distinctes des sessions utilisateur (stockées dans la table `
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Depends, status
+from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
