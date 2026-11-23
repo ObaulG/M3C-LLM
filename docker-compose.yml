@@ -47,6 +47,12 @@ services:
   # mysql_data vide), docker/mysql/init.sql crée la base, l'utilisateur et les
   # tables du projet.
   mysql:
+
+    # Service opt-in : non démarré par défaut. Pour l'utiliser :
+  #   docker compose --profile local-db up -d
+  # Sans le profil, l'application se branche sur la base MySQL externe
+  # définie dans le .env (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD).
+    profiles: ["local-db"]
     image: mysql:8.0
     container_name: llmagents-mysql
     restart: unless-stopped
@@ -96,8 +102,9 @@ services:
         condition: service_healthy
       qdrant-init:
         condition: service_completed_successfully
-      mysql:
-        condition: service_healthy
+      # A desactiver si la BDD est externe (DB_HOST != mysql)
+      #mysql:
+      #  condition: service_healthy
     environment:
       # Configuration MySQL (base externe, valeurs depuis .env)
       DB_HOST: ${DB_HOST}
