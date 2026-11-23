@@ -60,8 +60,8 @@ COPY app/ ./app/
 COPY config/ ./config/
 COPY docker/app/entrypoint.sh /entrypoint.sh
 
-# Copier le fichier .env.example pour référence
-COPY .env.example .
+# Copier le fichier .env pour référence
+COPY .env .
 
 # Créer les répertoires nécessaires pour les données persistantes
 RUN mkdir -p /app/data \
