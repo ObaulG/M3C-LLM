@@ -5,3 +5,5 @@ rag_sessions_backup.json
 /backups
 /app/database/backups
 app/jobs/jobs.json
+T-M3C-install.yaml
+.env.docker
