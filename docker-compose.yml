@@ -107,11 +107,14 @@ services:
       #  condition: service_healthy
     environment:
       # Configuration MySQL (base externe, valeurs depuis .env)
-      DB_HOST: ${DB_HOST}
+      # ${VAR:?msg} : echec explicite au demarrage si la variable manque dans
+      # le .env, au lieu d'une chaine vide et des defauts muets dans le code
+      # (localhost/OBL/azerty) qui rendent l'erreur de connexion illisible.
+      DB_HOST: ${DB_HOST:?DB_HOST manquant dans le .env}
       DB_PORT: ${DB_PORT:-3306}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:?DB_NAME manquant dans le .env}
+      DB_USER: ${DB_USER:?DB_USER manquant dans le .env}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD manquant dans le .env}
       # Configuration Qdrant
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
