@@ -60,8 +60,9 @@ COPY app/ ./app/
 COPY config/ ./config/
 COPY docker/app/entrypoint.sh /entrypoint.sh
 
-# Copier le fichier .env pour référence
-COPY .env .
+# Les identifiants et secrets (DB_HOST, DB_USER, DB_PASSWORD, clés API) ne sont
+# PAS copiés dans l'image : ils sont injectés au démarrage du conteneur par
+# docker-compose.yml depuis le fichier .env (voir .env.example).
 
 # Créer les répertoires nécessaires pour les données persistantes
 RUN mkdir -p /app/data \
