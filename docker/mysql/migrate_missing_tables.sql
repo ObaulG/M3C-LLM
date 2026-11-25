@@ -766,34 +766,6 @@ ORDER BY o.user_id, last_viewed_at DESC;
 -- VUE 3: Statistiques par thème pour un utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_theme_stats AS
-SELECT 
-    up.user_id,
-    t.id AS theme_id,
-    t.name AS theme_name,
-    t.description AS theme_description,
-    COALESCE(uit.weight, 0) AS interest_weight,
-    COALESCE(uit.confidence, 0) AS interest_confidence,
-    COUNT(DISTINCT o.id) AS observation_count,
-    COUNT(DISTINCT CASE WHEN o.observation_type = 'behavioral' THEN o.id END) AS behavioral_count,
-    COUNT(DISTINCT CASE WHEN o.observation_type = 'evaluative' THEN o.id END) AS evaluative_count,
-    COUNT(DISTINCT ki.id) AS knowledge_items_count,
-    COUNT(DISTINCT CASE WHEN uks.status = 'demonstrated' THEN uks.knowledge_id END) AS demonstrated_count,
-    COUNT(DISTINCT CASE WHEN uks.status = 'developing' THEN uks.knowledge_id END) AS developing_count,
-    MAX(o.timestamp) AS last_interaction_at,
-    MIN(o.timestamp) AS first_interaction_at
-FROM user_profiles up
-LEFT JOIN user_interests_themes uit ON up.user_id = uit.user_id AND t.id = uit.theme_id
-LEFT JOIN themes t ON 1=1  -- sera joint plus bas
-LEFT JOIN observations o ON up.user_id = o.user_id
-LEFT JOIN observation_targets ot ON o.id = ot.observation_id AND ot.target_type = 'theme' AND ot.target_id = t.id
-LEFT JOIN knowledge_item_themes kit ON t.id = kit.theme_id
-LEFT JOIN knowledge_items ki ON kit.knowledge_id = ki.id
-LEFT JOIN user_knowledge_states uks ON up.user_id = uks.user_id AND uks.knowledge_id = ki.id
-WHERE up.user_id IS NOT NULL
-GROUP BY up.user_id, t.id, t.name, t.description, uit.weight, uit.confidence
-HAVING t.id IS NOT NULL
-ORDER BY up.user_id, interest_weight DESC, observation_count DESC;
 
 -- Version corrigée avec jointure explicite sur themes
 CREATE OR REPLACE VIEW user_theme_stats_v2 AS
