@@ -123,6 +123,7 @@ function setupRadioButtons() {
             
             // Afficher/masquer les paramètres de chunk
             const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
             updateChunkParametersVisibility(radio.value);
         });
     });
