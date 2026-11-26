@@ -84,7 +84,6 @@ CREATE TABLE IF NOT EXISTS text_chunks (
 -- Table pour les questions
 CREATE TABLE IF NOT EXISTS text_questions (
     question_id INT AUTO_INCREMENT PRIMARY KEY,
-    document_id INT NOT NULL,
     resource_id INT,
     content TEXT NOT NULL,
     status ENUM('generated', 'pending', 'validated', 'rejected') NOT NULL DEFAULT 'generated',
@@ -94,8 +93,6 @@ CREATE TABLE IF NOT EXISTS text_questions (
     validated_by INT,
     validation_date TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
-    INDEX idx_question_document (document_id),
     INDEX idx_question_resource (resource_id),
     INDEX idx_question_status (status),
     INDEX idx_question_difficulty (difficulty_level),
