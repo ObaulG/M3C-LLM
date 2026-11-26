@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS document_reading_sessions (
     close_reason ENUM('button', 'document_change', 'page_hide') NULL COMMENT 'Événement ayant déclenché la fermeture',
     duration_seconds INT NULL COMMENT 'Durée de lecture en secondes, calculée à la fermeture',
     metadata JSON COMMENT 'Métadonnées supplémentaires (session RAG, page, etc.)',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE SET NULL,
     INDEX idx_drs_user (user_id),
     INDEX idx_drs_anonymous (anonymous_id),
     INDEX idx_drs_resource (resource_id),

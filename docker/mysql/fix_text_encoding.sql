@@ -71,7 +71,6 @@ INSERT INTO encoding_target_tables (table_name) VALUES
     ('text_document_chunking_validation'),
     ('text_documents'),
     ('themes'),
-    ('users'),
     ('user_interests_entities'),
     ('user_interests_themes'),
     ('user_knowledge_states'),

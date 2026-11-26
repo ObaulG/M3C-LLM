@@ -11,7 +11,7 @@ TABLES = [
     'text_answer_facts', 'text_chunking_strategies', 'text_chunks',
     'text_document_chunking_validation', 'text_documents',
     'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
-    'users', 'user_interests_entities', 'user_interests_themes',
+    'user', 'user_interests_entities', 'user_interests_themes',
     'user_knowledge_states', 'user_mistral_api_keys', 'user_model_history',
     'user_profiles', 'user_sessions']
 

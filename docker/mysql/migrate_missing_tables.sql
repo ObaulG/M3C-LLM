@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS text_chunks (
 -- Table pour les questions
 CREATE TABLE IF NOT EXISTS text_questions (
     question_id INT AUTO_INCREMENT PRIMARY KEY,
-    document_id INT,
+    document_id INT NOT NULL,
     resource_id INT,
     content TEXT NOT NULL,
     status ENUM('generated', 'pending', 'validated', 'rejected') NOT NULL DEFAULT 'generated',

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS question_sessions (
     updated_at TIMESTAMP DEFAULT NOW(),
     is_active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES user(id) ON DELETE SET NULL,
     INDEX idx_question_sessions_document (document_id),
     INDEX idx_question_sessions_created_by (created_by)
 );

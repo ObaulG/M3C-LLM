@@ -1,6 +1,5 @@
 CREATE TABLE text_questions (
     question_id SERIAL PRIMARY KEY,
-    document_id INT,  -- Identifiant du document associé, si connu
     content TEXT NOT NULL,  -- Texte de la question
     status ENUM('generated', 'pending', 'validated', 'rejected') NOT NULL,  -- "generated", "pending", "validated", "rejected"
     difficulty_level INT,  -- Niveau de difficulté (1-5)
