@@ -37,6 +37,10 @@ CREATE_TABLE_RE = re.compile(
     re.IGNORECASE,
 )
 
+MYSQL8_COLLATION_RE = re.compile(
+    r"utf8mb4_0900_(?:ai|as)_(?:ci|cs)", re.IGNORECASE
+)
+
 INSERT_BATCH_SIZE = 500
 
 
@@ -63,37 +67,51 @@ def format_value(value, conn) -> str:
     return conn.escape(value)
 
 
-async def dump_table(cursor, conn, table: str, out) -> None:
+async def dump_table(conn, table: str, out) -> int:
     out.write(f"\n--\n-- Structure de la table `{table}`\n--\n\n")
 
-    await cursor.execute(f"SHOW CREATE TABLE `{table}`")
-    create_stmt = (await cursor.fetchone())[1]
+    async with conn.cursor() as cursor:
+        await cursor.execute(f"SHOW CREATE TABLE `{table}`")
+        create_stmt = (await cursor.fetchone())[1]
+    create_stmt = MYSQL8_COLLATION_RE.sub("utf8mb4_unicode_ci", create_stmt)
     out.write(f"DROP TABLE IF EXISTS `{table}`;\n")
     out.write(create_stmt + ";\n")
 
-    await cursor.execute(f"SELECT * FROM `{table}`")
-    columns = [desc[0] for desc in cursor.description]
-    rows = await cursor.fetchall()
+    out.write(f"\n--\n-- Données de la table `{table}`\n--\n\n")
 
-    out.write(f"\n--\n-- Données de la table `{table}` ({len(rows)} ligne(s))\n--\n\n")
-    if not rows:
-        return
-
-    column_list = ", ".join(f"`{c}`" for c in columns)
-    # INSERT IGNORE : un réimport interrompu peut être relancé sans erreur
-    # 1062 ; les lignes déjà présentes (même clé) sont ignorées, la ligne
-    # existante est conservée inchangée et l'import continue.
-    insert_prefix = f"INSERT IGNORE INTO `{table}` ({column_list}) VALUES\n"
-
+    column_list: str = ""
+    insert_prefix: str = ""
     batch: list[str] = []
-    for row in rows:
-        values = ", ".join(format_value(v, conn) for v in row)
-        batch.append(f"({values})")
-        if len(batch) >= INSERT_BATCH_SIZE:
-            out.write(insert_prefix + ",\n".join(batch) + ";\n")
-            batch = []
+    total = 0
+
+    # SSCursor : les lignes sont lues par lots depuis le serveur au lieu
+    # d'être chargées intégralement en mémoire (fetchall), ce qui borne la
+    # consommation RAM quelle que soit la taille de la table.
+    async with conn.cursor(aiomysql.SSCursor) as cursor:
+        await cursor.execute(f"SELECT * FROM `{table}`")
+        columns = [desc[0] for desc in cursor.description]
+        column_list = ", ".join(f"`{c}`" for c in columns)
+        # INSERT IGNORE : un réimport interrompu peut être relancé sans erreur
+        # 1062 ; les lignes déjà présentes (même clé) sont ignorées, la ligne
+        # existante est conservée inchangée et l'import continue.
+        insert_prefix = f"INSERT IGNORE INTO `{table}` ({column_list}) VALUES\n"
+
+        while True:
+            rows = await cursor.fetchmany(INSERT_BATCH_SIZE)
+            if not rows:
+                break
+            for row in rows:
+                values = ", ".join(format_value(v, conn) for v in row)
+                batch.append(f"({values})")
+                if len(batch) >= INSERT_BATCH_SIZE:
+                    out.write(insert_prefix + ",\n".join(batch) + ";\n")
+                    batch = []
+            total += len(rows)
+
     if batch:
         out.write(insert_prefix + ",\n".join(batch) + ";\n")
+    out.write(f"\n-- Total `{table}` : {total} ligne(s)\n")
+    return total
 
 
 async def backup(
@@ -112,6 +130,11 @@ async def backup(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = output_dir / f"backup_{DB_CONFIG['db']}_{timestamp}.sql"
 
+    # Dump atomique : on écrit dans un fichier temporaire et on ne le
+    # renomme vers son nom final qu'une fois complet ; le fichier final
+    # ne peut donc jamais exister vide ou tronqué.
+    tmp_file = output_file.with_name(output_file.name + ".tmp")
+
     conn = await aiomysql.connect(**DB_CONFIG)
     try:
         async with conn.cursor() as cursor:
@@ -122,22 +145,24 @@ async def backup(
         if missing:
             print(f"Tables absentes de la base (ignorées) : {', '.join(missing)}")
 
-        with output_file.open("w", encoding="utf-8") as out:
+        with tmp_file.open("w", encoding="utf-8") as out:
             out.write(f"-- Sauvegarde MySQL de `{DB_CONFIG['db']}`\n")
             out.write(f"-- Générée le {datetime.now().isoformat()}\n")
             out.write("\nSET NAMES utf8mb4;\n")
             out.write("SET FOREIGN_KEY_CHECKS = 0;\n")
             out.write("SET UNIQUE_CHECKS = 0;\n")
 
-            async with conn.cursor() as cursor:
-                for table in tables:
-                    if table not in existing_tables:
-                        continue
-                    print(f"Sauvegarde de `{table}`...")
-                    await dump_table(cursor, conn, table, out)
+            for table in tables:
+                if table not in existing_tables:
+                    continue
+                print(f"Sauvegarde de `{table}`...")
+                await dump_table(conn, table, out)
+                out.flush()
 
             out.write("\nSET FOREIGN_KEY_CHECKS = 1;\n")
             out.write("SET UNIQUE_CHECKS = 1;\n")
+
+        os.replace(tmp_file, output_file)
 
     finally:
         conn.close()
