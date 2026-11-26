@@ -41,7 +41,7 @@ CREATE TABLE encoding_target_tables (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO encoding_target_tables (table_name) VALUES
-    ('answers'),
+    ('text_question_answers'),
     ('chatbot_feedbacks'),
     ('chatbot_message_chunks'),
     ('chatbot_messages'),
@@ -61,7 +61,7 @@ INSERT INTO encoding_target_tables (table_name) VALUES
     ('observation_payloads'),
     ('observations'),
     ('observation_targets'),
-    ('questions'),
+    ('text_questions'),
     ('session_messages'),
     ('sessions'),
     ('text_chunking_strategies'),

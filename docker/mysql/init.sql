@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS text_chunks (
 -- =============================================================================
 
 -- Table pour les questions
-CREATE TABLE IF NOT EXISTS questions (
+CREATE TABLE IF NOT EXISTS text_questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     document_id INT NOT NULL,
     resource_id INT,
@@ -95,12 +95,12 @@ CREATE TABLE IF NOT EXISTS questions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table pour les réponses aux questions
-CREATE TABLE IF NOT EXISTS answers (
+CREATE TABLE IF NOT EXISTS text_question_answers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     question_id INT NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES text_questions(id) ON DELETE CASCADE,
     INDEX idx_answer_question (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS session_messages (
     metadata JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE SET NULL,
+    FOREIGN KEY (question_id) REFERENCES text_questions(id) ON DELETE SET NULL,
     INDEX idx_session_message_session (session_id),
     INDEX idx_session_message_question (question_id),
     INDEX idx_session_message_created (created_at)
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
     evaluation_data JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE SET NULL,
+    FOREIGN KEY (question_id) REFERENCES text_questions(id) ON DELETE SET NULL,
     INDEX idx_evaluation_session (session_id),
     INDEX idx_evaluation_question (question_id),
     INDEX idx_evaluation_created (created_at)

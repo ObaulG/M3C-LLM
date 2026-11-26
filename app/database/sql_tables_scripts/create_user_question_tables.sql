@@ -1,9 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS questions CASCADE;
-DROP TABLE IF EXISTS questions_chunks CASCADE;
-DROP TABLE IF EXISTS question_answers CASCADE;
+DROP TABLE IF EXISTS text_questions CASCADE;
+DROP TABLE IF EXISTS text_question_chunks CASCADE;
+DROP TABLE IF EXISTS text_question_answers CASCADE;
 
 CREATE TABLE IF NOT EXISTS user (
     id SERIAL PRIMARY KEY,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS text_questions (
 --Une question peut faire intervenir plusieurs chunks.
 --Un chunk peut intervenir dans plusieurs questions.
 CREATE TABLE IF NOT EXISTS text_question_chunks (
-    question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
+    question_id INT NOT NULL REFERENCES text_questions(question_id) ON DELETE CASCADE,
     chunk_id VARCHAR(255) NOT NULL REFERENCES chunks(chunk_id) ON DELETE CASCADE,
     PRIMARY KEY (question_id, chunk_id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS text_question_chunks (
 --Réponses de référence pour les questions
 CREATE TABLE IF NOT EXISTS text_question_answers (
     answer_id SERIAL PRIMARY KEY,
-    question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
+    question_id INT NOT NULL REFERENCES text_questions(question_id) ON DELETE CASCADE,
     content TEXT NOT NULL,  -- Réponse attendue ou réponse de l'utilisateur
     is_correct BOOLEAN,  -- Si c'est une réponse attendue, est-elle correcte ?
     created_by INT REFERENCES users(id),  -- Qui a fourni la réponse
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS text_question_answers (
 
 
 
-CREATE INDEX idx_questions_status ON questions(status);
-CREATE INDEX idx_questions_difficulty ON questions(difficulty_level);
-CREATE INDEX idx_question_chunks_question ON question_chunks(question_id);
-CREATE INDEX idx_question_chunks_chunk ON question_chunks(chunk_id); No newline at end of file
+CREATE INDEX idx_text_questions_status ON text_questions(status);
+CREATE INDEX idx_text_questions_difficulty ON text_questions(difficulty_level);
+CREATE INDEX idx_text_question_chunks_question ON text_question_chunks(question_id);
+CREATE INDEX idx_text_question_chunks_chunk ON text_question_chunks(chunk_id); No newline at end of file
