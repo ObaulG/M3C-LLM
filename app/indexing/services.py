@@ -3,10 +3,11 @@ Services pour l'indexation des PDFs depuis M3C.
 """
 
 import asyncio
+import itertools
 import json
 import uuid
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Iterator
 from datetime import datetime
 
 import aiohttp
@@ -42,6 +43,20 @@ from app.jobs.manager import (
     get_latest_job as _get_latest_job,
     update_job as _update_job,
 )
+
+# Taille des lots pour l'upsert Qdrant (l'API batch traite tous les textes en un seul job)
+METADATA_BATCH_SIZE = 32
+
+# Intervalle de polling du statut d'un job Batch API, en secondes
+BATCH_API_POLL_INTERVAL_SECONDS = 30
+
+# Statuts terminaux d'un job Batch API Mistral
+BATCH_API_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "CANCELLED"}
+
+# Statuts d'un job batch dont les résultats n'ont pas encore été intégralement
+# récoltés dans Qdrant (HARVESTING = récolte interrompue en cours, SUCCESS =
+# crash entre la complétion et le début de la récolte)
+BATCH_JOB_PENDING_STATUSES = {"SUBMITTED", "QUEUED", "RUNNING", "SUCCESS", "HARVESTING"}
 
 # Tokenizer pour le comptage des tokens
 _TOKENIZER = None
@@ -477,12 +492,162 @@ def build_metadata_string(metadata: dict) -> str:
     return _truncate_text("\n".join(lines), MAX_METADATA_STRING_CHARS, "chaîne complète")
 
 
+def _find_pending_batch_job(progress: dict) -> Optional[dict]:
+    """
+    Retourne la première entrée de progress["batch_jobs"] dont les résultats
+    n'ont pas encore été récoltés, ou None.
+    """
+    for batch_job in progress.get("batch_jobs", []):
+        if batch_job.get("status") in BATCH_JOB_PENDING_STATUSES:
+            return batch_job
+    return None
+
+async def _await_batch_job(job_id: str, progress: dict, embedder, batch_job_id: str) -> dict:
+    """
+    Poll le job Batch API jusqu'à un statut terminal.
+
+    Le statut est persisté dans progress à chaque itération via update_indexing_job,
+    ce qui permet de reprendre le suivi après un redémarrage du serveur.
+
+    Args:
+        job_id: L'ID du job d'indexation
+        progress: Le dict de progression du job (mis à jour en place)
+        embedder: L'embedder supportant la Batch API
+        batch_job_id: L'identifiant du job Batch API Mistral
+
+    Returns:
+        Dict {id, status, output_file, errors_file} au statut terminal
+    """
+    batch_entry = next(
+        (bj for bj in progress.get("batch_jobs", []) if bj.get("batch_job_id") == batch_job_id),
+        None
+    )
+    while True:
+        status_info = await asyncio.to_thread(embedder.get_batch_job_status, batch_job_id)
+        if batch_entry is not None:
+            batch_entry["status"] = status_info["status"]
+        update_indexing_job(job_id, "running", progress=progress)
+        if status_info["status"] in BATCH_API_TERMINAL_STATUSES:
+            return status_info
+        await asyncio.sleep(BATCH_API_POLL_INTERVAL_SECONDS)
+
+async def _harvest_batch_results(
+    job_id: str,
+    progress: dict,
+    embedder,
+    batch_job_id: str,
+    collection_name: str,
+    model_name: str,
+) -> dict:
+    """
+    Télécharge le fichier de résultats d'un job Batch API complété et upserte
+    les embeddings dans Qdrant, par lots de METADATA_BATCH_SIZE.
+
+    Le fichier JSONL est parsé ligne par ligne : une seule ligne tient en mémoire
+    à la fois (plus un lot d'embeddings en cours d'upsert). Les custom_id du
+    fichier sont les resource_id soumis. Les items déjà marqués "completed"
+    dans progress sont ignorés, ce qui rend la récolte idempotente en cas de
+    reprise après interruption. Les contenus sont reconstruits depuis la BDD
+    (get_resource_full_metadata + build_metadata_string), de façon déterministe.
+
+    Args:
+        job_id: L'ID du job d'indexation
+        progress: Le dict de progression du job (mis à jour en place)
+        embedder: L'embedder supportant la Batch API
+        batch_job_id: L'identifiant du job Batch API Mistral (statut SUCCESS)
+        collection_name: Le nom de la collection Qdrant cible
+        model_name: Le nom du modèle d'embedding
+
+    Returns:
+        Dict {processed: nombre d'items complétés, errors: liste des erreurs}
+    """
+    errors = []
+    processed = 0
+    result_iter: Iterator = embedder.iter_batch_results(batch_job_id)
+
+    async with await get_db_connection() as conn:
+        while True:
+            chunk = await asyncio.to_thread(
+                lambda: list(itertools.islice(result_iter, METADATA_BATCH_SIZE))
+            )
+            if not chunk:
+                break
+
+            resource_ids = []
+            embeddings = []
+            contents = []
+            for custom_id, embedding, error in chunk:
+                if progress.get(str(custom_id), {}).get("status") == "completed":
+                    continue
+                if error is not None:
+                    progress[str(custom_id)] = {
+                        "status": "failed",
+                        "error": f"Batch API: {error}",
+                        "processed_at": datetime.now().isoformat()
+                    }
+                    errors.append(f"Resource {custom_id}: {error}")
+                    continue
+                try:
+                    metadata = await get_resource_full_metadata(conn, int(custom_id))
+                    metadata_string = build_metadata_string(metadata)
+                    if not metadata_string:
+                        raise ValueError("La chaîne de métadonnées est vide")
+                except (ValueError, TypeError) as e:
+                    progress[str(custom_id)] = {
+                        "status": "failed",
+                        "error": str(e),
+                        "processed_at": datetime.now().isoformat()
+                    }
+                    errors.append(f"Resource {custom_id}: {str(e)}")
+                    continue
+                resource_ids.append(int(custom_id))
+                embeddings.append(embedding)
+                contents.append(metadata_string)
+
+            if not resource_ids:
+                continue
+
+            try:
+                await insert_metadata_embeddings_batch_qdrant(
+                    resource_ids=resource_ids,
+                    model_name=model_name,
+                    embeddings=embeddings,
+                    contents=contents,
+                    collection_name=collection_name,
+                )
+                for resource_id in resource_ids:
+                    progress[str(resource_id)] = {
+                        "status": "completed",
+                        "chunks_count": 1,
+                        "embeddings_count": 1,
+                        "processed_at": datetime.now().isoformat()
+                    }
+                processed += len(resource_ids)
+                print(f"Lot sauvegardé ({len(resource_ids)} embeddings)")
+            except Exception as e:
+                errors.append(f"Lot Qdrant {resource_ids[0]}-{resource_ids[-1]}: {str(e)}")
+                for resource_id in resource_ids:
+                    progress[str(resource_id)] = {
+                        "status": "failed",
+                        "error": str(e),
+                        "processed_at": datetime.now().isoformat()
+                    }
+
+            update_indexing_job(job_id, "running", progress=progress)
+
+    return {"processed": processed, "errors": errors}
+
 async def process_metadata_indexing_job(job_id: str, embedder_name: str, resource_ids: Optional[List[int]] = None, all_items: bool = False):
     """
     Traite un job d'indexation (création d'embeddings) des métadonnées de chaque item.
     
     Pour chaque resource_id, récupère les métadonnées, construit une chaîne formatée,
     génère l'embedding et le sauvegarde dans Qdrant (par lots).
+    
+    Si l'embedder supporte la Batch API Mistral, les embeddings sont générés via
+    un job batch : l'identifiant du job batch est persisté dans progress["batch_jobs"]
+    avant tout polling, ce qui permet de reprendre le suivi et la récolte des
+    résultats après un redémarrage du serveur sans re-soumettre les textes.
     
     Args:
         job_id: L'ID du job à traiter
@@ -551,11 +716,13 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
     collection_name = f"MD-{model_name}-{vector_size}"
     await ensure_qdrant_collection(collection_name, vector_size)
 
-    # Taille des lots pour l'upsert Qdrant (l'API batch traite tous les textes en un seul job)
-    METADATA_BATCH_SIZE = 32
+    batch_api_used = bool(getattr(embedder, "supports_batch_api", False))
+    pending_batch_job = _find_pending_batch_job(progress) if batch_api_used else None
+
     all_docs = []
 
-    for i, resource_id in enumerate(selected_resource_ids):
+    ids_to_build = [] if pending_batch_job is not None else selected_resource_ids
+    for i, resource_id in enumerate(ids_to_build):
         resource_id_str = str(resource_id)
         print(f"Métadonnées {i + 1}/{total_resources} - resource_id {resource_id_str}")
 
@@ -609,86 +776,152 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
                 processed_items=processed_count
             )
 
-    # Génération des embeddings : Batch API Mistral (-50 % sur le coût) si
-    # l'embedder la supporte, sinon appels synchrones par lots
-    batch_api_used = bool(getattr(embedder, "supports_batch_api", False))
-    embeddings = [None] * len(all_docs)
-
-    if all_docs:
-        try:
-            if batch_api_used:
-                print(f"Batch API : job d'embeddings pour {len(all_docs)} documents")
-                embeddings = await asyncio.to_thread(
-                    embedder.embed_batch_api,
-                    [doc["content"] for doc in all_docs]
+    if batch_api_used:
+        if pending_batch_job is None and all_docs:
+            try:
+                batch_job_id = await asyncio.to_thread(
+                    embedder.create_batch_job,
+                    [doc["content"] for doc in all_docs],
+                    [doc["resource_id_str"] for doc in all_docs],
                 )
+            except Exception as e:
+                errors.append(f"Soumission du job batch: {str(e)}")
+                for doc in all_docs:
+                    progress[doc["resource_id_str"]] = {
+                        "status": "failed",
+                        "error": f"Soumission du job batch: {str(e)}",
+                        "processed_at": datetime.now().isoformat()
+                    }
+                print(f"Erreur à la soumission du job batch: {str(e)}")
             else:
-                for batch_start in range(0, len(all_docs), METADATA_BATCH_SIZE):
-                    batch_docs = all_docs[batch_start:batch_start + METADATA_BATCH_SIZE]
-                    embeddings[batch_start:batch_start + len(batch_docs)] = embedder.embed_batch(
-                        [doc["content"] for doc in batch_docs]
-                    )
+                pending_batch_job = {
+                    "batch_job_id": batch_job_id,
+                    "embedder": model_name,
+                    "status": "SUBMITTED",
+                    "submitted_at": datetime.now().isoformat(),
+                    "items_count": len(all_docs),
+                }
+                progress.setdefault("batch_jobs", []).append(pending_batch_job)
 
-            # Coût total des embeddings générés pendant ce job
+                total_input_tokens = sum(count_tokens(doc["content"]) for doc in all_docs)
+                cost = compute_embedding_cost_eur(embedder.model_id, total_input_tokens, batch_api=True)
+                if cost is not None:
+                    cost["model"] = embedder.model_id
+                    cost["batch_api"] = True
+                    progress["cost"] = cost
+                    print(f"Coût estimé des embeddings: {cost['total_eur']} EUR ({total_input_tokens} tokens)")
+
+                update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+                print(f"Batch API : job {batch_job_id} soumis pour {len(all_docs)} documents")
+
+        if pending_batch_job is not None:
+            batch_job_id = pending_batch_job["batch_job_id"]
+            try:
+                status_info = await _await_batch_job(job_id, progress, embedder, batch_job_id)
+            except Exception as e:
+                status_info = None
+                errors.append(f"Suivi du job batch {batch_job_id}: {str(e)}")
+                print(f"Erreur pendant le suivi du job batch {batch_job_id}: {str(e)}")
+
+            if status_info is None:
+                # Statut inconnu : l'entrée conserve son dernier statut connu,
+                # une reprise du job re-pollera le même job batch sans re-soumettre
+                update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+            else:
+                pending_batch_job["status"] = status_info["status"]
+                pending_batch_job["polled_at"] = datetime.now().isoformat()
+
+                if status_info["status"] != "SUCCESS":
+                    errors.append(f"Job Batch API {batch_job_id} terminé avec le statut {status_info['status']}")
+                else:
+                    pending_batch_job["status"] = "HARVESTING"
+                    update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+                    try:
+                        harvested = await _harvest_batch_results(
+                            job_id, progress, embedder, batch_job_id,
+                            collection_name, model_name,
+                        )
+                    except Exception as e:
+                        errors.append(f"Récolte du job batch {batch_job_id}: {str(e)}")
+                        print(f"Erreur pendant la récolte du job batch {batch_job_id}: {str(e)}")
+                    else:
+                        errors.extend(harvested["errors"])
+                        processed_count += harvested["processed"]
+                        pending_batch_job["status"] = "HARVESTED"
+                        pending_batch_job["harvested_at"] = datetime.now().isoformat()
+
+                update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+
+    elif all_docs:
+        try:
             total_input_tokens = sum(count_tokens(doc["content"]) for doc in all_docs)
-            cost = compute_embedding_cost_eur(embedder.model_id, total_input_tokens, batch_api=batch_api_used)
+            cost = compute_embedding_cost_eur(embedder.model_id, total_input_tokens, batch_api=False)
             if cost is not None:
                 cost["model"] = embedder.model_id
-                cost["batch_api"] = batch_api_used
+                cost["batch_api"] = False
                 progress["cost"] = cost
-                print(f"Coût des embeddings: {cost['total_eur']} EUR ({total_input_tokens} tokens, batch_api={batch_api_used})")
+                print(f"Coût des embeddings: {cost['total_eur']} EUR ({total_input_tokens} tokens)")
+
+            for batch_start in range(0, len(all_docs), METADATA_BATCH_SIZE):
+                batch_docs = all_docs[batch_start:batch_start + METADATA_BATCH_SIZE]
+                try:
+                    batch_embeddings = embedder.embed_batch(
+                        [doc["content"] for doc in batch_docs]
+                    )
+                except Exception as e:
+                    errors.append(f"Lot {batch_docs[0]['resource_id']}-{batch_docs[-1]['resource_id']}: {str(e)}")
+                    for doc in batch_docs:
+                        progress[doc["resource_id_str"]] = {
+                            "status": "failed",
+                            "error": str(e),
+                            "processed_at": datetime.now().isoformat()
+                        }
+                    continue
+
+                try:
+                    result = await insert_metadata_embeddings_batch_qdrant(
+                        resource_ids=[doc["resource_id"] for doc in batch_docs],
+                        model_name=model_name,
+                        embeddings=batch_embeddings,
+                        contents=[doc["content"] for doc in batch_docs],
+                        collection_name=collection_name,
+                    )
+                    print(f"Lot sauvegardé ({len(batch_docs)} embeddings) - operation_id: {result.operation_id}")
+
+                    for doc in batch_docs:
+                        progress[doc["resource_id_str"]] = {
+                            "status": "completed",
+                            "chunks_count": 1,
+                            "embeddings_count": 1,
+                            "document_id": doc["document_id"],
+                            "processed_at": datetime.now().isoformat()
+                        }
+                        processed_count += 1
+
+                except Exception as e:
+                    errors.append(f"Lot {batch_docs[0]['resource_id']}-{batch_docs[-1]['resource_id']}: {str(e)}")
+                    for doc in batch_docs:
+                        progress[doc["resource_id_str"]] = {
+                            "status": "failed",
+                            "error": str(e),
+                            "processed_at": datetime.now().isoformat()
+                        }
+                    print(f"Erreur pour le lot: {str(e)}")
 
         except Exception as e:
             errors.append(f"Génération des embeddings: {str(e)}")
-            for doc in all_docs:
-                progress[doc["resource_id_str"]] = {
-                    "status": "failed",
-                    "error": str(e),
-                    "processed_at": datetime.now().isoformat()
-                }
             print(f"Erreur pour les embeddings: {str(e)}")
-
-        # Insertion dans Qdrant par lots
-        for batch_start in range(0, len(all_docs), METADATA_BATCH_SIZE):
-            batch_docs = all_docs[batch_start:batch_start + METADATA_BATCH_SIZE]
-            batch_embeddings = embeddings[batch_start:batch_start + len(batch_docs)]
-            if batch_embeddings[0] is None:
-                continue
-            try:
-                result = await insert_metadata_embeddings_batch_qdrant(
-                    resource_ids=[doc["resource_id"] for doc in batch_docs],
-                    model_name=model_name,
-                    embeddings=batch_embeddings,
-                    contents=[doc["content"] for doc in batch_docs],
-                    collection_name=collection_name,
-                )
-                print(f"Lot sauvegardé ({len(batch_docs)} embeddings) - operation_id: {result.operation_id}")
-
-                for doc in batch_docs:
-                    progress[doc["resource_id_str"]] = {
-                        "status": "completed",
-                        "chunks_count": 1,
-                        "embeddings_count": 1,
-                        "document_id": doc["document_id"],
-                        "processed_at": datetime.now().isoformat()
-                    }
-                    processed_count += 1
-
-            except Exception as e:
-                errors.append(f"Lot {batch_docs[0]['resource_id']}-{batch_docs[-1]['resource_id']}: {str(e)}")
-                for doc in batch_docs:
-                    progress[doc["resource_id_str"]] = {
-                        "status": "failed",
-                        "error": str(e),
-                        "processed_at": datetime.now().isoformat()
-                    }
-                print(f"Erreur pour le lot: {str(e)}")
 
         update_indexing_job(
             job_id, "running",
             progress=progress,
             processed_items=processed_count
         )
+
+    processed_count = sum(
+        1 for v in progress.values()
+        if isinstance(v, dict) and v.get("status") == "completed"
+    )
 
     total_resources = len(selected_resource_ids)
     status = "completed" if processed_count == total_resources and not errors else "failed"

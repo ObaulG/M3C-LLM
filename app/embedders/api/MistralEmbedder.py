@@ -3,11 +3,7 @@ from app.embedders.BaseEmbedder import BaseEmbedder
 from typing import List
 import os
 import json
-import time
 from mistralai import Mistral
-
-# Statuts non terminaux d'un job Batch API
-_BATCH_PENDING_STATUSES = {"QUEUED", "RUNNING"}
 
 
 class MistralEmbedder(BaseEmbedder):
@@ -61,39 +57,71 @@ class MistralEmbedder(BaseEmbedder):
     def dimension(self) -> int:
         return self.dimension
 
-    def embed_batch_api(self, texts: List[str], poll_interval: int = 10) -> List[List[float]]:
-        """Embed une liste de textes via la Batch API Mistral (-50 % sur le coût).
+    def create_batch_job(self, texts: List[str], custom_ids: List[str]) -> str:
+        """Crée un job Batch API d'embeddings et retourne son identifiant.
 
-        Crée un job batch inline (endpoint /v1/embeddings), attend sa complétion
-        puis télécharge et parse le fichier de résultats JSONL.
+        L'identifiant doit être persisté par l'appelant pour permettre la
+        récupération des résultats plus tard (GET du statut + téléchargement
+        du fichier de sortie, disponible 24 h après la complétion).
 
         Args:
             texts: Liste de textes à embedder.
-            poll_interval: Intervalle de polling du statut du job, en secondes.
+            custom_ids: Identifiants (ex. resource_id) associés à chaque texte,
+                retournés dans le fichier de résultats comme custom_id.
 
         Returns:
-            Liste d'embeddings dans le même ordre que les textes d'entrée.
+            L'identifiant du job batch créé.
         """
         if not texts:
-            return []
+            raise ValueError("Aucun texte à soumettre au job batch")
+        if len(texts) != len(custom_ids):
+            raise ValueError("texts et custom_ids doivent avoir la même longueur")
 
         with Mistral(api_key=self._api_key) as mistral:
             requests = [
-                {"custom_id": str(i), "body": {"input": text}}
-                for i, text in enumerate(texts)
+                {"custom_id": str(custom_id), "body": {"input": text}}
+                for custom_id, text in zip(custom_ids, texts)
             ]
             job = mistral.batch.jobs.create(
                 endpoint="/v1/embeddings",
                 model=self.model,
                 requests=requests,
             )
+            return job.id
 
-            while job.status in _BATCH_PENDING_STATUSES:
-                time.sleep(poll_interval)
-                job = mistral.batch.jobs.get(job_id=job.id)
+    def get_batch_job_status(self, batch_job_id: str) -> dict:
+        """Retourne le statut courant d'un job Batch API.
 
+        Returns:
+            Dict avec les champs id, status (QUEUED, RUNNING, SUCCESS, FAILED,
+            CANCELLED), output_file et errors_file du job.
+        """
+        with Mistral(api_key=self._api_key) as mistral:
+            job = mistral.batch.jobs.get(job_id=batch_job_id)
+            return {
+                "id": job.id,
+                "status": job.status,
+                "output_file": job.output_file,
+                "errors_file": getattr(job, "errors_file", None),
+            }
+
+    def iter_batch_results(self, batch_job_id: str):
+        """Itère sur le fichier de résultats d'un job Batch API complété.
+
+        Le fichier JSONL est parsé ligne par ligne sans charger la totalité
+        des embeddings en mémoire.
+
+        Args:
+            batch_job_id: L'identifiant du job batch (statut SUCCESS).
+
+        Yields:
+            Tuples (custom_id, embedding, error) : embedding est None si la
+            requête a échoué, auquel cas error contient le message.
+        """
+        with Mistral(api_key=self._api_key) as mistral:
+            job = mistral.batch.jobs.get(job_id=batch_job_id)
             if job.status != "SUCCESS" or not job.output_file:
-                raise Exception(f"Job Batch API {job.id} terminé avec le statut {job.status}")
+                raise Exception(f"Job Batch API {batch_job_id} terminé avec le statut {job.status}")
 
             output = mistral.files.download(file_id=job.output_file)
             if isinstance(output, (bytes, bytearray)):
@@ -101,11 +129,12 @@ class MistralEmbedder(BaseEmbedder):
             else:
                 read = getattr(output, "read", None)
                 if callable(read):
-                    read()
-                content = output.content
+                    content = read()
+                else:
+                    content = output.content
 
-        embeddings_by_id = {}
-        for line in content.splitlines():
+        for raw_line in content.splitlines():
+            line = raw_line.decode("utf-8", "replace") if isinstance(raw_line, bytes) else raw_line
             if not line.strip():
                 continue
             result = json.loads(line)
@@ -113,20 +142,12 @@ class MistralEmbedder(BaseEmbedder):
             response = result.get("response") or {}
             status_code = response.get("status_code")
             if result.get("error") is not None or (status_code is not None and status_code >= 400):
-                raise Exception(
-                    f"Requête batch en échec pour custom_id {custom_id}: "
-                    f"{result.get('error') or response.get('body')}"
-                )
+                yield custom_id, None, f"{result.get('error') or response.get('body')}"
+                continue
             body = response.get("body") or {}
             data = (body.get("data") or [{}])[0]
             embedding = data.get("embedding")
             if embedding is None:
-                raw = line.decode("utf-8", "replace") if isinstance(line, bytes) else line
-                raise Exception(f"Résultat batch invalide pour custom_id {custom_id}: {raw}")
-            embeddings_by_id[custom_id] = embedding
-
-        missing = [i for i in range(len(texts)) if str(i) not in embeddings_by_id]
-        if missing:
-            raise Exception(f"Embeddings manquants dans le résultat batch: {missing}")
-
-        return [embeddings_by_id[str(i)] for i in range(len(texts))]
+                yield custom_id, None, f"Résultat batch invalide: {line[:200]}"
+                continue
+            yield custom_id, embedding, None
