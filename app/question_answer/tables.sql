@@ -1,5 +1,6 @@
 CREATE TABLE text_questions (
     question_id SERIAL PRIMARY KEY,
+    document_id INT,  -- Identifiant du document associé, si connu
     content TEXT NOT NULL,  -- Texte de la question
     status ENUM('generated', 'pending', 'validated', 'rejected') NOT NULL,  -- "generated", "pending", "validated", "rejected"
     difficulty_level INT,  -- Niveau de difficulté (1-5)
@@ -7,7 +8,7 @@ CREATE TABLE text_questions (
     model VARCHAR(32), -- Référence le modèle utilisé si la question a été générée.
     validated_by INT REFERENCES users(user_id),  -- Qui a validé la question
     validation_date TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 --Une question peut faire intervenir plusieurs chunks.
