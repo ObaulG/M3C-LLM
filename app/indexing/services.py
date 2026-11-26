@@ -53,8 +53,10 @@ BATCH_API_POLL_INTERVAL_SECONDS = 30
 # Statuts terminaux d'un job Batch API Mistral
 BATCH_API_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "CANCELLED"}
 
-# Statuts d'un job batch soumis mais dont les résultats n'ont pas encore été récoltés
-BATCH_JOB_PENDING_STATUSES = {"SUBMITTED", "QUEUED", "RUNNING"}
+# Statuts d'un job batch dont les résultats n'ont pas encore été intégralement
+# récoltés dans Qdrant (HARVESTING = récolte interrompue en cours, SUCCESS =
+# crash entre la complétion et le début de la récolte)
+BATCH_JOB_PENDING_STATUSES = {"SUBMITTED", "QUEUED", "RUNNING", "SUCCESS", "HARVESTING"}
 
 # Tokenizer pour le comptage des tokens
 _TOKENIZER = None
@@ -817,25 +819,38 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
             try:
                 status_info = await _await_batch_job(job_id, progress, embedder, batch_job_id)
             except Exception as e:
+                status_info = None
                 errors.append(f"Suivi du job batch {batch_job_id}: {str(e)}")
-                status_info = {"status": "FAILED"}
+                print(f"Erreur pendant le suivi du job batch {batch_job_id}: {str(e)}")
 
-            pending_batch_job["status"] = status_info["status"]
-            pending_batch_job["polled_at"] = datetime.now().isoformat()
-
-            if status_info["status"] != "SUCCESS":
-                errors.append(f"Job Batch API {batch_job_id} terminé avec le statut {status_info['status']}")
+            if status_info is None:
+                # Statut inconnu : l'entrée conserve son dernier statut connu,
+                # une reprise du job re-pollera le même job batch sans re-soumettre
+                update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
             else:
-                harvested = await _harvest_batch_results(
-                    job_id, progress, embedder, batch_job_id,
-                    collection_name, model_name,
-                )
-                errors.extend(harvested["errors"])
-                processed_count += harvested["processed"]
-                pending_batch_job["status"] = "HARVESTED"
-                pending_batch_job["harvested_at"] = datetime.now().isoformat()
+                pending_batch_job["status"] = status_info["status"]
+                pending_batch_job["polled_at"] = datetime.now().isoformat()
 
-            update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+                if status_info["status"] != "SUCCESS":
+                    errors.append(f"Job Batch API {batch_job_id} terminé avec le statut {status_info['status']}")
+                else:
+                    pending_batch_job["status"] = "HARVESTING"
+                    update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
+                    try:
+                        harvested = await _harvest_batch_results(
+                            job_id, progress, embedder, batch_job_id,
+                            collection_name, model_name,
+                        )
+                    except Exception as e:
+                        errors.append(f"Récolte du job batch {batch_job_id}: {str(e)}")
+                        print(f"Erreur pendant la récolte du job batch {batch_job_id}: {str(e)}")
+                    else:
+                        errors.extend(harvested["errors"])
+                        processed_count += harvested["processed"]
+                        pending_batch_job["status"] = "HARVESTED"
+                        pending_batch_job["harvested_at"] = datetime.now().isoformat()
+
+                update_indexing_job(job_id, "running", progress=progress, processed_items=processed_count)
 
     elif all_docs:
         try:
