@@ -51,13 +51,13 @@ DEFAULT_OUTPUT_DIR = Path(os.getenv("LOCAL_BACKUP_DIR", "backups"))
 RETENTION_DAYS = int(os.getenv("LOCAL_BACKUP_RETENTION_DAYS", "30"))
 
 TABLES = [
-    'answers', 'chatbot_feedbacks', 'chatbot_message_chunks', 'chatbot_messages',
+    'chatbot_feedbacks', 'chatbot_message_chunks', 'chatbot_messages',
     'chunk_embeddings', 'document_reading_sessions', 'documents', 'entities',
     'evaluations', 'indexing_jobs', 'knowledge_item_entities', 'knowledge_item_questions',
     'knowledge_items', 'knowledge_item_themes', 'knowledge_sources', 'llm_interpretations',
     'model_evidences', 'observation_payloads', 'observations', 'observation_targets',
     'question_session_questions', 'question_sessions', 'questions',
-    'session_answers', 'session_messages', 'sessions',
+    'session_answers', 'sessions', 'session_answers',
     'text_answer_facts', 'text_chunking_strategies', 'text_chunks',
     'text_document_chunking_validation', 'text_documents',
     'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
