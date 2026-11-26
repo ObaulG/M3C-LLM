@@ -37,6 +37,10 @@ CREATE_TABLE_RE = re.compile(
     re.IGNORECASE,
 )
 
+MYSQL8_COLLATION_RE = re.compile(
+    r"utf8mb4_0900_(?:ai|as)_(?:ci|cs)", re.IGNORECASE
+)
+
 INSERT_BATCH_SIZE = 500
 
 
@@ -69,6 +73,7 @@ async def dump_table(conn, table: str, out) -> int:
     async with conn.cursor() as cursor:
         await cursor.execute(f"SHOW CREATE TABLE `{table}`")
         create_stmt = (await cursor.fetchone())[1]
+    create_stmt = MYSQL8_COLLATION_RE.sub("utf8mb4_unicode_ci", create_stmt)
     out.write(f"DROP TABLE IF EXISTS `{table}`;\n")
     out.write(create_stmt + ";\n")
 
