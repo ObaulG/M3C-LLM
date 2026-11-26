@@ -53,6 +53,5 @@ DROP TABLE IF EXISTS user_mistral_api_keys;
 DROP TABLE IF EXISTS user_model_history;
 DROP TABLE IF EXISTS user_profiles;
 DROP TABLE IF EXISTS user_sessions;
-DROP TABLE IF EXISTS user;
 
 SET FOREIGN_KEY_CHECKS = 1;
