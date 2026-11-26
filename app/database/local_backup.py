@@ -52,12 +52,12 @@ RETENTION_DAYS = int(os.getenv("LOCAL_BACKUP_RETENTION_DAYS", "30"))
 
 TABLES = [
     'chatbot_feedbacks', 'chatbot_message_chunks', 'chatbot_messages',
-    'chunk_embeddings', 'document_reading_sessions', 'documents', 'entities',
-    'evaluations', 'indexing_jobs', 'knowledge_item_entities', 'knowledge_item_questions',
+    'document_reading_sessions', 'documents', 'entities',
+    'indexing_jobs', 'knowledge_item_entities', 'knowledge_item_questions',
     'knowledge_items', 'knowledge_item_themes', 'knowledge_sources', 'llm_interpretations',
     'model_evidences', 'observation_payloads', 'observations', 'observation_targets',
     'question_session_questions', 'question_sessions',
-    'session_answers', 'session_messages', 'sessions',
+    'session_answers', 'sessions',
     'text_answer_facts', 'text_chunking_strategies', 'text_chunks',
     'text_document_chunking_validation', 'text_documents',
     'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
