@@ -57,6 +57,36 @@ def discover_tables(sql_scripts_dir: Path = SQL_SCRIPTS_DIR) -> list[str]:
     return tables
 
 
+def order_tables_by_fk(tables: list[str], fk_rows) -> list[str]:
+    """Trie les tables pour que chaque table référencée par une clé
+    étrangère soit exportée avant celles qui la référencent ; en cas de
+    cycle, l'ordre d'origine est conservé pour les tables restantes."""
+    wanted = set(tables)
+    deps: dict[str, set[str]] = {}
+    for tbl, ref in fk_rows:
+        if tbl in wanted and ref in wanted and tbl != ref:
+            deps.setdefault(tbl, set()).add(ref)
+
+    ordered: list[str] = []
+    emitted: set[str] = set()
+    remaining = list(tables)
+    while remaining:
+        progressed = False
+        rest: list[str] = []
+        for t in remaining:
+            if deps.get(t, set()) <= emitted:
+                ordered.append(t)
+                emitted.add(t)
+                progressed = True
+            else:
+                rest.append(t)
+        if not progressed:
+            ordered.extend(rest)
+            break
+        remaining = rest
+    return ordered
+
+
 def format_value(value, conn) -> str:
     if value is None:
         return "NULL"
@@ -140,6 +170,16 @@ async def backup(
         async with conn.cursor() as cursor:
             await cursor.execute("SHOW TABLES")
             existing_tables = {row[0] for row in await cursor.fetchall()}
+
+        async with conn.cursor() as cursor:
+            await cursor.execute(
+                "SELECT TABLE_NAME, REFERENCED_TABLE_NAME "
+                "FROM information_schema.KEY_COLUMN_USAGE "
+                "WHERE TABLE_SCHEMA = %s AND REFERENCED_TABLE_NAME IS NOT NULL",
+                (DB_CONFIG["db"],),
+            )
+            fk_rows = await cursor.fetchall()
+        tables = order_tables_by_fk(tables, fk_rows)
 
         missing = [t for t in tables if t not in existing_tables]
         if missing:
