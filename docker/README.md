@@ -497,10 +497,10 @@ Si des accents sont déjà corrompus dans des données écrites par l'applicatio
 ```sql
 -- 1) Inspecter : si le texte affiche « Ã© » au lieu de « é » (double encodage utf8->latin1->utf8),
 --    les données sont récupérables. S'il affiche « ? », les caractères ont été perdus à l'écriture.
-SELECT content FROM answers WHERE content LIKE '%Ã©%' LIMIT 5;
+SELECT content FROM text_question_answers WHERE content LIKE '%Ã©%' LIMIT 5;
 
 -- 2) Réparer le double encodage, colonne par colonne (adapter table/colonne) :
-UPDATE answers
+UPDATE text_question_answers
 SET content = CONVERT(CAST(CONVERT(content USING latin1) AS BINARY) USING utf8mb4)
 WHERE content LIKE '%Ã©%';
 ```

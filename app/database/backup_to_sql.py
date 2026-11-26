@@ -80,7 +80,10 @@ async def dump_table(cursor, conn, table: str, out) -> None:
         return
 
     column_list = ", ".join(f"`{c}`" for c in columns)
-    insert_prefix = f"INSERT INTO `{table}` ({column_list}) VALUES\n"
+    # INSERT IGNORE : un réimport interrompu peut être relancé sans erreur
+    # 1062 ; les lignes déjà présentes (même clé) sont ignorées, la ligne
+    # existante est conservée inchangée et l'import continue.
+    insert_prefix = f"INSERT IGNORE INTO `{table}` ({column_list}) VALUES\n"
 
     batch: list[str] = []
     for row in rows:

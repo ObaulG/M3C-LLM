@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS session_answers (
     answer_id SERIAL PRIMARY KEY,
     session_id VARCHAR(255) NOT NULL REFERENCES sessions(session_id) ON DELETE CASCADE,
-    question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
+    question_id INT NOT NULL REFERENCES text_questions(question_id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
     answer_text TEXT NOT NULL,
     llm_comment TEXT,

@@ -82,26 +82,44 @@ CREATE TABLE IF NOT EXISTS text_chunks (
 -- =============================================================================
 
 -- Table pour les questions
-CREATE TABLE IF NOT EXISTS questions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    document_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS text_questions (
+    question_id INT AUTO_INCREMENT PRIMARY KEY,
     resource_id INT,
     content TEXT NOT NULL,
+    status ENUM('generated', 'pending', 'validated', 'rejected') NOT NULL DEFAULT 'generated',
+    difficulty_level INT,
+    model VARCHAR(32),
+    created_by INT,
+    validated_by INT,
+    validation_date TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
-    INDEX idx_question_document (document_id),
     INDEX idx_question_resource (resource_id),
+    INDEX idx_question_status (status),
+    INDEX idx_question_difficulty (difficulty_level),
     FULLTEXT INDEX ft_question_content (content)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table pour les réponses aux questions
-CREATE TABLE IF NOT EXISTS answers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS text_question_answers (
+    answer_id INT AUTO_INCREMENT PRIMARY KEY,
     question_id INT NOT NULL,
     content TEXT NOT NULL,
+    is_correct BOOLEAN NOT NULL DEFAULT FALSE,
+    created_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES text_questions(question_id) ON DELETE CASCADE,
     INDEX idx_answer_question (question_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--Une question peut faire intervenir plusieurs chunks.
+--Un chunk peut intervenir dans plusieurs questions.
+CREATE TABLE IF NOT EXISTS text_question_chunks (
+    question_id INT NOT NULL,
+    chunk_id VARCHAR(255) NOT NULL,
+    PRIMARY KEY (question_id, chunk_id),
+    FOREIGN KEY (question_id) REFERENCES text_questions(question_id) ON DELETE CASCADE,
+    FOREIGN KEY (chunk_id) REFERENCES text_chunks(id) ON DELETE CASCADE,
+    INDEX idx_text_question_chunks_chunk (chunk_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================================================
@@ -120,23 +138,6 @@ CREATE TABLE IF NOT EXISTS sessions (
     INDEX idx_session_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table pour les messages de session (questions/réponses)
-CREATE TABLE IF NOT EXISTS session_messages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    session_id VARCHAR(36) NOT NULL,
-    question_id INT,
-    role ENUM('user', 'assistant', 'system') NOT NULL,
-    content TEXT NOT NULL,
-    message_type VARCHAR(50),
-    metadata JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE SET NULL,
-    INDEX idx_session_message_session (session_id),
-    INDEX idx_session_message_question (question_id),
-    INDEX idx_session_message_created (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- =============================================================================
 -- TABLES POUR L'INDEXATION
 -- =============================================================================
@@ -152,44 +153,6 @@ CREATE TABLE IF NOT EXISTS indexing_jobs (
     FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
     INDEX idx_indexing_job_document (document_id),
     INDEX idx_indexing_job_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- =============================================================================
--- TABLES POUR LE RAG (Retrieval-Augmented Generation)
--- =============================================================================
-
--- Table pour les embeddings stockés dans Qdrant (références)
-CREATE TABLE IF NOT EXISTS chunk_embeddings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    chunk_id VARCHAR(255) NOT NULL,
-    document_id INT NOT NULL,
-    model_name VARCHAR(100) NOT NULL,
-    collection_name VARCHAR(100),
-    vector_size INT,
-    qdrant_point_id VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_chunk_embedding (chunk_id, model_name),
-    FOREIGN KEY (document_id) REFERENCES text_documents(id) ON DELETE CASCADE,
-    INDEX idx_chunk_embedding_chunk (chunk_id),
-    INDEX idx_chunk_embedding_model (model_name),
-    INDEX idx_chunk_embedding_document (document_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Table pour les évaluations des réponses
-CREATE TABLE IF NOT EXISTS evaluations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    session_id VARCHAR(36),
-    question_id INT,
-    model_used VARCHAR(100),
-    score DECIMAL(5,2),
-    feedback TEXT,
-    evaluation_data JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE SET NULL,
-    INDEX idx_evaluation_session (session_id),
-    INDEX idx_evaluation_question (question_id),
-    INDEX idx_evaluation_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================================================
@@ -319,6 +282,7 @@ CREATE TABLE IF NOT EXISTS knowledge_item_questions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (knowledge_id, question_id),
     FOREIGN KEY (knowledge_id) REFERENCES knowledge_items(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES text_questions(question_id) ON DELETE CASCADE,
     INDEX idx_kiq_knowledge (knowledge_id),
     INDEX idx_kiq_question (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
