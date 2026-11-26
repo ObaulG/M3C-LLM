@@ -51,7 +51,7 @@ METADATA_BATCH_SIZE = 32
 BATCH_API_POLL_INTERVAL_SECONDS = 30
 
 # Statuts terminaux d'un job Batch API Mistral
-BATCH_API_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "CANCELLED"}
+BATCH_API_TERMINAL_STATUSES = {"SUCCESS", "FAILED", "TIMEOUT_EXCEEDED", "CANCELLED"}
 
 # Statuts d'un job batch dont les résultats n'ont pas encore été intégralement
 # récoltés dans Qdrant (HARVESTING = récolte interrompue en cours, SUCCESS =
