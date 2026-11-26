@@ -3,6 +3,7 @@ from app.embedders.BaseEmbedder import BaseEmbedder
 from typing import List
 import os
 import json
+import tempfile
 from mistralai import Mistral
 
 
@@ -60,7 +61,12 @@ class MistralEmbedder(BaseEmbedder):
     def create_batch_job(self, texts: List[str], custom_ids: List[str]) -> str:
         """Crée un job Batch API d'embeddings et retourne son identifiant.
 
-        L'identifiant doit être persisté par l'appelant pour permettre la
+        Les requêtes sont écrites dans un fichier JSONL (une requête par ligne,
+        format {"custom_id": ..., "body": {"input": ...}}) puis uploadées via
+        l'API Files : la soumission inline des requêtes est réservée aux petits
+        volumes et échoue en 400 sur de grosses charges (ex. 42 000 textes).
+
+        L'identifiant du job doit être persisté par l'appelant pour permettre la
         récupération des résultats plus tard (GET du statut + téléchargement
         du fichier de sortie, disponible 24 h après la complétion).
 
@@ -77,17 +83,33 @@ class MistralEmbedder(BaseEmbedder):
         if len(texts) != len(custom_ids):
             raise ValueError("texts et custom_ids doivent avoir la même longueur")
 
-        with Mistral(api_key=self._api_key) as mistral:
-            requests = [
-                {"custom_id": str(custom_id), "body": {"input": text}}
-                for custom_id, text in zip(custom_ids, texts)
-            ]
-            job = mistral.batch.jobs.create(
-                endpoint="/v1/embeddings",
-                model=self.model,
-                requests=requests,
-            )
-            return job.id
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".jsonl", delete=False, encoding="utf-8"
+            ) as tmp:
+                tmp_path = tmp.name
+                for custom_id, text in zip(custom_ids, texts):
+                    tmp.write(json.dumps(
+                        {"custom_id": str(custom_id), "body": {"input": text}},
+                        ensure_ascii=False,
+                    ) + "\n")
+
+            with Mistral(api_key=self._api_key) as mistral:
+                with open(tmp_path, "rb") as f:
+                    uploaded = mistral.files.upload(
+                        file={"file_name": "metadata-embeddings.jsonl", "content": f},
+                        purpose="batch",
+                    )
+                job = mistral.batch.jobs.create(
+                    input_files=[uploaded.id],
+                    endpoint="/v1/embeddings",
+                    model=self.model,
+                )
+                return job.id
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     def get_batch_job_status(self, batch_job_id: str) -> dict:
         """Retourne le statut courant d'un job Batch API.
