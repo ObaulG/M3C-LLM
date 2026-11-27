@@ -12,7 +12,7 @@
     {# --- Bibliothèques externes (marked, plotly...) --- #}
     {% block head_scripts %}{% endblock %}
 </head>
-<body>
+<body{% block body_class %}{% endblock %}>
 {% block body %}{% endblock %}
 
 {# --- Scripts de page --- #}
