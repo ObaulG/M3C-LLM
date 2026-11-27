@@ -13,6 +13,7 @@ Ce dossier contient la configuration Docker pour conteneuriser l'application LLM
 - [📊 Services disponibles](#-services-disponibles)
 - [👨‍💻 Développement](#-développement)
 - [🏭 Production](#-production)
+- [🖥️ Déploiement derrière Apache (serveur M3C)](#️-déploiement-derrière-apache-serveur-m3c)
 - [🛠️ Dépannage](#-dépannage)
 - [🔒 Sécurité](#-sécurité)
 - [💾 Structure des données](#-structure-des-données)
@@ -693,6 +694,84 @@ docker-compose up -d --build
 # Vérifier les mises à jour disponibles (Linux/Mac)
 watch -n 60 docker-compose pull 2>/dev/null && echo "Nouvelles images disponibles"
 ```
+
+## 🖥️ Déploiement derrière Apache (serveur M3C)
+
+Le serveur M3C utilise déjà **Apache** comme frontal. L'application Docker s'y
+intègre sans proxy supplémentaire (pas de Traefik/Caddy) : les conteneurs
+publient leurs ports **uniquement sur `127.0.0.1`** (voir `docker-compose.yml`),
+seul Apache les expose publiquement.
+
+### 1. Activer les modules Apache nécessaires
+
+```bash
+a2enmod proxy proxy_http headers rewrite
+systemctl reload apache2
+```
+
+### 2. VirtualHost de référence
+
+Ajouter un vhost (ex. `/etc/apache2/sites-available/m3c-llm.conf`) proxyfiant
+vers le conteneur `app` :
+
+```apache
+<VirtualHost *:443>
+    ServerName m3c-llm.exemple.fr
+
+    # TLS (géré par le serveur M3C existant)
+    SSLEngine On
+    SSLCertificateFile /etc/letsencrypt/live/m3c-llm.exemple.fr/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/m3c-llm.exemple.fr/privkey.pem
+
+    # Proxy vers le conteneur app (port publié en 127.0.0.1 uniquement)
+    ProxyPreserveHost On
+    ProxyPass        / http://127.0.0.1:8000/
+    ProxyPassReverse / http://127.0.0.1:8000/
+
+    # Réponses LLM lentes : timeouts étendus (défaut Apache : 30 s)
+    ProxyTimeout 600
+    Timeout 600
+
+    # Uploads batch (JSONL / PDF) : limite de corps de requête 500 Mo
+    LimitRequestBody 524288000
+
+    # Ne pas compresser : mod_deflate bufferiserait le streaming des réponses LLM
+    SetEnv no-gzip
+
+    # En-têtes de sécurité
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</VirtualHost>
+
+# Redirection HTTP -> HTTPS
+<VirtualHost *:80>
+    ServerName m3c-llm.exemple.fr
+    RewriteEngine On
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+</VirtualHost>
+```
+
+Puis :
+
+```bash
+a2ensite m3c-llm
+apachectl configtest
+systemctl reload apache2
+```
+
+### 3. Points d'attention
+
+- **Timeouts** : `ProxyTimeout`/`Timeout` (300–600 s) sont indispensables, les
+  réponses LLM dépassent largement les 30 s par défaut.
+- **Streaming** : `mod_deflate` ou tout filtre de réponse bufferise le streaming
+  SSE des réponses du chatbot → `SetEnv no-gzip` (ou désactiver `mod_deflate`
+  pour ce vhost).
+- **`LimitRequestBody`** : vérifier la valeur existante sur le serveur M3C si
+  les uploads batch échouent.
+- **Isolation des services** : seuls les ports d'`app` sont proxifiés ; Qdrant
+  (6333/6334) et MySQL (3306) restent sur `127.0.0.1` et ne doivent pas être
+  exposés publiquement.
 
 ## 🛠️ Dépannage
 
