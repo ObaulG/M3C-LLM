@@ -84,7 +84,7 @@ from mistral_api_key_manager import async_require_mistral_api_key
 from routers.observations import router as observations_router
 from routers.observations_admin import router as observations_admin_router
 from routers.knowledge_declarations import router as knowledge_declarations_router
-from routers.sessions import router as sessions_router
+from routers.sessions import router as sessions_router, persist_sessions_on_shutdown
 from routers.evaluations import router as evaluations_router
 from routers.models import router as models_router
 from routers.questions_admin import router as questions_admin_router
@@ -188,7 +188,7 @@ async def lifespan(app: FastAPI):
     if backup_task is not None:
         backup_task.cancel()
     logger.info("Arrêt du serveur : sauvegarde des sessions...")
-    sessions_router.persist_sessions_on_shutdown(app)
+    persist_sessions_on_shutdown(app)
     logger.info("Sauvegarde terminée.")
 
     # Sauvegarde locale à la fermeture (tables MySQL du projet + collections Qdrant)
