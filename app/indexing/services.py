@@ -522,8 +522,14 @@ async def _await_batch_job(job_id: str, progress: dict, embedder, batch_job_id: 
         (bj for bj in progress.get("batch_jobs", []) if bj.get("batch_job_id") == batch_job_id),
         None
     )
+    if batch_entry is not None:
+        print(
+            f"Suivi du job batch {batch_job_id} "
+            f"(statut persisté : {batch_entry.get('status')})"
+        )
     while True:
         status_info = await asyncio.to_thread(embedder.get_batch_job_status, batch_job_id)
+        print(f"Job batch {batch_job_id} : statut {status_info['status']}")
         if batch_entry is not None:
             batch_entry["status"] = status_info["status"]
         update_indexing_job(job_id, "running", progress=progress)
@@ -563,7 +569,9 @@ async def _harvest_batch_results(
     """
     errors = []
     processed = 0
+    skipped_completed = 0
     result_iter: Iterator = embedder.iter_batch_results(batch_job_id)
+    print(f"Récupération des résultats du job batch {batch_job_id}")
 
     async with await get_db_connection() as conn:
         while True:
@@ -578,6 +586,7 @@ async def _harvest_batch_results(
             contents = []
             for custom_id, embedding, error in chunk:
                 if progress.get(str(custom_id), {}).get("status") == "completed":
+                    skipped_completed += 1
                     continue
                 if error is not None:
                     progress[str(custom_id)] = {
@@ -634,6 +643,13 @@ async def _harvest_batch_results(
                     }
 
             update_indexing_job(job_id, "running", progress=progress)
+
+    print(
+        f"Résultats du job batch {batch_job_id} récupérés : "
+        f"{processed} embeddings sauvegardés dans Qdrant"
+        + (f", {skipped_completed} items déjà complétés ignorés" if skipped_completed else "")
+        + (f", {len(errors)} items en erreur" if errors else "")
+    )
 
     return {"processed": processed, "errors": errors}
 
@@ -722,6 +738,13 @@ async def process_metadata_indexing_job(job_id: str, embedder_name: str, resourc
     all_docs = []
 
     ids_to_build = [] if pending_batch_job is not None else selected_resource_ids
+    if pending_batch_job is not None:
+        print(
+            f"Job d'indexation repris : job batch {pending_batch_job['batch_job_id']} "
+            f"(statut {pending_batch_job.get('status')}, "
+            f"{pending_batch_job.get('items_count', '?')} items soumis) - "
+            "aucune nouvelle soumission"
+        )
     for i, resource_id in enumerate(ids_to_build):
         resource_id_str = str(resource_id)
         print(f"Métadonnées {i + 1}/{total_resources} - resource_id {resource_id_str}")
