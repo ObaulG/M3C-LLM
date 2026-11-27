@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadEmbedders();
     loadIndexingCount();
     loadIndexedDocuments();
+    loadIndexationStats();
 
     const searchInput = document.getElementById('docsSearchInput');
     if (searchInput) {
@@ -391,7 +392,90 @@ function subscribeToJobEvents(jobId) {
             showError(`❌ Job ${data.job_id} terminé avec erreurs. ${data.processed_items}/${data.total_items} documents traités`);
         }
         loadIndexedDocuments();
+        loadIndexationStats();
     });
+}
+
+// ============================================================================
+// STATISTIQUES D'INDEXATION (SIDEBAR)
+// ============================================================================
+
+const COLLECTION_TYPE_LABELS = {
+    metadata: 'Métadonnées',
+    content: 'Contenu (chunks)',
+    questions: 'Questions',
+    other: 'Autre'
+};
+
+async function loadIndexationStats() {
+    const container = document.getElementById('indexationStats');
+    if (!container) return;
+
+    const refreshBtn = document.getElementById('statsRefreshBtn');
+    if (refreshBtn) refreshBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/documents/index/stats`);
+        if (!response.ok) {
+            container.innerHTML = `<p class="stats-error">Impossible de charger les statistiques (HTTP ${response.status}).</p>`;
+            return;
+        }
+
+        const data = await response.json();
+        renderIndexationStats(data);
+    } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+        container.innerHTML = '<p class="stats-error">Erreur lors du chargement des statistiques.</p>';
+    } finally {
+        if (refreshBtn) refreshBtn.disabled = false;
+    }
+}
+
+function renderIndexationStats(data) {
+    const container = document.getElementById('indexationStats');
+    if (!container) return;
+
+    const docs = data.documents || {};
+    let html = `
+        <div class="stats-doc-grid">
+            <div class="stats-doc-item">
+                <div class="value">${docs.indexed_documents ?? 0}</div>
+                <div class="label">Documents indexés</div>
+            </div>
+            <div class="stats-doc-item">
+                <div class="value">${docs.total_chunks ?? 0}</div>
+                <div class="label">Chunks créés</div>
+            </div>
+            <div class="stats-doc-item">
+                <div class="value">${docs.content_indexed_documents ?? 0}</div>
+                <div class="label">Docs (contenu)</div>
+            </div>
+            <div class="stats-doc-item">
+                <div class="value">${docs.metadata_indexed_documents ?? 0}</div>
+                <div class="label">Docs (métadonnées)</div>
+            </div>
+        </div>
+    `;
+
+    const collections = data.collections || [];
+    html += `<div class="stats-collections-title">Collections Qdrant (${collections.length})</div>`;
+
+    if (collections.length === 0) {
+        html += '<p class="stats-empty">Aucune collection Qdrant.</p>';
+    } else {
+        collections.forEach(col => {
+            const typeLabel = COLLECTION_TYPE_LABELS[col.type] || COLLECTION_TYPE_LABELS.other;
+            html += `
+                <div class="stats-collection-item">
+                    <div class="name">${escapeHtml(col.name)}</div>
+                    <div class="details">${col.points_count} point(s)${col.dimension ? ` · ${col.dimension}d` : ''}${col.status ? ` · ${escapeHtml(String(col.status))}` : ''}</div>
+                    <span class="badge ${escapeHtml(col.type)}">${typeLabel}</span>
+                </div>
+            `;
+        });
+    }
+
+    container.innerHTML = html;
 }
 
 // ============================================================================

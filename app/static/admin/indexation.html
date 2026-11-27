@@ -37,6 +37,21 @@
     .docs-selection-list table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .docs-selection-list th, .docs-selection-list td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; text-align: left; }
     .docs-selection-list th { position: sticky; top: 0; background: #f8f9fa; }
+    .stats-section h4 { font-size: 14px; }
+    .stats-doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .stats-doc-item { background: #f8f9fa; border-radius: 6px; padding: 8px 10px; }
+    .stats-doc-item .value { font-size: 18px; font-weight: 700; color: #b74420; }
+    .stats-doc-item .label { font-size: 11px; color: #666; }
+    .stats-collections-title { font-size: 13px; font-weight: 600; color: #333; margin: 12px 0 6px; }
+    .stats-collection-item { border: 1px solid #eee; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; }
+    .stats-collection-item .name { font-weight: 600; color: #333; word-break: break-all; }
+    .stats-collection-item .details { color: #666; margin-top: 2px; }
+    .stats-collection-item .badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 11px; margin-top: 4px; background: #eef1f4; color: #555; }
+    .stats-collection-item .badge.metadata { background: #e6f4ea; color: #1e7e34; }
+    .stats-collection-item .badge.content { background: #e8f0fe; color: #1a56b8; }
+    .stats-collection-item .badge.questions { background: #fff3cd; color: #8a6d00; }
+    .stats-empty { color: #666; font-style: italic; font-size: 12px; }
+    .stats-error { color: #b74420; font-size: 12px; }
     .docs-selection-list tbody tr:hover { background: #fafafa; }
 </style>
 <link rel="stylesheet" href="../admin/admin.css">
@@ -46,7 +61,11 @@
     <div class="sidebar">
         <h3>Administration</h3>
         <div class="stats-section">
-            <p style="padding: 15px; color: #666;">Fonctionnalités d'indexation disponibles.</p>
+            <h4 style="margin: 15px 0 10px; color: #b74420;">📊 Statistiques d'indexation</h4>
+            <div id="indexationStats">
+                <p style="color: #666; font-style: italic;">Chargement des statistiques...</p>
+            </div>
+            <button class="btn" type="button" onclick="loadIndexationStats()" id="statsRefreshBtn" style="padding: 6px 14px; font-size: 13px; margin-top: 10px;">🔄 Actualiser</button>
         </div>
     </div>
 
