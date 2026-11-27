@@ -412,6 +412,85 @@ async def get_indexed_documents_status():
         )
 
 
+@router.get("/stats",
+         response_model=dict,
+         summary="Statistiques d'indexation")
+async def get_indexing_stats():
+    """
+    Statistiques d'indexation :
+    - collections Qdrant : nombre de points, dimension, statut, type (contenu / métadonnées / questions)
+    - documents : nombre de documents indexés (total, contenu, métadonnées) et chunks créés
+    """
+    from database.database import qdrant_client
+    from .services import get_indexed_documents_overview
+
+    collections = []
+    try:
+        qdrant_collections = qdrant_client.get_collections().collections
+    except Exception as e:
+        print(f"Erreur récupération collections Qdrant: {e}")
+        qdrant_collections = []
+
+    for collection in qdrant_collections:
+        try:
+            info = qdrant_client.get_collection(collection.name)
+        except Exception as e:
+            print(f"Erreur récupération info collection {collection.name}: {e}")
+            continue
+
+        vectors_config = info.config.params.vectors
+        dimension = None
+        if isinstance(vectors_config, dict):
+            sizes = {v.size for v in vectors_config.values()}
+            dimension = next(iter(sizes)) if len(sizes) == 1 else None
+        elif vectors_config is not None:
+            dimension = vectors_config.size
+
+        if collection.name.startswith("MD-"):
+            collection_type = "metadata"
+        elif collection.name.startswith("LD-"):
+            collection_type = "content"
+        elif collection.name.startswith("questions"):
+            collection_type = "questions"
+        else:
+            collection_type = "other"
+
+        collections.append({
+            "name": collection.name,
+            "type": collection_type,
+            "points_count": info.points_count or 0,
+            "dimension": dimension,
+            "status": str(info.status),
+        })
+
+    collections.sort(key=lambda c: (c["type"], c["name"]))
+
+    documents = {
+        "indexed_documents": 0,
+        "metadata_indexed_documents": 0,
+        "content_indexed_documents": 0,
+        "total_chunks": 0,
+    }
+    try:
+        overview = await get_indexed_documents_overview()
+        docs = overview.get("documents", {})
+        documents["indexed_documents"] = overview.get("count", len(docs))
+        for doc in docs.values():
+            documents["total_chunks"] += doc.get("chunks_count", 0) or 0
+            if doc.get("metadata_indexed"):
+                documents["metadata_indexed_documents"] += 1
+            if doc.get("content_embedders"):
+                documents["content_indexed_documents"] += 1
+    except Exception as e:
+        print(f"Erreur calcul des statistiques de documents: {e}")
+
+    return {
+        "collections": collections,
+        "collections_count": len(collections),
+        "documents": documents,
+    }
+
+
 @router.post("/job/{job_id}/cancel",
           response_model=IndexJobControlResponse,
           summary="Annuler un job")
