@@ -13,10 +13,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Depends, status
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from database.database import (
     get_db_connection,
+    get_questions_by_document_id,
     create_question_session,
     update_question_session,
     delete_question_session,
@@ -28,6 +29,7 @@ from database.database import (
     validate_question_ids_exist,
     search_questions_in_qdrant,
     generate_question_embedding,
+    create_question_from_session_proposal,
     MISTRAL_EMBED_MODEL,
     MISTRAL_EMBED_DIMENSION,
     QUESTIONS_COLLECTION_PREFIX
@@ -44,12 +46,25 @@ ALLOWED_ROLES = ["global_admin", "admin", "expert"]
 # MODÈLES PYDANTIC
 # ============================================================================
 
+class NewQuestionProposal(BaseModel):
+    """Nouvelle question proposée par l'agent lors de la création automatique d'une session.
+
+    Elle n'est sauvegardée en BDD que lorsque l'utilisateur confirme la session :
+    l'agent lui-même ne persiste jamais rien.
+    """
+    question: str = Field(..., min_length=1, description="Formulation de la question proposée")
+    answer: str = Field("", description="Réponse de référence proposée")
+    source_question_id: Optional[int] = Field(None, description="Question existante dont la proposition s'inspire (type 'adapted')")
+
+
 class QuestionSessionCreate(BaseModel):
     """Modèle pour la création d'une session de questions."""
     title: str
     description: str = ""
     document_id: int
     question_ids: List[int] = []
+    new_questions: List[NewQuestionProposal] = []  # Propositions à créer à la sauvegarde
+    model: Optional[str] = None  # Modèle utilisé pour générer les propositions (traçabilité)
 
 
 class QuestionSessionUpdate(BaseModel):
@@ -57,6 +72,8 @@ class QuestionSessionUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     question_ids: Optional[List[int]] = None  # Nouvelle liste ordonnée
+    new_questions: Optional[List[NewQuestionProposal]] = None  # Propositions à créer à la sauvegarde
+    model: Optional[str] = None  # Modèle utilisé pour générer les propositions (traçabilité)
 
 
 class QuestionSessionResponse(BaseModel):
@@ -78,6 +95,38 @@ class QuestionSearchRequest(BaseModel):
     document_id: Optional[int] = None
     page: Optional[int] = None
     keyword: Optional[str] = None
+
+
+class SessionQuestionProposalItem(BaseModel):
+    """Une proposition de question retournée par l'agent (ou renvoyée lors d'une négociation)."""
+    question: str
+    answer: str = ""
+    proposal_type: str = Field("new", description="existing | adapted | new")
+    source_question_id: Optional[int] = None
+    rationale: Optional[str] = None
+
+
+class SessionQuestionGenerationRequest(BaseModel):
+    """Requête de génération automatique de propositions de questions pour une session.
+
+    L'agent ne sauvegarde rien en BDD : il retourne uniquement des propositions.
+    En cas de négociation, current_proposals contient la liste des propositions
+    retenues (ajoutée au prompt) et negotiation_instructions les consignes de l'utilisateur.
+    """
+    instructions: str = Field(..., min_length=3, description="Instructions du médiateur : ce qu'on cherche à présenter au visiteur durant la session")
+    document_id: int
+    num_questions: int = Field(5, ge=1, le=20)
+    model: Optional[str] = Field("mistral-small-2603", description="Modèle LLM (avec préfixe provider/ éventuel)")
+    current_proposals: Optional[List[SessionQuestionProposalItem]] = None
+    negotiation_instructions: Optional[str] = None
+
+
+class SessionQuestionGenerationResponse(BaseModel):
+    """Propositions de questions pour la session (aucune sauvegarde en BDD)."""
+    proposals: List[SessionQuestionProposalItem]
+    model_used: str
+    generation_time: float
+    candidates_count: int
 
 
 # ============================================================================
@@ -142,9 +191,22 @@ async def create_question_session_endpoint(
             if not await cur.fetchone():
                 raise HTTPException(status_code=404, detail="Document non trouvé")
 
+        # Créer les nouvelles questions proposées (sauvegarde uniquement à la confirmation)
+        question_ids = list(request.question_ids)
+        for new_q in request.new_questions:
+            new_id = await create_question_from_session_proposal(
+                content=new_q.question,
+                answer=new_q.answer or None,
+                document_id=request.document_id,
+                created_by=created_by,
+                source_question_id=new_q.source_question_id,
+                model=request.model or ""
+            )
+            question_ids.append(new_id)
+
         # Vérifier que toutes les questions existent
-        if request.question_ids:
-            if not await validate_question_ids_exist(request.question_ids):
+        if question_ids:
+            if not await validate_question_ids_exist(question_ids):
                 raise HTTPException(status_code=400, detail="Une ou plusieurs questions n'existent pas")
 
         # Créer la session
@@ -156,8 +218,8 @@ async def create_question_session_endpoint(
         )
 
         # Ajouter les questions si fournies
-        if request.question_ids:
-            await add_questions_to_session(session_id, request.question_ids)
+        if question_ids:
+            await add_questions_to_session(session_id, question_ids)
 
         # Récupérer la session créée
         session = await get_question_session_by_id(session_id)
@@ -223,15 +285,38 @@ async def update_question_session_endpoint(
             request.description
         )
 
+    # Créer les nouvelles questions proposées (sauvegarde uniquement à la confirmation)
+    new_question_ids = []
+    if request.new_questions:
+        for new_q in request.new_questions:
+            new_id = await create_question_from_session_proposal(
+                content=new_q.question,
+                answer=new_q.answer or None,
+                document_id=session["document_id"],
+                created_by=user["user_id"],
+                source_question_id=new_q.source_question_id,
+                model=request.model or ""
+            )
+            new_question_ids.append(new_id)
+
     # Mettre à jour l'ordre des questions si fourni
     if request.question_ids is not None:
+        all_question_ids = list(request.question_ids) + new_question_ids
+
         # Vérifier que toutes les questions existent
-        if not await validate_question_ids_exist(request.question_ids):
+        if not await validate_question_ids_exist(all_question_ids):
             raise HTTPException(status_code=400, detail="Une ou plusieurs questions n'existent pas")
 
+        # Ajouter les nouvelles questions à la session avant de réordonner
+        if new_question_ids:
+            await add_questions_to_session(session_id, new_question_ids)
+
         # Mettre à jour l'ordre
-        if not await update_session_questions_order(session_id, request.question_ids):
+        if not await update_session_questions_order(session_id, all_question_ids):
             raise HTTPException(status_code=400, detail="Erreur lors de la mise à jour de l'ordre des questions")
+    elif new_question_ids:
+        # Pas de réordonnancement demandé : ajouter les nouvelles questions à la fin
+        await add_questions_to_session(session_id, new_question_ids)
 
     # Récupérer la session mise à jour
     updated_session = await get_question_session_by_id(session_id)
@@ -361,3 +446,216 @@ async def search_questions_by_natural_language(
                 results = [r for r in results if r["question_id"] in page_question_ids]
 
     return results
+
+
+# ============================================================================
+# ROUTE POUR LA GÉNÉRATION AUTOMATIQUE DE PROPOSITIONS DE QUESTIONS (SESSION)
+# ============================================================================
+
+async def _fetch_question_details(question_ids: List[int]) -> dict:
+    """Récupère le contenu, la page et la réponse de référence des questions demandées."""
+    details = {}
+    if not question_ids:
+        return details
+    placeholders = ",".join(["%s"] * len(question_ids))
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(f"""
+                SELECT q.question_id, q.content, q.status, q.difficulty_level, tc.num_page
+                FROM text_questions q
+                LEFT JOIN text_question_chunks qc ON qc.question_id = q.question_id
+                LEFT JOIN text_chunks tc ON tc.id = qc.chunk_id
+                WHERE q.question_id IN ({placeholders})
+                GROUP BY q.question_id, q.content, q.status, q.difficulty_level, tc.num_page
+            """, tuple(question_ids))
+            rows = await cur.fetchall()
+            await cur.execute(f"""
+                SELECT question_id, content FROM text_question_answers
+                WHERE question_id IN ({placeholders})
+                ORDER BY is_correct DESC, answer_id ASC
+            """, tuple(question_ids))
+            answer_rows = await cur.fetchall()
+
+    answers_by_qid = {}
+    for qid, content in answer_rows:
+        answers_by_qid.setdefault(qid, content)
+    for row in rows:
+        qid, content, status, difficulty, num_page = row
+        details[qid] = {
+            "content": content,
+            "status": status,
+            "difficulty_level": difficulty,
+            "num_page": num_page,
+            "main_answer": answers_by_qid.get(qid),
+        }
+    return details
+
+
+async def _get_session_candidate_questions(document_id: int, instructions: str, k: int) -> List[dict]:
+    """
+    Récupère les questions candidates du document pour composer la session :
+    recherche sémantique dans Qdrant à partir des instructions du médiateur,
+    avec repli sur les questions de la base si Qdrant ne retourne rien.
+    Lecture seule : aucune sauvegarde n'est effectuée.
+    """
+    collection_name = f"{QUESTIONS_COLLECTION_PREFIX}-{MISTRAL_EMBED_MODEL}-{MISTRAL_EMBED_DIMENSION}"
+    results = []
+    try:
+        query_embedding = await generate_question_embedding(instructions)
+        results = await search_questions_in_qdrant(
+            query_embedding=query_embedding,
+            k=k,
+            document_id=document_id,
+            collection_name=collection_name
+        )
+    except Exception as e:
+        print(f"Erreur lors de la recherche Qdrant des questions candidates: {e}")
+
+    if results:
+        candidate_ids = [r["question_id"] for r in results]
+        similarity_by_id = {r["question_id"]: r.get("similarity") for r in results}
+        details = await _fetch_question_details(candidate_ids)
+        candidates = [
+            {
+                "question_id": qid,
+                "content": det["content"],
+                "main_answer": det.get("main_answer"),
+                "num_page": det.get("num_page"),
+                "similarity": similarity_by_id.get(qid),
+            }
+            for qid, det in details.items()
+        ]
+        candidates.sort(key=lambda c: c["similarity"] if c["similarity"] is not None else 0.0, reverse=True)
+        return candidates
+
+    # Repli sur la base de données si Qdrant est vide ou indisponible
+    async with await get_db_connection() as conn:
+        questions = await get_questions_by_document_id(str(document_id), conn, include_answers=True, nb_limit=k)
+    candidates = []
+    for q in questions:
+        answers = q.get("answers", [])
+        main_answer = next((a["content"] for a in answers if a.get("is_correct")), None)
+        if main_answer is None and answers:
+            main_answer = answers[0]["content"]
+        candidates.append({
+            "question_id": q["question_id"],
+            "content": q["content"],
+            "main_answer": main_answer,
+            "num_page": q.get("num_page"),
+            "similarity": None,
+        })
+    return candidates
+
+
+@router.post("/generate-questions", response_model=SessionQuestionGenerationResponse)
+async def generate_session_question_proposals(
+    request: SessionQuestionGenerationRequest,
+    user: dict = Depends(verify_user_can_edit_sessions)
+):
+    """
+    Génère des propositions de questions pour une session à partir des instructions
+    du médiateur culturel/scientifique.
+
+    L'agent sélectionne en priorité des questions existantes correspondant à la
+    demande, sinon adapte une question existante (formulation/réponse modifiées),
+    sinon crée directement une nouvelle paire question/réponse.
+
+    IMPORTANT : aucune sauvegarde en BDD — l'endpoint retourne uniquement des
+    propositions. Lors d'une négociation, la liste des propositions retenues
+    (current_proposals) est ajoutée au prompt avec les consignes
+    (negotiation_instructions), et l'agent renvoie une nouvelle liste ajustée.
+    """
+    import time
+    from agents.session_question_agent import (
+        get_session_question_agent,
+        SessionQuestionGenerationInput,
+    )
+
+    start_time = time.time()
+
+    # Vérifier que le document existe
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT id FROM text_documents WHERE id = %s",
+                (request.document_id,)
+            )
+            if not await cur.fetchone():
+                raise HTTPException(status_code=404, detail="Document non trouvé")
+
+    # Questions candidates du document (RAG sur les instructions, repli BDD)
+    k = max(request.num_questions * 3, 10)
+    candidates = await _get_session_candidate_questions(request.document_id, request.instructions, k)
+
+    # Provider et modèle
+    model_name = request.model or "mistral-small-2603"
+    provider, model = tuple(model_name.split("/")) if "/" in model_name else ("mistral", model_name)
+
+    agent = get_session_question_agent(model=model, provider=provider, async_mode=True)
+    input_data = SessionQuestionGenerationInput(
+        mediator_instructions=request.instructions,
+        num_questions=request.num_questions,
+        candidate_questions=[
+            {
+                "question_id": c["question_id"],
+                "content": c["content"],
+                "main_answer": c.get("main_answer"),
+                "num_page": c.get("num_page"),
+                "similarity": c.get("similarity"),
+            }
+            for c in candidates
+        ],
+        current_proposals=[p.model_dump() for p in request.current_proposals] if request.current_proposals else None,
+        negotiation_instructions=request.negotiation_instructions or None,
+    )
+
+    try:
+        response = await agent.run_async(input_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur lors de la génération des propositions par l'agent: {str(e)}"
+        )
+
+    # Normaliser les propositions : un "existing" doit référencer un candidat connu
+    candidate_by_id = {c["question_id"]: c for c in candidates}
+    proposals = []
+    seen_existing = set()
+    for p in response.proposals:
+        if len(proposals) >= request.num_questions:
+            break
+        if not p.question or not p.question.strip():
+            continue
+        ptype = p.proposal_type
+        src = p.source_question_id
+        if src is not None and src not in candidate_by_id:
+            src = None
+        if ptype == "existing" and src is None:
+            ptype = "new"
+        if ptype == "existing" and src in seen_existing:
+            ptype = "adapted"
+        if ptype == "existing":
+            seen_existing.add(src)
+            cand = candidate_by_id[src]
+            proposals.append(SessionQuestionProposalItem(
+                question=cand["content"],
+                answer=cand.get("main_answer") or "",
+                proposal_type="existing",
+                source_question_id=src,
+                rationale=p.rationale or "Question existante correspondant à la demande."
+            ))
+        else:
+            proposals.append(SessionQuestionProposalItem(
+                question=p.question.strip(),
+                answer=(p.answer or "").strip(),
+                proposal_type=ptype,
+                source_question_id=src,
+                rationale=p.rationale or None,
+            ))
+
+    return SessionQuestionGenerationResponse(
+        proposals=proposals[:request.num_questions],
+        model_used=model_name,
+        generation_time=time.time() - start_time,
+        candidates_count=len(candidates),
+    )

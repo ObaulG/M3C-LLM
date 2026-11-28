@@ -3903,6 +3903,89 @@ async def insert_question(
             return question_id
 
 
+async def create_question_from_session_proposal(
+    content: str,
+    answer: Optional[str] = None,
+    document_id: int = None,
+    created_by: int = None,
+    source_question_id: int = None,
+    model: str = "",
+) -> int:
+    """
+    Insère en base une question issue d'une proposition de session (créée ou adaptée
+    par l'agent), avec sa réponse de référence, et l'indexe dans Qdrant.
+
+    La question est reliée à un chunk afin d'apparaître dans la liste des questions
+    du document : celui de la question source si fournie, sinon le premier chunk
+    du document.
+
+    Returns:
+        int: L'identifiant de la question insérée (question_id).
+    """
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            # 1. Déterminer le chunk auquel rattacher la question
+            chunk_id = None
+            if source_question_id:
+                await cur.execute(
+                    "SELECT chunk_id FROM text_question_chunks WHERE question_id = %s LIMIT 1",
+                    (source_question_id,)
+                )
+                row = await cur.fetchone()
+                if row:
+                    chunk_id = row[0]
+            if chunk_id is None and document_id is not None:
+                await cur.execute(
+                    """
+                    SELECT id FROM text_chunks
+                    WHERE document_id = %s
+                    ORDER BY num_page ASC, position_in_page ASC
+                    LIMIT 1
+                    """,
+                    (document_id,)
+                )
+                row = await cur.fetchone()
+                if row:
+                    chunk_id = row[0]
+
+            # 2. Insérer la question
+            await cur.execute(
+                """
+                INSERT INTO text_questions (content, status, difficulty_level, created_by, model)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (content, "generated", 3, created_by, model or None)
+            )
+            question_id = cur.lastrowid
+
+            # 3. Lier la question au chunk si on en a un
+            if chunk_id is not None:
+                await cur.execute(
+                    "INSERT INTO text_question_chunks (question_id, chunk_id) VALUES (%s, %s)",
+                    (question_id, str(chunk_id))
+                )
+
+            # 4. Insérer la réponse de référence si fournie
+            if answer:
+                await cur.execute(
+                    """
+                    INSERT INTO text_question_answers (question_id, content, is_correct, created_by)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (question_id, answer, True, created_by)
+                )
+
+            # 5. Indexer la question dans Qdrant (document_id en chaîne, comme le filtre de recherche)
+            await index_question_in_qdrant(
+                question_id=question_id,
+                content=content,
+                main_answer=answer,
+                document_id=str(document_id) if document_id is not None else None
+            )
+
+            return question_id
+
+
 async def delete_question(question_id: int) -> bool:
     """
     Supprime une question et ses réponses de MySQL et de Qdrant.

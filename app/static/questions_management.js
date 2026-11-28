@@ -2609,6 +2609,8 @@ async function bulkGenerateAnswers() {
 // Variables globales pour la gestion des sessions
 let currentEditingSession = null;
 let currentDocumentSessions = [];
+// Propositions de questions générées par l'agent (jamais sauvegardées en BDD par l'agent)
+let sessionGenProposals = [];
 
 // Affiche ou masque le panneau intégré de gestion des sessions
 function toggleSessionsPanel() {
@@ -2765,6 +2767,25 @@ function renderSessionQuestions() {
 
     let html = '';
     currentEditingSession.questions.forEach((q, index) => {
+        if (q.is_proposal) {
+            // Proposition créée/adaptée par l'agent : éditable, sans ID tant qu'elle n'est pas sauvegardée
+            const badgeLabel = q.proposal_type === 'existing'
+                ? `existante #${q.source_question_id}`
+                : (q.proposal_type === 'adapted' ? `adaptée de #${q.source_question_id}` : 'nouvelle');
+            html += `
+                <div class="session-question-item proposal-item" data-proposal-index="${index}">
+                    <div class="proposal-fields">
+                        <span class="proposal-badge proposal-${escapeHtml(q.proposal_type || 'new')}">${escapeHtml(badgeLabel)}</span>
+                        <textarea rows="2" placeholder="Question"
+                            oninput="updateSessionEditingProposal(${index}, 'content', this.value)">${escapeHtml(q.content)}</textarea>
+                        <textarea rows="3" placeholder="Réponse de référence"
+                            oninput="updateSessionEditingProposal(${index}, 'answer', this.value)">${escapeHtml(q.answer || '')}</textarea>
+                    </div>
+                    <button class="remove-question-btn" onclick="removeSessionEditingProposal(${index}, event)">×</button>
+                </div>
+            `;
+            return;
+        }
         const displayContent = q.content.length > 100
             ? escapeHtml(q.content.substring(0, 100)) + '...'
             : escapeHtml(q.content);
@@ -2849,15 +2870,20 @@ async function saveSession() {
     currentEditingSession.title = title;
     currentEditingSession.description = description;
 
-    // Extraire l'ordre des questions depuis le DOM
-    const questionElements = document.querySelectorAll('#sessionQuestionsContainer .session-question-item');
+    // Extraire l'ordre des questions existantes depuis le DOM (les propositions n'ont pas encore d'ID)
+    const questionElements = document.querySelectorAll('#sessionQuestionsContainer .session-question-item[data-question-id]');
     const orderedQuestionIds = Array.from(questionElements).map(el => parseInt(el.dataset.questionId));
 
-    // Mettre à jour l'ordre dans currentEditingSession
-    const questionsMap = new Map(currentEditingSession.questions.map(q => [q.question_id, q]));
-    currentEditingSession.questions = orderedQuestionIds.map((id, index) => ({
-        ...questionsMap.get(id),
-        order_index: index
+    // Séparer questions existantes et propositions de l'agent (créées en BDD uniquement à cette sauvegarde)
+    const proposals = currentEditingSession.questions.filter(q => q.is_proposal);
+    const existingOrdered = orderedQuestionIds
+        .map(id => currentEditingSession.questions.find(q => !q.is_proposal && q.question_id == id))
+        .filter(Boolean);
+    currentEditingSession.questions = [...existingOrdered, ...proposals];
+    const newQuestions = proposals.map(q => ({
+        question: q.content,
+        answer: q.answer || '',
+        source_question_id: q.source_question_id ?? null
     }));
 
     try {
@@ -2870,8 +2896,11 @@ async function saveSession() {
             title: currentEditingSession.title,
             description: currentEditingSession.description,
             document_id: currentEditingSession.document_id,
-            question_ids: orderedQuestionIds
+            question_ids: orderedQuestionIds,
+            new_questions: newQuestions
         };
+        const genModel = document.getElementById('sessionGenModel');
+        if (genModel && genModel.value) requestData.model = genModel.value;
 
         const response = await fetch(url, {
             method: method,
@@ -3163,6 +3192,226 @@ function setupDragAndDrop() {
             }
         }
     });
+}
+
+// ============================================================
+// GÉNÉRATION AUTOMATIQUE DE PROPOSITIONS DE QUESTIONS (AGENT)
+// L'agent retourne des propositions SANS sauvegarde en BDD :
+// - "existing" : question existante reprise telle quelle,
+// - "adapted"  : reformulation d'une question existante,
+// - "new"      : nouvelle paire question/réponse.
+// ============================================================
+
+// Affiche un message de statut dans le bloc de génération automatique
+function setSessionGenStatus(message, type = '') {
+    const status = document.getElementById('sessionGenStatus');
+    if (!status) return;
+    if (!message) {
+        status.style.display = 'none';
+        status.textContent = '';
+        status.className = 'session-gen-status';
+        return;
+    }
+    status.style.display = 'block';
+    status.textContent = message;
+    status.className = `session-gen-status ${type}`.trim();
+}
+
+// Libellé du badge d'une proposition
+function proposalTypeLabel(p) {
+    if (p.proposal_type === 'existing') return `existante #${p.source_question_id}`;
+    if (p.proposal_type === 'adapted') return `adaptée de #${p.source_question_id}`;
+    return 'nouvelle';
+}
+
+// Affiche la liste des propositions de l'agent (éditables, retirables, cochables)
+function renderSessionGenProposals() {
+    const block = document.getElementById('sessionGenProposals');
+    const container = document.getElementById('sessionGenProposalsList');
+    if (!block || !container) return;
+
+    if (!sessionGenProposals.length) {
+        block.style.display = 'none';
+        container.innerHTML = '';
+        return;
+    }
+    block.style.display = 'block';
+    container.innerHTML = sessionGenProposals.map((p, index) => `
+        <div class="proposal-item" data-proposal-index="${index}">
+            <div class="proposal-item-header">
+                <label class="proposal-keep">
+                    <input type="checkbox" ${p.kept !== false ? 'checked' : ''}
+                        onchange="toggleSessionProposalKept(${index}, this)">
+                    Garder
+                </label>
+                <span class="proposal-badge proposal-${escapeHtml(p.proposal_type || 'new')}">${escapeHtml(proposalTypeLabel(p))}</span>
+                <button class="remove-question-btn" onclick="removeSessionProposal(${index})" title="Retirer cette proposition">×</button>
+            </div>
+            <textarea class="form-input proposal-question" rows="2" placeholder="Question"
+                oninput="updateSessionProposalText(${index}, 'question', this.value)">${escapeHtml(p.question)}</textarea>
+            <textarea class="form-input proposal-answer" rows="3" placeholder="Réponse de référence"
+                oninput="updateSessionProposalText(${index}, 'answer', this.value)">${escapeHtml(p.answer || '')}</textarea>
+            ${p.rationale ? `<div class="proposal-rationale">${escapeHtml(p.rationale)}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+// Marque/démarque une proposition comme retenue (pour la négociation)
+function toggleSessionProposalKept(index, checkbox) {
+    const p = sessionGenProposals[index];
+    if (p) p.kept = checkbox.checked;
+}
+
+// Met à jour le texte d'une proposition (question ou réponse) pendant l'édition
+function updateSessionProposalText(index, field, value) {
+    const p = sessionGenProposals[index];
+    if (p) p[field] = value;
+}
+
+// Retire une proposition de la liste
+function removeSessionProposal(index) {
+    sessionGenProposals.splice(index, 1);
+    renderSessionGenProposals();
+}
+
+/**
+ * Appelle l'agent de génération de propositions de questions.
+ * @param {boolean} isNegotiation - Si true, relance la commande en ajoutant la liste
+ * des propositions retenues (current_proposals) et les consignes de négociation au prompt.
+ */
+async function generateSessionProposals(isNegotiation = false) {
+    const instructions = document.getElementById('sessionGenInstructions').value.trim();
+    if (!instructions) {
+        alert("Veuillez décrire ce que vous cherchez à présenter au visiteur durant la session.");
+        return;
+    }
+    if (!currentDocumentId) {
+        alert("Veuillez d'abord sélectionner un document.");
+        return;
+    }
+
+    const numQuestions = Math.max(1, Math.min(20, parseInt(document.getElementById('sessionGenNumQuestions').value, 10) || 5));
+    const modelSelect = document.getElementById('sessionGenModel');
+    const model = modelSelect && modelSelect.value ? modelSelect.value : 'mistral-small-2603';
+
+    const payload = {
+        instructions: instructions,
+        document_id: parseInt(currentDocumentId, 10),
+        num_questions: numQuestions,
+        model: model
+    };
+
+    // En cas de négociation : la liste des propositions retenues est ajoutée au prompt
+    if (isNegotiation) {
+        const keptProposals = sessionGenProposals.filter(p => p.kept !== false);
+        payload.current_proposals = keptProposals.map(p => ({
+            question: p.question,
+            answer: p.answer || '',
+            proposal_type: p.proposal_type || 'new',
+            source_question_id: p.source_question_id ?? null,
+            rationale: p.rationale || ''
+        }));
+        const negotiation = document.getElementById('sessionGenNegotiation').value.trim();
+        if (negotiation) payload.negotiation_instructions = negotiation;
+    }
+
+    setSessionGenStatus(
+        isNegotiation
+            ? "Relance de l'agent avec la liste des propositions retenues et vos consignes de négociation…"
+            : "Génération des propositions par l'agent (aucune sauvegarde en BDD)…",
+        'searching'
+    );
+
+    try {
+        const response = await fetch('/api/question-sessions/generate-questions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            const detail = data && data.detail
+                ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail))
+                : `HTTP ${response.status}`;
+            setSessionGenStatus(`Erreur lors de la génération : ${detail}`, 'error');
+            return;
+        }
+
+        sessionGenProposals = (data.proposals || []).map(p => ({ ...p, kept: true }));
+        renderSessionGenProposals();
+        if (isNegotiation) {
+            const neg = document.getElementById('sessionGenNegotiation');
+            if (neg) neg.value = '';
+        }
+        const nExisting = sessionGenProposals.filter(p => p.proposal_type === 'existing').length;
+        const nAdapted = sessionGenProposals.filter(p => p.proposal_type === 'adapted').length;
+        const nNew = sessionGenProposals.filter(p => p.proposal_type === 'new').length;
+        setSessionGenStatus(
+            `${sessionGenProposals.length} proposition(s) reçue(s) en ${(data.generation_time || 0).toFixed(1)}s ` +
+            `(${nExisting} existante(s), ${nAdapted} adaptée(s), ${nNew} nouvelle(s)) — aucune sauvegarde effectuée.`,
+            'success'
+        );
+    } catch (error) {
+        console.error("Erreur:", error);
+        setSessionGenStatus(`Erreur réseau lors de la génération : ${error.message}`, 'error');
+    }
+}
+
+// Ajoute les propositions retenues à la session en cours d'édition
+function addSessionProposalsToSession() {
+    const kept = sessionGenProposals.filter(p => p.kept !== false && p.question && p.question.trim());
+    if (!kept.length) {
+        alert("Aucune proposition retenue à ajouter.");
+        return;
+    }
+    // Ouvrir l'éditeur sur une nouvelle session si aucune n'est en cours d'édition
+    if (!currentEditingSession) {
+        createNewSession();
+    }
+
+    kept.forEach(p => {
+        if (p.proposal_type === 'existing' && p.source_question_id != null) {
+            // Question existante : on la référence directement par son ID
+            if (!currentEditingSession.questions.some(q => q.question_id == p.source_question_id)) {
+                const existing = currentQuestions.find(q => q.question_id == p.source_question_id);
+                currentEditingSession.questions.push({
+                    question_id: p.source_question_id,
+                    content: existing ? existing.content : p.question,
+                    page: existing ? (existing.page || existing.num_page || existing.metadata?.page) : null,
+                    order_index: currentEditingSession.questions.length
+                });
+            }
+        } else {
+            // Question adaptée ou nouvelle : proposition à créer en BDD à la sauvegarde de la session
+            currentEditingSession.questions.push({
+                question_id: null,
+                is_proposal: true,
+                proposal_type: p.proposal_type || 'new',
+                source_question_id: p.source_question_id ?? null,
+                content: p.question,
+                answer: p.answer || '',
+                rationale: p.rationale || '',
+                order_index: currentEditingSession.questions.length
+            });
+        }
+    });
+
+    renderSessionQuestions();
+    refreshSessionButtonsOnCards();
+}
+
+// Met à jour le texte d'une proposition affichée dans l'éditeur de session
+function updateSessionEditingProposal(index, field, value) {
+    const q = currentEditingSession && currentEditingSession.questions[index];
+    if (q && q.is_proposal) q[field] = value;
+}
+
+// Retire une proposition de la session en cours d'édition
+function removeSessionEditingProposal(index, event) {
+    event.stopPropagation();
+    if (!currentEditingSession) return;
+    currentEditingSession.questions.splice(index, 1);
+    renderSessionQuestions();
 }
 
 // Affiche le bouton de gestion des sessions quand un document est sélectionné
