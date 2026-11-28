@@ -295,12 +295,12 @@ body.chatbot-rag-page .chat-container {
     padding: 10px;
     border-radius: 0 0 5px 5px;
     margin-bottom: 10px;
-    max-width: 80%;
+    max-width: 100%;
     word-wrap: break-word;
 }
 
 .bot-response-container {
-    margin-bottom: 15px;
+    margin-bottom: 0px;
     display: flex;
     flex-direction: column;
 }
