@@ -27,7 +27,6 @@ from itertools import combinations
 
 import numpy as np
 from typing import Tuple, Optional, List
-import psycopg
 from sklearn.metrics.pairwise import cosine_similarity
 import database.database as database
 

@@ -3,7 +3,7 @@
 -- =============================================================================
 -- Ce script cree les tables et vues manquantes sur une base MySQL deja
 -- existante (ex: serveurs M3C). Toutes les tables utilisent IF NOT EXISTS,
--- les vues utilisent CREATE OR REPLACE : le script est idempotent et ne
+-- les vues utilisent DROP VIEW IF EXISTS + CREATE VIEW : le script est idempotent et ne
 -- modifie pas les tables/vues deja presentes avec le meme schema.
 --
 -- Utilisation :
@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS text_question_answers (
     INDEX idx_answer_question (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---Une question peut faire intervenir plusieurs chunks.
---Un chunk peut intervenir dans plusieurs questions.
+-- Une question peut faire intervenir plusieurs chunks.
+-- Un chunk peut intervenir dans plusieurs questions.
 CREATE TABLE IF NOT EXISTS text_question_chunks (
     question_id INT NOT NULL,
     chunk_id VARCHAR(255) NOT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS text_document_chunking_validation (
 
 -- Table d'observation des sessions de lecture de documents
 -- Remarque : la clé étrangère vers user(id) du script original est omise,
--- la table user n'étant pas créée ici (script PostgreSQL non inclus).
+-- la table user n'étant pas créée ici (créée par un autre script).
 CREATE TABLE IF NOT EXISTS document_reading_sessions (
     reading_session_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identifiant unique de la session de lecture',
     user_id INT NULL COMMENT 'user_id de la table users si connecté, NULL pour un visiteur anonyme',
@@ -531,13 +531,14 @@ CREATE TABLE IF NOT EXISTS chatbot_feedbacks (
 -- =============================================================================
 -- VUES (source : app/database/sql_tables_scripts/user_knowledge_model.sql
 --        et user_profile_views.sql)
--- Syntaxe MySQL 8.0+ (JSON_ARRAYAGG, JSON_OBJECT, CREATE OR REPLACE VIEW)
+-- Syntaxe MySQL 8.0+ (JSON_ARRAYAGG, JSON_OBJECT, CREATE VIEW)
 -- =============================================================================
 
 -- --- Vues du modele utilisateur (user_knowledge_model.sql) ---
 
 
-CREATE OR REPLACE VIEW user_complete_model AS
+DROP VIEW IF EXISTS user_complete_model;
+CREATE VIEW user_complete_model AS
 SELECT
     up.user_id,
     up.languages,
@@ -598,7 +599,8 @@ SELECT
     ) AS knowledge_states
 FROM user_profiles up;
 
-CREATE OR REPLACE VIEW user_recent_observations AS
+DROP VIEW IF EXISTS user_recent_observations;
+CREATE VIEW user_recent_observations AS
 SELECT
     o.user_id,
     o.id as observation_id,
@@ -631,7 +633,8 @@ SELECT
 FROM observations o
 ORDER BY o.user_id, o.timestamp DESC;
 
-CREATE OR REPLACE VIEW knowledge_by_themes AS
+DROP VIEW IF EXISTS knowledge_by_themes;
+CREATE VIEW knowledge_by_themes AS
 SELECT
     t.id as theme_id,
     t.name as theme_name,
@@ -672,7 +675,8 @@ ORDER BY t.name, kit.relevance DESC, ki.id;
 
 -- --- Vues du profil utilisateur (user_profile_views.sql) ---
 
-CREATE OR REPLACE VIEW user_profile_stats AS
+DROP VIEW IF EXISTS user_profile_stats;
+CREATE VIEW user_profile_stats AS
 SELECT 
     up.user_id,
     COUNT(DISTINCT o.id) AS total_observations,
@@ -706,7 +710,8 @@ GROUP BY up.user_id, up.created_at, up.last_activity_at;
 -- VUE 2: Ressources consultées par utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_visited_resources AS
+DROP VIEW IF EXISTS user_visited_resources;
+CREATE VIEW user_visited_resources AS
 SELECT 
     o.user_id,
     tc.id AS chunk_id,
@@ -730,7 +735,8 @@ ORDER BY o.user_id, last_viewed_at DESC;
 -- VUE 3: Statistiques par thème pour un utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_theme_stats AS
+DROP VIEW IF EXISTS user_theme_stats;
+CREATE VIEW user_theme_stats AS
 SELECT 
     up.user_id,
     t.id AS theme_id,
@@ -760,7 +766,8 @@ HAVING t.id IS NOT NULL
 ORDER BY up.user_id, interest_weight DESC, observation_count DESC;
 
 -- Version corrigée avec jointure explicite sur themes
-CREATE OR REPLACE VIEW user_theme_stats_v2 AS
+DROP VIEW IF EXISTS user_theme_stats_v2;
+CREATE VIEW user_theme_stats_v2 AS
 SELECT 
     o.user_id,
     t.id AS theme_id,
@@ -792,7 +799,8 @@ ORDER BY o.user_id, interest_weight DESC, observation_count DESC;
 -- VUE 4: Éléments de connaissance groupés par thème pour un utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_knowledge_by_theme AS
+DROP VIEW IF EXISTS user_knowledge_by_theme;
+CREATE VIEW user_knowledge_by_theme AS
 SELECT 
     o.user_id,
     t.id AS theme_id,
@@ -846,7 +854,8 @@ ORDER BY o.user_id, t.name, kit.relevance DESC, uks.score DESC;
 -- Utilisée pour l'affichage par thème dans la page de profil
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_knowledge_with_themes AS
+DROP VIEW IF EXISTS user_knowledge_with_themes;
+CREATE VIEW user_knowledge_with_themes AS
 SELECT 
     uks.user_id,
     ki.id AS knowledge_id,
@@ -929,7 +938,7 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- Tout compte créé via l'inscription publique prend désormais le rôle "guest".
-UPDATE user SET role = 'guest' WHERE role = 'user';
+UPDATE user SET `role` = 'guest' WHERE `role` = 'user';
 
 -- =============================================================================
 -- MIGRATION : informations de profil utilisateur

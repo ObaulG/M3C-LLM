@@ -247,7 +247,8 @@ CREATE TABLE IF NOT EXISTS user_model_history (
     INDEX idx_umh_trigger_obs (trigger_observation_id)
 );
 
-CREATE OR REPLACE VIEW user_complete_model AS
+DROP VIEW IF EXISTS user_complete_model;
+CREATE VIEW user_complete_model AS
 SELECT
     up.user_id,
     up.languages,
@@ -308,7 +309,8 @@ SELECT
     ) AS knowledge_states
 FROM user_profiles up;
 
-CREATE OR REPLACE VIEW user_recent_observations AS
+DROP VIEW IF EXISTS user_recent_observations;
+CREATE VIEW user_recent_observations AS
 SELECT
     o.user_id,
     o.id as observation_id,
@@ -341,7 +343,8 @@ SELECT
 FROM observations o
 ORDER BY o.user_id, o.timestamp DESC;
 
-CREATE OR REPLACE VIEW knowledge_by_themes AS
+DROP VIEW IF EXISTS knowledge_by_themes;
+CREATE VIEW knowledge_by_themes AS
 SELECT
     t.id as theme_id,
     t.name as theme_name,

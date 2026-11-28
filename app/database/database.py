@@ -638,7 +638,7 @@ async def insert_session(
     Insère une nouvelle session dans la table `sessions`.
 
     Args:
-        conn: Connexion à la base de données PostgreSQL.
+        conn: Connexion à la base de données MySQL.
         session_id (str): Identifiant unique de la session (clé primaire).
         user_id (int): Identifiant de l'utilisateur associé à la session.
         document_id (str): Identifiant du document associé à la session.
@@ -679,7 +679,7 @@ async def insert_session_answer(
     Insère une réponse de session dans la table `session_answers`.
 
     Args:
-        conn: Connexion à la base de données PostgreSQL.
+        conn: Connexion à la base de données MySQL.
         session_id (str): Identifiant de la session associée.
         question_id (int): Identifiant de la question associée.
         question_text (str): Texte de la question.
@@ -1108,7 +1108,7 @@ async def get_chunks_by_question_ids(
     Récupère les k meilleurs documents en fonction de la similarité cosinus avec un embedding donné.
     La comparaison est effectuée directement sur Python et non par Postgres.
     Args:
-        conn: Connexion à la base de données PostgreSQL.
+        conn: Connexion à la base de données MySQL.
         embedding (list): Embedding de référence sous forme de liste.
         model_name (str): Nom du modèle d'embedding utilisé.
         k (int): Nombre de documents similaires à retourner.

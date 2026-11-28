@@ -27,9 +27,7 @@ pdfplumber==0.11.7
 protobuf==7.34.1
 # pysolr retire du conteneur Docker (Solr non deploye dans le compose)
 # pysolr
-# Remplacer psycopg2 par psycopg2-binary pour Docker (pas besoin de pg_config)
-# psycopg==3.3.2
-psycopg2-binary==2.9.11
+# psycopg/psycopg2 retires : la base de donnees est MySQL (aiomysql)
 pydantic==2.13.2
 python-dotenv==1.2.2
 pypdf

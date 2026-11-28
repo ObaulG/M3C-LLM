@@ -93,7 +93,7 @@ class AgentEvaluatorComparator:
 
     async def fetch_questions_from_database(self, document_id: str, question_ids: List[int]) -> List[Dict]:
         """
-        Récupère les questions spécifiques depuis la base de données PostgreSQL.
+        Récupère les questions spécifiques depuis la base de données MySQL.
 
         Args:
             document_id: ID du document (pour référence)

@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS text_question_answers (
     INDEX idx_answer_question (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---Une question peut faire intervenir plusieurs chunks.
---Un chunk peut intervenir dans plusieurs questions.
+-- Une question peut faire intervenir plusieurs chunks.
+-- Un chunk peut intervenir dans plusieurs questions.
 CREATE TABLE IF NOT EXISTS text_question_chunks (
     question_id INT NOT NULL,
     chunk_id VARCHAR(255) NOT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS text_document_chunking_validation (
 
 -- Table d'observation des sessions de lecture de documents
 -- Remarque : la clé étrangère vers user(id) du script original est omise,
--- la table user n'étant pas créée ici (script PostgreSQL non inclus).
+-- la table user n'étant pas créée ici (créée par un autre script).
 CREATE TABLE IF NOT EXISTS document_reading_sessions (
     reading_session_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identifiant unique de la session de lecture',
     user_id INT NULL COMMENT 'user_id de la table users si connecté, NULL pour un visiteur anonyme',

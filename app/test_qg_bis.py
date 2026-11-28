@@ -1,7 +1,9 @@
 import json
 import os
 import re
-import psycopg2
+import asyncio
+
+import aiomysql
 from typing import List, Tuple
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
@@ -10,10 +12,13 @@ from langchain_mistralai import ChatMistralAI
 import database
 # Configuration de la base de données
 DB_CONFIG = {
-    "host": "localhost",
-    "dbname": "mediationllm",
-    "user": "postgres",
-    "password": "postgres",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "db": os.getenv("DB_NAME", "m3c_database"),
+    "user": os.getenv("DB_USER", "OBL"),
+    "password": os.getenv("DB_PASSWORD", "azerty"),
+    "autocommit": True,
+    "charset": "utf8mb4",
 }
 
 # Modèle par défaut
@@ -81,38 +86,44 @@ Réponds UNIQUEMENT avec un JSON valide de la forme :
         return []
 
 
+async def main() -> None:
+    conn = await aiomysql.connect(**DB_CONFIG)
+    try:
+        # ID du document à traiter
+        document_id = "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d"
+
+        # Récupérer les chunks du document
+        chunks = await database.get_chunks_for_document(document_id, conn)
+        if not chunks:
+            print(f"Aucun chunk trouvé pour le document {document_id}.")
+            exit(1)
+
+        # Initialiser le modèle
+        llm = ChatMistralAI(
+            model=DEFAULT_MODEL,
+            temperature=0.7,
+            max_retries=2,
+            mistral_api_key=os.getenv("MISTRAL_API_KEY"),
+        )
+
+        # Générer et sauvegarder les questions pour chaque chunk
+        for chunk in chunks:
+            chunk_id = chunk[0]
+            chunk_text = chunk[1]
+            print(f"Génération de questions pour le chunk {chunk_id}...")
+            qas = generate_qa_for_chunk(llm, chunk_text, n_questions=2)
+            if not qas:
+                print(f"Aucune question générée pour le chunk {chunk_id}.")
+                continue
+
+            for question, answer in qas:
+                await database.save_question_to_db(question, [answer], chunk_id, conn)
+                print(f"Question sauvegardée : {question[:50]}...")
+
+        print("Génération et sauvegarde des questions terminées.")
+    finally:
+        conn.close()
+
+
 if __name__ == '__main__':
-    # Connexion à la base de données
-    conn = psycopg2.connect(**DB_CONFIG)
-
-    # ID du document à traiter
-    document_id = "dbd5f14a9e6545880b0cd505583ea7d1fe1e8b3d"
-
-    # Récupérer les chunks du document
-    chunks = database.get_chunks_for_document(document_id, conn)
-    if not chunks:
-        print(f"Aucun chunk trouvé pour le document {document_id}.")
-        exit(1)
-
-    # Initialiser le modèle
-    llm = ChatMistralAI(
-        model=DEFAULT_MODEL,
-        temperature=0.7,
-        max_retries=2,
-        mistral_api_key=os.getenv("MISTRAL_API_KEY"),
-    )
-
-    # Générer et sauvegarder les questions pour chaque chunk
-    for chunk_id, chunk_text in chunks:
-        print(f"Génération de questions pour le chunk {chunk_id}...")
-        qas = generate_qa_for_chunk(llm, chunk_text, n_questions=2)
-        if not qas:
-            print(f"Aucune question générée pour le chunk {chunk_id}.")
-            continue
-
-        for question, answer in qas:
-            database.save_question_to_db(question, [answer], chunk_id, conn)
-            print(f"Question sauvegardée : {question[:50]}...")
-
-    print("Génération et sauvegarde des questions terminées.")
-    conn.close()
+    asyncio.run(main())
