@@ -76,12 +76,16 @@
         }
 
         .question-card {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: #ffffff;
+            border: 1px solid #eed9c9;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card:nth-of-type(even) {
+            background: #fdf1ea;
         }
 
         .document-item {
@@ -89,7 +93,7 @@
             user-select: none;
             padding: 10px 12px;
             margin: 5px 0;
-            background: #f8f9fa;
+            background: #fdf1ea;
             border: 1px solid #dcdcdc;
             border-radius: 6px;
             transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -97,7 +101,7 @@
         }
 
         .document-item:hover {
-            background: #efedec;
+            background: #f8e6da;
             border-color: #b74420;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
         }
@@ -159,7 +163,7 @@
             align-items: center;
             gap: 5px;
             padding: 3px 8px;
-            background: #f8f9fa;
+            background: #fdf1ea;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
         }
@@ -217,7 +221,7 @@
         }
 
         .answer-item {
-            background: #f8f9fa;
+            background: #fdf1ea;
             border-left: 3px solid #b74420;
             padding: 10px 15px;
             margin-bottom: 10px;

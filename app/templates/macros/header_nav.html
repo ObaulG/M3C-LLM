@@ -56,14 +56,15 @@
 </div>
 {%- endmacro %}
 
-{# En-tête complet : header-main (titre + sous-titre) + barre nav + zone profil. #}
-{# Utilisé par les pages avec .header > .header-main (index, m3c-chatbot, solr_search...). #}
-{% macro header(title, subtitle=None, title_icon=None, page=None, page_dir='root', show_admin=true, include_profile=true) -%}
-<div class="header">
-    <div class="header-main">
-        <h1>{% if title_icon %}{{ title_icon }} {% endif %}{{ title }}</h1>
-        {%- if subtitle %}<p class="subtitle">{{ subtitle }}</p>{%- endif -%}
-    </div>
+{# Barre supérieure commune : logo M3C à gauche, navigation au centre, zone d'authentification à droite. #}
+{# page_dir: 'root' | 'admin' (ajuste les href du logo et de l'accueil). #}
+{% macro header_bar(page=None, page_dir='root', show_admin=true, include_profile=true) -%}
+{%- set home_href = 'index.html' if page_dir == 'root' else '../index.html' -%}
+{%- set logo_src = 'img/m3c.png' if page_dir == 'root' else '../img/m3c.png' -%}
+<div class="header-bar">
+    <a class="header-logo" href="{{ home_href }}">
+        <img src="{{ logo_src }}" alt="M3C - Médiathèque Culturelle de la Corse et des Corses" />
+    </a>
     {{ nav_bar(page=page, page_dir=page_dir, show_admin=show_admin) }}
     {%- if include_profile %}
     {{ profile_widget(page_dir=page_dir) }}
@@ -71,15 +72,26 @@
 </div>
 {%- endmacro %}
 
-{# En-tête centré compact (titre + nav-links + profil). #}
-{# Utilisé par les pages admin / question_session où .header est centré sans header-main. #}
+{# En-tête complet : barre supérieure (logo + nav + profil) puis titre + sous-titre. #}
+{# Utilisé par les pages avec .header > .header-main (index, m3c-chatbot, solr_search...). #}
+{% macro header(title, subtitle=None, title_icon=None, page=None, page_dir='root', show_admin=true, include_profile=true) -%}
+<div class="header">
+    {{ header_bar(page=page, page_dir=page_dir, show_admin=show_admin, include_profile=include_profile) }}
+    <div class="header-main">
+        <h1>{% if title_icon %}{{ title_icon }} {% endif %}{{ title }}</h1>
+        {%- if subtitle %}<p class="subtitle">{{ subtitle }}</p>{%- endif -%}
+    </div>
+</div>
+{%- endmacro %}
+
+{# En-tête centré compact (barre supérieure puis titre). #}
+{# Utilisé par les pages admin / question_session où le titre suit directement la barre. #}
 {% macro header_centered(title, subtitle=None, page=None, page_dir='root', show_admin=true, include_profile=true) -%}
 <div class="header">
-    <h1>{{ title }}</h1>
-    {%- if subtitle %}<p>{{ subtitle }}</p>{%- endif -%}
-    {{ nav_bar(page=page, page_dir=page_dir, show_admin=show_admin, container='nav-links') }}
-    {%- if include_profile %}
-    {{ profile_widget(page_dir=page_dir) }}
-    {%- endif %}
+    {{ header_bar(page=page, page_dir=page_dir, show_admin=show_admin, include_profile=include_profile) }}
+    <div class="header-main">
+        <h1>{{ title }}</h1>
+        {%- if subtitle %}<p>{{ subtitle }}</p>{%- endif -%}
+    </div>
 </div>
 {%- endmacro %}

@@ -671,6 +671,172 @@
         color: #2b8a3e;
     }
 
+    /* Bloc de génération automatique de propositions de questions (agent) */
+    .session-gen-block {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background: #fbfcff;
+    }
+
+    .session-gen-block h3 {
+        margin-bottom: 6px;
+    }
+
+    .session-gen-hint {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 12px;
+    }
+
+    .session-gen-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .session-gen-options .form-group {
+        margin-bottom: 0;
+    }
+
+    .session-gen-options label {
+        margin-bottom: 3px;
+        font-size: 12px;
+    }
+
+    .session-gen-options input[type="number"] {
+        width: 80px;
+    }
+
+    .session-gen-options select {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .session-gen-status {
+        font-size: 13px;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 5px;
+        background: #f1f3f5;
+        color: #495057;
+    }
+
+    .session-gen-status.searching {
+        background: #e7f5ff;
+        color: #1864ab;
+    }
+
+    .session-gen-status.error {
+        background: #fff5f5;
+        color: #c92a2a;
+    }
+
+    .session-gen-status.success {
+        background: #ebfbee;
+        color: #2b8a3e;
+    }
+
+    .session-gen-proposals h4 {
+        margin: 10px 0;
+    }
+
+    .proposal-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: white;
+    }
+
+    .proposal-item-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .proposal-keep {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: normal;
+        margin: 0;
+    }
+
+    .proposal-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+    .proposal-badge.proposal-existing {
+        background: #e7f5ff;
+        color: #1864ab;
+    }
+
+    .proposal-badge.proposal-adapted {
+        background: #fff9db;
+        color: #e67700;
+    }
+
+    .proposal-badge.proposal-new {
+        background: #ebfbee;
+        color: #2b8a3e;
+    }
+
+    .proposal-item > .remove-question-btn {
+        margin-left: auto;
+    }
+
+    .proposal-question {
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+
+    .proposal-answer {
+        margin-bottom: 6px;
+    }
+
+    .proposal-rationale {
+        font-size: 12px;
+        color: #888;
+        font-style: italic;
+    }
+
+    .session-gen-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Propositions (nouvelles questions) affichées dans l'éditeur de session */
+    .session-question-item.proposal-item {
+        cursor: default;
+    }
+
+    .session-question-item .proposal-fields {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .session-question-item .proposal-fields textarea {
+        width: 100%;
+        font-family: inherit;
+        font-size: 13px;
+        padding: 6px 8px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        resize: vertical;
+    }
+
     /* Zone d'aide dans la barre latérale */
     .sidebar-help {
         margin-top: 20px;
@@ -983,8 +1149,10 @@
 
     <div class="content-area">
         <div class="header">
-    <div class="header-main">
-        <h1>📝 Gestion des Questions/Réponses</h1><p class="subtitle">Sélectionnez un document pour visualiser ses questions générées</p></div>
+    <div class="header-bar">
+    <a class="header-logo" href="index.html">
+        <img src="img/m3c.png" alt="M3C - Médiathèque Culturelle de la Corse et des Corses" />
+    </a>
     <div class="header-nav"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link active">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a><span class="nav-separator">|</span><a href="admin/indexation.html" class="nav-link">Indexation</a><span class="nav-separator">|</span><a href="admin/questions_generation.html" class="nav-link">Génération Questions</a><span class="nav-separator">|</span><a href="admin/knowledge_items_generation.html" class="nav-link">Knowledge Items</a><span class="nav-separator">|</span><a href="admin/message_evaluator_admin.html" class="nav-link">Test Message Evaluator</a><span class="nav-separator">|</span><a href="admin/chatbot_admin.html" class="nav-link">Admin Chatbot</a></div>    <div class="profile-widget" id="profileWidget">
     <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
         <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
@@ -1004,6 +1172,9 @@
         <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
     </div>
 </div></div>
+    <div class="header-main">
+        <h1>📝 Gestion des Questions/Réponses</h1><p class="subtitle">Sélectionnez un document pour visualiser ses questions générées</p></div>
+</div>
 
         <div class="header-actions">
             <button id="manageSessionsBtn" class="btn btn-manage-sessions" style="display: none;" onclick="toggleSessionsPanel()">
@@ -1016,6 +1187,49 @@
             <div class="sessions-panel-header">
                 <h2>Gestion des Sessions</h2>
                 <button class="btn btn-secondary" onclick="closeSessionsPanel()">Fermer</button>
+            </div>
+            <!-- Génération automatique de propositions de questions par l'agent -->
+            <div class="session-gen-block" id="sessionGenBlock">
+                <h3>✨ Génération automatique de la session</h3>
+                <p class="session-gen-hint">
+                    Décrivez ce que vous cherchez à présenter au visiteur durant cette session.
+                    L'agent sélectionne en priorité des questions existantes, peut s'inspirer d'une
+                    question existante en modifiant la formulation et la réponse, ou créer directement
+                    une nouvelle question/réponse. <strong>Aucune sauvegarde en BDD</strong> : seules
+                    des propositions sont retournées, que vous pouvez négocier puis valider.
+                </p>
+                <div class="session-form">
+                    <div class="form-group">
+                        <label for="sessionGenInstructions">Instructions du médiateur</label>
+                        <textarea id="sessionGenInstructions" class="form-input" rows="3"
+                            placeholder="Ex : présenter les étapes de la médiation scientifique et évaluer la compréhension du visiteur sur ce processus..."></textarea>
+                    </div>
+                    <div class="session-gen-options">
+                        <div class="form-group">
+                            <label for="sessionGenNumQuestions">Nb de questions</label>
+                            <input type="number" id="sessionGenNumQuestions" class="form-input" min="1" max="20" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionGenModel">Modèle LLM</label>
+                            <select id="sessionGenModel" class="form-input"><option value="">Modèle par défaut (mistral-small-2603)</option></select>
+                        </div>
+                        <button class="btn btn-primary" onclick="generateSessionProposals(false)">✨ Générer les propositions</button>
+                    </div>
+                    <div class="session-gen-status" id="sessionGenStatus" style="display: none;"></div>
+                    <div class="session-gen-proposals" id="sessionGenProposals" style="display: none;">
+                        <h4>Propositions de l'agent</h4>
+                        <div id="sessionGenProposalsList"></div>
+                        <div class="form-group">
+                            <label for="sessionGenNegotiation">Négociation (la liste des propositions retenues est ajoutée au prompt)</label>
+                            <textarea id="sessionGenNegotiation" class="form-input" rows="2"
+                                placeholder="Ex : garde la 1re et la 3e, remplace la 2e par une question plus simple..."></textarea>
+                        </div>
+                        <div class="session-gen-actions">
+                            <button class="btn" onclick="generateSessionProposals(true)">🔄 Relancer la négociation</button>
+                            <button class="btn btn-primary" onclick="addSessionProposalsToSession()">➕ Ajouter les propositions retenues à la session</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="sessions-list" id="sessionsList">
                 <!-- Liste des sessions sera chargée ici -->
@@ -1187,6 +1401,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     loadModelsIntoSelect(document.getElementById("modelFilter"), { prefixProvider: true, keepFirst: true });
     loadModelsIntoSelect(document.getElementById("generationModelFilter"), { prefixProvider: true, keepFirst: true });
+    loadModelsIntoSelect(document.getElementById("sessionGenModel"), { prefixProvider: true, keepFirst: true });
   });
 </script>
 

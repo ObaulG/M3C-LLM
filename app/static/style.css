@@ -12,7 +12,7 @@ html {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
+    background: #f6efe8;
     min-height: 100vh;
     height: auto;
     display: flex;
@@ -27,22 +27,27 @@ body {
     justify-content: center;
     gap: 10px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .nav-link {
-    color: white;
+    color: #b74420;
     text-decoration: none;
     padding: 5px 10px;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(183, 68, 32, 0.12);
 }
 
 .nav-link.active {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(183, 68, 32, 0.16);
+    box-shadow: inset 0 -2px 0 #b74420;
 }
 
 .nav-link.nav-link-disabled {
@@ -50,7 +55,11 @@ body {
     cursor: not-allowed;
     pointer-events: none;
     text-decoration: line-through;
-    text-decoration-color: rgba(255, 255, 255, 0.5);
+    text-decoration-color: rgba(183, 68, 32, 0.5);
+}
+
+.nav-separator {
+    color: #e8c9b6;
 }
 
 .main_container{
@@ -81,28 +90,87 @@ body {
 }
 
 .header {
-    background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%);
-    color: white;
-    padding: 5px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.78)),
+        url('img/exemple-parcours-thematique-m3c.png') center 35% / cover no-repeat;
+    color: #4a3a33;
+    padding: 0;
     text-align: center;
+    border-radius: 20px 20px 0 0;
+}
+
+.header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.72);
+    border-bottom: 3px solid #b74420;
+}
+
+.header-logo {
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.header-logo img {
+    height: 56px;
+    width: auto;
+    max-width: none;
+    margin: 0;
+}
+
+.header-bar .header-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+}
+
+.header .nav-separator {
+    display: none;
+}
+
+.header-main {
+    padding: 14px 20px 18px;
 }
 
 .header h1 {
-    font-size: 28px;
-    margin-bottom: 10px;
+    font-size: 26px;
+    margin-bottom: 6px;
+    color: #b74420;
 }
 
 .header p {
-    opacity: 0.9;
+    opacity: 1;
     font-size: 14px;
+    color: #7c5a4b;
+}
+
+@media (max-width: 768px) {
+    .header-bar {
+        flex-direction: column;
+    }
+
+    .header-logo img {
+        height: 44px;
+    }
 }
 
 .section {
-    background: white;
+    background: #ffffff;
     border-radius: 15px;
     padding: 30px;
     margin: 25px 0;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.section:nth-of-type(even) {
+    background: #fdeee2;
 }
 
 .section h2 {
@@ -198,7 +266,7 @@ body.chatbot-rag-page .chat-container {
 }
 
 .message.bot .message-content {
-    background: #f1f3f4;
+    background: #fdf1ea;
     color: #333;
 }
 
@@ -271,8 +339,8 @@ body.chatbot-rag-page .chat-container {
 
 .input-container {
     padding: 20px 30px;
-    background: #f8f9fa;
-    border-top: 1px solid #e0e0e0;
+    background: #fbf3ec;
+    border-top: 1px solid #eed9c9;
     display: flex;
     gap: 10px;
 }
@@ -350,8 +418,8 @@ body.chatbot-rag-page .chat-container {
 
 .settings {
     padding: 0;
-    background: #f8f9fa;
-    border-top: 1px solid #e0e0e0;
+    background: #fbf3ec;
+    border-top: 1px solid #eed9c9;
     font-size: 13px;
     display: flex;
     flex-direction: column;
@@ -367,14 +435,14 @@ body.chatbot-rag-page .chat-container {
     font-weight: 600;
     font-size: 14px;
     color: #333;
-    background: #f0f1f3;
+    background: #fae7d9;
     border: none;
     width: 100%;
     text-align: left;
 }
 
 .settings-header:hover {
-    background: #e9ebee;
+    background: #f5dcc8;
 }
 
 .settings-header-title {
@@ -548,7 +616,7 @@ body.chatbot-rag-page .chat-container {
 }
 
 .model-checkbox-item:hover {
-    background: #f8f9fa;
+    background: #fdf1ea;
 }
 
 .model-checkbox-item input[type="checkbox"] {
@@ -584,7 +652,7 @@ body.chatbot-rag-page .chat-container {
 
 .tab-header {
     display: flex;
-    background-color: #f1f1f1;
+    background-color: #fae7d9;
 }
 
 .tab-button {
@@ -598,7 +666,7 @@ body.chatbot-rag-page .chat-container {
 }
 
 .tab-button:hover {
-    background-color: #ddd;
+    background-color: #f0d9c6;
 }
 
 .tab-button.active {
@@ -618,9 +686,10 @@ body.chatbot-rag-page .chat-container {
 
 /* ===== Zone profil (en-tête) ===== */
 .profile-widget {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.12);
+    margin-top: 0;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #eec9b4;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -641,17 +710,17 @@ body.chatbot-rag-page .chat-container {
 .profile-login-form input[type="text"],
 .profile-login-form input[type="password"] {
     padding: 6px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid #e3c6b2;
     border-radius: 6px;
     font-size: 13px;
-    background: rgba(255, 255, 255, 0.9);
+    background: #ffffff;
     color: #333;
     width: 150px;
 }
 
 .profile-login-form input:focus {
     outline: none;
-    border-color: white;
+    border-color: #b74420;
 }
 
 .profile-login-form .btn {
@@ -665,7 +734,7 @@ body.chatbot-rag-page .chat-container {
 }
 
 .profile-register-link {
-    color: white;
+    color: #b74420;
     opacity: 0.9;
     text-decoration: underline;
     font-size: 12px;
@@ -687,16 +756,16 @@ body.chatbot-rag-page .chat-container {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: white;
+    color: #b74420;
     text-decoration: none;
     padding: 5px 10px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(183, 68, 32, 0.08);
     transition: background 0.2s;
 }
 
 .profile-user-link:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(183, 68, 32, 0.16);
     text-decoration: none;
 }
 

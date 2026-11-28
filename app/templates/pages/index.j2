@@ -14,13 +14,13 @@
     .home-header {
         text-align: center;
         padding: 30px 0;
-        color: white;
+        color: #b74420;
     }
 
     .home-header h1 {
         font-size: 42px;
         margin-bottom: 15px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        color: #b74420;
     }
 
     .home-header p {
@@ -49,12 +49,12 @@
     }
 
     .tech-tag {
-        background: #f0f0f0;
+        background: #fdf0e8;
         padding: 8px 15px;
         border-radius: 20px;
         font-size: 14px;
         color: #666;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #eed9c9;
     }
 
     .cards-grid {
@@ -62,6 +62,38 @@
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 25px;
         margin-top: 25px;
+    }
+
+    .feature-card {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border: 1px solid #eed9c9;
+        border-top: 4px solid #b74420;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 6px 18px rgba(183, 68, 32, 0.08);
+    }
+
+    .cards-grid .feature-card:nth-child(even) {
+        background: #fdf0e8;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .card-header h3 {
+        color: #b74420;
+        font-size: 20px;
+    }
+
+    .card-icon {
+        font-size: 32px;
+        line-height: 1;
     }
 
     .card-description {
@@ -101,7 +133,7 @@
     .home-footer {
         text-align: center;
         padding: 30px;
-        color: white;
+        color: #b74420;
         font-size: 14px;
         opacity: 0.9;
     }
@@ -115,7 +147,7 @@
     }
 
     .footer-links a {
-        color: white;
+        color: #b74420;
         text-decoration: none;
         opacity: 0.8;
     }
@@ -216,8 +248,8 @@
     .category-admin { background: #fff3cd; color: #856404; }
 
     .info-badge {
-        background: #e7f3ff;
-        color: #004085;
+        background: #fdeee2;
+        color: #b74420;
         padding: 4px 10px;
         border-radius: 6px;
         font-size: 12px;
@@ -228,7 +260,7 @@
 
     /* Tutoriel Mistral API */
     .tutorial-section {
-        background: #f8f9fa;
+        background: #fdf1ea;
         border-radius: 10px;
         padding: 25px;
         margin: 30px 0;
