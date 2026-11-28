@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS user (
     created_at TIMESTAMP DEFAULT NOW(),
     modified_at TIMESTAMP DEFAULT NOW(),
     validator BOOLEAN DEFAULT FALSE,
+    gender VARCHAR(100),
+    age_range VARCHAR(50),
+    academic_status VARCHAR(100),
+    search_goals TEXT,
     CONSTRAINT valid_role CHECK (role IN ('global_admin', 'admin', 'validator', 'user', 'guest'))
 );
 

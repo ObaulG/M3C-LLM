@@ -930,3 +930,60 @@ DEALLOCATE PREPARE stmt;
 
 -- Tout compte créé via l'inscription publique prend désormais le rôle "guest".
 UPDATE user SET role = 'guest' WHERE role = 'user';
+
+-- =============================================================================
+-- MIGRATION : informations de profil utilisateur
+-- =============================================================================
+-- Colonnes facultatives remplies a l'inscription ou depuis la page de profil :
+-- sexe, tranche d'age, statut universitaire et objectifs de recherche sur la
+-- M3C (liste de cases a cocher stockee en JSON dans search_goals).
+-- Idempotent : chaque colonne n'est ajoutee que si la table user existe et si
+-- la colonne est absente.
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
+    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
+           AND COLUMN_NAME = 'gender') = 0,
+    'ALTER TABLE user ADD COLUMN gender VARCHAR(100)',
+    'SELECT "colonne user.gender absente ou deja presente" AS info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
+    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
+           AND COLUMN_NAME = 'age_range') = 0,
+    'ALTER TABLE user ADD COLUMN age_range VARCHAR(50)',
+    'SELECT "colonne user.age_range absente ou deja presente" AS info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
+    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
+           AND COLUMN_NAME = 'academic_status') = 0,
+    'ALTER TABLE user ADD COLUMN academic_status VARCHAR(100)',
+    'SELECT "colonne user.academic_status absente ou deja presente" AS info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
+    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
+           AND COLUMN_NAME = 'search_goals') = 0,
+    'ALTER TABLE user ADD COLUMN search_goals TEXT',
+    'SELECT "colonne user.search_goals absente ou deja presente" AS info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
