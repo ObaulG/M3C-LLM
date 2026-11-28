@@ -7,6 +7,7 @@
 {% from 'macros/theme_stats.html' import theme_stats_card %}
 {% from 'macros/resource_card.html' import resource_card %}
 {% from 'macros/profile.html' import mistral_api_modal %}
+{% from 'macros/profile_info.html' import profile_info_fields %}
 
 {% block title %}{{ page_title|default("Mon Profil - M3C") }}{% endblock %}
 
@@ -58,6 +59,42 @@
     
     .info-item i {
         font-size: 18px;
+    }
+
+    #tab-profile-info .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    #tab-profile-info .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    #tab-profile-info .form-group select {
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: inherit;
+        background: white;
+    }
+
+    #tab-profile-info .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    #tab-profile-info .checkbox-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #495057;
+        cursor: pointer;
     }
     
     /* Stats globales */
@@ -536,6 +573,7 @@
             <div class="profile-tabs" role="tablist" style="display: flex; gap: 6px; border-bottom: 2px solid #e0e0e0; margin-bottom: 25px; flex-wrap: wrap;">
                 <button type="button" class="profile-tab active" data-tab="tab-api-key" role="tab" style="background: none; border: none; border-bottom: 3px solid #b74420; padding: 10px 18px; font-size: 15px; font-weight: 600; color: #b74420; cursor: pointer; margin-bottom: -2px;">🔑 Clé API Mistral</button>
                 <button type="button" class="profile-tab" data-tab="tab-stats" role="tab" style="background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 18px; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; margin-bottom: -2px;">📊 Mon profil</button>
+                <button type="button" class="profile-tab" data-tab="tab-profile-info" role="tab" style="background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 18px; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; margin-bottom: -2px;">👤 Mes informations</button>
             </div>
 
             <div class="profile-tab-content" id="tab-api-key" role="tabpanel">
@@ -595,6 +633,28 @@
                         <i>ℹ️</i> Votre clé est personnelle et ne doit pas être partagée. Vous pouvez la révoquer à tout moment depuis votre tableau de bord Mistral.
                         Si vous êtes administrateur (admin / global_admin), vous n'avez pas besoin de clé personnelle : le serveur utilise sa propre clé interne.
                     </p>
+                </div>
+            </section>
+            </div>
+
+            <div class="profile-tab-content" id="tab-profile-info" role="tabpanel" style="display:none;">
+            <section class="section" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <span class="icon">👤</span>
+                    <h2>Mes informations</h2>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+                        Ces informations sont facultatives et nous aident à mieux connaître les utilisateurs de la M3C.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 16px; max-width: 560px;">
+                        {{ profile_info_fields(prefix='pi') }}
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary" id="profileInfoSaveBtn" onclick="saveProfileInfo()">💾 Enregistrer</button>
+                        <span id="profileInfoMessage" style="padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; display: none;"></span>
+                    </div>
                 </div>
             </section>
             </div>
@@ -1003,6 +1063,69 @@ document.querySelectorAll('.profile-tab').forEach(function (btn) {
 // Mettre à jour l'affichage du statut de la clé API au chargement
 window.addEventListener('DOMContentLoaded', function() {
     updateApiKeyStatus();
+    loadProfileInfo();
+});
+
+function loadProfileInfo() {
+    fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
+            var user = (data && data.user) || {};
+            var selGender = document.getElementById('piGender');
+            var selAge = document.getElementById('piAgeRange');
+            var selStatus = document.getElementById('piAcademicStatus');
+            if (selGender) selGender.value = user.gender || '';
+            if (selAge) selAge.value = user.age_range || '';
+            if (selStatus) selStatus.value = user.academic_status || '';
+            var goals = user.search_goals || [];
+            document.querySelectorAll('input[name="piSearchGoals"]').forEach(function (el) {
+                el.checked = goals.indexOf(el.value) !== -1;
+            });
+        })
+        .catch(function () {});
+}
+
+function showProfileInfoMessage(text, isError) {
+    var el = document.getElementById('profileInfoMessage');
+    el.textContent = text;
+    el.style.display = 'inline-block';
+    el.style.background = isError ? '#fff0f0' : '#f0fff4';
+    el.style.color = isError ? '#b74420' : '#28a745';
+    el.style.border = '1px solid ' + (isError ? '#ffe0e0' : '#d4edda');
+}
+
+function saveProfileInfo() {
+    var btn = document.getElementById('profileInfoSaveBtn');
+    var payload = {
+        gender: document.getElementById('piGender').value || null,
+        age_range: document.getElementById('piAgeRange').value || null,
+        academic_status: document.getElementById('piAcademicStatus').value || null,
+        search_goals: Array.from(document.querySelectorAll('input[name="piSearchGoals"]:checked')).map(function (el) { return el.value; })
+    };
+    btn.disabled = true;
+    fetch('/api/auth/me/profile-info', {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(function (resp) {
+            return resp.json().then(function (data) {
+                if (!resp.ok) {
+                    throw new Error(data.detail || 'Erreur lors de l\u2019enregistrement.');
+                }
+                return data;
+            });
+        })
+        .then(function () {
+            showProfileInfoMessage('Informations enregistr\u00e9es.', false);
+        })
+        .catch(function (err) {
+            showProfileInfoMessage(err.message, true);
+        })
+        .finally(function () {
+            btn.disabled = false;
+        });
 });
 
 function updateApiKeyStatus() {

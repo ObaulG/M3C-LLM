@@ -930,3 +930,23 @@ DEALLOCATE PREPARE stmt;
 
 -- Tout compte créé via l'inscription publique prend désormais le rôle "guest".
 UPDATE user SET role = 'guest' WHERE role = 'user';
+
+-- =============================================================================
+-- MIGRATION : informations de profil utilisateur
+-- =============================================================================
+-- Colonnes facultatives remplises a l'inscription ou depuis la page de profil :
+-- sexe, tranche d'age, statut universitaire et objectifs de recherche sur la
+-- M3C (liste de cases a cocher stockee en JSON dans search_goals).
+-- Table dediee `user_profile_info` : la table `user` n'est pas modifiee.
+-- Idempotent : CREATE TABLE IF NOT EXISTS.
+
+CREATE TABLE IF NOT EXISTS user_profile_info (
+    user_id INT NOT NULL COMMENT 'Identifiant de la table user',
+    gender VARCHAR(100) COMMENT 'Sexe : Femme / Homme / Autre',
+    age_range VARCHAR(50) COMMENT 'Tranche d''age',
+    academic_status VARCHAR(100) COMMENT 'Statut universitaire',
+    search_goals TEXT COMMENT 'Objectifs de recherche sur la M3C (liste en JSON)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de creation de la ligne',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de derniere modification',
+    PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

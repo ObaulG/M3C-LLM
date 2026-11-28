@@ -1,6 +1,7 @@
+import json
 import secrets
 import time
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple
 
 import bcrypt
 from psycopg import AsyncConnection
@@ -64,12 +65,82 @@ VALID_ROLES = ("global_admin", "admin", "validator", "user", "guest")
 # et devra renseigner sa propre clé API Mistral pour interroger le serveur.
 DEFAULT_REGISTER_ROLE = "guest"
 
+GENDER_OPTIONS = ("Femme", "Homme", "Autre")
+AGE_RANGE_OPTIONS = ("Moins de 18 ans", "18-25 ans", "26-40 ans", "41-60 ans", "Plus de 60 ans")
+ACADEMIC_STATUS_OPTIONS = ("Étudiant", "Enseignant", "Personnel administratif", "Extérieur")
+SEARCH_GOAL_OPTIONS = (
+    "Explorer les collections et ressources documentaires",
+    "Rechercher des documents sur un sujet précis",
+    "Découvrir la culture corse",
+    "Utiliser le chatbot / les outils IA",
+    "Préparer un cours ou un support pédagogique",
+    "Réviser ou m'auto-évaluer",
+    "Tester l'application (prototype)",
+    "Autre",
+)
 
-async def create_user(username: str, email: str, password: str, role: str = DEFAULT_REGISTER_ROLE) -> Tuple[Dict[str, Any], str]:
+
+def _validate_profile_info(
+    gender: Optional[str],
+    age_range: Optional[str],
+    academic_status: Optional[str],
+    search_goals: Optional[list],
+) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[list]]:
+    if gender is not None and gender not in GENDER_OPTIONS:
+        raise ValueError("Valeur de sexe invalide.")
+    if age_range is not None and age_range not in AGE_RANGE_OPTIONS:
+        raise ValueError("Tranche d'âge invalide.")
+    if academic_status is not None and academic_status not in ACADEMIC_STATUS_OPTIONS:
+        raise ValueError("Statut universitaire invalide.")
+    goals = None
+    if search_goals:
+        goals = []
+        for goal in search_goals:
+            goal = (goal or "").strip()
+            if not goal:
+                continue
+            if goal not in SEARCH_GOAL_OPTIONS:
+                raise ValueError("Objectif de recherche invalide.")
+            if goal not in goals:
+                goals.append(goal)
+    return gender, age_range, academic_status, goals
+
+
+def _encode_search_goals(search_goals: Optional[list]) -> Optional[str]:
+    if not search_goals:
+        return None
+    return json.dumps(search_goals, ensure_ascii=False)
+
+
+def _decode_search_goals(raw: Any) -> list:
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return list(raw)
+    try:
+        decoded = json.loads(raw)
+    except (TypeError, ValueError):
+        return []
+    return decoded if isinstance(decoded, list) else []
+
+
+async def create_user(
+    username: str,
+    email: str,
+    password: str,
+    role: str = DEFAULT_REGISTER_ROLE,
+    gender: Optional[str] = None,
+    age_range: Optional[str] = None,
+    academic_status: Optional[str] = None,
+    search_goals: Optional[list] = None,
+) -> Tuple[Dict[str, Any], str]:
     if role not in VALID_ROLES:
         raise ValueError(f"Rôle invalide : {role}")
     if len(password) < 6:
         raise ValueError("Le mot de passe doit faire au moins 6 caractères.")
+    gender, age_range, academic_status, search_goals = _validate_profile_info(
+        gender, age_range, academic_status, search_goals
+    )
     password_hash = _hash_password(password)
     async with await get_db_connection() as conn :
         try:
@@ -94,6 +165,11 @@ async def create_user(username: str, email: str, password: str, role: str = DEFA
                 )
 
                 user = await cur.fetchone()
+
+                if gender or age_range or academic_status or search_goals:
+                    await _upsert_profile_info(
+                        cur, user_id, gender, age_range, academic_status, search_goals
+                    )
             user = {
                 "user_id": user[0],
                 "username": user[1],
@@ -101,6 +177,10 @@ async def create_user(username: str, email: str, password: str, role: str = DEFA
                 "role": user[3],
                 "is_active": bool(user[4]),
                 "created_at": user[5].isoformat() if user[5] else None,
+                "gender": gender,
+                "age_range": age_range,
+                "academic_status": academic_status,
+                "search_goals": search_goals or [],
             }
             token = _issue_token(user["user_id"])
             return user, token
@@ -164,7 +244,7 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             row = await cur.fetchone()
         if row is None:
             return None
-        return {
+        user = {
             "user_id": row[0],
             "username": row[1],
             "email": row[2],
@@ -172,6 +252,82 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             "is_active": bool(row[4]),
             "created_at": row[5].isoformat() if row[5] else None,
         }
+        user.update(await get_user_profile_info(user_id) or {})
+        return user
+
+
+async def _upsert_profile_info(
+    cur,
+    user_id: int,
+    gender: Optional[str],
+    age_range: Optional[str],
+    academic_status: Optional[str],
+    search_goals: Optional[list],
+) -> None:
+    await cur.execute(
+        """
+        INSERT INTO user_profile_info (user_id, gender, age_range, academic_status, search_goals)
+        VALUES (%s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            gender = VALUES(gender),
+            age_range = VALUES(age_range),
+            academic_status = VALUES(academic_status),
+            search_goals = VALUES(search_goals);
+        """,
+        (
+            user_id,
+            gender,
+            age_range,
+            academic_status,
+            _encode_search_goals(search_goals),
+        ),
+    )
+
+
+async def get_user_profile_info(user_id: int) -> Optional[Dict[str, Any]]:
+    """Retourne les informations de profil de la table dediee `user_profile_info`."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                SELECT gender, age_range, academic_status, search_goals
+                FROM user_profile_info
+                WHERE user_id = %s;
+                """,
+                (user_id,),
+            )
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return {
+        "gender": row[0],
+        "age_range": row[1],
+        "academic_status": row[2],
+        "search_goals": _decode_search_goals(row[3]),
+    }
+
+
+async def update_user_profile_info(
+    user_id: int,
+    gender: Optional[str],
+    age_range: Optional[str],
+    academic_status: Optional[str],
+    search_goals: Optional[list],
+) -> Dict[str, Any]:
+    gender, age_range, academic_status, search_goals = _validate_profile_info(
+        gender, age_range, academic_status, search_goals
+    )
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await _upsert_profile_info(
+                cur, user_id, gender, age_range, academic_status, search_goals
+            )
+    return {
+        "gender": gender,
+        "age_range": age_range,
+        "academic_status": academic_status,
+        "search_goals": search_goals or [],
+    }
 
 
 

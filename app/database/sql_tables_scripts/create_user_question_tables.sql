@@ -19,6 +19,19 @@ CREATE TABLE IF NOT EXISTS user (
     CONSTRAINT valid_role CHECK (role IN ('global_admin', 'admin', 'validator', 'user', 'guest'))
 );
 
+--Informations de profil facultatives (sexe, tranche d'âge, statut universitaire,
+--objectifs de recherche sur la M3C), dans une table dédiée : la table user
+--n'est pas modifiée.
+CREATE TABLE IF NOT EXISTS user_profile_info (
+    user_id INT PRIMARY KEY REFERENCES user(id) ON DELETE CASCADE,
+    gender VARCHAR(100),
+    age_range VARCHAR(50),
+    academic_status VARCHAR(100),
+    search_goals TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    modified_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS text_questions (
     question_id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,  -- Texte de la question
