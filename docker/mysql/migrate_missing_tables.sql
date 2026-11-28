@@ -934,56 +934,19 @@ UPDATE user SET role = 'guest' WHERE role = 'user';
 -- =============================================================================
 -- MIGRATION : informations de profil utilisateur
 -- =============================================================================
--- Colonnes facultatives remplies a l'inscription ou depuis la page de profil :
+-- Colonnes facultatives remplises a l'inscription ou depuis la page de profil :
 -- sexe, tranche d'age, statut universitaire et objectifs de recherche sur la
 -- M3C (liste de cases a cocher stockee en JSON dans search_goals).
--- Idempotent : chaque colonne n'est ajoutee que si la table user existe et si
--- la colonne est absente.
+-- Table dediee `user_profile_info` : la table `user` n'est pas modifiee.
+-- Idempotent : CREATE TABLE IF NOT EXISTS.
 
-SET @sql := IF(
-    (SELECT COUNT(*) FROM information_schema.TABLES
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
-    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
-           AND COLUMN_NAME = 'gender') = 0,
-    'ALTER TABLE user ADD COLUMN gender VARCHAR(100)',
-    'SELECT "colonne user.gender absente ou deja presente" AS info');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-SET @sql := IF(
-    (SELECT COUNT(*) FROM information_schema.TABLES
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
-    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
-           AND COLUMN_NAME = 'age_range') = 0,
-    'ALTER TABLE user ADD COLUMN age_range VARCHAR(50)',
-    'SELECT "colonne user.age_range absente ou deja presente" AS info');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-SET @sql := IF(
-    (SELECT COUNT(*) FROM information_schema.TABLES
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
-    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
-           AND COLUMN_NAME = 'academic_status') = 0,
-    'ALTER TABLE user ADD COLUMN academic_status VARCHAR(100)',
-    'SELECT "colonne user.academic_status absente ou deja presente" AS info');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-SET @sql := IF(
-    (SELECT COUNT(*) FROM information_schema.TABLES
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user') > 0
-    AND (SELECT COUNT(*) FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user'
-           AND COLUMN_NAME = 'search_goals') = 0,
-    'ALTER TABLE user ADD COLUMN search_goals TEXT',
-    'SELECT "colonne user.search_goals absente ou deja presente" AS info');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+CREATE TABLE IF NOT EXISTS user_profile_info (
+    user_id INT NOT NULL COMMENT 'Identifiant de la table user',
+    gender VARCHAR(100) COMMENT 'Sexe : Femme / Homme / Autre',
+    age_range VARCHAR(50) COMMENT 'Tranche d''age',
+    academic_status VARCHAR(100) COMMENT 'Statut universitaire',
+    search_goals TEXT COMMENT 'Objectifs de recherche sur la M3C (liste en JSON)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de creation de la ligne',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de derniere modification',
+    PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

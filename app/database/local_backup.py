@@ -63,7 +63,7 @@ TABLES = [
     'text_question_answers', 'text_question_chunks', 'text_questions', 'themes',
     'user', 'user_interests_entities', 'user_interests_themes',
     'user_knowledge_states', 'user_mistral_api_keys', 'user_model_history',
-    'user_profiles', 'user_sessions']
+    'user_profile_info', 'user_profiles', 'user_sessions']
 
 def _cleanup_old_backups(output_dir: Path, retention_days: int = RETENTION_DAYS) -> None:
     """Supprime les sauvegardes MySQL et Qdrant plus vieilles que retention_days."""

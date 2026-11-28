@@ -544,3 +544,18 @@ CREATE TABLE IF NOT EXISTS user_mistral_api_keys (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de derniere modification',
     PRIMARY KEY (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Informations de profil facultatives (sexe, tranche d'age, statut
+-- universitaire, objectifs de recherche sur la M3C), dans une table dediee.
+-- Comme pour user_mistral_api_keys, la cle etrangere vers user(id) est omise,
+-- la table user n'etant pas creee ici.
+CREATE TABLE IF NOT EXISTS user_profile_info (
+    user_id INT NOT NULL COMMENT 'Identifiant de la table user',
+    gender VARCHAR(100) COMMENT 'Sexe : Femme / Homme / Autre',
+    age_range VARCHAR(50) COMMENT 'Tranche d''age',
+    academic_status VARCHAR(100) COMMENT 'Statut universitaire',
+    search_goals TEXT COMMENT 'Objectifs de recherche sur la M3C (liste en JSON)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de creation de la ligne',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de derniere modification',
+    PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

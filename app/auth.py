@@ -1,7 +1,7 @@
 import json
 import secrets
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import bcrypt
 from psycopg import AsyncConnection
@@ -147,28 +147,17 @@ async def create_user(
             async with conn.cursor() as cur:
                 await cur.execute(
                     """
-                    INSERT INTO user (name, email, password_hash, role, is_active, created,
-                                      gender, age_range, academic_status, search_goals)
-                    VALUES (%s, %s, %s, %s, TRUE, NOW(), %s, %s, %s, %s)
+                    INSERT INTO user (name, email, password_hash, role, is_active, created)
+                    VALUES (%s, %s, %s, %s, TRUE, NOW())
                     """,
-                    (
-                        username,
-                        email,
-                        password_hash,
-                        role,
-                        gender,
-                        age_range,
-                        academic_status,
-                        _encode_search_goals(search_goals),
-                    ),
+                    (username, email, password_hash, role),
                 )
 
                 user_id = cur.lastrowid
 
                 await cur.execute(
                     """
-                    SELECT id, name, email, role, is_active, created,
-                           gender, age_range, academic_status, search_goals
+                    SELECT id, name, email, role, is_active, created
                     FROM user
                     WHERE id = %s
                     """,
@@ -176,6 +165,11 @@ async def create_user(
                 )
 
                 user = await cur.fetchone()
+
+                if gender or age_range or academic_status or search_goals:
+                    await _upsert_profile_info(
+                        cur, user_id, gender, age_range, academic_status, search_goals
+                    )
             user = {
                 "user_id": user[0],
                 "username": user[1],
@@ -183,10 +177,10 @@ async def create_user(
                 "role": user[3],
                 "is_active": bool(user[4]),
                 "created_at": user[5].isoformat() if user[5] else None,
-                "gender": user[6],
-                "age_range": user[7],
-                "academic_status": user[8],
-                "search_goals": _decode_search_goals(user[9]),
+                "gender": gender,
+                "age_range": age_range,
+                "academic_status": academic_status,
+                "search_goals": search_goals or [],
             }
             token = _issue_token(user["user_id"])
             return user, token
@@ -210,8 +204,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT id, name, email, password_hash, role, is_active, created,
-                       gender, age_range, academic_status, search_goals
+                SELECT id, name, email, password_hash, role, is_active, created
                 FROM user
                 WHERE name = %s OR email = %s;
                 """,
@@ -220,7 +213,7 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
             row = await cur.fetchone()
         if row is None:
             raise ValueError("Identifiants incorrects.")
-        user_id, name, email, password_hash, role, is_active, created = row[:7]
+        user_id, name, email, password_hash, role, is_active, created = row
         if not is_active:
             raise ValueError("Ce compte est désactivé.")
         if not _verify_password(password, password_hash):
@@ -232,10 +225,6 @@ async def authenticate_user(identifier: str, password: str) -> Tuple[Dict[str, A
             "role": role,
             "is_active": bool(is_active),
             "created_at": created.isoformat() if created else None,
-            "gender": row[7],
-            "age_range": row[8],
-            "academic_status": row[9],
-            "search_goals": _decode_search_goals(row[10]),
         }
         token = _issue_token(user_id)
         return user, token
@@ -246,8 +235,7 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         async with conn.cursor() as cur:
             await cur.execute(
                 """
-                SELECT id, name, email, role, is_active, created,
-                       gender, age_range, academic_status, search_goals
+                SELECT id, name, email, role, is_active, created
                 FROM user
                 WHERE id = %s;
                 """,
@@ -256,18 +244,67 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             row = await cur.fetchone()
         if row is None:
             return None
-        return {
+        user = {
             "user_id": row[0],
             "username": row[1],
             "email": row[2],
             "role": row[3],
             "is_active": bool(row[4]),
             "created_at": row[5].isoformat() if row[5] else None,
-            "gender": row[6],
-            "age_range": row[7],
-            "academic_status": row[8],
-            "search_goals": _decode_search_goals(row[9]),
         }
+        user.update(await get_user_profile_info(user_id) or {})
+        return user
+
+
+async def _upsert_profile_info(
+    cur,
+    user_id: int,
+    gender: Optional[str],
+    age_range: Optional[str],
+    academic_status: Optional[str],
+    search_goals: Optional[list],
+) -> None:
+    await cur.execute(
+        """
+        INSERT INTO user_profile_info (user_id, gender, age_range, academic_status, search_goals)
+        VALUES (%s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            gender = VALUES(gender),
+            age_range = VALUES(age_range),
+            academic_status = VALUES(academic_status),
+            search_goals = VALUES(search_goals);
+        """,
+        (
+            user_id,
+            gender,
+            age_range,
+            academic_status,
+            _encode_search_goals(search_goals),
+        ),
+    )
+
+
+async def get_user_profile_info(user_id: int) -> Optional[Dict[str, Any]]:
+    """Retourne les informations de profil de la table dediee `user_profile_info`."""
+    async with await get_db_connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                SELECT gender, age_range, academic_status, search_goals
+                FROM user_profile_info
+                WHERE user_id = %s;
+                """,
+                (user_id,),
+            )
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return {
+        "gender": row[0],
+        "age_range": row[1],
+        "academic_status": row[2],
+        "search_goals": _decode_search_goals(row[3]),
+    }
 
 
 async def update_user_profile_info(
@@ -282,19 +319,8 @@ async def update_user_profile_info(
     )
     async with await get_db_connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(
-                """
-                UPDATE user
-                SET gender = %s, age_range = %s, academic_status = %s, search_goals = %s
-                WHERE id = %s
-                """,
-                (
-                    gender,
-                    age_range,
-                    academic_status,
-                    _encode_search_goals(search_goals),
-                    user_id,
-                ),
+            await _upsert_profile_info(
+                cur, user_id, gender, age_range, academic_status, search_goals
             )
     return {
         "gender": gender,
