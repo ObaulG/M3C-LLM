@@ -5,7 +5,7 @@ courant, dconnexion). Ces routes taient auparavant dfinies dans
 api_server.py.
 """
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Cookie, HTTPException, Response, status
 from fastapi.responses import JSONResponse
@@ -22,6 +22,10 @@ class AuthRegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=255)
     email: str = Field(...)
     password: str = Field(..., min_length=6)
+    gender: Optional[str] = None
+    age_range: Optional[str] = None
+    academic_status: Optional[str] = None
+    search_goals: Optional[List[str]] = None
 
 
 class AuthLoginRequest(BaseModel):
@@ -33,6 +37,13 @@ class MistralApiKeyRequest(BaseModel):
     mistral_api_key: Optional[str] = Field(default=None, max_length=255)
 
 
+class ProfileInfoRequest(BaseModel):
+    gender: Optional[str] = None
+    age_range: Optional[str] = None
+    academic_status: Optional[str] = None
+    search_goals: Optional[List[str]] = None
+
+
 class AuthUserResponse(BaseModel):
     user_id: int
     username: str
@@ -40,6 +51,10 @@ class AuthUserResponse(BaseModel):
     role: str
     is_active: bool
     created_at: Optional[str] = None
+    gender: Optional[str] = None
+    age_range: Optional[str] = None
+    academic_status: Optional[str] = None
+    search_goals: List[str] = []
 
 
 class AuthResponse(BaseModel):
@@ -69,6 +84,10 @@ async def register(request: AuthRegisterRequest):
             username=request.username,
             email=request.email,
             password=request.password,
+            gender=request.gender,
+            age_range=request.age_range,
+            academic_status=request.academic_status,
+            search_goals=request.search_goals,
         )
         response = JSONResponse(content=AuthResponse(user=AuthUserResponse(**user)).model_dump(mode="json"))
         _set_auth_cookie(response, token)
@@ -157,6 +176,30 @@ async def set_my_mistral_api_key(
             )
     await auth.set_user_mistral_api_key(user_id, api_key)
     return {"has_api_key": bool(api_key)}
+
+
+@router.put("/me/profile-info")
+async def update_my_profile_info(
+    request: ProfileInfoRequest,
+    m3c_api_key: Optional[str] = Cookie(default=None),
+    authorization: Optional[str] = None,
+):
+    """Met à jour les informations de profil de l'utilisateur connecté."""
+    user_id = auth.user_id_from_token(m3c_api_key)
+    if user_id is None:
+        user_id = auth.user_id_from_authorization(authorization)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non authentifié.")
+    try:
+        return await auth.update_user_profile_info(
+            user_id,
+            gender=request.gender,
+            age_range=request.age_range,
+            academic_status=request.academic_status,
+            search_goals=request.search_goals,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/logout")

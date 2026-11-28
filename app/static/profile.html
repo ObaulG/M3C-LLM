@@ -489,9 +489,66 @@
             <div class="profile-tabs" role="tablist">
                 <button type="button" class="profile-tab active" data-tab="tab-stats" role="tab">📊 Mon profil</button>
                 <button type="button" class="profile-tab" data-tab="tab-api-key" role="tab">🔑 Clé API Mistral</button>
+                <button type="button" class="profile-tab" data-tab="tab-profile-info" role="tab">👤 Mes informations</button>
             </div>
 
-            <div class="profile-tab-content" id="tab-api-key" role="tabpanel" style="display:none;">
+            <div class="profile-tab-content" id="tab-profile-info" role="tabpanel" style="display:none;">
+            <div class="profile-section-header" style="margin-top: 0;"><h2>👤 Mes informations</h2></div>
+            <p style="color: #666; line-height: 1.6;">
+                Ces informations sont facultatives et nous aident à mieux connaître les utilisateurs de la M3C.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 16px; max-width: 560px; margin-bottom: 15px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="piGender" style="font-size: 14px; font-weight: 600; color: #495057;">Sexe</label>
+                    <select id="piGender" style="padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; background: white;">
+                        <option value="">Non renseigné</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="piAgeRange" style="font-size: 14px; font-weight: 600; color: #495057;">Tranche d'âge</label>
+                    <select id="piAgeRange" style="padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; background: white;">
+                        <option value="">Non renseignée</option>
+                        <option value="Moins de 18 ans">Moins de 18 ans</option>
+                        <option value="18-25 ans">18-25 ans</option>
+                        <option value="26-40 ans">26-40 ans</option>
+                        <option value="41-60 ans">41-60 ans</option>
+                        <option value="Plus de 60 ans">Plus de 60 ans</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="piAcademicStatus" style="font-size: 14px; font-weight: 600; color: #495057;">Statut universitaire</label>
+                    <select id="piAcademicStatus" style="padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; background: white;">
+                        <option value="">Non renseigné</option>
+                        <option value="Étudiant">Étudiant</option>
+                        <option value="Enseignant">Enseignant</option>
+                        <option value="Personnel administratif">Personnel administratif</option>
+                        <option value="Extérieur">Extérieur</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <span style="font-size: 14px; font-weight: 600; color: #495057;">Que recherchez-vous sur la M3C&nbsp;?</span>
+                    <div style="display: flex; flex-direction: column; gap: 6px;" id="piSearchGoalsGroup">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Explorer les collections et ressources documentaires" /> Explorer les collections et ressources documentaires</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Rechercher des documents sur un sujet précis" /> Rechercher des documents sur un sujet précis</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Découvrir la culture corse" /> Découvrir la culture corse</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Utiliser le chatbot / les outils IA" /> Utiliser le chatbot / les outils IA</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Préparer un cours ou un support pédagogique" /> Préparer un cours ou un support pédagogique</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Réviser ou m'auto-évaluer" /> Réviser ou m'auto-évaluer</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Tester l'application (prototype)" /> Tester l'application (prototype)</label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #495057; cursor: pointer;"><input type="checkbox" name="piSearchGoals" value="Autre" /> Autre</label>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="profileInfoSaveBtn" onclick="saveProfileInfo()" style="padding: 10px 20px; background: #b74420; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">💾 Enregistrer</button>
+                <span id="profileInfoMessage" style="padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; display: none;"></span>
+            </div>
+        </div>
+
+<div class="profile-tab-content" id="tab-api-key" role="tabpanel" style="display:none;">
             <div class="profile-section-header" style="margin-top: 0;"><h2>🔑 Clé API Mistral</h2></div>
             <p style="color: #666; line-height: 1.6;">
                 Pour utiliser pleinement les fonctionnalités de ce portail, configurez votre clé API Mistral AI.
@@ -842,7 +899,59 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function () { initTabs(); load(); });
+    function loadProfileInfo() {
+        fetchJson('/api/auth/me').then(function (data) {
+            var user = (data && data.user) || {};
+            document.getElementById('piGender').value = user.gender || '';
+            document.getElementById('piAgeRange').value = user.age_range || '';
+            document.getElementById('piAcademicStatus').value = user.academic_status || '';
+            var goals = user.search_goals || [];
+            document.querySelectorAll('input[name="piSearchGoals"]').forEach(function (el) {
+                el.checked = goals.indexOf(el.value) !== -1;
+            });
+        }).catch(function () {});
+    }
+
+    function showProfileInfoMessage(text, isError) {
+        var el = document.getElementById('profileInfoMessage');
+        el.textContent = text;
+        el.style.display = 'inline-block';
+        el.style.background = isError ? '#fff0f0' : '#f0fff4';
+        el.style.color = isError ? '#b74420' : '#28a745';
+        el.style.border = '1px solid ' + (isError ? '#ffe0e0' : '#d4edda');
+    }
+
+    function saveProfileInfo() {
+        var btn = document.getElementById('profileInfoSaveBtn');
+        btn.disabled = true;
+        var payload = {
+            gender: document.getElementById('piGender').value || null,
+            age_range: document.getElementById('piAgeRange').value || null,
+            academic_status: document.getElementById('piAcademicStatus').value || null,
+            search_goals: Array.from(document.querySelectorAll('input[name="piSearchGoals"]:checked')).map(function (el) { return el.value; })
+        };
+        fetch('/api/auth/me/profile-info', {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(function (resp) {
+            return resp.json().then(function (data) {
+                if (!resp.ok) {
+                    throw new Error(data.detail || 'Erreur lors de l\u2019enregistrement.');
+                }
+                return data;
+            });
+        }).then(function () {
+            showProfileInfoMessage('Informations enregistr\u00e9es.', false);
+        }).catch(function (err) {
+            showProfileInfoMessage(err.message, true);
+        }).finally(function () {
+            btn.disabled = false;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () { initTabs(); load(); loadProfileInfo(); });
     document.addEventListener('profile-widget-login', load);
 })();
 </script>

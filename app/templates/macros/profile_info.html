@@ -1,0 +1,56 @@
+{# -*- jinja2 -*- Champs d'informations de profil (inscription + page profil) #}
+{% set gender_options = ["Femme", "Homme", "Autre"] %}
+{% set age_range_options = ["Moins de 18 ans", "18-25 ans", "26-40 ans", "41-60 ans", "Plus de 60 ans"] %}
+{% set academic_status_options = ["Étudiant", "Enseignant", "Personnel administratif", "Extérieur"] %}
+{% set search_goal_options = [
+    "Explorer les collections et ressources documentaires",
+    "Rechercher des documents sur un sujet précis",
+    "Découvrir la culture corse",
+    "Utiliser le chatbot / les outils IA",
+    "Préparer un cours ou un support pédagogique",
+    "Réviser ou m'auto-évaluer",
+    "Tester l'application (prototype)",
+    "Autre",
+] %}
+
+{% macro profile_info_fields(prefix='', values={}) %}
+<div class="form-group">
+    <label for="{{ prefix }}Gender">Sexe</label>
+    <select id="{{ prefix }}Gender" name="gender">
+        <option value="">Non renseigné</option>
+        {% for option in gender_options %}
+        <option value="{{ option }}" {% if values.gender == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <label for="{{ prefix }}AgeRange">Tranche d'âge</label>
+    <select id="{{ prefix }}AgeRange" name="age_range">
+        <option value="">Non renseignée</option>
+        {% for option in age_range_options %}
+        <option value="{{ option }}" {% if values.age_range == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <label for="{{ prefix }}AcademicStatus">Statut universitaire</label>
+    <select id="{{ prefix }}AcademicStatus" name="academic_status">
+        <option value="">Non renseigné</option>
+        {% for option in academic_status_options %}
+        <option value="{{ option }}" {% if values.academic_status == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <label>Que recherchez-vous sur la M3C&nbsp;?</label>
+    <div class="checkbox-group">
+        {% for option in search_goal_options %}
+        <label class="checkbox-option">
+            <input type="checkbox" name="{{ prefix }}SearchGoals" value="{{ option }}"
+                   {% if option in (values.search_goals or []) %}checked{% endif %} />
+            {{ option }}
+        </label>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}

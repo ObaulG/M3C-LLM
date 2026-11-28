@@ -95,6 +95,31 @@
         font-family: inherit;
     }
 
+    .form-group select {
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: inherit;
+        background: white;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .checkbox-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: normal;
+        color: #495057;
+        cursor: pointer;
+    }
+
     .form-group input:focus {
         outline: none;
         border-color: #b74420;
@@ -228,6 +253,82 @@
                 <label for="regPassword">Mot de passe</label>
                 <input type="password" id="regPassword" name="password" required minlength="6" autocomplete="new-password" />
             </div>
+            <div class="form-group">
+    <label for="regGender">Sexe</label>
+    <select id="regGender" name="gender">
+        <option value="">Non renseigné</option>
+        <option value="Femme" >Femme</option>
+        <option value="Homme" >Homme</option>
+        <option value="Autre" >Autre</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="regAgeRange">Tranche d'âge</label>
+    <select id="regAgeRange" name="age_range">
+        <option value="">Non renseignée</option>
+        <option value="Moins de 18 ans" >Moins de 18 ans</option>
+        <option value="18-25 ans" >18-25 ans</option>
+        <option value="26-40 ans" >26-40 ans</option>
+        <option value="41-60 ans" >41-60 ans</option>
+        <option value="Plus de 60 ans" >Plus de 60 ans</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="regAcademicStatus">Statut universitaire</label>
+    <select id="regAcademicStatus" name="academic_status">
+        <option value="">Non renseigné</option>
+        <option value="Étudiant" >Étudiant</option>
+        <option value="Enseignant" >Enseignant</option>
+        <option value="Personnel administratif" >Personnel administratif</option>
+        <option value="Extérieur" >Extérieur</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Que recherchez-vous sur la M3C&nbsp;?</label>
+    <div class="checkbox-group">
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Explorer les collections et ressources documentaires"
+ />
+            Explorer les collections et ressources documentaires
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Rechercher des documents sur un sujet précis"
+ />
+            Rechercher des documents sur un sujet précis
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Découvrir la culture corse"
+ />
+            Découvrir la culture corse
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Utiliser le chatbot / les outils IA"
+ />
+            Utiliser le chatbot / les outils IA
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Préparer un cours ou un support pédagogique"
+ />
+            Préparer un cours ou un support pédagogique
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Réviser ou m&#39;auto-évaluer"
+ />
+            Réviser ou m&#39;auto-évaluer
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Tester l&#39;application (prototype)"
+ />
+            Tester l&#39;application (prototype)
+        </label>
+        <label class="checkbox-option">
+            <input type="checkbox" name="regSearchGoals" value="Autre"
+ />
+            Autre
+        </label>
+    </div>
+</div>
+
 
             <div class="auth-message" id="registerMessage"></div>
             <button type="submit" class="btn" id="registerBtn">Créer le compte</button>
@@ -296,6 +397,7 @@
         const username = document.getElementById('regUsername').value.trim();
         const email = document.getElementById('regEmail').value.trim();
         const password = document.getElementById('regPassword').value;
+        const searchGoals = Array.from(document.querySelectorAll('input[name="regSearchGoals"]:checked')).map(function (el) { return el.value; });
         const btn = document.getElementById('registerBtn');
         btn.disabled = true;
         showMessage('registerMessage', '', '');
@@ -303,7 +405,15 @@
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username, email: email, password: password })
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    gender: document.getElementById('regGender').value || null,
+                    age_range: document.getElementById('regAgeRange').value || null,
+                    academic_status: document.getElementById('regAcademicStatus').value || null,
+                    search_goals: searchGoals
+                })
             });
             const data = await response.json();
             if (!response.ok) {

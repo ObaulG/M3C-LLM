@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros/profile_info.html' import profile_info_fields %}
 {% block title %}Connexion / Inscription - M3C-LLM{% endblock %}
 
 {% block styles %}
@@ -90,6 +91,31 @@
         border-radius: 8px;
         font-size: 15px;
         font-family: inherit;
+    }
+
+    .form-group select {
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: inherit;
+        background: white;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .checkbox-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: normal;
+        color: #495057;
+        cursor: pointer;
     }
 
     .form-group input:focus {
@@ -226,6 +252,7 @@
                 <label for="regPassword">Mot de passe</label>
                 <input type="password" id="regPassword" name="password" required minlength="6" autocomplete="new-password" />
             </div>
+            {{ profile_info_fields(prefix='reg') }}
 
             <div class="auth-message" id="registerMessage"></div>
             <button type="submit" class="btn" id="registerBtn">Créer le compte</button>
@@ -296,6 +323,7 @@
         const username = document.getElementById('regUsername').value.trim();
         const email = document.getElementById('regEmail').value.trim();
         const password = document.getElementById('regPassword').value;
+        const searchGoals = Array.from(document.querySelectorAll('input[name="regSearchGoals"]:checked')).map(function (el) { return el.value; });
         const btn = document.getElementById('registerBtn');
         btn.disabled = true;
         showMessage('registerMessage', '', '');
@@ -303,7 +331,15 @@
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username, email: email, password: password })
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    gender: document.getElementById('regGender').value || null,
+                    age_range: document.getElementById('regAgeRange').value || null,
+                    academic_status: document.getElementById('regAcademicStatus').value || null,
+                    search_goals: searchGoals
+                })
             });
             const data = await response.json();
             if (!response.ok) {
