@@ -9,13 +9,13 @@
         .main_container { display: flex; height: 100vh; width: 100%; }
         .sidebar { width: 300px; background: white; border-right: 1px solid #ddd; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .content-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .header { background: linear-gradient(135deg, #b74420 0%, #d16b3f 100%); color: white; padding: 20px; text-align: center; }
-        .header h1 { font-size: 24px; margin-bottom: 5px; }
-        .header p { opacity: 0.9; font-size: 14px; }
+        .header { background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.78)), url('../img/exemple-parcours-thematique-m3c.png') center 35% / cover no-repeat; color: #4a3a33; padding: 0; text-align: center; border-radius: 0; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; color: #b74420; }
+        .header p { opacity: 1; font-size: 14px; color: #7c5a4b; }
         .nav-links { display: flex; justify-content: center; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
-        .nav-link { color: white; text-decoration: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; }
-        .nav-link:hover { background: rgba(255, 255, 255, 0.2); }
-        .nav-link.active { background: rgba(255, 255, 255, 0.3); }
+        .nav-link { color: #b74420; text-decoration: none; padding: 5px 10px; border-radius: 5px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+        .nav-link:hover { background: rgba(183, 68, 32, 0.12); }
+        .nav-link.active { background: rgba(183, 68, 32, 0.16); box-shadow: inset 0 -2px 0 #b74420; }
         .admin-content { padding: 20px; flex: 1; overflow-y: auto; }
         .section-title { font-size: 20px; color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e0e0e0; }
         .form-section { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -73,10 +73,12 @@
             <button class="refresh-btn" onclick="loadObservations()">&#128260; Rafra\u00eechir</button>
         </div>
         <div class="content-area">
-            <div class="header">
-                <h1>&#128064; Administration - Observations manuelles</h1>
-                <p>D\u00e9monstration : appliquez manuellement des observations d'\u00e9l\u00e9ments de connaissance (sch\u00e9ma user_knowledge_model.sql)</p>
-                <div class="nav-links">
+                        <div class="header">
+                <div class="header-bar">
+                <a class="header-logo" href="../index.html">
+                    <img src="../img/m3c.png" alt="M3C - Médiathèque Culturelle de la Corse et des Corses" />
+                </a>
+<div class="nav-links">
                     <a href="../m3c-chatbot.html" class="nav-link">ChatBot RAG</a>
                     <a href="../question_session.html" class="nav-link">Chatbot Invers\u00e9</a>
                     <a href="../rag_visualization.html" class="nav-link">Visualisation RAG</a>
@@ -85,6 +87,11 @@
                     <a href="questions_generation.html" class="nav-link">G\u00e9n\u00e9ration de Questions</a>
                     <a href="knowledge_items_generation.html" class="nav-link">Knowledge Items</a>
                     <a href="observations_admin.html" class="nav-link active">Observations</a>
+                </div>
+                </div>
+                <div class="header-main">
+                    <h1>&#128064; Administration - Observations manuelles</h1>
+                    <p>D\u00e9monstration : appliquez manuellement des observations d'\u00e9l\u00e9ments de connaissance (sch\u00e9ma user_knowledge_model.sql)</p>
                 </div>
             </div>
             <div class="admin-content">
