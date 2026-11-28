@@ -33,6 +33,7 @@ PAGES = [
     ("rag_visualization.j2", "", ""),
     ("solr_search.j2", "", ""),
     ("tutorials.j2", "", ""),
+    ("document.j2", "", ""),
     ("m3c-chatbot-history.j2", "", ""),
     ("auth.j2", "", ""),
     ("admin/indexation.j2", "admin", "../"),

@@ -3,7 +3,9 @@ Router FastAPI pour la consultation des documents et de leurs chunks.
 
 Regroupe les routes permettant de :
 - lister tous les documents disponibles avec leurs metadonnees (get_document_list),
-- lister les chunks d'un document donne avec leur contenu (get_document_chunks).
+- lister les chunks d'un document donne avec leur contenu (get_document_chunks),
+- fournir les valeurs (table `value`) d'un resource pour sa page d'affichage
+  (get_resource_values_page).
 
 Ces routes etaient auparavant eclatees entre api_server.py (liste des documents)
 et knowledge_items/router.py (chunks d'un document). Elles sont desormais exposees
@@ -19,8 +21,11 @@ from database.database import (
     get_all_documents,
     get_all_text_chunks,
     get_question_sessions,
+    get_resource_values,
+    get_resource_pdf_media,
 )
 
+from .display import build_resource_view
 from .models import DocumentResponse, DocumentsListResponse
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -108,4 +113,38 @@ async def get_document_chunks(document_id: int):
         "document_id": document_id,
         "chunks": chunks,
         "count": len(chunks),
+    })
+
+
+@router.get(
+    "/resource/{resource_id}/values",
+    summary="Valeurs d'un resource pour sa page d'affichage",
+    description=(
+        "Retourne toutes les valeurs (table `value`, jointes a `property`) du "
+        "resource demande, regroupees en sections (Titre - Sous-titre, Description, "
+        "Auteurs sujets et disciplines, Lieux periodes et langues, Ou et comment "
+        "consulter ce document) telles qu'affichees par la page document.html. "
+        "Inclut aussi le titre de la page et le PDF associe (table `media`) s'il existe."
+    ),
+)
+async def get_resource_values_page(resource_id: int):
+    """Recupere les valeurs d'un resource et construit le payload de la page document."""
+    async with await get_db_connection() as conn:
+        rows = await get_resource_values(conn, resource_id)
+        pdf_media = await get_resource_pdf_media(conn, resource_id)
+
+    if not rows:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Aucune valeur trouvee pour le resource_id {resource_id}",
+        )
+
+    view = build_resource_view(resource_id, rows, pdf_media)
+    return JSONResponse(content={
+        "resource_id": resource_id,
+        "title": view["title"],
+        "page_title": view["page_title"],
+        "pdf": view["pdf"],
+        "sections": view["sections"],
+        "timestamp": datetime.now().isoformat(),
     })
