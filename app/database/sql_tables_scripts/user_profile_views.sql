@@ -8,7 +8,8 @@
 -- VUE 1: Statistiques globales par utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_profile_stats AS
+DROP VIEW IF EXISTS user_profile_stats;
+CREATE VIEW user_profile_stats AS
 SELECT 
     up.user_id,
     COUNT(DISTINCT o.id) AS total_observations,
@@ -42,7 +43,8 @@ GROUP BY up.user_id, up.created_at, up.last_activity_at;
 -- VUE 2: Ressources consultées par utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_visited_resources AS
+DROP VIEW IF EXISTS user_visited_resources;
+CREATE VIEW user_visited_resources AS
 SELECT 
     o.user_id,
     tc.id AS chunk_id,
@@ -66,7 +68,8 @@ ORDER BY o.user_id, last_viewed_at DESC;
 -- VUE 3: Statistiques par thème pour un utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_theme_stats AS
+DROP VIEW IF EXISTS user_theme_stats;
+CREATE VIEW user_theme_stats AS
 SELECT 
     up.user_id,
     t.id AS theme_id,
@@ -96,7 +99,8 @@ HAVING t.id IS NOT NULL
 ORDER BY up.user_id, interest_weight DESC, observation_count DESC;
 
 -- Version corrigée avec jointure explicite sur themes
-CREATE OR REPLACE VIEW user_theme_stats_v2 AS
+DROP VIEW IF EXISTS user_theme_stats_v2;
+CREATE VIEW user_theme_stats_v2 AS
 SELECT 
     o.user_id,
     t.id AS theme_id,
@@ -128,7 +132,8 @@ ORDER BY o.user_id, interest_weight DESC, observation_count DESC;
 -- VUE 4: Éléments de connaissance groupés par thème pour un utilisateur
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_knowledge_by_theme AS
+DROP VIEW IF EXISTS user_knowledge_by_theme;
+CREATE VIEW user_knowledge_by_theme AS
 SELECT 
     o.user_id,
     t.id AS theme_id,
@@ -182,7 +187,8 @@ ORDER BY o.user_id, t.name, kit.relevance DESC, uks.score DESC;
 -- Utilisée pour l'affichage par thème dans la page de profil
 -- ============================================================================
 
-CREATE OR REPLACE VIEW user_knowledge_with_themes AS
+DROP VIEW IF EXISTS user_knowledge_with_themes;
+CREATE VIEW user_knowledge_with_themes AS
 SELECT 
     uks.user_id,
     ki.id AS knowledge_id,

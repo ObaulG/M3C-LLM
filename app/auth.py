@@ -4,8 +4,7 @@ import time
 from typing import Any, Dict, Optional, Tuple
 
 import bcrypt
-from psycopg import AsyncConnection
-from psycopg.errors import UniqueViolation
+from pymysql.err import IntegrityError
 
 from database.database import DB_CONFIG, get_db_connection
 
@@ -184,13 +183,16 @@ async def create_user(
             }
             token = _issue_token(user["user_id"])
             return user, token
-        except UniqueViolation as e:
+        except IntegrityError as e:
             await conn.rollback()
-            constraint = getattr(e.diag, "constraint_name", "") or ""
-            if "name" in constraint:
-                raise ValueError("Ce nom d'utilisateur est déjà utilisé.")
-            if "email" in constraint:
-                raise ValueError("Cet email est déjà utilisé.")
+            # MySQL : errno 1062 (entrée dupliquee), le message contient la
+            # valeur et le nom de la contrainte (ex: "for key 'user.email'").
+            if e.args and e.args[0] == 1062:
+                message = str(e.args[-1])
+                if "email" in message or email in message:
+                    raise ValueError("Cet email est déjà utilisé.")
+                if "name" in message or username in message:
+                    raise ValueError("Ce nom d'utilisateur est déjà utilisé.")
             raise ValueError("Utilisateur déjà existant.")
         except Exception as e:
             print(e)

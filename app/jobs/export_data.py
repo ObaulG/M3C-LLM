@@ -7,7 +7,7 @@ Ce script exporte :
     (CREATE TABLE uniquement ; les CREATE VIEW sont exclus). Le schéma (CREATE
     TABLE) n'est PAS inclus : il est supposé déjà créé par docker/mysql/init.sql.
     Les tables déclarées mais absentes de MySQL sont ignorées avec un
-    avertissement (ex: scripts PostgreSQL du dossier).
+    avertissement (ex: scripts non encore appliqués à MySQL).
   - Les collections Qdrant sous forme de snapshots natifs (.tar.gz) via l'API
     REST /collections/{name}/snapshots. Re-importables avec l'API Qdrant
     /collections/{name}/snapshots/upload ou la commande qdrant CLI.
@@ -99,7 +99,7 @@ async def list_tables(conn) -> List[str]:
     """Retourne la liste des tables à exporter : celles déclarées dans les
     fichiers SQL de app/database/sql_tables_scripts/ ET présentes dans MySQL.
     Les tables déclarées mais absentes de MySQL sont signalées (ex: scripts
-    PostgreSQL dont les tables n'existent pas en MySQL)."""
+    non appliqués à la base MySQL)."""
     declared = list_declared_tables()
 
     # Tables réellement présentes dans MySQL
