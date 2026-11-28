@@ -807,6 +807,83 @@ async def get_resource_full_metadata(conn, resource_id):
     return metadata
 
 
+async def get_resource_values(conn, resource_id):
+    """
+    Recupere TOUTES les valeurs (table `value`) d'un resource, jointes a la table
+    `property` pour obtenir le local_name et le label de chaque propriete.
+
+    C'est la requete de base de la page d'affichage d'un document :
+    `SELECT ... FROM value v JOIN property p ON p.id = v.property_id
+     WHERE v.resource_id = <id>`.
+
+    Args:
+        conn: Connexion a la base de donnees
+        resource_id: L'ID de la ressource (item)
+
+    Returns:
+        Liste de dicts {id, property_id, local_name, label, type, value, uri,
+        lang, value_resource_id}, triee par id croissant. Vide si le resource
+        n'a aucune valeur.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT v.id, v.property_id, p.local_name, p.label,
+                   v.type, v.value, v.uri, v.lang, v.value_resource_id
+            FROM value v
+            LEFT JOIN property p ON p.id = v.property_id
+            WHERE v.resource_id = %s
+            ORDER BY v.id
+            """,
+            (resource_id,),
+        )
+        rows = await cur.fetchall()
+
+    return [
+        {
+            "id": row[0],
+            "property_id": row[1],
+            "local_name": row[2],
+            "label": row[3],
+            "type": row[4],
+            "value": row[5],
+            "uri": row[6],
+            "lang": row[7],
+            "value_resource_id": row[8],
+        }
+        for row in rows
+    ]
+
+
+async def get_resource_pdf_media(conn, resource_id):
+    """
+    Recupere le media PDF associe a un resource (table `media`, item_id = resource_id).
+
+    Args:
+        conn: Connexion a la base de donnees
+        resource_id: L'ID de la ressource (utilise comme item_id)
+
+    Returns:
+        Dict {storage_id, extension} ou None si le resource n'a pas de PDF.
+    """
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT storage_id, extension
+            FROM media
+            WHERE item_id = %s AND LOWER(extension) = 'pdf'
+            ORDER BY id
+            LIMIT 1
+            """,
+            (resource_id,),
+        )
+        row = await cur.fetchone()
+
+    if row:
+        return {"storage_id": row[0], "extension": row[1]}
+    return None
+
+
 from typing import Dict, List, Optional
 
 async def get_question_by_id(

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+<style>
+    .doc-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+    }
+
+    .doc-error {
+        background: #fdecea;
+        border: 1px solid #b74420;
+        color: #b74420;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+
+    .doc-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .doc-viewer {
+        flex: 3;
+        min-width: 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #525659;
+    }
+
+    .doc-viewer-tab {
+        background: #e9e9e9;
+        border-bottom: 1px solid #d0d0d0;
+        padding: 8px 16px;
+        font-size: 13px;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .doc-viewer iframe {
+        display: block;
+        width: 100%;
+        height: 75vh;
+        border: none;
+        background: #fff;
+    }
+
+    .doc-no-pdf {
+        padding: 40px 20px;
+        color: #fff;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .doc-aside {
+        flex: 2;
+        min-width: 300px;
+    }
+
+    .doc-section {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .doc-section-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: #b74420;
+        text-align: left;
+    }
+
+    .doc-section-toggle:hover {
+        background: #fdf3ef;
+    }
+
+    .doc-section-icon {
+        font-size: 18px;
+        font-weight: 400;
+        color: #b74420;
+    }
+
+    .doc-section-body {
+        display: none;
+        padding: 4px 16px 14px;
+        border-top: 1px solid #f0e0da;
+    }
+
+    .doc-section.open .doc-section-body {
+        display: block;
+    }
+
+    .doc-field {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .doc-field-label {
+        display: block;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 2px;
+    }
+
+    .doc-field-values {
+        margin: 0;
+        padding-left: 18px;
+        color: #222;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .doc-field-values a {
+        color: #b74420;
+    }
+
+    .doc-share {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #b74420;
+        font-weight: 600;
+    }
+
+    .doc-share button,
+    .doc-share a {
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 13px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .doc-share button:hover,
+    .doc-share a:hover {
+        border-color: #b74420;
+        color: #b74420;
+    }
+
+    @media (max-width: 900px) {
+        .doc-layout {
+            flex-direction: column;
+        }
+
+        .doc-aside {
+            min-width: 0;
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="main_container">
+    <div class="container doc-container">
+        <div class="header">
+    <div class="header-bar">
+    <a class="header-logo" href="index.html">
+        <img src="img/m3c.png" alt="M3C - Médiathèque Culturelle de la Corse et des Corses" />
+    </a>
+    <div class="header-nav"><a href="index.html" class="nav-link">Index</a><span class="nav-separator">|</span><a href="tutorials.html" class="nav-link">Explications</a><span class="nav-separator">|</span><a href="m3c-chatbot.html" class="nav-link">ChatBot RAG</a><span class="nav-separator">|</span><a href="question_session.html" class="nav-link">Chatbot Inversé</a><span class="nav-separator">|</span><a href="rag_visualization.html" class="nav-link">Visualisation RAG</a><span class="nav-separator">|</span><a href="questions_management.html" class="nav-link">Gestion Q/R</a><span class="nav-separator">|</span><a href="solr_search.html" class="nav-link">Recherche Solr</a><span class="nav-separator">|</span><a href="m3c-chatbot-history.html" class="nav-link">Historique</a><span class="nav-separator">|</span><a href="auth.html" class="nav-link">Connexion</a></div>    <div class="profile-widget" id="profileWidget">
+    <form class="profile-login-form" id="profileLoginForm" onsubmit="return profileWidgetLogin(event)">
+        <input type="text" id="profileUsername" name="username" placeholder="Utilisateur ou email"
+               autocomplete="username" required />
+        <input type="password" id="profilePassword" name="password" placeholder="Mot de passe"
+               autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary" id="profileLoginBtn">Se connecter</button>
+        <span class="profile-message" id="profileMessage"></span>
+        <a href="auth.html" class="profile-register-link">S'inscrire</a>
+    </form>
+
+    <div class="profile-logged-in" id="profileLoggedIn" style="display:none;">
+        <a href="profile.html" class="profile-user-link" id="profileUserLink">
+            <span class="profile-avatar">👤</span>
+            <span class="profile-username" id="profileUsernameDisplay">—</span>
+        </a>
+        <button type="button" class="btn btn-secondary profile-logout-btn" onclick="profileWidgetLogout()">Déconnexion</button>
+    </div>
+</div></div>
+    <div class="header-main">
+        <h1>Document</h1></div>
+</div>
+
+        <div id="docError" class="doc-error" hidden></div>
+
+        <div class="doc-layout">
+            <section class="doc-viewer">
+                <div class="doc-viewer-tab"><span id="docTabLabel">Document</span></div>
+                <iframe id="docPdfFrame" title="Visualisation du document" hidden></iframe>
+                <div id="docNoPdf" class="doc-no-pdf" hidden>Aucun PDF n'est associ&eacute; &agrave; cette ressource.</div>
+            </section>
+
+            <aside class="doc-aside">
+                <div id="docSections"></div>
+                <div class="doc-share">
+                    <span>Partager</span>
+                    <button type="button" id="docCopyLink">&#128279; Lien</button>
+                    <a id="docMailLink" href="#">&#9993; E-mail</a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var params = new URLSearchParams(window.location.search);
+    var resourceId = params.get('resource_id') || params.get('id');
+    var errorBox = document.getElementById('docError');
+    var sectionsEl = document.getElementById('docSections');
+    var frame = document.getElementById('docPdfFrame');
+    var noPdf = document.getElementById('docNoPdf');
+    var tabLabel = document.getElementById('docTabLabel');
+    var h1 = document.querySelector('.header-main h1');
+    var subtitle = document.querySelector('.header-main p');
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.hidden = false;
+    }
+
+    function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+    }
+
+    function renderValue(v) {
+        if (v.type === 'uri' && v.uri) {
+            var a = el('a', null, v.text || v.uri);
+            a.href = v.uri;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            return a;
+        }
+        if (v.type === 'resource' && v.resource_id) {
+            var link = el('a', null, v.text || ('Ressource ' + v.resource_id));
+            link.href = 'document.html?resource_id=' + encodeURIComponent(v.resource_id);
+            return link;
+        }
+        return el('span', null, v.text || '');
+    }
+
+    function renderSections(sections) {
+        sectionsEl.textContent = '';
+        sections.forEach(function (section, index) {
+            var wrapper = el('div', 'doc-section' + (index === 0 ? ' open' : ''));
+            var toggle = el('button', 'doc-section-toggle');
+            toggle.type = 'button';
+            toggle.appendChild(el('span', null, section.label));
+            toggle.appendChild(el('span', 'doc-section-icon', index === 0 ? '\u2212' : '+'));
+            var body = el('div', 'doc-section-body');
+            section.fields.forEach(function (field) {
+                var fieldDiv = el('div', 'doc-field');
+                fieldDiv.appendChild(el('span', 'doc-field-label', field.label));
+                var ul = el('ul', 'doc-field-values');
+                field.values.forEach(function (v) {
+                    var li = el('li');
+                    li.appendChild(renderValue(v));
+                    ul.appendChild(li);
+                });
+                fieldDiv.appendChild(ul);
+                body.appendChild(fieldDiv);
+            });
+            toggle.addEventListener('click', function () {
+                var open = wrapper.classList.toggle('open');
+                toggle.querySelector('.doc-section-icon').textContent = open ? '\u2212' : '+';
+            });
+            wrapper.appendChild(toggle);
+            wrapper.appendChild(body);
+            sectionsEl.appendChild(wrapper);
+        });
+    }
+
+    if (!resourceId) {
+        showError("Param\u00e8tre d'URL manquant : resource_id (ex. document.html?resource_id=116738).");
+        return;
+    }
+
+    var pageUrl = window.location.href;
+    document.getElementById('docCopyLink').addEventListener('click', function () {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(pageUrl);
+        }
+    });
+    var mailLink = document.getElementById('docMailLink');
+    mailLink.href = 'mailto:?subject=' + encodeURIComponent('Document M3C') +
+        '&body=' + encodeURIComponent(pageUrl);
+
+    fetch('/api/documents/resource/' + encodeURIComponent(resourceId) + '/values')
+        .then(function (response) {
+            if (!response.ok) {
+                return response.json().then(function (body) {
+                    throw new Error(body.detail || ('Erreur HTTP ' + response.status));
+                });
+            }
+            return response.json();
+        })
+        .then(function (data) {
+            document.title = data.page_title;
+            if (h1) h1.textContent = data.page_title;
+            if (subtitle) subtitle.textContent = (data.title && data.title !== data.page_title) ? data.title : '';
+            tabLabel.textContent = data.title || data.page_title;
+            if (data.pdf && data.pdf.available) {
+                frame.src = data.pdf.url;
+                frame.hidden = false;
+            } else {
+                noPdf.hidden = false;
+            }
+            renderSections(data.sections);
+        })
+        .catch(function (err) {
+            showError('Impossible de charger la ressource ' + resourceId + ' : ' + err.message);
+        });
+})();
+</script>
+
+<script src="auth_widget.js"></script>
+<script src="mistral_api_key.js"></script>
+</body>
+</html>
